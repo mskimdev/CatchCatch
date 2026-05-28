@@ -41,8 +41,7 @@ public class Payment {
     @JoinColumn(name = "booking_id", nullable = false) // FK 컬럼명 지정 및 NOT NULL 설정
     private Booking booking; // Integer 대신 연관된 Booking 엔티티 객체를 직접 참조
 
-    // 사용자 ID (user_tb.id 참조)
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -62,10 +61,10 @@ public class Payment {
     @Column(nullable = false)
     private String method;
 
-    // READY / PAID / CANCELLED
-    @ColumnDefault("READY")
+    @Enumerated(EnumType.STRING)
+    @ColumnDefault("'READY'")
     @Column(nullable = false)
-    private String status;
+    private PaymentStatus status;
 
     // 결제 완료 일시
     @Column(nullable = true)
