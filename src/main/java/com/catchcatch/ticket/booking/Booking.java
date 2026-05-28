@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.booking;
 
+import com.catchcatch.ticket.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,9 +22,10 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // 예매한 사용자 ID
-    @Column(name = "user_id", nullable = false)
-    private Integer userId;
+    // 사용자 ID (user_tb.id 참조)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     // 예매한 공연 회차 ID
     @Column(name = "concert_session_id", nullable = false)

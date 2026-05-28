@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.queue;
 
+import com.catchcatch.ticket.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,9 +22,10 @@ public class WaitingQueue {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // 대기열에 진입한 사용자 ID
-    @Column(name = "user_id", nullable = false)
-    private Integer userId;
+    // 사용자 ID (user_tb.id 참조)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     // 어떤 공연 회차의 대기열인지 구분하는 ID
     @Column(name = "concert_session_id", nullable = false)
