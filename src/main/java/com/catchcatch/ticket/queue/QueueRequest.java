@@ -1,4 +1,4 @@
 package com.catchcatch.ticket.queue;
 
-public class QueueStatus {
+public class QueueRequest {
 }
