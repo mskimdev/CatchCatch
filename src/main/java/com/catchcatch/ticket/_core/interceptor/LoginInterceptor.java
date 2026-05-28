@@ -1,6 +1,6 @@
 package com.catchcatch.ticket._core.interceptor;
 
-import com.catchcatch.ticket._core.errors.Exception401;
+import com.catchcatch.ticket._core.errors.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -15,7 +15,7 @@ public  class LoginInterceptor implements HandlerInterceptor {
         HttpSession session = request.getSession();
         User sessionUser = (User) session.getAttribute("sessionUser");
         if(sessionUser == null) {
-            throw new Exception401("로그인 먼저 해주세요");
+            throw new UnauthorizedException("로그인 먼저 해주세요");
         }
 
         return true;

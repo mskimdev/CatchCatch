@@ -11,30 +11,30 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(Exception400.class)
-    public String ex400(Exception400 e, HttpServletRequest request) {
+    @ExceptionHandler(BadRequestException.class)
+    public String ex400(BadRequestException e, HttpServletRequest request) {
         return logAndAlertError(e, request);
     }
 
-    @ExceptionHandler(Exception401.class)
+    @ExceptionHandler(UnauthorizedException.class)
     @ResponseBody
-    public String ex401(Exception401 e, HttpServletRequest request) {
+    public String ex401(UnauthorizedException e, HttpServletRequest request) {
         return logAndAlertError(e, request);
     }
 
-    @ExceptionHandler(Exception403.class)
+    @ExceptionHandler(ForbiddenException.class)
     @ResponseBody // 파일 찾지 말고 데이터 반환
-    public String ex403(Exception403 e, HttpServletRequest request) {
+    public String ex403(ForbiddenException e, HttpServletRequest request) {
         return logAndAlertError(e, request);
     }
 
-    @ExceptionHandler(Exception404.class)
-    public String ex404(Exception404 e, HttpServletRequest request) {
+    @ExceptionHandler(NotFoundException.class)
+    public String ex404(NotFoundException e, HttpServletRequest request) {
         return logAndAlertError(e, request);
     }
 
-    @ExceptionHandler(Exception500.class)
-    public String ex500(Exception500 e, HttpServletRequest request) {
+    @ExceptionHandler(InternalServerErrorException.class)
+    public String ex500(InternalServerErrorException e, HttpServletRequest request) {
         return logAndAlertError(e, request);
     }
 

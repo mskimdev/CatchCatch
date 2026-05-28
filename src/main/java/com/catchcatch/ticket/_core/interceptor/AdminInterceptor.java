@@ -1,7 +1,7 @@
 package com.catchcatch.ticket._core.interceptor;
 
-import com.catchcatch.ticket._core.errors.Exception401;
-import com.catchcatch.ticket._core.errors.Exception403;
+import com.catchcatch.ticket._core.errors.UnauthorizedException;
+import com.catchcatch.ticket._core.errors.ForbiddenException;
 import com.catchcatch.ticket._core.util.Define;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,10 +17,10 @@ public class AdminInterceptor implements HandlerInterceptor {
         User sessionUser = (User)session.getAttribute(Define.SSESION_USER);
 
         if(sessionUser == null)
-            throw new Exception401("로그인이 필요합니다.");
+            throw new UnauthorizedException("로그인이 필요합니다.");
 
         if(!sessionUser.isAdmin()){
-            throw new Exception403("관리자 권한이 필요합니다.");
+            throw new ForbiddenException("관리자 권한이 필요합니다.");
         }
 
         return true;
