@@ -2,3 +2,12 @@ spring:
   profiles:
     active:
       - dev
+
+springdoc:
+  swagger-ui:
+    enabled: true
+    path:
+      - /swagger-ui.html
+  api-docs:
+    path:
+      - /v3/api-docs
