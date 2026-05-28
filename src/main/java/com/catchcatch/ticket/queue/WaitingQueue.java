@@ -5,11 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
-import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Data
 @Entity
@@ -18,6 +16,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class WaitingQueue {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -34,16 +33,22 @@ public class WaitingQueue {
     @Column(name = "queue_number", nullable = false)
     private Integer queueNumber;
 
+    // 대기열 상태 - WAITING, READY, ENTERED, EXPIRED, CANCELED
+    @Builder.Default
+    @Column(name = "status", nullable = false)
+    private String status = "WAITING";
+
     // 순번이 도달했을 때 발급되는 입장 토큰
     @Column(name = "entry_token", unique = true)
     private String entryToken;
 
-    // 입장 토큰 만료 시간 * 문서 기준 10분 유효
+    // 입장 토큰 만료 시간 - 문서 기준 발급 후 10분 유효
     @Column(name = "token_expires_at")
     private Timestamp tokenExpiresAt;
 
     // 대기열 등록 시간
-    @Column(name = "created_at", nullable = false)
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Timestamp createdAt;
 
     // 실제 예매 화면 입장 시간

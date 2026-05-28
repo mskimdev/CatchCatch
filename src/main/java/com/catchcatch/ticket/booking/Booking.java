@@ -16,6 +16,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @Builder
 public class Booking {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -28,7 +29,7 @@ public class Booking {
     @Column(name = "concert_session_id", nullable = false)
     private Integer concertSessionId;
 
-    // 예매한 좌석 ID
+    // 예매한 좌석 ID - 좌석 1개 예매 기준
     @Column(name = "seat_id", nullable = false)
     private Integer seatId;
 
@@ -37,8 +38,9 @@ public class Booking {
     private String bookingNumber;
 
     // 예매 상태 - PENDING, PAID, CANCELED, EXPIRED
+    @Builder.Default
     @Column(name = "status", nullable = false)
-    private String status;
+    private String status = "PENDING";
 
     // 결제 전 좌석 임시 선점 만료 시간
     @Column(name = "expires_at")
@@ -48,10 +50,6 @@ public class Booking {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Timestamp createdAt;
-
-    // 결제 완료 시간
-    @Column(name = "paid_at")
-    private Timestamp paidAt;
 
     // 예매 취소 시간
     @Column(name = "canceled_at")
