@@ -4,6 +4,7 @@ import com.catchcatch.ticket._core.interceptor.AdminInterceptor;
 import com.catchcatch.ticket._core.interceptor.LoginInterceptor;
 import com.catchcatch.ticket._core.interceptor.SessionInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,8 +19,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private LoginInterceptor loginInterceptor;
     @Autowired // DI 처리
     private SessionInterceptor sessionInterceptor;
-//    @Autowired
-//    private AdminInterceptor adminInterceptor;
+    @Autowired
+    private AdminInterceptor adminInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -34,10 +35,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         /* 인증 처리 인터셉트 필요한 url*/
                 );
 
-//        registry.addInterceptor(adminInterceptor)
-//                .addPathPatterns(
-//                        /* 관리자 인터셉터 필요한 url */
-//                );
+        registry.addInterceptor(adminInterceptor)
+                .addPathPatterns(
+                        /* 관리자 인터셉터 필요한 url */
+                );
     }
 
     @Bean

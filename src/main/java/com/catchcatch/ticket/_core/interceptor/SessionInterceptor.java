@@ -15,14 +15,15 @@ public class SessionInterceptor implements HandlerInterceptor {
     // 컨트롤러 로직이 거의 끝나는 시점에 sessionUser 값 주입
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        if(modelAndView != null) {
-            HttpSession session = request.getSession(false);
-            if(session != null) {
-                User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
-                if(sessionUser != null) {
-                    modelAndView.addObject(Define.SESSION_USER, sessionUser);
-                }
-            }
-        }
+        // TODO - 추후 구현
+//        if(modelAndView != null) {
+//            HttpSession session = request.getSession(false);
+//            if(session != null) {
+//                User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
+//                if(sessionUser != null) {
+//                    modelAndView.addObject(Define.SESSION_USER, sessionUser);
+//                }
+//            }
+//        }
     }
 }

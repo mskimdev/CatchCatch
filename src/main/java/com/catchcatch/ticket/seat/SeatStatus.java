@@ -5,7 +5,7 @@ package com.catchcatch.ticket.seat;
  * - HELD : 예약중
  * - SOLD : 판매됨
  */
-public enum Status {
+public enum SeatStatus {
     AVAILABLE,
     HELD,
     SOLD

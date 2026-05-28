@@ -1,4 +1,4 @@
 package com.catchcatch.ticket.queue;
 
-public enum Status {
+public enum QueueStatus {
 }

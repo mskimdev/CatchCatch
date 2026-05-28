@@ -32,7 +32,7 @@ public class Seat {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @ColumnDefault("'AVAILABLE'")
-    private Status status;
+    private SeatStatus status;
 
     @UpdateTimestamp
     private Timestamp updatedAt;
