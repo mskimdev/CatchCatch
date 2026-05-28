@@ -13,5 +13,18 @@ package com.catchcatch.ticket.user;
 
  */
 
+
+import jakarta.persistence.Table;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@Table(name = "")
 public class User {
+
+
+
+
+
 }
