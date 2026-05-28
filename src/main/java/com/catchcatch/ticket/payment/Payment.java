@@ -1,5 +1,7 @@
 package com.catchcatch.ticket.payment;
 
+import com.catchcatch.ticket.booking.Booking;
+import com.catchcatch.ticket.user.User;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;

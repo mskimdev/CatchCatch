@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.refund;
 
 
+import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.payment.Payment;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -34,10 +35,12 @@ public class Refund {
     private Integer id;
 
     // 결제 ID (payment_tb.id 참조)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_id", nullable = false)
     private Payment payment;
 
     // 	예매 ID (booking_tb.id 참조)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_id",nullable = false)
     private Booking booking;
 

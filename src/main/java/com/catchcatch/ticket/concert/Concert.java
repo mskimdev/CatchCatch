@@ -4,7 +4,10 @@ import com.catchcatch.ticket.venue.Venue;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,41 +17,25 @@ import java.time.LocalDateTime;
 public class Concert {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "venue_id",nullable = false)
+    @JoinColumn(name = "venue_id", nullable = false)
     private Venue venue;
 
-    @Column(nullable = false, length = 150)
+    @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false)
     private String artist;
 
     private String description;
+
     private String posterUrl;
 
-    @Column(nullable = false)
-    private LocalDateTime salesStartAt;
+    @ColumnDefault("OPEN")
+    private Status status;
 
-    @Column(nullable = false)
-    private LocalDateTime salesEndAt;
-
-    @Column(length = 30)
-    private String ageLimit;
-
-    @Column(nullable = false)
-    private Boolean isActive = true;
-
-    public Concert(Venue venue, String title, String artist, String description, String posterUrl, LocalDateTime salesStartAt, LocalDateTime salesEndAt, String ageLimit) {
-        this.venue = venue;
-        this.title = title;
-        this.artist = artist;
-        this.description = description;
-        this.posterUrl = posterUrl;
-        this.salesStartAt = salesStartAt;
-        this.salesEndAt = salesEndAt;
-        this.ageLimit = ageLimit;
-    }
+    @CreationTimestamp
+    private Timestamp createdAt;
 }

@@ -3,6 +3,9 @@ package com.catchcatch.ticket.venue;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.sql.Timestamp;
 
 
 @Entity
@@ -12,24 +15,18 @@ import lombok.NoArgsConstructor;
 public class Venue {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false)
     private String name;
 
     @Column(nullable = false)
     private String address;
 
     @Column(nullable = false)
-    private Integer totalSeats;
+    private Integer totalCapacity;
 
-    private String description;
+    @CreationTimestamp
+    private Timestamp createdAt;
 
-
-    public Venue(String name, String address, Integer totalSeats, String description) {
-        this.name = name;
-        this.address = address;
-        this.totalSeats = totalSeats;
-        this.description = description;
-    }
 }

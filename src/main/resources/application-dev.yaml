@@ -78,12 +78,12 @@ spring:
 
   #      초기 데이터 설정
   # SQL 초기화 설정
-#  sql:
-#    init:
-#      mode: always  # 외부 DB(MySQL)에서도 실행되도록 설정
-#      #mode: never  # 절대 실행 안됨
-#      data-locations:
-#        - classpath:db/data.sql
+  sql:
+    init:
+      mode: always  # 외부 DB(MySQL)에서도 실행되도록 설정
+      #mode: never  # 절대 실행 안됨
+      data-locations:
+        - classpath:db/data.sql
 
   jpa:
     # Open Session In View -> false 설정
@@ -106,4 +106,4 @@ spring:
         default_batch_fetch_size: 100
 
      #data.sql 파일을 Hibernate 초기화 이후에 실행
-    #defer-datasource-initialization: true
+    defer-datasource-initialization: true

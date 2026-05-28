@@ -1,6 +1,7 @@
 package com.catchcatch.ticket._core.interceptor;
 
 import com.catchcatch.ticket._core.util.Define;
+import com.catchcatch.ticket.user.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;

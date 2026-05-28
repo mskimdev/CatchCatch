@@ -5,35 +5,35 @@
 --  1. user_tb
 --  비밀번호: 전부 "1234" BCrypt 암호화
 -- =====================================================
-INSERT INTO user_tb (id, username, password, email, phone, profile_image, oauth_provider, created_at) VALUES
-                                                                                                          (1,  'admin',    '$2a$10$pJgHFhQeqpkfNKJBLISTlO8Aq3DXdEq7SlAAnNdFpSInGKaOhGKAq', 'admin@catchcatch.com',   '010-0000-0000', NULL,          'LOCAL',  NOW()),
-                                                                                                          (2,  'user1',    '$2a$10$pJgHFhQeqpkfNKJBLISTlO8Aq3DXdEq7SlAAnNdFpSInGKaOhGKAq', 'user1@test.com',         '010-1111-1111', NULL,          'LOCAL',  NOW()),
-                                                                                                          (3,  'user2',    '$2a$10$pJgHFhQeqpkfNKJBLISTlO8Aq3DXdEq7SlAAnNdFpSInGKaOhGKAq', 'user2@test.com',         '010-2222-2222', NULL,          'LOCAL',  NOW()),
-                                                                                                          (4,  'user3',    '$2a$10$pJgHFhQeqpkfNKJBLISTlO8Aq3DXdEq7SlAAnNdFpSInGKaOhGKAq', 'user3@test.com',         '010-3333-3333', NULL,          'LOCAL',  NOW()),
-                                                                                                          (5,  'kakaouser','$2a$10$pJgHFhQeqpkfNKJBLISTlO8Aq3DXdEq7SlAAnNdFpSInGKaOhGKAq', 'kakao_12345@kakao.com',  '010-4444-4444', NULL,          'KAKAO',  NOW());
+INSERT INTO user_tb (username, password, email, phone, profile_image, oauth_provider, role, created_at, is_deleted) VALUES
+                                                                                                          ('admin',    '$2a$10$pJgHFhQeqpkfNKJBLISTlO8Aq3DXdEq7SlAAnNdFpSInGKaOhGKAq', 'admin@catchcatch.com',   '010-0000-0000', NULL,          'LOCAL',  'USER', NOW(), false),
+                                                                                                          ('user1',    '$2a$10$pJgHFhQeqpkfNKJBLISTlO8Aq3DXdEq7SlAAnNdFpSInGKaOhGKAq', 'user1@test.com',         '010-1111-1111', NULL,          'LOCAL',  'USER', NOW(), false),
+                                                                                                          ('user2',    '$2a$10$pJgHFhQeqpkfNKJBLISTlO8Aq3DXdEq7SlAAnNdFpSInGKaOhGKAq', 'user2@test.com',         '010-2222-2222', NULL,          'LOCAL',  'USER', NOW(), false),
+                                                                                                          ('user3',    '$2a$10$pJgHFhQeqpkfNKJBLISTlO8Aq3DXdEq7SlAAnNdFpSInGKaOhGKAq', 'user3@test.com',         '010-3333-3333', NULL,          'LOCAL',  'USER', NOW(), false),
+                                                                                                          ('kakaouser','$2a$10$pJgHFhQeqpkfNKJBLISTlO8Aq3DXdEq7SlAAnNdFpSInGKaOhGKAq', 'kakao_12345@kakao.com',  '010-4444-4444', NULL,          'KAKAO',  'USER', NOW(), false);
 
 
--- =====================================================
---  2. user_role_tb
--- =====================================================
-INSERT INTO user_role_tb (id, user_id, role) VALUES
-                                                 (1, 1, 'ADMIN'),
-                                                 (2, 1, 'USER'),
-                                                 (3, 2, 'USER'),
-                                                 (4, 3, 'USER'),
-                                                 (5, 4, 'USER'),
-                                                 (6, 5, 'USER');
-
+-- -- =====================================================
+-- --  2. user_role_tb
+-- -- =====================================================
+-- INSERT INTO user_role_tb (id, user_id, role) VALUES
+--                                                  (1, 1, 'ADMIN'),
+--                                                  (2, 1, 'USER'),
+--                                                  (3, 2, 'USER'),
+--                                                  (4, 3, 'USER'),
+--                                                  (5, 4, 'USER'),
+--                                                  (6, 5, 'USER');
+--
 
 -- =====================================================
 --  3. venue_tb
 -- =====================================================
-INSERT INTO venue_tb (id, name, address, total_capacity, created_at) VALUES
-                                                                         (1, '올림픽공원 체조경기장',  '서울특별시 송파구 올림픽로 424',       15000, NOW()),
-                                                                         (2, 'KSPO DOME',              '서울특별시 송파구 올림픽로 424',       15000, NOW()),
-                                                                         (3, '잠실실내체육관',          '서울특별시 송파구 올림픽로 25',        15000, NOW()),
-                                                                         (4, '부산 사직실내체육관',     '부산광역시 동래구 사직동 산 29',       12000, NOW()),
-                                                                         (5, '인천 남동체육관',         '인천광역시 남동구 장수동 503',         10000, NOW());
+INSERT INTO venue_tb (name, address, total_capacity, created_at) VALUES
+                                                                         ('올림픽공원 체조경기장',  '서울특별시 송파구 올림픽로 424',       15000, NOW()),
+                                                                         ('KSPO DOME',              '서울특별시 송파구 올림픽로 424',       15000, NOW()),
+                                                                         ('잠실실내체육관',          '서울특별시 송파구 올림픽로 25',        15000, NOW()),
+                                                                         ('부산 사직실내체육관',     '부산광역시 동래구 사직동 산 29',       12000, NOW()),
+                                                                         ('인천 남동체육관',         '인천광역시 남동구 장수동 503',         10000, NOW());
 
 
 -- =====================================================

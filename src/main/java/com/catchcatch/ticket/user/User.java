@@ -53,13 +53,19 @@ public class User {
     private String profileImage;
 
     // LOCAL	LOCAL / KAKAO / GOOGLE / NAVER
-    @ColumnDefault("LOCAL")
-    @Column(nullable = false )
-    private String oauthProvider;
-    
+    @Enumerated(EnumType.STRING)
+    @ColumnDefault("'LOCAL'")
+    private OauthProvider oauthProvider;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @ColumnDefault("'USER'")
+    private Role role;
+
     // 가입 일시
     @CurrentTimestamp
-    @Column(nullable = false )
     private Timestamp createdAt;
 
+    @ColumnDefault("false")
+    private boolean isDeleted;
 }
