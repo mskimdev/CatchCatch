@@ -14,17 +14,52 @@ package com.catchcatch.ticket.user;
  */
 
 
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CurrentTimestamp;
+
+import java.sql.Timestamp;
 
 @Data
 @NoArgsConstructor
-@Table(name = "")
+@Table(name = "user_tb")
+@Entity
 public class User {
 
+    // 사용자 고유 ID
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = false)
+    private Integer id;
 
+    // 사용자 로그인 이름 (UNIQUE)
+    @Column(nullable = false , unique = true)
+    private String username;
 
+    // BCrypt 암호화 비밀번호
+    @Column(nullable = false )
+    private String password;
 
+    // 이메일 주소 (UNIQUE)
+    @Column(nullable = false , unique = true)
+    private String email;
+
+    // 전화번호
+    private String phone;
+
+    // 프로필 이미지 파일명 또는 URL
+    private String profileImage;
+
+    // LOCAL	LOCAL / KAKAO / GOOGLE / NAVER
+    @ColumnDefault("LOCAL")
+    @Column(nullable = false )
+    private String oauthProvider;
+
+    // 가입 일시
+    @CurrentTimestamp
+    @Column(nullable = false )
+    private Timestamp createdAt;
 
 }

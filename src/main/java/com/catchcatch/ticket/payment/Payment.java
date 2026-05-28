@@ -71,6 +71,7 @@ public class Payment {
 
     // 결제 요청 일시
     @CreationTimestamp
+    @Column(nullable = false)
     private Timestamp createdAt;
 
 }
