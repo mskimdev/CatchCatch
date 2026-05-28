@@ -56,7 +56,7 @@ public class User {
     @ColumnDefault("LOCAL")
     @Column(nullable = false )
     private String oauthProvider;
-
+    
     // 가입 일시
     @CurrentTimestamp
     @Column(nullable = false )

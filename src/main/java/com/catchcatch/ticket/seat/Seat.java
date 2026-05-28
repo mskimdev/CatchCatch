@@ -1,6 +1,6 @@
 package com.catchcatch.ticket.seat;
 
-import com.catchcatch.ticket.concertSession.ConcertSession;
+import com.catchcatch.ticket.session.ConcertSession;
 import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.UpdateTimestamp;

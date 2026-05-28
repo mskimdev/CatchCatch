@@ -1,4 +1,4 @@
-package com.catchcatch.ticket.concertSession;
+package com.catchcatch.ticket.session;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
