@@ -1,0 +1,83 @@
+{{> layout/header-admin}}
+<link rel="stylesheet" href="/css/venue-save.css">
+
+<main class="cc-main">
+    <div class="cc-container">
+
+        <section class="cc-card admin-venue-save-card">
+
+            <div class="admin-venue-save-head">
+                <p class="admin-venue-eyebrow">관리자 메뉴</p>
+
+                <h1 class="admin-venue-title">공연장 등록</h1>
+
+                <p class="admin-venue-desc">
+                    콘서트 예매에 사용할 공연장 정보를 입력해 주세요.
+                </p>
+            </div>
+
+            <form class="admin-venue-form" action="/admin/venues/save" method="post">
+                {{#_csrf}}
+                    <input type="hidden" name="{{parameterName}}" value="{{token}}">
+                {{/_csrf}}
+
+                <div class="admin-venue-form-grid">
+
+                    <div class="cc-field admin-venue-field">
+                        <label for="name">공연장명</label>
+                        <input
+                                id="name"
+                                class="cc-input"
+                                type="text"
+                                name="name"
+                                placeholder="예: KSPO DOME"
+                                required>
+                    </div>
+
+                    <div class="cc-field admin-venue-field">
+                        <label for="totalCapacity">총 수용 인원</label>
+                        <input
+                                id="totalCapacity"
+                                class="cc-input"
+                                type="number"
+                                name="totalCapacity"
+                                placeholder="예: 15000"
+                                min="1"
+                                required>
+                    </div>
+
+                    <div class="cc-field admin-venue-field admin-venue-field--full">
+                        <label for="address">주소</label>
+                        <input
+                                id="address"
+                                class="cc-input"
+                                type="text"
+                                name="address"
+                                placeholder="예: 서울특별시 송파구 올림픽로 424"
+                                required>
+                    </div>
+
+                </div>
+
+                <div class="admin-venue-help">
+                    <span>안내</span>
+                    등록한 공연장은 콘서트 등록 시 공연장 선택 목록에 사용됩니다.
+                </div>
+
+                <div class="admin-venue-form-actions">
+                    <a class="cc-btn cc-btn--outline admin-venue-cancel-btn" href="/admin/venues">
+                        목록으로
+                    </a>
+
+                    <button class="cc-btn cc-btn--primary admin-venue-submit-btn" type="submit">
+                        공연장 등록
+                    </button>
+                </div>
+            </form>
+
+        </section>
+
+    </div>
+</main>
+
+{{> layout/footer}}
