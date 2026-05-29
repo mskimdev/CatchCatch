@@ -11,7 +11,7 @@ import java.sql.Timestamp;
 
 @Entity
 @Data
-@Table(name="venue_tb")
+@Table(name = "venue_tb")
 @NoArgsConstructor
 public class Venue {
     @Id
@@ -31,7 +31,7 @@ public class Venue {
     private Timestamp createdAt;
 
     @Builder
-    public Venue (String name, String address, Integer totalCapacity) {
+    public Venue(String name, String address, Integer totalCapacity) {
         this.name = name;
         this.address = address;
         this.totalCapacity = totalCapacity;

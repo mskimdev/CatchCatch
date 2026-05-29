@@ -17,8 +17,8 @@ public class VenueController {
     //관리자 등록 페이지
     @GetMapping("/admin/venues/save")
     public String venueSaveForm(Model model) {
-        model.addAttribute("pageTitle","공연장 등록");
-        model.addAttribute("activeVenue",true);
+        model.addAttribute("pageTitle", "공연장 등록");
+        model.addAttribute("activeVenue", true);
         return "admin/venue-save";
     }
 
