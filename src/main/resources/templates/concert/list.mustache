@@ -1,0 +1,68 @@
+{{> layout/header}}
+<link rel="stylesheet" href="/css/concert-list.css">
+<main class="cc-main">
+    <div class="cc-container cc-list-layout">
+        <aside class="cc-card cc-sidebar" aria-label="검색 필터">
+            <section class="cc-filter-group">
+                <div class="cc-filter-group__head">상태 <span>⌃</span></div>
+                <nav class="cc-filter-list">
+                    <a class="cc-filter-item is-active" href="/concerts?status=all">전체 <span>✓</span></a>
+                    <a class="cc-filter-item" href="/concerts?status=open-soon">오픈 예정</a>
+                    <a class="cc-filter-item" href="/concerts?status=available">예매 가능</a>
+                    <a class="cc-filter-item" href="/concerts?status=deadline">종료 임박</a>
+                </nav>
+            </section>
+            <section class="cc-filter-group">
+                <div class="cc-filter-group__head">장르 <span>⌃</span></div>
+                <nav class="cc-filter-list">
+                    <a class="cc-filter-item is-active" href="/concerts?genre=all">전체 <span>✓</span></a>
+                    <a class="cc-filter-item" href="/concerts?genre=concert">콘서트</a>
+                    <a class="cc-filter-item" href="/concerts?genre=festival">페스티벌</a>
+                    <a class="cc-filter-item" href="/concerts?genre=musical">뮤지컬</a>
+                    <a class="cc-filter-item" href="/concerts?genre=classic">클래식</a>
+                    <a class="cc-filter-item" href="/concerts?genre=fanmeeting">팬미팅</a>
+                    <a class="cc-filter-item" href="/concerts?genre=etc">기타</a>
+                </nav>
+            </section>
+            <section class="cc-filter-group">
+                <div class="cc-filter-group__head">지역 <span>⌃</span></div>
+                <nav class="cc-filter-list">
+                    <a class="cc-filter-item is-active" href="/concerts?region=all">전체 <span>✓</span></a>
+                    <a class="cc-filter-item" href="/concerts?region=seoul">서울</a>
+                    <a class="cc-filter-item" href="/concerts?region=gyeonggi">경기</a>
+                    <a class="cc-filter-item" href="/concerts?region=incheon">인천</a>
+                    <a class="cc-filter-item" href="/concerts?region=busan">부산</a>
+                    <a class="cc-filter-item" href="/concerts?region=daegu">대구</a>
+                </nav>
+            </section>
+        </aside>
+
+        <section class="cc-results">
+            <div class="cc-results-head">
+                <h1 class="cc-results-title">콘서트 검색 결과 <span class="cc-accent-text">{{#resultCount}}{{resultCount}}{{/resultCount}}{{^resultCount}}128{{/resultCount}}건</span></h1>
+                <a class="cc-more" href="/concerts">초기화 ↻</a>
+            </div>
+            <div class="cc-chip-row">
+                <a class="cc-chip is-active" href="/concerts">전체 {{#resultCount}}{{resultCount}}{{/resultCount}}{{^resultCount}}128{{/resultCount}}</a>
+                <a class="cc-chip" href="/concerts?status=open-soon">오픈 예정 {{#openSoonCount}}{{openSoonCount}}{{/openSoonCount}}{{^openSoonCount}}24{{/openSoonCount}}</a>
+                <a class="cc-chip" href="/concerts?status=available">예매 가능 {{#availableCount}}{{availableCount}}{{/availableCount}}{{^availableCount}}78{{/availableCount}}</a>
+                <a class="cc-chip" href="/concerts?status=deadline">종료 임박 {{#deadlineCount}}{{deadlineCount}}{{/deadlineCount}}{{^deadlineCount}}26{{/deadlineCount}}</a>
+            </div>
+
+            <div class="cc-result-grid">
+                {{#concerts}}
+                    {{> components/result-card}}
+                {{/concerts}}
+                {{^concerts}}
+                <article class="cc-card cc-result-card"><a class="cc-result-card__poster" href="/concerts/21"><img src="/images/sample/poster-music.svg" alt="DAY6 포스터"></a><div class="cc-result-card__body"><span class="cc-concert-card__category">콘서트</span><h3 class="cc-result-card__title"><a href="/concerts/21">DAY6 4TH WORLD TOUR &lt;FOREVER&gt;</a></h3><p class="cc-result-card__line">2026.01.21(수) - 2026.01.25(일)</p><p class="cc-result-card__line">올림픽공원 KSPO DOME</p><p class="cc-result-card__line">서울</p><p class="cc-rating"><span class="cc-rating__star">★</span> 4.9 (2,345)</p><span class="cc-badge">단독판매</span></div><button class="cc-heart" type="button">♡</button></article>
+                <article class="cc-card cc-result-card"><a class="cc-result-card__poster" href="/concerts/22"><img src="/images/sample/poster-triangle.svg" alt="세븐틴 포스터"></a><div class="cc-result-card__body"><span class="cc-concert-card__category">콘서트</span><h3 class="cc-result-card__title"><a href="/concerts/22">세븐틴 WORLD TOUR &lt;NEW_&gt; IN SEOUL</a></h3><p class="cc-result-card__line">2026.02.06(금) - 2026.02.08(일)</p><p class="cc-result-card__line">고척스카이돔</p><p class="cc-result-card__line">서울</p><p class="cc-rating"><span class="cc-rating__star">★</span> 4.8 (1,892)</p><span class="cc-badge">단독판매</span></div><button class="cc-heart" type="button">♡</button></article>
+                <article class="cc-card cc-result-card"><a class="cc-result-card__poster" href="/concerts/1"><img src="/images/sample/poster-legend-seoul.svg" alt="무명전설 서울 포스터"></a><div class="cc-result-card__body"><span class="cc-concert-card__category">콘서트</span><h3 class="cc-result-card__title"><a href="/concerts/1">2026 무명전설 전국투어 콘서트 - 서울</a></h3><p class="cc-result-card__line">2026.06.27(토) - 2026.06.28(일)</p><p class="cc-result-card__line">올림픽공원 올림픽홀</p><p class="cc-result-card__line">서울</p><p class="cc-rating"><span class="cc-rating__star">★</span> 4.7 (956)</p><span class="cc-badge">단독판매</span></div><button class="cc-heart" type="button">♡</button></article>
+                <article class="cc-card cc-result-card"><a class="cc-result-card__poster" href="/concerts/23"><img src="/images/sample/poster-artist.svg" alt="황치열 포스터"></a><div class="cc-result-card__body"><span class="cc-concert-card__category">콘서트</span><h3 class="cc-result-card__title"><a href="/concerts/23">황치열 전국투어 콘서트 &lt;별, 그대&gt; - 서울</a></h3><p class="cc-result-card__line">2026.03.14(토) - 2026.03.15(일)</p><p class="cc-result-card__line">세종대학교 대양홀</p><p class="cc-result-card__line">서울</p><p class="cc-rating"><span class="cc-rating__star">★</span> 4.8 (1,102)</p><span class="cc-badge">단독판매</span></div><button class="cc-heart" type="button">♡</button></article>
+                <article class="cc-card cc-result-card"><a class="cc-result-card__poster" href="/concerts/24"><img src="/images/sample/poster-aespa.svg" alt="aespa 포스터"></a><div class="cc-result-card__body"><span class="cc-concert-card__category">콘서트</span><h3 class="cc-result-card__title"><a href="/concerts/24">aespa LIVE TOUR &lt;SYNK : HYPER LINE&gt;</a></h3><p class="cc-result-card__line">2026.04.11(토) - 2026.04.12(일)</p><p class="cc-result-card__line">인스파이어 아레나</p><p class="cc-result-card__line">인천</p><p class="cc-rating"><span class="cc-rating__star">★</span> 4.9 (2,765)</p><span class="cc-badge">단독판매</span></div><button class="cc-heart" type="button">♡</button></article>
+                <article class="cc-card cc-result-card"><a class="cc-result-card__poster" href="/concerts/25"><img src="/images/sample/poster-cas.svg" alt="Cigarettes After Sex 포스터"></a><div class="cc-result-card__body"><span class="cc-concert-card__category">콘서트</span><h3 class="cc-result-card__title"><a href="/concerts/25">Cigarettes After Sex Live in Seoul</a></h3><p class="cc-result-card__line">2026.05.30(토)</p><p class="cc-result-card__line">잠실실내체육관</p><p class="cc-result-card__line">서울</p><p class="cc-rating"><span class="cc-rating__star">★</span> 4.8 (834)</p><span class="cc-badge">단독판매</span></div><button class="cc-heart" type="button">♡</button></article>
+                {{/concerts}}
+            </div>
+        </section>
+    </div>
+</main>
+{{> layout/footer}}

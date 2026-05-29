@@ -1,0 +1,115 @@
+{{> layout/header-login}}
+<link rel="stylesheet" href="/css/user-login.css">
+<link rel="stylesheet" href="/css/user-join.css">
+<main class="cc-login-main">
+    <section class="cc-login-shell cc-register-shell">
+        <div class="cc-login-form cc-register-form">
+            <h1>CatchCatch</h1>
+            <p class="cc-login-form__desc">회원가입하고<br>특별한 공연을 예매하세요</p>
+            {{#errorMessage}}<p class="cc-badge" style="margin-bottom:16px;color:var(--cc-danger);background:#fff0f0;border-color:var(--cc-danger)">{{errorMessage}}</p>{{/errorMessage}}
+            <form action="/join" method="post">
+                {{#_csrf}}<input type="hidden" name="{{parameterName}}" value="{{token}}">{{/_csrf}}
+
+                <div class="cc-register-row">
+                    <div class="cc-field">
+                        <label for="username">아이디</label>
+                        <div class="cc-input-wrap" style="margin-bottom:0">
+                            <span class="cc-input-icon">@</span>
+                            <input class="cc-input" id="username" type="text" name="username"
+                                   placeholder="영문, 숫자 조합" autocomplete="username"
+                                   value="{{!username}}">
+                        </div>
+                    </div>
+                    <div class="cc-field">
+                        <label for="email">이메일</label>
+                        <div class="cc-input-wrap" style="margin-bottom:0">
+                            <span class="cc-input-icon">✉</span>
+                            <input class="cc-input" id="email" type="email" name="email"
+                                   placeholder="example@email.com" autocomplete="email"
+                                   value="{{!email}}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cc-register-row">
+                    <div class="cc-field">
+                        <label for="password">비밀번호</label>
+                        <div class="cc-input-wrap" style="margin-bottom:0">
+                            <span class="cc-input-icon">🔒</span>
+                            <input class="cc-input" id="password" type="password" name="password"
+                                   placeholder="8자 이상" autocomplete="new-password">
+                            <span class="cc-input-eye" data-toggle-pw="password">◉</span>
+                        </div>
+                    </div>
+                    <div class="cc-field">
+                        <label for="passwordConfirm">비밀번호 확인</label>
+                        <div class="cc-input-wrap" style="margin-bottom:0">
+                            <span class="cc-input-icon">🔒</span>
+                            <input class="cc-input" id="passwordConfirm" type="password" name="passwordConfirm"
+                                   placeholder="비밀번호 재입력" autocomplete="new-password">
+                            <span class="cc-input-eye" data-toggle-pw="passwordConfirm">◉</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cc-field">
+                    <label for="phone">전화번호 <span style="font-weight:700;color:var(--cc-muted)">(선택)</span></label>
+                    <div class="cc-input-wrap" style="margin-bottom:0">
+                        <span class="cc-input-icon">📱</span>
+                        <input class="cc-input" id="phone" type="tel" name="phone"
+                               placeholder="010-0000-0000" autocomplete="tel"
+                               value="{{!phone}}">
+                    </div>
+                </div>
+
+                <div class="cc-register-agree">
+                    <label class="cc-check">
+                        <input type="checkbox" id="agreeAll"> 전체 동의
+                    </label>
+                    <div class="cc-register-agree__items">
+                        <label class="cc-check">
+                            <input type="checkbox" name="agreeTerms" class="agree-item" required>
+                            [필수] 이용약관 동의
+                            <a href="/terms" class="cc-register-agree__link" target="_blank">보기</a>
+                        </label>
+                        <label class="cc-check">
+                            <input type="checkbox" name="agreePrivacy" class="agree-item" required>
+                            [필수] 개인정보 처리방침 동의
+                            <a href="/privacy" class="cc-register-agree__link" target="_blank">보기</a>
+                        </label>
+                        <label class="cc-check">
+                            <input type="checkbox" name="agreeMarketing" class="agree-item">
+                            [선택] 마케팅 정보 수신 동의
+                        </label>
+                    </div>
+                </div>
+
+                <button class="cc-btn cc-btn--primary cc-btn--full" type="submit" style="margin-top:8px">
+                    회원가입
+                </button>
+            </form>
+
+            <div class="cc-divider">또는</div>
+            <div class="cc-social-row">
+                <a class="cc-social cc-social--kakao" href="/oauth2/authorization/kakao">● 카카오로 가입</a>
+                <a class="cc-social cc-social--naver" href="/oauth2/authorization/naver">N 네이버로 가입</a>
+                <a class="cc-social" href="/oauth2/authorization/google">G 구글로 가입</a>
+            </div>
+            <div class="cc-login-links">
+                <a href="/login">이미 계정이 있으신가요? 로그인</a>
+            </div>
+        </div>
+        <aside class="cc-login-promo" style="--promo-img: url('/images/sample/banner-main.svg')">
+            <div class="cc-login-promo__content">
+                <div>
+                    <p>함께하는 순간,<br>잊지 못할 감동</p>
+                    <h2>2026 전국투어<br>콘서트 <em>티켓 오픈!</em></h2>
+                    <p>지금 CatchCatch에서<br>예매하고 특별한 경험을 즐겨보세요.</p>
+                </div>
+                <a class="cc-btn cc-btn--primary" href="/concerts">콘서트 둘러보기 →</a>
+            </div>
+        </aside>
+    </section>
+</main>
+
+{{> layout/footer}}
