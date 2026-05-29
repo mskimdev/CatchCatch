@@ -53,12 +53,9 @@ public class ConcertSessionService {
                 .map(session -> {
                     Integer sessionId = session.getId();
 
-                    long remainingSeatCount = seatRepository.countBySessionIdAndStatus(
-                            sessionId,
-                            SeatStatus.AVAILABLE
-                    );
+                    long remainingSeatCount = seatRepository.countByConcertSession_IdAndStatus(sessionId, SeatStatus.AVAILABLE);
 
-                    long totalSeatCount = seatRepository.countBySessionId(sessionId);
+                    long totalSeatCount = seatRepository.countByConcertSession_Id(sessionId);
 
                     boolean soldOut = remainingSeatCount == 0;
 
@@ -85,7 +82,7 @@ public class ConcertSessionService {
         ConcertSession session = concertSessionRepository.findByIdAndConcertId(sessionId, concertId)
                 .orElseThrow(() -> new RuntimeException("해당 공연의 회차를 찾을 수 없습니다."));
 
-        boolean hasAvailableSeat = seatRepository.existsBySessionIdAndStatus(
+        boolean hasAvailableSeat = seatRepository.existsByConcertSession_IdAndStatus(
                 sessionId,
                 SeatStatus.AVAILABLE
         );
