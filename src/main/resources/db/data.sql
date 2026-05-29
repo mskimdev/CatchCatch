@@ -85,7 +85,7 @@ VALUES
      '아이유 콘서트 2025 [HEREH]',
      '아이유',
      '아이유의 2025년 단독 콘서트. 새 앨범 수록곡을 포함한 화려한 무대.',
-     '/images/poster/iu_2025.jpg',
+     '/images/sample/poster-music.svg',
      'OPEN',
      NOW()),
 
@@ -93,7 +93,7 @@ VALUES
      'BTS WORLD TOUR 2025',
      'BTS',
      'BTS 월드투어 서울 공연. 역대 최대 규모의 세트와 퍼포먼스.',
-     '/images/poster/bts_2025.jpg',
+     '/images/sample/poster-music.svg',
      'OPEN',
      NOW()),
 
@@ -101,7 +101,7 @@ VALUES
      '임영웅 콘서트 [IM HERO]',
      '임영웅',
      '임영웅의 전국투어 서울 공연.',
-     '/images/poster/lim_2025.jpg',
+     '/images/sample/poster-music.svg',
      'OPEN',
      NOW()),
 
@@ -109,7 +109,7 @@ VALUES
      '부산 재즈 페스티벌 2025',
      '다수 아티스트',
      '국내외 유명 재즈 아티스트들의 합동 공연.',
-     '/images/poster/jazz_2025.jpg',
+     '/images/sample/poster-music.svg',
      'OPEN',
      NOW()),
 
@@ -117,7 +117,7 @@ VALUES
      '세븐틴 콘서트 [FOLLOW]',
      'SEVENTEEN',
      '세븐틴의 국내 단독 콘서트.',
-     '/images/poster/svt_2025.jpg',
+     '/images/sample/poster-music.svg',
      'CLOSED',
      NOW());
 

@@ -1,12 +1,12 @@
 <article class="cc-card cc-concert-card">
-    <a class="cc-concert-card__poster" href="{{detailUrl}}">
+    <a class="cc-concert-card__poster" href="#">
         <img src="{{posterUrl}}" alt="{{title}} 포스터">
     </a>
     <div class="cc-concert-card__body">
         <span class="cc-concert-card__category">{{#category}}{{category}}{{/category}}{{^category}}콘서트{{/category}}</span>
-        <h3 class="cc-concert-card__title"><a href="{{detailUrl}}">{{title}}</a></h3>
-        <p class="cc-concert-card__meta">📅 <span>{{dateText}}</span></p>
-        <p class="cc-concert-card__meta">📍 <span>{{locationText}}</span></p>
+        <h3 class="cc-concert-card__title"><a href="#">{{title}}</a></h3>
+        <p class="cc-concert-card__meta">📅 <span>{{dateRange}}</span></p>
+        <p class="cc-concert-card__meta">📍 <span>{{region}}</span></p>
         <div class="cc-concert-card__foot">
             {{#exclusive}}<span class="cc-badge">단독판매</span>{{/exclusive}}
         </div>

@@ -15,7 +15,7 @@ public class ConcertController {
 
     private final ConcertService concertService;
 
-    @GetMapping("/home")
+    @GetMapping("/")
     public String homePage(Model model) {
 
 
@@ -40,6 +40,15 @@ public class ConcertController {
         return "home";
     }
 
+    @GetMapping("/concert/list")
+    public String list(){
+        return "concert/list";
+    }
+
+    @GetMapping("/concert/detail")
+    public String detail(){
+        return "concert/detail";
+    }
 
 
 } // class
