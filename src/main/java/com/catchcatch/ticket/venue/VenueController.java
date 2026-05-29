@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
@@ -26,6 +27,13 @@ public class VenueController {
     @PostMapping("/admin/venues/save")
     public String venueSaveProc(VenueRequest.SaveDTO dto) {
         venueService.save(dto);
+        return "redirect:/admin/venues";
+    }
+
+
+    @PostMapping("/admin/venues/{id}/delete")
+    public String venueDelete(@PathVariable Integer id){
+        venueService.deleteById(id);
         return "redirect:/admin/venues";
     }
 
