@@ -1,0 +1,273 @@
+/* ── Admin Venue List ─────────────────────────────────────────── */
+
+/* 전체 목록 페이지 여백 */
+.cc-main {
+  padding-top: 38px;
+}
+
+/* 상단 히어로 카드 */
+.admin-venue-hero {
+  position: relative;
+  min-height: 190px;
+  padding: 38px 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  overflow: hidden;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 92% 8%, rgba(217, 70, 239, .18), transparent 30%),
+    radial-gradient(circle at 10% 100%, rgba(124, 58, 237, .10), transparent 34%),
+    linear-gradient(135deg, rgba(255,255,255,.96), rgba(247,241,255,.96));
+  box-shadow: 0 18px 42px rgba(54, 31, 89, .08);
+}
+
+/* 은은한 장식 원 */
+.admin-venue-hero::after {
+  content: "";
+  position: absolute;
+  right: -58px;
+  bottom: -68px;
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(124,58,237,.14), rgba(217,70,239,.10));
+  pointer-events: none;
+}
+
+/* 작은 카테고리 라벨 */
+.admin-venue-eyebrow {
+  width: fit-content;
+  margin: 0 0 14px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  color: var(--cc-primary-dark);
+  background: rgba(124, 58, 237, .08);
+  border: 1px solid rgba(124, 58, 237, .16);
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+/* 제목 */
+.admin-venue-title {
+  margin: 0;
+  font-size: 36px;
+  line-height: 1.15;
+  letter-spacing: -0.07em;
+  color: var(--cc-text);
+  font-weight: 900;
+}
+
+/* 설명 */
+.admin-venue-desc {
+  margin: 14px 0 0;
+  color: var(--cc-subtext);
+  font-size: 15px;
+  line-height: 1.6;
+  font-weight: 650;
+}
+
+/* 히어로 안 등록 버튼 */
+.cc-btn.admin-venue-create-btn {
+  position: relative;
+  z-index: 1;
+  height: 42px;
+  padding: 0 19px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  box-shadow: 0 12px 24px rgba(76, 29, 149, .20);
+}
+
+.cc-btn.admin-venue-create-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(76, 29, 149, .25);
+}
+
+/* 섹션 헤더 */
+.cc-section {
+  margin-top: 34px;
+}
+
+.cc-section__head {
+  margin-bottom: 18px;
+  padding: 0 4px;
+}
+
+.cc-section__title {
+  font-size: 23px;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+}
+
+.cc-accent-text {
+  margin-left: 6px;
+  font-size: 20px;
+}
+
+.cc-more {
+  height: 36px;
+  padding: 0 13px;
+  border-radius: 999px;
+  color: var(--cc-subtext);
+  background: rgba(255,255,255,.72);
+  border: 1px solid var(--cc-line);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.cc-more:hover {
+  color: var(--cc-primary-dark);
+  background: var(--cc-primary-softer);
+  border-color: var(--cc-line-strong);
+}
+
+/* 테이블 카드 */
+.admin-venue-table-card {
+  overflow: hidden;
+  border-radius: 22px;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 14px 34px rgba(54, 31, 89, .07);
+}
+
+/* 테이블 */
+.admin-venue-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: transparent;
+}
+
+/* 테이블 헤더 */
+.admin-venue-table th {
+  height: 58px;
+  padding: 0 20px;
+  text-align: left;
+  color: var(--cc-primary-dark);
+  background: linear-gradient(180deg, var(--cc-primary-softer), rgba(255,255,255,.82));
+  border-bottom: 1px solid var(--cc-line);
+  font-size: 13px;
+  font-weight: 850;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+/* 테이블 셀 */
+.admin-venue-table td {
+  height: 66px;
+  padding: 17px 20px;
+  border-bottom: 1px solid rgba(230, 222, 242, .78);
+  color: var(--cc-subtext);
+  font-size: 14px;
+  font-weight: 650;
+  vertical-align: middle;
+}
+
+/* 마지막 줄 border 제거 */
+.admin-venue-table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* hover */
+.admin-venue-table tbody tr {
+  transition: background .16s ease, transform .16s ease;
+}
+
+.admin-venue-table tbody tr:hover {
+  background: rgba(247, 241, 255, .72);
+}
+
+/* 번호 칸 */
+.admin-venue-table td:first-child {
+  color: var(--cc-muted);
+  font-weight: 750;
+}
+
+/* 공연장명 */
+.admin-venue-name {
+  color: var(--cc-text);
+  font-size: 15px;
+  font-weight: 850;
+  letter-spacing: -0.04em;
+}
+
+/* 주소 칸 너무 길 때 */
+.admin-venue-table td:nth-child(3) {
+  max-width: 420px;
+  line-height: 1.5;
+}
+
+/* 총 수용 인원 배지 */
+.admin-venue-table .cc-badge {
+  height: 28px;
+  padding: 0 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(124, 58, 237, .08);
+}
+
+/* 등록일 */
+.admin-venue-table td:last-child {
+  color: var(--cc-muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* 빈 목록 */
+.admin-venue-empty {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  gap: 14px;
+  text-align: center;
+  color: var(--cc-muted);
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.admin-venue-empty p {
+  margin: 0;
+}
+
+.admin-venue-empty .cc-btn {
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* 반응형 */
+@media (max-width: 900px) {
+  .admin-venue-hero {
+    align-items: flex-start;
+    flex-direction: column;
+    min-height: auto;
+    padding: 30px 24px;
+  }
+
+  .admin-venue-title {
+    font-size: 30px;
+  }
+
+  .admin-venue-desc {
+    font-size: 14px;
+  }
+
+  .cc-btn.admin-venue-create-btn {
+    width: 100%;
+  }
+
+  .admin-venue-table-card {
+    overflow-x: auto;
+  }
+
+  .admin-venue-table {
+    min-width: 820px;
+  }
+}

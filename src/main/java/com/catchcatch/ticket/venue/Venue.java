@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.venue;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -29,4 +30,10 @@ public class Venue {
     @CreationTimestamp
     private Timestamp createdAt;
 
+    @Builder
+    public Venue (String name, String address, Integer totalCapacity) {
+        this.name = name;
+        this.address = address;
+        this.totalCapacity = totalCapacity;
+    }
 }
