@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.concert;
 
+import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.venue.Venue;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -8,12 +9,12 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
 @Data
-@Table(name ="concert_tb")
+@Table(name = "concert_tb")
 public class Concert {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,6 +23,9 @@ public class Concert {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "venue_id", nullable = false)
     private Venue venue;
+
+    @OneToMany(mappedBy = "concert", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ConcertSession> sessions;
 
     @Column(nullable = false)
     private String title;
@@ -34,8 +38,9 @@ public class Concert {
     private String posterUrl;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
     @ColumnDefault("'OPEN'")
-    private Status status;
+    private ConcertStatus concertStatus;
 
     @CreationTimestamp
     private Timestamp createdAt;
