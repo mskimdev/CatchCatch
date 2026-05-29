@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CatchCatch 콘서트 메인 (Mustache)</title>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f4f7f6; padding: 20px; }
+        h1 { color: #333; text-align: center; }
+        .concert-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+        .concert-card {
+            background: white; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 300px; padding: 20px; text-align: center;
+        }
+        .concert-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 5px; background-color: #e9ecef; }
+        .concert-title { font-size: 1.2rem; font-weight: bold; margin: 15px 0 5px; color: #0056b3; }
+        .concert-artist { font-size: 1rem; color: #666; margin-bottom: 15px; }
+        .info-box { background: #f8f9fa; padding: 10px; border-radius: 5px; text-align: left; font-size: 0.9rem; }
+        .info-box p { margin: 5px 0; }
+        .empty-msg { text-align: center; color: #555; width: 100%; }
+    </style>
+</head>
+<body>
+
+<h1>🎤 CatchCatch 예매 가능한 콘서트 목록</h1>
+
+<div class="concert-container">
+    {{#concerts}}
+        <div class="concert-card">
+            {{#posterUrl}}
+                <img src="{{posterUrl}}" alt="포스터 이미지">
+            {{/posterUrl}}
+            {{^posterUrl}}
+                <div style="width:100%; height:200px; background:#ddd; border-radius:5px; line-height:200px;">NO IMAGE</div>
+            {{/posterUrl}}
+
+            <div class="concert-title">{{title}}</div>
+            <div class="concert-artist">👩‍🎤 아티스트: {{artist}}</div>
+
+            <div class="info-box">
+                <p><strong>📍 장소:</strong> {{name}} <br>({{address}})</p>
+                <p><strong>📅 회차:</strong>
+                    {{#sessionDates}}
+                        {{.}}
+                    {{/sessionDates}}
+                </p>
+                <p><strong>📝 설명:</strong> {{description}}</p>
+            </div>
+        </div>
+    {{/concerts}}
+
+    {{^concerts}}
+        <div class="empty-msg">
+            <p>현재 예매 가능한 콘서트가 없습니다.</p>
+        </div>
+    {{/concerts}}
+</div>
+
+</body>
+</html>
