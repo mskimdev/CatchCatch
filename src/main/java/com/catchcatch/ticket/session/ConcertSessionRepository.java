@@ -18,7 +18,7 @@ public interface ConcertSessionRepository extends JpaRepository<ConcertSession, 
     @Query("""
             select distinct cs.sessionDate
             from ConcertSession cs
-            where cs.concertId = :concertId
+            where cs.concert.id = :concertId
             order by cs.sessionDate asc
             """)
     List<LocalDate> findDistinctSessionDatesByConcertId(
