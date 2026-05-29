@@ -1,0 +1,37 @@
+/* concert-detail.css — 콘서트 상세 페이지 전용 */
+
+.cc-detail-hero { display: grid; grid-template-columns: 340px 1fr 340px; gap: 28px; align-items: start; }
+.cc-poster-large { overflow: hidden; border-radius: 18px; background: #0f1224; box-shadow: var(--cc-shadow); }
+.cc-poster-large img { width: 100%; height: auto; aspect-ratio: 3 / 4.25; object-fit: cover; }
+
+.cc-detail-info { padding-top: 12px; }
+.cc-detail-category { color: var(--cc-muted); font-weight: 800; margin-bottom: 8px; }
+.cc-detail-title-row { display: flex; align-items: flex-start; gap: 18px; }
+.cc-detail-title { flex: 1; margin: 0; font-size: 30px; line-height: 1.24; letter-spacing: -.05em; }
+.cc-detail-actions { display: flex; gap: 8px; }
+.cc-detail-tags { display: flex; gap: 8px; margin: 15px 0 26px; }
+
+.cc-info-list { display: grid; gap: 14px; }
+.cc-info-row { display: grid; grid-template-columns: 112px 1fr; align-items: center; gap: 12px; color: var(--cc-subtext); font-weight: 750; }
+.cc-info-row__label { display: inline-flex; align-items: center; gap: 8px; color: var(--cc-text); font-weight: 900; }
+
+.cc-price-list { margin-top: 24px; }
+.cc-price-list h3 { margin: 0 0 12px; }
+.cc-price-row { display: grid; grid-template-columns: 110px 1fr; align-items: center; margin: 10px 0; font-weight: 850; }
+
+.cc-quick-booking { padding: 24px; }
+.cc-quick-booking h3 { margin: 0 0 22px; }
+
+.cc-detail-banner { position: relative; overflow: hidden; min-height: 290px; border-radius: 20px; margin-top: 28px; background: #121323; color: #fff; }
+.cc-detail-banner::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(90deg, rgba(9,10,22,.78), rgba(9,10,22,.24)), var(--detail-img, linear-gradient(135deg,#121323,#2d1955)); background-size: cover; background-position: center; }
+.cc-detail-banner__content { position: relative; z-index: 1; padding: 58px; max-width: 560px; }
+.cc-detail-banner h2 { margin: 0 0 16px; font-size: 30px; }
+.cc-detail-banner p { margin: 8px 0; color: rgba(255,255,255,.86); font-weight: 650; }
+
+@media (max-width: 1180px) {
+  .cc-detail-hero { grid-template-columns: 300px 1fr; }
+  .cc-quick-booking { grid-column: 1 / -1; }
+}
+@media (max-width: 900px) {
+  .cc-detail-hero { grid-template-columns: 1fr; }
+}

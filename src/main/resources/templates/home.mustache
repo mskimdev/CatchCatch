@@ -1,4 +1,11 @@
-{{> layout/header}}
+{{# sessionUser }}
+    {{> layout/header}}
+{{/ sessionUser}}
+
+{{^ sessionUser }}
+    {{> layout/header-login }}
+{{/ sessionUser }}
+<link rel="stylesheet" href="/css/home.css">
 <main class="cc-main">
     <div class="cc-container">
         <section class="cc-hero" aria-label="콘서트 광고 배너">

@@ -1,10 +1,9 @@
-package com.catchcatch.ticket._core.config;
+package com.catchcatch.ticket.core.config;
 
-import com.catchcatch.ticket._core.interceptor.AdminInterceptor;
-import com.catchcatch.ticket._core.interceptor.LoginInterceptor;
-import com.catchcatch.ticket._core.interceptor.SessionInterceptor;
+import com.catchcatch.ticket.core.interceptor.AdminInterceptor;
+import com.catchcatch.ticket.core.interceptor.LoginInterceptor;
+import com.catchcatch.ticket.core.interceptor.SessionInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

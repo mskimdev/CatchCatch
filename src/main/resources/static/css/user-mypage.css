@@ -1,0 +1,62 @@
+/* user-mypage.css — 마이페이지 전용 */
+
+.cc-mypage-layout { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: start; }
+
+.cc-mypage-sidebar { padding: 24px; position: sticky; top: 100px; }
+.cc-mypage-profile { display: flex; align-items: center; gap: 14px; padding-bottom: 20px; border-bottom: 1px solid var(--cc-line); margin-bottom: 16px; }
+.cc-mypage-avatar { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, var(--cc-primary), var(--cc-primary-dark)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 950; overflow: hidden; flex-shrink: 0; }
+.cc-mypage-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.cc-mypage-profile__name { margin: 0 0 4px; font-weight: 950; font-size: 16px; }
+.cc-mypage-profile__email { margin: 0; font-size: 12px; color: var(--cc-muted); font-weight: 750; }
+
+.cc-mypage-nav { display: grid; gap: 4px; }
+.cc-mypage-nav__link { display: block; padding: 11px 14px; border-radius: 12px; font-weight: 850; color: var(--cc-subtext); transition: background .15s, color .15s; }
+.cc-mypage-nav__link:hover { background: var(--cc-primary-softer); color: var(--cc-primary-dark); }
+.cc-mypage-nav__link.is-active { background: var(--cc-primary-softer); color: var(--cc-primary-dark); }
+.cc-mypage-nav__link:last-child { color: var(--cc-muted); margin-top: 8px; border-top: 1px solid var(--cc-line); border-radius: 0; padding-top: 16px; }
+
+.cc-mypage-content { min-width: 0; }
+.cc-mypage-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.cc-mypage-head h2 { margin: 0; font-size: 22px; }
+
+/* 예매 내역 */
+.cc-booking-item { display: grid; grid-template-columns: 80px 1fr auto; gap: 16px; padding: 18px; margin-bottom: 14px; align-items: start; }
+.cc-booking-item__poster { width: 80px; aspect-ratio: 3/4; object-fit: cover; border-radius: 10px; }
+.cc-booking-item__info h4 { margin: 8px 0 10px; font-size: 16px; font-weight: 950; }
+.cc-booking-item__info p { margin: 5px 0; font-size: 13px; color: var(--cc-subtext); font-weight: 700; }
+.cc-booking-item__number { color: var(--cc-muted) !important; font-size: 12px !important; margin-top: 8px !important; }
+.cc-booking-item__price { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
+.cc-booking-item__price strong { font-size: 18px; color: var(--cc-primary-dark); font-weight: 950; }
+
+/* 공통 chip-row (마이페이지용) */
+.cc-chip-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+.cc-chip { height: 38px; display: inline-flex; align-items: center; justify-content: center; padding: 0 17px; border-radius: 12px; border: 1px solid var(--cc-line); background: #fff; font-weight: 850; color: var(--cc-subtext); }
+.cc-chip.is-active { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--cc-primary), var(--cc-primary-dark)); box-shadow: 0 10px 18px rgba(76,29,149,.18); }
+
+/* 빈 상태 */
+.cc-empty-state { padding: 60px 20px; text-align: center; }
+.cc-empty-state p { color: var(--cc-muted); font-size: 16px; font-weight: 800; margin-bottom: 20px; }
+
+/* 회원 정보 수정 */
+.cc-field { margin-bottom: 16px; }
+.cc-field label { display: block; margin-bottom: 8px; font-weight: 900; font-size: 14px; }
+
+/* 관심 공연 그리드 */
+.cc-concert-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.cc-concert-card { position: relative; display: grid; grid-template-columns: 100px 1fr; gap: 12px; padding: 14px; min-height: 160px; }
+.cc-concert-card__poster { border-radius: 10px; overflow: hidden; background: #101522; aspect-ratio: 3/4; align-self: start; }
+.cc-concert-card__poster img { width: 100%; height: 100%; object-fit: cover; }
+.cc-concert-card__body { min-width: 0; }
+.cc-concert-card__category { display: block; margin-bottom: 6px; color: var(--cc-muted); font-size: 12px; font-weight: 800; }
+.cc-concert-card__title { margin: 0 0 8px; font-size: 14px; line-height: 1.32; font-weight: 950; }
+.cc-concert-card__meta { display: flex; align-items: flex-start; gap: 4px; color: var(--cc-subtext); font-size: 12px; line-height: 1.45; margin: 3px 0; }
+.cc-heart { position: absolute; right: 10px; bottom: 10px; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; color: var(--cc-text); border-radius: 50%; }
+.cc-heart:hover { background: var(--cc-primary-softer); color: var(--cc-primary); }
+
+@media (max-width: 900px) {
+  .cc-mypage-layout { grid-template-columns: 1fr; }
+  .cc-mypage-sidebar { position: static; }
+  .cc-booking-item { grid-template-columns: 70px 1fr; }
+  .cc-booking-item__price { grid-column: 2; }
+  .cc-concert-grid { grid-template-columns: repeat(2, 1fr); }
+}

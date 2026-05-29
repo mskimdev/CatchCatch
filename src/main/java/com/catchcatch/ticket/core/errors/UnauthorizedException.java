@@ -1,4 +1,4 @@
-package com.catchcatch.ticket._core.errors;
+package com.catchcatch.ticket.core.errors;
 
 public class UnauthorizedException extends RuntimeException {
     public UnauthorizedException(String message) {
