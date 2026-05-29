@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{#pageTitle}}{{pageTitle}} | {{/pageTitle}}CatchCatch</title>
+    <link rel="stylesheet" href="/css/catchcatch-purple.css">
+</head>
+<body class="cc-page {{#loginHeader}}cc-login-page{{/loginHeader}}">
+<header class="cc-header">
+    <div class="cc-container">
+        {{#loginHeader}}
+        <div class="cc-header__top">
+            <a class="cc-logo" href="/">
+                CatchCatch <span>콘서트</span>
+            </a>
+            <form class="cc-searchbar" action="/concerts" method="get" role="search">
+                <input class="cc-searchbar__input" type="search" name="keyword" value="{{keyword}}" placeholder="아티스트, 콘서트, 장소를 검색해보세요">
+                <button type="submit" class="cc-icon-btn" aria-label="검색">
+                    <svg class="cc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                </button>
+            </form>
+            <div class="cc-header__actions">
+                <a class="cc-login-link" href="/login">로그인</a>
+                <a class="cc-signup-link" href="/join">회원가입</a>
+                <a class="cc-icon-btn" href="/" aria-label="홈">
+                    <svg class="cc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10.5V21h14V10.5"/><path d="M9 21v-6h6v6"/></svg>
+                </a>
+            </div>
+        </div>
+        {{/loginHeader}}
+
+        {{^loginHeader}}
+        <div class="cc-header__top">
+            <button type="button" class="cc-icon-btn" onclick="history.back()" aria-label="뒤로가기">
+                <svg class="cc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19 8 12l7-7"/></svg>
+            </button>
+            <form class="cc-searchbar" action="/concerts" method="get" role="search">
+                <span class="cc-searchbar__chip">CatchCatch <span aria-hidden="true">×</span></span>
+                <input class="cc-searchbar__input" type="search" name="keyword" value="{{#keyword}}{{keyword}}{{/keyword}}{{^keyword}}콘서트{{/keyword}}" placeholder="콘서트">
+                <button type="reset" class="cc-searchbar__clear" aria-label="검색어 지우기">×</button>
+            </form>
+            <a class="cc-icon-btn" href="/" aria-label="홈">
+                <svg class="cc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10.5V21h14V10.5"/><path d="M9 21v-6h6v6"/></svg>
+            </a>
+        </div>
+        {{/loginHeader}}
+
+        <div class="cc-header__filters">
+            <div class="cc-filter-left">
+                <button type="button" class="cc-pill cc-pill--ghost">장르 <span>⌄</span></button>
+                <button type="button" class="cc-pill cc-pill--ghost">지역 <span>⌄</span></button>
+            </div>
+            <div class="cc-filter-right">
+                <button type="button" class="cc-pill">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h10"/><path d="M18 7h2"/><circle cx="16" cy="7" r="2"/><path d="M4 17h2"/><path d="M10 17h10"/><circle cx="8" cy="17" r="2"/></svg>
+                    필터
+                </button>
+                <button type="button" class="cc-pill">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4v16"/><path d="m4 7 3-3 3 3"/><path d="M17 20V4"/><path d="m14 17 3 3 3-3"/></svg>
+                    정렬 <span>⌄</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <nav class="cc-header__nav" aria-label="콘서트 메뉴">
+        <div class="cc-container cc-nav-row">
+            <button type="button" class="cc-icon-btn cc-nav__menu" aria-label="전체 메뉴">
+                <svg class="cc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+            </button>
+            <a class="cc-nav__link {{#activeSchedule}}is-active{{/activeSchedule}}" href="/concerts">콘서트 일정</a>
+            <a class="cc-nav__link {{#activeOpen}}is-active{{/activeOpen}}" href="/concerts/open-soon">오픈 예정</a>
+            <a class="cc-nav__link {{#activeEvent}}is-active{{/activeEvent}}" href="/events">이벤트</a>
+            <a class="cc-nav__link {{#activeQna}}is-active{{/activeQna}}" href="/support">문의사항</a>
+        </div>
+    </nav>
+</header>

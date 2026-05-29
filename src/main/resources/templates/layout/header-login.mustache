@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{#pageTitle}}{{pageTitle}} | {{/pageTitle}}CatchCatch</title>
+    <link rel="stylesheet" href="/css/catchcatch-purple.css">
+</head>
+<body class="cc-page cc-login-page">
+<header class="cc-header">
+    <div class="cc-container">
+        <div class="cc-header__top">
+            <a class="cc-logo" href="/">CatchCatch <span>콘서트</span></a>
+            <form class="cc-searchbar" action="/concerts" method="get" role="search">
+                <input class="cc-searchbar__input" type="search" name="keyword" value="{{keyword}}" placeholder="아티스트, 콘서트, 장소를 검색해보세요">
+                <button type="submit" class="cc-icon-btn" aria-label="검색">
+                    <svg class="cc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                </button>
+            </form>
+            <div class="cc-header__actions">
+                <a class="cc-login-link" href="/login">로그인</a>
+                <a class="cc-signup-link" href="/join">회원가입</a>
+                <a class="cc-icon-btn" href="/" aria-label="홈"><svg class="cc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10.5V21h14V10.5"/><path d="M9 21v-6h6v6"/></svg></a>
+            </div>
+        </div>
+    </div>
+    <nav class="cc-header__nav" aria-label="콘서트 메뉴">
+        <div class="cc-container cc-nav-row">
+            <button type="button" class="cc-icon-btn cc-nav__menu" aria-label="전체 메뉴"><svg class="cc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></button>
+            <a class="cc-nav__link is-active" href="/concerts">콘서트 일정</a>
+            <a class="cc-nav__link" href="/concerts/open-soon">오픈 예정</a>
+            <a class="cc-nav__link" href="/events">이벤트</a>
+            <a class="cc-nav__link" href="/support">문의사항</a>
+            <span style="flex:1"></span>
+            <button type="button" class="cc-pill">필터</button>
+            <button type="button" class="cc-pill">정렬⌄</button>
+        </div>
+    </nav>
+</header>
