@@ -1,0 +1,42 @@
+/* user-login.css — 로그인 페이지 전용 */
+
+.cc-login-page .cc-header__top { grid-template-columns: auto 1fr auto; }
+
+.cc-login-main { padding: 42px 0 54px; }
+.cc-login-shell {
+  width: min(960px, calc(100% - 48px));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.35fr .95fr;
+  gap: 42px;
+  padding: 22px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.82);
+  border: 1px solid var(--cc-line);
+  box-shadow: var(--cc-shadow);
+}
+.cc-login-form { padding: 44px 40px 34px; text-align: center; }
+.cc-login-form h1 { margin: 0 0 16px; color: var(--cc-primary-dark); font-size: 42px; letter-spacing: -.06em; }
+.cc-login-form__desc { margin: 0 0 28px; color: var(--cc-text); line-height: 1.5; font-weight: 800; }
+
+.cc-login-options { display: flex; align-items: center; justify-content: space-between; color: var(--cc-subtext); font-size: 14px; margin: 14px 0 22px; }
+
+.cc-social-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.cc-social { height: 44px; border-radius: 10px; border: 1px solid var(--cc-line); background: #fff; display: inline-flex; align-items: center; justify-content: center; gap: 7px; font-weight: 850; font-size: 13px; }
+.cc-social--kakao { background: #fff8df; border-color: #f3e4b2; }
+.cc-social--naver { background: #ecfff2; border-color: #ccf0d7; }
+
+.cc-login-links { display: flex; justify-content: center; gap: 18px; margin-top: 34px; color: var(--cc-muted); font-weight: 850; }
+.cc-login-links a:first-child { color: var(--cc-primary-dark); }
+
+.cc-login-promo { position: relative; overflow: hidden; border-radius: 18px; min-height: 530px; background: #0f1224; color: #fff; }
+.cc-login-promo::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(180deg, rgba(9,10,22,.24), rgba(9,10,22,.78)), var(--promo-img, linear-gradient(135deg,#111827,#231046)); background-size: cover; background-position: center; }
+.cc-login-promo__content { position: relative; z-index: 1; height: 100%; padding: 44px 38px; display: flex; flex-direction: column; justify-content: space-between; }
+.cc-login-promo h2 { margin: 26px 0 16px; font-size: 34px; line-height: 1.22; }
+.cc-login-promo h2 em { color: #a78bfa; font-style: normal; }
+.cc-login-promo p { color: rgba(255,255,255,.84); line-height: 1.55; font-weight: 650; }
+
+@media (max-width: 900px) {
+  .cc-login-shell { grid-template-columns: 1fr; }
+  .cc-login-promo { min-height: 360px; }
+}

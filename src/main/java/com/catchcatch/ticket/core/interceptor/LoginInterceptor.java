@@ -1,11 +1,7 @@
-package com.catchcatch.ticket._core.interceptor;
+package com.catchcatch.ticket.core.interceptor;
 
-import com.catchcatch.ticket._core.errors.UnauthorizedException;
-import com.catchcatch.ticket._core.util.Define;
-import com.catchcatch.ticket.user.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 

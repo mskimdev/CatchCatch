@@ -1,0 +1,146 @@
+{{> layout/header}}
+<link rel="stylesheet" href="/css/user-mypage.css">
+<main class="cc-main">
+    <div class="cc-container cc-mypage-layout">
+
+        <!-- 사이드바 -->
+        <aside class="cc-card cc-mypage-sidebar">
+            <div class="cc-mypage-profile">
+                <div class="cc-mypage-avatar">
+                    {{#profileImage}}
+                    <img src="{{profileImage}}" alt="프로필 이미지">
+                    {{/profileImage}}
+                    {{^profileImage}}
+                    <span>{{#usernameInitial}}{{usernameInitial}}{{/usernameInitial}}{{^usernameInitial}}U{{/usernameInitial}}</span>
+                    {{/profileImage}}
+                </div>
+                <div>
+                    <p class="cc-mypage-profile__name">{{#username}}{{username}}{{/username}}{{^username}}사용자{{/username}}</p>
+                    <p class="cc-mypage-profile__email">{{#email}}{{email}}{{/email}}{{^email}}user@example.com{{/email}}</p>
+                </div>
+            </div>
+            <nav class="cc-mypage-nav">
+                <a class="cc-mypage-nav__link {{#activeBookings}}is-active{{/activeBookings}}" href="/mypage/bookings">예매 내역</a>
+                <a class="cc-mypage-nav__link {{#activeWishlist}}is-active{{/activeWishlist}}" href="/mypage/wishlist">관심 공연</a>
+                <a class="cc-mypage-nav__link {{#activeProfile}}is-active{{/activeProfile}}" href="/mypage/profile">회원 정보 수정</a>
+                <a class="cc-mypage-nav__link" href="/logout">로그아웃</a>
+            </nav>
+        </aside>
+
+        <!-- 메인 콘텐츠 -->
+        <section class="cc-mypage-content">
+
+            <!-- 예매 내역 탭 -->
+            {{#activeBookings}}
+            <div class="cc-mypage-head">
+                <h2>예매 내역</h2>
+                <div class="cc-chip-row" style="margin:0">
+                    <a class="cc-chip {{#statusAll}}is-active{{/statusAll}}" href="/mypage/bookings">전체</a>
+                    <a class="cc-chip {{#statusPaid}}is-active{{/statusPaid}}" href="/mypage/bookings?status=PAID">예매 완료</a>
+                    <a class="cc-chip {{#statusCanceled}}is-active{{/statusCanceled}}" href="/mypage/bookings?status=CANCELED">취소</a>
+                </div>
+            </div>
+
+            {{#bookings}}
+            <div class="cc-card cc-booking-item">
+                <img class="cc-booking-item__poster" src="{{posterUrl}}" alt="{{concertTitle}} 포스터">
+                <div class="cc-booking-item__info">
+                    <span class="cc-badge {{#isPaid}}cc-badge--fill{{/isPaid}} {{#isCanceled}}cc-badge--gray{{/isCanceled}}">
+                        {{statusLabel}}
+                    </span>
+                    <h4>{{concertTitle}}</h4>
+                    <p>📅 {{sessionText}}</p>
+                    <p>📍 {{venueText}}</p>
+                    <p>💺 {{seatText}}</p>
+                    <p class="cc-booking-item__number">예매번호 {{bookingNumber}}</p>
+                </div>
+                <div class="cc-booking-item__price">
+                    <strong>{{priceText}}</strong>
+                    {{#isPaid}}<a class="cc-btn cc-btn--outline" style="height:38px;font-size:13px;margin-top:10px" href="/mypage/bookings/{{id}}/cancel">취소 신청</a>{{/isPaid}}
+                </div>
+            </div>
+            {{/bookings}}
+            {{^bookings}}
+            <div class="cc-empty-state">
+                <p>예매 내역이 없습니다.</p>
+                <a class="cc-btn cc-btn--primary" href="/concerts">콘서트 둘러보기</a>
+            </div>
+            {{/bookings}}
+            {{/activeBookings}}
+
+            <!-- 관심 공연 탭 -->
+            {{#activeWishlist}}
+            <div class="cc-mypage-head">
+                <h2>관심 공연</h2>
+            </div>
+            <div class="cc-concert-grid">
+                {{#wishlist}}
+                    {{> components/concert-card}}
+                {{/wishlist}}
+                {{^wishlist}}
+                <div class="cc-empty-state" style="grid-column:1/-1">
+                    <p>관심 공연이 없습니다.</p>
+                    <a class="cc-btn cc-btn--primary" href="/concerts">콘서트 둘러보기</a>
+                </div>
+                {{/wishlist}}
+            </div>
+            {{/activeWishlist}}
+
+            <!-- 회원 정보 수정 탭 -->
+            {{#activeProfile}}
+            <div class="cc-mypage-head">
+                <h2>회원 정보 수정</h2>
+            </div>
+            <div class="cc-card" style="padding:28px;max-width:520px">
+                {{#successMessage}}<p class="cc-badge" style="margin-bottom:16px;background:#f0fff4;color:#166534;border-color:#bbf7d0">{{successMessage}}</p>{{/successMessage}}
+                {{#errorMessage}}<p class="cc-badge" style="margin-bottom:16px;color:var(--cc-danger);background:#fff0f0;border-color:var(--cc-danger)">{{errorMessage}}</p>{{/errorMessage}}
+                <form action="/mypage/profile" method="post">
+                    {{#_csrf}}<input type="hidden" name="{{parameterName}}" value="{{token}}">{{/_csrf}}
+                    <div class="cc-field">
+                        <label>아이디</label>
+                        <div class="cc-input-wrap" style="margin-bottom:0">
+                            <span class="cc-input-icon">@</span>
+                            <input class="cc-input" type="text" value="{{username}}" disabled style="background:var(--cc-surface-soft);color:var(--cc-muted)">
+                        </div>
+                    </div>
+                    <div class="cc-field">
+                        <label for="profileEmail">이메일</label>
+                        <div class="cc-input-wrap" style="margin-bottom:0">
+                            <span class="cc-input-icon">✉</span>
+                            <input class="cc-input" id="profileEmail" type="email" name="email" value="{{email}}" autocomplete="email">
+                        </div>
+                    </div>
+                    <div class="cc-field">
+                        <label for="profilePhone">전화번호</label>
+                        <div class="cc-input-wrap" style="margin-bottom:0">
+                            <span class="cc-input-icon">📱</span>
+                            <input class="cc-input" id="profilePhone" type="tel" name="phone" value="{{phone}}" placeholder="010-0000-0000" autocomplete="tel">
+                        </div>
+                    </div>
+                    <hr style="border:0;border-top:1px solid var(--cc-line);margin:20px 0">
+                    <div class="cc-field">
+                        <label for="currentPassword">현재 비밀번호</label>
+                        <div class="cc-input-wrap" style="margin-bottom:0">
+                            <span class="cc-input-icon">🔒</span>
+                            <input class="cc-input" id="currentPassword" type="password" name="currentPassword" placeholder="현재 비밀번호 입력">
+                            <span class="cc-input-eye" data-toggle-pw="currentPassword">◉</span>
+                        </div>
+                    </div>
+                    <div class="cc-field">
+                        <label for="newPassword">새 비밀번호 <span style="font-weight:700;color:var(--cc-muted)">(선택)</span></label>
+                        <div class="cc-input-wrap" style="margin-bottom:0">
+                            <span class="cc-input-icon">🔒</span>
+                            <input class="cc-input" id="newPassword" type="password" name="newPassword" placeholder="변경할 비밀번호 입력">
+                            <span class="cc-input-eye" data-toggle-pw="newPassword">◉</span>
+                        </div>
+                    </div>
+                    <button class="cc-btn cc-btn--primary cc-btn--full" type="submit" style="margin-top:8px">저장</button>
+                </form>
+            </div>
+            {{/activeProfile}}
+
+        </section>
+    </div>
+</main>
+
+{{> layout/footer}}

@@ -1,4 +1,6 @@
 (function () {
+
+  /* ── 캐러셀 ─────────────────────────────────── */
   function initCarousel() {
     const track = document.querySelector('[data-carousel-track]');
     const dotWrap = document.querySelector('[data-carousel-dots]');
@@ -19,6 +21,7 @@
     setInterval(() => move(index + 1), 4500);
   }
 
+  /* ── 좌석 선택 카운트다운 ────────────────────── */
   function initCountdown() {
     const timer = document.querySelector('[data-countdown]');
     if (!timer) return;
@@ -35,6 +38,7 @@
     setInterval(render, 1000);
   }
 
+  /* ── 좌석 선택 토글 ─────────────────────────── */
   function initSeatPreview() {
     document.querySelectorAll('.cc-seat-dot').forEach((seat) => {
       seat.addEventListener('click', () => {
@@ -45,9 +49,78 @@
     });
   }
 
+  /* ── 전체 동의 체크박스 ──────────────────────── */
+  function initAgreeAll() {
+    // 회원가입 페이지
+    const joinAll = document.getElementById('agreeAll');
+    if (joinAll) {
+      const items = document.querySelectorAll('.agree-item');
+      joinAll.addEventListener('change', () => {
+        items.forEach(cb => { cb.checked = joinAll.checked; });
+      });
+      items.forEach(cb => {
+        cb.addEventListener('change', () => {
+          joinAll.checked = Array.from(items).every(c => c.checked);
+        });
+      });
+    }
+
+    // 결제 페이지
+    const payAll = document.getElementById('payAgreeAll');
+    if (payAll) {
+      const items = document.querySelectorAll('.pay-agree-item');
+      payAll.addEventListener('change', () => {
+        items.forEach(cb => { cb.checked = payAll.checked; });
+      });
+      items.forEach(cb => {
+        cb.addEventListener('change', () => {
+          payAll.checked = Array.from(items).every(c => c.checked);
+        });
+      });
+    }
+  }
+
+  /* ── 비밀번호 표시 토글 ──────────────────────── */
+  function initPasswordToggle() {
+    document.querySelectorAll('[data-toggle-pw]').forEach((eye) => {
+      eye.style.cursor = 'pointer';
+      eye.addEventListener('click', () => {
+        const input = document.getElementById(eye.dataset.togglePw);
+        if (!input) return;
+        input.type = input.type === 'password' ? 'text' : 'password';
+        eye.style.opacity = input.type === 'text' ? '1' : '0.5';
+      });
+    });
+  }
+
+  /* ── 결제 수단 선택 ─────────────────────────── */
+  function initPayMethods() {
+    document.querySelectorAll('.cc-pay-method').forEach((label) => {
+      label.addEventListener('click', () => {
+        document.querySelectorAll('.cc-pay-method').forEach(l => l.classList.remove('is-active'));
+        label.classList.add('is-active');
+      });
+    });
+  }
+
+  /* ── 탭 네비게이션 (콘서트 상세) ──────────────── */
+  function initDetailTabs() {
+    document.querySelectorAll('.cc-tab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.cc-tab').forEach(t => t.classList.remove('is-active'));
+        tab.classList.add('is-active');
+      });
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     initCarousel();
     initCountdown();
     initSeatPreview();
+    initAgreeAll();
+    initPasswordToggle();
+    initPayMethods();
+    initDetailTabs();
   });
+
 })();
