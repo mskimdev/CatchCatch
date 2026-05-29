@@ -1,0 +1,199 @@
+/* ── Admin Venue Save ─────────────────────────────────────────── */
+
+.cc-main {
+  padding-top: 38px;
+}
+
+/* 전체 카드 */
+.admin-venue-save-card {
+  position: relative;
+  width: min(760px, 100%);
+  margin: 0 auto;
+  padding: 42px;
+  overflow: hidden;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 92% 4%, rgba(217, 70, 239, .16), transparent 30%),
+    radial-gradient(circle at 0% 100%, rgba(124, 58, 237, .10), transparent 34%),
+    linear-gradient(135deg, rgba(255,255,255,.97), rgba(247,241,255,.96));
+  box-shadow: 0 18px 42px rgba(54, 31, 89, .08);
+}
+
+/* 은은한 장식 */
+.admin-venue-save-card::after {
+  content: "";
+  position: absolute;
+  right: -70px;
+  bottom: -80px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(124,58,237,.13), rgba(217,70,239,.09));
+  pointer-events: none;
+}
+
+/* 상단 제목 영역 */
+.admin-venue-save-head {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 34px;
+}
+
+.admin-venue-eyebrow {
+  width: fit-content;
+  margin: 0 0 14px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  color: var(--cc-primary-dark);
+  background: rgba(124, 58, 237, .08);
+  border: 1px solid rgba(124, 58, 237, .16);
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.admin-venue-title {
+  margin: 0;
+  color: var(--cc-text);
+  font-size: 36px;
+  line-height: 1.15;
+  font-weight: 900;
+  letter-spacing: -0.07em;
+}
+
+.admin-venue-desc {
+  margin: 14px 0 0;
+  color: var(--cc-subtext);
+  font-size: 15px;
+  line-height: 1.6;
+  font-weight: 650;
+}
+
+/* form */
+.admin-venue-form {
+  position: relative;
+  z-index: 1;
+}
+
+/* 2열 배치 */
+.admin-venue-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 22px 18px;
+}
+
+.admin-venue-field {
+  margin-bottom: 0;
+}
+
+.admin-venue-field--full {
+  grid-column: 1 / -1;
+}
+
+.admin-venue-field label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--cc-text);
+  font-size: 14px;
+  font-weight: 850;
+  letter-spacing: -0.03em;
+}
+
+.admin-venue-field .cc-input {
+  height: 48px;
+  border-radius: 15px;
+  font-size: 14px;
+  font-weight: 650;
+  background: rgba(255,255,255,.92);
+}
+
+.admin-venue-field .cc-input::placeholder {
+  color: #aaa2b9;
+  font-weight: 600;
+}
+
+/* 안내 박스 */
+.admin-venue-help {
+  margin-top: 24px;
+  padding: 15px 17px;
+  border-radius: 16px;
+  color: var(--cc-subtext);
+  background: rgba(255,255,255,.72);
+  border: 1px solid var(--cc-line);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.admin-venue-help span {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  margin-right: 8px;
+  padding: 0 9px;
+  border-radius: 999px;
+  color: var(--cc-primary-dark);
+  background: var(--cc-primary-softer);
+  border: 1px solid rgba(124,58,237,.18);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+/* 버튼 영역 */
+.admin-venue-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+/* 하단 버튼 공통 */
+.admin-venue-form-actions .cc-btn {
+  height: 42px;
+  padding: 0 20px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+.admin-venue-cancel-btn {
+  background: rgba(255,255,255,.86);
+}
+
+.admin-venue-submit-btn {
+  box-shadow: 0 12px 24px rgba(76, 29, 149, .20);
+}
+
+.admin-venue-submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(76, 29, 149, .25);
+}
+
+/* 반응형 */
+@media (max-width: 760px) {
+  .admin-venue-save-card {
+    padding: 30px 24px;
+  }
+
+  .admin-venue-title {
+    font-size: 30px;
+  }
+
+  .admin-venue-desc {
+    font-size: 14px;
+  }
+
+  .admin-venue-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-venue-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .admin-venue-form-actions .cc-btn {
+    width: 100%;
+  }
+}
