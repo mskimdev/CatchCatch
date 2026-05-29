@@ -34,11 +34,6 @@
 .cc-pay-agree__items { display: grid; gap: 8px; }
 .cc-pay-agree__items .cc-check { font-size: 14px; color: var(--cc-subtext); font-weight: 750; display: flex; align-items: center; }
 
-/* 예매자 정보 */
-.cc-info-list { display: grid; gap: 14px; }
-.cc-info-row { display: grid; grid-template-columns: 112px 1fr; align-items: center; gap: 12px; color: var(--cc-subtext); font-weight: 750; }
-.cc-info-row__label { display: inline-flex; align-items: center; gap: 8px; color: var(--cc-text); font-weight: 900; }
-
 .cc-notice-card { padding: 20px; background: linear-gradient(135deg, var(--cc-primary-softer), #fff); }
 .cc-notice-card h3 { margin: 0 0 16px; }
 .cc-notice-card ul { margin: 0; padding-left: 18px; color: var(--cc-subtext); font-size: 13px; line-height: 1.7; }
@@ -47,4 +42,11 @@
   .cc-payment-layout { grid-template-columns: 1fr; }
   .cc-pay-methods { grid-template-columns: repeat(2, 1fr); }
   .cc-payment-summary { position: static; }
+}
+
+@media (max-width: 600px) {
+  .cc-payment-section, .cc-payment-summary { padding: 20px; }
+  .cc-payment-concert { align-items: flex-start; }
+  .cc-payment-table { display: block; overflow-x: auto; white-space: nowrap; }
+  .cc-pay-methods { grid-template-columns: 1fr; }
 }

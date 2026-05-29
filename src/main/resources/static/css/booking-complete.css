@@ -3,7 +3,7 @@
 .cc-complete-wrap { max-width: 760px; margin: 0 auto; text-align: center; }
 
 .cc-complete-icon { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, var(--cc-primary), var(--cc-primary-dark)); color: #fff; font-size: 32px; font-weight: 950; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 16px 32px rgba(76,29,149,.24); }
-.cc-complete-title { margin: 0 0 10px; font-size: 28px; letter-spacing: -.04em; }
+.cc-complete-title { margin: 0 0 10px; font-size: 28px; letter-spacing: 0; }
 .cc-complete-sub { margin: 0 0 32px; color: var(--cc-muted); font-weight: 700; }
 
 .cc-complete-ticket { display: grid; grid-template-columns: 160px 1fr; overflow: hidden; text-align: left; }
@@ -17,9 +17,7 @@
 .cc-complete-actions { display: flex; justify-content: center; gap: 12px; margin-top: 28px; }
 
 /* 예매 정보 */
-.cc-info-list { display: grid; gap: 14px; margin-top: 16px; }
-.cc-info-row { display: grid; grid-template-columns: 112px 1fr; align-items: center; gap: 12px; color: var(--cc-subtext); font-weight: 750; }
-.cc-info-row__label { display: inline-flex; align-items: center; gap: 8px; color: var(--cc-text); font-weight: 900; }
+.cc-complete-ticket .cc-info-list { margin-top: 16px; }
 
 @media (max-width: 600px) {
   .cc-complete-ticket { grid-template-columns: 1fr; }
