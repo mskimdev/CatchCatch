@@ -8,70 +8,53 @@
 <link rel="stylesheet" href="/css/home.css">
 <main class="cc-main">
     <div class="cc-container">
+
         <section class="cc-hero" aria-label="콘서트 광고 배너">
             <div class="cc-hero__track" data-carousel-track>
                 {{#heroBanners}}
-                <article class="cc-hero__slide" style="--hero-img: url('{{imageUrl}}')">
-                    <div class="cc-hero__content">
-                        <p class="cc-hero__eyebrow">{{eyebrow}}</p>
-                        <h1 class="cc-hero__title">{{title}} <em>{{highlight}}</em></h1>
-                        <p class="cc-hero__desc">{{description}}</p>
-                        <a class="cc-btn cc-btn--primary" href="{{linkUrl}}">{{buttonText}} →</a>
-                    </div>
-                </article>
+                    <article class="cc-hero__slide" style="--hero-img: url('{{imageUrl}}')">
+                        <div class="cc-hero__content">
+                            <p class="cc-hero__eyebrow">{{eyebrow}}</p>
+                            <h1 class="cc-hero__title">{{title}} <em>{{highlight}}</em></h1>
+                            <p class="cc-hero__desc">{{description}}</p>
+                            <a class="cc-btn cc-btn--primary" href="{{linkUrl}}">{{buttonText}} →</a>
+                        </div>
+                    </article>
                 {{/heroBanners}}
+
                 {{^heroBanners}}
-                <article class="cc-hero__slide" style="--hero-img: url('/images/sample/banner-main.svg')">
-                    <div class="cc-hero__content">
-                        <p class="cc-hero__eyebrow">함께하는 순간, 잊지 못할 감동</p>
-                        <h1 class="cc-hero__title">2026 전국투어 콘서트 <em>티켓 오픈 시작!</em></h1>
-                        <p class="cc-hero__desc">지금 CatchCatch에서 만나보세요</p>
-                        <a class="cc-btn cc-btn--primary" href="/concerts/1">공연 보러가기 →</a>
-                    </div>
-                </article>
-                <article class="cc-hero__slide" style="--hero-img: url('/images/sample/banner-main.svg')">
-                    <div class="cc-hero__content">
-                        <p class="cc-hero__eyebrow">오늘 밤, 가장 빠른 티켓팅</p>
-                        <h1 class="cc-hero__title">단독 판매 라인업 <em>CatchCatch에서 확인</em></h1>
-                        <p class="cc-hero__desc">오픈 예정 공연을 미리 확인하고 예매 준비를 시작하세요.</p>
-                        <a class="cc-btn cc-btn--primary" href="/concerts/open-soon">오픈 일정 보기 →</a>
-                    </div>
-                </article>
-                <article class="cc-hero__slide" style="--hero-img: url('/images/sample/banner-main.svg')">
-                    <div class="cc-hero__content">
-                        <p class="cc-hero__eyebrow">좌석 선택부터 결제까지</p>
-                        <h1 class="cc-hero__title">빠르고 선명한 예매 <em>새로운 경험</em></h1>
-                        <p class="cc-hero__desc">원하는 좌석을 한눈에 보고 안전하게 예매하세요.</p>
-                        <a class="cc-btn cc-btn--primary" href="/concerts">콘서트 둘러보기 →</a>
-                    </div>
-                </article>
+                    <article class="cc-hero__slide" style="--hero-img: url('/images/sample/banner-main.svg')">
+                        <div class="cc-hero__content">
+                            <p class="cc-hero__eyebrow">함께하는 순간, 잊지 못할 감동</p>
+                            <h1 class="cc-hero__title">2026 전국투어 콘서트 <em>티켓 오픈 시작!</em></h1>
+                            <p class="cc-hero__desc">지금 CatchCatch에서 만나보세요</p>
+                            <a class="cc-btn cc-btn--primary" href="/concerts/1">공연 보러가기 →</a>
+                        </div>
+                    </article>
                 {{/heroBanners}}
-            </div>
-            <div class="cc-hero__dots" data-carousel-dots aria-label="배너 순서">
-                <button class="cc-hero__dot is-active" type="button" aria-label="1번 배너"></button>
-                <button class="cc-hero__dot" type="button" aria-label="2번 배너"></button>
-                <button class="cc-hero__dot" type="button" aria-label="3번 배너"></button>
             </div>
         </section>
 
         <section class="cc-section">
             <div class="cc-section__head">
-                <h2 class="cc-section__title">오픈 예정 <span class="cc-section__count">{{#openCount}}{{openCount}}{{/openCount}}{{^openCount}}10{{/openCount}}</span></h2>
-                <a class="cc-more" href="/concerts/open-soon">전체보기 ›</a>
+                <h2 class="cc-section__title">오픈 예정 <span class="cc-section__count">New</span></h2>
+                <a class="cc-more" href="/concerts?status=coming-soon">전체보기 ›</a>
             </div>
             <div class="cc-open-grid">
-                {{#openSchedules}}
-                <a class="cc-card cc-open-card" href="{{detailUrl}}">
-                    <div class="cc-open-card__meta"><span class="cc-badge cc-badge--fill">{{dayLabel}}</span> {{openTime}} <span class="cc-open-card__small">{{saleType}}</span></div>
-                    <p class="cc-open-card__title">{{title}}</p>
-                </a>
-                {{/openSchedules}}
-                {{^openSchedules}}
-                <a class="cc-card cc-open-card" href="/concerts/11"><div class="cc-open-card__meta"><span class="cc-badge cc-badge--fill">Today</span> 오늘 19:00 <span class="cc-open-card__small">일반 예매</span></div><p class="cc-open-card__title">최유리 팬 콘서트 2026</p></a>
-                <a class="cc-card cc-open-card" href="/concerts/12"><div class="cc-open-card__meta"><span class="cc-badge cc-badge--fill">Today</span> 오늘 19:00 <span class="cc-open-card__small">일반 예매</span></div><p class="cc-open-card__title">네미시스 라이브 콘서트 ‘Emerald Pulse’</p></a>
-                <a class="cc-card cc-open-card" href="/concerts/13"><div class="cc-open-card__meta"><span class="cc-badge cc-badge--fill">Tomorrow</span> 내일 20:00 <span class="cc-open-card__small">선예매</span></div><p class="cc-open-card__title">10CM 겨울 투어 콘서트</p></a>
-                <a class="cc-card cc-open-card" href="/concerts/14"><div class="cc-open-card__meta">6.01 (일) 18:00 <span class="cc-open-card__small">일반 예매</span></div><p class="cc-open-card__title">DAY6 4TH WORLD TOUR &lt;FOREVER&gt;</p></a>
-                {{/openSchedules}}
+                {{#comingSoonConcerts}}
+                    <a class="cc-card cc-open-card" href="/concerts/{{id}}">
+                        <div class="cc-open-card__meta">
+                            <span class="cc-badge cc-badge--fill" style="background-color: #ff4757;">오픈예정</span>
+                            {{dateRange}}
+                            <span class="cc-open-card__small">{{badge}}</span>
+                        </div>
+                        <p class="cc-open-card__title">{{title}}</p>
+                    </a>
+                {{/comingSoonConcerts}}
+
+                {{^comingSoonConcerts}}
+                    <div style="padding: 20px; color: #999;">현재 오픈 예정인 콘서트가 없습니다.</div>
+                {{/comingSoonConcerts}}
             </div>
         </section>
 
@@ -82,13 +65,27 @@
             </div>
             <div class="cc-concert-grid">
                 {{#popularConcerts}}
-                    {{> components/concert-card}}
+                    <article class="cc-card cc-concert-card">
+                        <a class="cc-concert-card__poster" href="/concerts/{{id}}">
+                            {{#posterUrl}}<img src="{{posterUrl}}" alt="{{title}} 포스터">{{/posterUrl}}
+                            {{^posterUrl}}
+                                <div style="width: 100%; height: 100%; background: #e9ecef; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: #999;">
+                                    NO IMAGE
+                                </div>{{/posterUrl}}
+                        </a>
+                        <div class="cc-concert-card__body">
+                            <span class="cc-concert-card__category">{{category}}</span>
+                            <h3 class="cc-concert-card__title"><a href="/concerts/{{id}}">{{title}}</a></h3>
+                            <p class="cc-concert-card__meta">📅 <span>{{dateRange}}</span></p>
+                            <p class="cc-concert-card__meta">📍 <span>{{venueName}} ({{region}})</span></p>
+                            <div class="cc-concert-card__foot"><span class="cc-badge">{{badge}}</span></div>
+                        </div>
+                        <button class="cc-heart" type="button">♡</button>
+                    </article>
                 {{/popularConcerts}}
+
                 {{^popularConcerts}}
-                <article class="cc-card cc-concert-card"><a class="cc-concert-card__poster" href="/concerts/1"><img src="/images/sample/poster-legend-seoul.svg" alt="무명전설 서울 포스터"></a><div class="cc-concert-card__body"><span class="cc-concert-card__category">콘서트</span><h3 class="cc-concert-card__title"><a href="/concerts/1">2026 무명전설 전국투어 콘서트 - 서울</a></h3><p class="cc-concert-card__meta">📅 <span>2026.06.27 ~ 2026.06.28</span></p><p class="cc-concert-card__meta">📍 <span>서울 · 올림픽공원 올림픽홀</span></p><div class="cc-concert-card__foot"><span class="cc-badge">단독판매</span></div></div><button class="cc-heart" type="button">♡</button></article>
-                <article class="cc-card cc-concert-card"><a class="cc-concert-card__poster" href="/concerts/2"><img src="/images/sample/poster-legend-daegu.svg" alt="무명전설 대구 포스터"></a><div class="cc-concert-card__body"><span class="cc-concert-card__category">콘서트</span><h3 class="cc-concert-card__title"><a href="/concerts/2">2026 무명전설 전국투어 콘서트 - 대구</a></h3><p class="cc-concert-card__meta">📅 <span>2026.07.18</span></p><p class="cc-concert-card__meta">📍 <span>대구시 · 엑스코 동관 5,6홀</span></p><div class="cc-concert-card__foot"><span class="cc-badge">단독판매</span></div></div><button class="cc-heart" type="button">♡</button></article>
-                <article class="cc-card cc-concert-card"><a class="cc-concert-card__poster" href="/concerts/3"><img src="/images/sample/poster-legend-busan.svg" alt="무명전설 부산 포스터"></a><div class="cc-concert-card__body"><span class="cc-concert-card__category">콘서트</span><h3 class="cc-concert-card__title"><a href="/concerts/3">2026 무명전설 전국투어 콘서트 - 부산</a></h3><p class="cc-concert-card__meta">📅 <span>2026.08.29</span></p><p class="cc-concert-card__meta">📍 <span>부산시 · 벡스코 제1전시장 1홀</span></p><div class="cc-concert-card__foot"><span class="cc-badge">단독판매</span></div></div><button class="cc-heart" type="button">♡</button></article>
-                <article class="cc-card cc-concert-card"><a class="cc-concert-card__poster" href="/concerts/4"><img src="/images/sample/poster-legend-changwon.svg" alt="무명전설 창원 포스터"></a><div class="cc-concert-card__body"><span class="cc-concert-card__category">콘서트</span><h3 class="cc-concert-card__title"><a href="/concerts/4">2026 무명전설 전국투어 콘서트 - 창원</a></h3><p class="cc-concert-card__meta">📅 <span>2026.06.20</span></p><p class="cc-concert-card__meta">📍 <span>경남 · 창원컨벤션센터</span></p><div class="cc-concert-card__foot"><span class="cc-badge">단독판매</span></div></div><button class="cc-heart" type="button">♡</button></article>
+                    <div style="padding: 20px; color: #999;">현재 인기 콘서트 정보가 없습니다.</div>
                 {{/popularConcerts}}
             </div>
         </section>
@@ -100,11 +97,27 @@
             </div>
             <div class="cc-concert-grid">
                 {{#recommendConcerts}}
-                    {{> components/concert-card}}
+                    <article class="cc-card cc-concert-card">
+                        <a class="cc-concert-card__poster" href="/concerts/{{id}}">
+                            {{#posterUrl}}<img src="{{posterUrl}}" alt="{{title}} 포스터">{{/posterUrl}}
+                            {{^posterUrl}}
+                                <div style="width: 100%; height: 100%; background: #e9ecef; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: #999;">
+                                    NO IMAGE
+                                </div>{{/posterUrl}}
+                        </a>
+                        <div class="cc-concert-card__body">
+                            <span class="cc-concert-card__category">{{category}}</span>
+                            <h3 class="cc-concert-card__title"><a href="/concerts/{{id}}">{{title}}</a></h3>
+                            <p class="cc-concert-card__meta">📅 <span>{{dateRange}}</span></p>
+                            <p class="cc-concert-card__meta">📍 <span>{{venueName}} ({{region}})</span></p>
+                            <div class="cc-concert-card__foot"><span class="cc-badge">{{badge}}</span></div>
+                        </div>
+                        <button class="cc-heart" type="button">♡</button>
+                    </article>
                 {{/recommendConcerts}}
+
                 {{^recommendConcerts}}
-                <article class="cc-card cc-concert-card"><a class="cc-concert-card__poster" href="/concerts/21"><img src="/images/sample/poster-music.svg" alt="DAY6 포스터"></a><div class="cc-concert-card__body"><span class="cc-concert-card__category">콘서트</span><h3 class="cc-concert-card__title"><a href="/concerts/21">DAY6 4TH WORLD TOUR &lt;FOREVER&gt;</a></h3><p class="cc-concert-card__meta">📅 <span>2026.01.21 ~ 2026.01.25</span></p><p class="cc-concert-card__meta">📍 <span>서울 · KSPO DOME</span></p><div class="cc-concert-card__foot"><span class="cc-badge">단독판매</span></div></div><button class="cc-heart" type="button">♡</button></article>
-                <article class="cc-card cc-concert-card"><a class="cc-concert-card__poster" href="/concerts/22"><img src="/images/sample/poster-triangle.svg" alt="세븐틴 포스터"></a><div class="cc-concert-card__body"><span class="cc-concert-card__category">콘서트</span><h3 class="cc-concert-card__title"><a href="/concerts/22">세븐틴 WORLD TOUR &lt;NEW_&gt; IN SEOUL</a></h3><p class="cc-concert-card__meta">📅 <span>2026.02.06 ~ 2026.02.08</span></p><p class="cc-concert-card__meta">📍 <span>서울 · 고척스카이돔</span></p><div class="cc-concert-card__foot"><span class="cc-badge">단독판매</span></div></div><button class="cc-heart" type="button">♡</button></article>
+                    <div style="padding: 20px; color: #999;">추천 콘서트가 없습니다.</div>
                 {{/recommendConcerts}}
             </div>
         </section>

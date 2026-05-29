@@ -38,8 +38,9 @@ public class Concert {
     private String posterUrl;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
     @ColumnDefault("'OPEN'")
-    private Status status;
+    private ConcertStatus concertStatus;
 
     @CreationTimestamp
     private Timestamp createdAt;
