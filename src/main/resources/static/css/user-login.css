@@ -16,7 +16,7 @@
   box-shadow: var(--cc-shadow);
 }
 .cc-login-form { padding: 44px 40px 34px; text-align: center; }
-.cc-login-form h1 { margin: 0 0 16px; color: var(--cc-primary-dark); font-size: 42px; letter-spacing: -.06em; }
+.cc-login-form h1 { margin: 0 0 16px; color: var(--cc-primary-dark); font-size: 42px; letter-spacing: 0; }
 .cc-login-form__desc { margin: 0 0 28px; color: var(--cc-text); line-height: 1.5; font-weight: 800; }
 
 .cc-login-options { display: flex; align-items: center; justify-content: space-between; color: var(--cc-subtext); font-size: 14px; margin: 14px 0 22px; }
@@ -39,4 +39,16 @@
 @media (max-width: 900px) {
   .cc-login-shell { grid-template-columns: 1fr; }
   .cc-login-promo { min-height: 360px; }
+}
+
+@media (max-width: 600px) {
+  .cc-login-main { padding: 24px 0 42px; }
+  .cc-login-shell { width: min(100% - 28px, 960px); padding: 14px; gap: 18px; border-radius: 18px; }
+  .cc-login-form { padding: 28px 18px 24px; }
+  .cc-login-form h1 { font-size: 34px; }
+  .cc-login-options, .cc-login-links { flex-wrap: wrap; gap: 12px; }
+  .cc-social-row { grid-template-columns: 1fr; }
+  .cc-login-promo { min-height: 300px; }
+  .cc-login-promo__content { padding: 30px 24px; }
+  .cc-login-promo h2 { font-size: 27px; }
 }

@@ -83,12 +83,69 @@
   /* ── 비밀번호 표시 토글 ──────────────────────── */
   function initPasswordToggle() {
     document.querySelectorAll('[data-toggle-pw]').forEach((eye) => {
-      eye.style.cursor = 'pointer';
       eye.addEventListener('click', () => {
         const input = document.getElementById(eye.dataset.togglePw);
         if (!input) return;
-        input.type = input.type === 'password' ? 'text' : 'password';
-        eye.style.opacity = input.type === 'text' ? '1' : '0.5';
+        const isVisible = input.type === 'password';
+        input.type = isVisible ? 'text' : 'password';
+        eye.classList.toggle('is-visible', isVisible);
+        eye.setAttribute('aria-pressed', String(isVisible));
+        eye.setAttribute('aria-label', isVisible ? '비밀번호 숨기기' : '비밀번호 보기');
+      });
+    });
+  }
+
+  function initProfilePreview() {
+    const input = document.querySelector('[data-profile-input]');
+    const preview = document.querySelector('[data-profile-preview]');
+    const previewWrap = preview && preview.closest('.cc-profile-upload__preview');
+    if (!input || !preview || !previewWrap) return;
+
+    input.addEventListener('change', () => {
+      const file = input.files && input.files[0];
+      if (!file) {
+        preview.removeAttribute('src');
+        previewWrap.classList.remove('has-image');
+        return;
+      }
+
+      preview.src = URL.createObjectURL(file);
+      previewWrap.classList.add('has-image');
+    });
+  }
+
+  function initUserMenu() {
+    document.querySelectorAll('[data-user-menu]').forEach((menu) => {
+      const button = menu.querySelector('[data-user-menu-button]');
+      if (!button) return;
+
+      button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const willOpen = !menu.classList.contains('is-open');
+        document.querySelectorAll('[data-user-menu]').forEach((other) => {
+          other.classList.remove('is-open');
+          const otherButton = other.querySelector('[data-user-menu-button]');
+          if (otherButton) otherButton.setAttribute('aria-expanded', 'false');
+        });
+        menu.classList.toggle('is-open', willOpen);
+        button.setAttribute('aria-expanded', String(willOpen));
+      });
+    });
+
+    document.addEventListener('click', () => {
+      document.querySelectorAll('[data-user-menu]').forEach((menu) => {
+        menu.classList.remove('is-open');
+        const button = menu.querySelector('[data-user-menu-button]');
+        if (button) button.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      document.querySelectorAll('[data-user-menu]').forEach((menu) => {
+        menu.classList.remove('is-open');
+        const button = menu.querySelector('[data-user-menu-button]');
+        if (button) button.setAttribute('aria-expanded', 'false');
       });
     });
   }
@@ -119,6 +176,8 @@
     initSeatPreview();
     initAgreeAll();
     initPasswordToggle();
+    initProfilePreview();
+    initUserMenu();
     initPayMethods();
     initDetailTabs();
   });

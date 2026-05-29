@@ -1,14 +1,70 @@
 /* user-join.css — 회원가입 페이지 전용 */
 
-.cc-register-shell { grid-template-columns: 1.5fr .85fr; }
-.cc-register-form { padding: 32px 40px 28px; }
+.cc-register-shell {
+  width: min(720px, calc(100% - 48px));
+  grid-template-columns: 1fr;
+}
+.cc-register-form { padding: 32px 44px 28px; }
 
-.cc-register-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.cc-register-row { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 14px; }
 .cc-register-row .cc-field { margin-bottom: 0; }
 
 .cc-register-form .cc-field { margin-bottom: 14px; text-align: left; }
 .cc-register-form .cc-field label { display: block; margin-bottom: 7px; font-weight: 900; font-size: 14px; }
 .cc-register-form .cc-input-wrap { margin-bottom: 0; }
+
+.cc-profile-upload {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  margin: 0 0 22px;
+  padding: 18px;
+  border: 1px solid var(--cc-line);
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--cc-primary-softer), #fff);
+  text-align: center;
+}
+.cc-profile-upload__preview {
+  position: relative;
+  width: min(220px, 100%);
+  height: 168px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid var(--cc-line-strong);
+  background: #fff;
+  color: var(--cc-primary-dark);
+  cursor: pointer;
+}
+.cc-profile-upload__preview img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  object-fit: cover;
+}
+.cc-profile-upload__preview.has-image img { display: block; }
+.cc-profile-upload__preview.has-image .cc-profile-upload__fallback { display: none; }
+.cc-profile-upload__fallback svg { width: 32px; height: 32px; display: block; }
+.cc-profile-upload__text { display: grid; justify-items: center; gap: 5px; }
+.cc-profile-upload__text strong { color: var(--cc-text); font-weight: 950; }
+.cc-profile-upload__text span { color: var(--cc-muted); font-size: 13px; font-weight: 750; }
+.cc-profile-upload__button {
+  width: fit-content;
+  margin-top: 4px;
+  padding: 7px 12px;
+  border: 1px solid var(--cc-line-strong);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--cc-primary-dark);
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.cc-profile-upload input[type="file"] { display: none; }
 
 .cc-register-agree { text-align: left; margin: 18px 0 14px; border: 1px solid var(--cc-line); border-radius: 14px; padding: 14px 16px; }
 .cc-register-agree > .cc-check { font-weight: 950; padding-bottom: 10px; border-bottom: 1px solid var(--cc-line); margin-bottom: 10px; display: flex; }
@@ -19,4 +75,9 @@
 @media (max-width: 900px) {
   .cc-register-shell { grid-template-columns: 1fr; }
   .cc-register-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .cc-profile-upload { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  .cc-profile-upload__text { justify-items: center; }
 }

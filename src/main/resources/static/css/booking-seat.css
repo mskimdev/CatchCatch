@@ -67,3 +67,13 @@
 @media (max-width: 1180px) {
   .cc-seat-layout { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 700px) {
+  .cc-seat-map-card { min-height: auto; padding: 16px; overflow-x: auto; }
+  .cc-seat-map-head { grid-template-columns: 1fr; }
+  .cc-grade-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
+  .cc-stage { width: min(280px, 86%); height: 48px; font-size: 20px; }
+  .cc-arena { width: 650px; transform: scale(.72); transform-origin: top left; margin-bottom: -148px; }
+  .cc-map-controls { align-items: flex-start; flex-direction: column; }
+  .cc-selected-card, .cc-notice-card, .cc-booking-summary, .cc-booking-info { padding: 16px; }
+}
