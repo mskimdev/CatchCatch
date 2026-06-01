@@ -40,12 +40,9 @@ public class ConcertSessionService {
      * 20:00 매진
      *  soldOut으로 매진여부만 판단, 매진 아닐 시 좌석 수는 프론트에서
      */
-    public List<ConcertSessionResponse.TimeDTO> 회차조회(
-            Integer concertId,
-            LocalDate sessionDate
-    ) {
+    public List<ConcertSessionResponse.TimeDTO> 회차조회(Integer concertId, LocalDate sessionDate) {
         List<ConcertSession> sessionList =
-                concertSessionRepository.findByConcertIdAndSessionDateOrderBySessionTimeAsc(
+                concertSessionRepository.findSessionsByConcertIdAndDate(
                         concertId,
                         sessionDate
                 );
@@ -54,13 +51,19 @@ public class ConcertSessionService {
                 .map(session -> {
                     Integer sessionId = session.getId();
 
-                    long remainingSeatCount = seatRepository.countByConcertSession_IdAndStatus(sessionId, SeatStatus.AVAILABLE);
+                    long totalSeatCount = seatRepository.countByConcertSession_Id(sessionId);
+
+                    long remainingSeatCount = seatRepository.countByConcertSession_IdAndStatus(
+                            sessionId,
+                            SeatStatus.AVAILABLE
+                    );
 
                     boolean soldOut = remainingSeatCount == 0;
 
                     return new ConcertSessionResponse.TimeDTO(
                             sessionId,
                             session.getSessionTime(),
+                            totalSeatCount,
                             remainingSeatCount,
                             soldOut
                     );
