@@ -46,4 +46,28 @@ public class UserService {
 
         return user;
     }
+
+    @Transactional
+    public User updateProfile(Integer userId, UserRequest.ProfileUpdateDTO req, String profileImageUrl) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException("회원 정보를 찾을 수 없습니다."));
+
+        if (!passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
+            throw new BadRequestException("현재 비밀번호가 올바르지 않습니다.");
+        }
+        if (!user.getUsername().equals(req.getUsername()) && userRepository.existsByUsername(req.getUsername())) {
+            throw new BadRequestException("이미 사용 중인 아이디입니다.");
+        }
+
+        user.setUsername(req.getUsername());
+        user.setPhone(req.getPhone());
+        if (profileImageUrl != null) {
+            user.setProfileImage(profileImageUrl);
+        }
+        if (req.getNewPassword() != null && !req.getNewPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(req.getNewPassword()));
+        }
+
+        return user;
+    }
 }
