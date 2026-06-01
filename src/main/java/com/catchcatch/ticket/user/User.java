@@ -15,6 +15,7 @@ package com.catchcatch.ticket.user;
 
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -68,4 +69,18 @@ public class User {
 
     @ColumnDefault("false")
     private boolean isDeleted;
+
+    @Builder
+
+    public User(String username, String password, String email,
+                String phone, String profileImage, OauthProvider
+                            oauthProvider, Role role) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.phone = phone;
+        this.profileImage = profileImage;
+        this.oauthProvider = oauthProvider;
+        this.role = role;
+    }
 }
