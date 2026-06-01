@@ -13,20 +13,17 @@ public class ConcertSessionResponse {
         private LocalTime sessionTime;
         private Long remainingSeatCount;
         private Boolean soldOut;
-        private String remainingDisplay;
 
         public TimeDTO(
                 Integer sessionId,
                 LocalTime sessionTime,
                 Long remainingSeatCount,
-                Boolean soldOut,
-                String remainingDisplay
+                Boolean soldOut
         ) {
             this.sessionId = sessionId;
             this.sessionTime = sessionTime;
             this.remainingSeatCount = remainingSeatCount;
             this.soldOut = soldOut;
-            this.remainingDisplay = remainingDisplay;
         }
     }
 }

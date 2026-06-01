@@ -38,6 +38,7 @@ public class ConcertSessionService {
      * 10:00 남은 좌석: 20석
      * 16:00 남은 좌석: 1800석
      * 20:00 매진
+     *  soldOut으로 매진여부만 판단, 매진 아닐 시 좌석 수는 프론트에서
      */
     public List<ConcertSessionResponse.TimeDTO> 회차조회(
             Integer concertId,
@@ -55,18 +56,13 @@ public class ConcertSessionService {
 
                     long remainingSeatCount = seatRepository.countByConcertSession_IdAndStatus(sessionId, SeatStatus.AVAILABLE);
 
-                    long totalSeatCount = seatRepository.countByConcertSession_Id(sessionId);
-
                     boolean soldOut = remainingSeatCount == 0;
-
-                    String remainingDisplay = makeRemainingDisplay(remainingSeatCount);
 
                     return new ConcertSessionResponse.TimeDTO(
                             sessionId,
                             session.getSessionTime(),
                             remainingSeatCount,
-                            soldOut,
-                            remainingDisplay
+                            soldOut
                     );
                 })
                 .toList();
@@ -94,17 +90,4 @@ public class ConcertSessionService {
         return session;
     }
 
-    /**
-     * 남은 좌석 표시 규칙
-     * <p>
-     * 0석 → 매진
-     * 1석 이상 → 남은 좌석: n석
-     */
-    private String makeRemainingDisplay(long remainingSeatCount) {
-        if (remainingSeatCount == 0) {
-            return "매진";
-        }
-
-        return "남은 좌석: " + remainingSeatCount + "석";
-    }
 }
