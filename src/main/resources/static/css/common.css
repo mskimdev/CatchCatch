@@ -165,39 +165,41 @@ img { max-width: 100%; display: block; }
   position: relative;
 }
 .cc-user-menu__button {
-  height: 44px;
+  height: 42px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
+  gap: 8px;
+  padding: 0 14px 0 6px;
+  border: 1.5px solid var(--cc-line-strong);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .9);
   color: var(--cc-text);
-  box-shadow: none;
+  box-shadow: 0 4px 12px rgba(76, 29, 149, .06);
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
 }
 .cc-user-menu__button:hover,
 .cc-user-menu.is-open .cc-user-menu__button {
-  background: transparent;
+  border-color: var(--cc-primary);
+  background: var(--cc-primary-softer);
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, .10);
 }
 .cc-user-menu__avatar {
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border-radius: 0;
-  background: transparent;
+  border-radius: 50%;
+  background: var(--cc-primary-soft);
   color: var(--cc-primary-dark);
-  border: 0;
-  transition: color .18s ease, transform .18s ease;
+  border: 1.5px solid var(--cc-line-strong);
+  flex-shrink: 0;
+  transition: border-color .18s ease;
 }
 .cc-user-menu__button:hover .cc-user-menu__avatar,
 .cc-user-menu.is-open .cc-user-menu__avatar {
-  background: transparent;
-  color: var(--cc-primary);
-  transform: translateY(-1px);
+  border-color: var(--cc-primary);
 }
 .cc-user-menu__avatar img {
   width: 100%;
@@ -205,11 +207,11 @@ img { max-width: 100%; display: block; }
   object-fit: cover;
 }
 .cc-user-menu__avatar svg {
-  width: 21px;
-  height: 21px;
+  width: 18px;
+  height: 18px;
 }
 .cc-user-menu__name {
-  max-width: 120px;
+  max-width: 100px;
   overflow: hidden;
   color: var(--cc-primary-dark);
   font-size: 14px;
