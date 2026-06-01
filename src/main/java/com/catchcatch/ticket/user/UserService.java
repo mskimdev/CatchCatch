@@ -1,6 +1,9 @@
 package com.catchcatch.ticket.user;
 
 import com.catchcatch.ticket.core.errors.BadRequestException;
+import com.catchcatch.ticket.user.dto.UserRequest;
+import com.catchcatch.ticket.user.enums.OauthProvider;
+import com.catchcatch.ticket.user.enums.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

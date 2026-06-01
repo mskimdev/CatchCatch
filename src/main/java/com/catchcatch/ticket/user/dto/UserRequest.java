@@ -1,4 +1,4 @@
-package com.catchcatch.ticket.user;
+package com.catchcatch.ticket.user.dto;
 
 import com.catchcatch.ticket.core.errors.BadRequestException;
 import lombok.Data;
