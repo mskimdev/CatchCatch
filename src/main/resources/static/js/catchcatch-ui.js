@@ -98,7 +98,7 @@
   function initProfilePreview() {
     const input = document.querySelector('[data-profile-input]');
     const preview = document.querySelector('[data-profile-preview]');
-    const previewWrap = preview && preview.closest('.cc-profile-upload__preview');
+    const previewWrap = preview && preview.closest('.cc-profile-upload__preview, .cc-profile-image-edit__preview');
     if (!input || !preview || !previewWrap) return;
 
     input.addEventListener('change', () => {

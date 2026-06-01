@@ -250,3 +250,5 @@ $RECYCLE.BIN/
 
 .env
 .claude/
+
+.uploads/
