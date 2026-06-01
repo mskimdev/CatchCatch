@@ -40,8 +40,14 @@ public class ConcertController {
         return "home";
     }
 
-    @GetMapping("/concert/list")
-    public String list(){
+    @GetMapping({"/concerts", "/concert/list"})
+    public String list(Model model){
+        model.addAttribute("pageTitle", "콘서트 일정");
+        model.addAttribute("keyword", "");
+        model.addAttribute("loginHeader", true);
+        model.addAttribute("hideConcertFilters", true);
+        model.addAttribute("hideNavMenu", true);
+        model.addAttribute("activeSchedule", true);
         return "concert/list";
     }
 
