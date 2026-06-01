@@ -37,19 +37,17 @@ public class User {
     // 사용자 고유 ID
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false)
     private Integer id;
 
     // 사용자 로그인 이름 (UNIQUE)
-    @Column(nullable = false , unique = true)
+    @Column(unique = true)
     private String username;
 
     // BCrypt 암호화 비밀번호
-    @Column(nullable = false )
     private String password;
 
     // 이메일 주소 (UNIQUE)
-    @Column(nullable = false , unique = true)
+    @Column(unique = true)
     private String email;
 
     // 전화번호
@@ -63,8 +61,10 @@ public class User {
     @ColumnDefault("'LOCAL'")
     private OauthProvider oauthProvider;
 
+    @Column(unique = true)
+    private String oauthId;
+
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     @ColumnDefault("'USER'")
     private Role role;
 
@@ -77,14 +77,15 @@ public class User {
 
     @Builder
     public User(String username, String password, String email,
-                String phone, String profileImage, OauthProvider
-                            oauthProvider, Role role) {
+                String phone, String profileImage,
+                OauthProvider oauthProvider, String oauthId, Role role) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.phone = phone;
         this.profileImage = profileImage;
         this.oauthProvider = oauthProvider;
+        this.oauthId = oauthId;
         this.role = role;
     }
 }
