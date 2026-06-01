@@ -4,10 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{#pageTitle}}{{pageTitle}} | {{/pageTitle}}CatchCatch 관리자</title>
+
     <link rel="stylesheet" href="/css/common.css">
     <link rel="stylesheet" href="/css/admin-header.css">
+
+    {{#pageCss}}
+        <link rel="stylesheet" href="{{pageCss}}">
+    {{/pageCss}}
 </head>
-<body class="cc-page cc-login-page">
+
+<body class="cc-page cc-admin-page">
 
 <header class="cc-header admin-header">
     <div class="cc-container">
@@ -17,13 +23,19 @@
                 CatchCatch <span>관리자 콘솔</span>
             </a>
 
-            <form class="cc-searchbar admin-searchbar" action="/admin/venues" method="get" role="search">
-                <span class="admin-search-chip">공연장</span>
+            <form class="cc-searchbar admin-searchbar"
+                  action="{{searchAction}}"
+                  method="get"
+                  role="search">
+
+                <span class="admin-search-chip">{{searchLabel}}</span>
+
                 <input class="cc-searchbar__input"
                        type="search"
                        name="keyword"
-                       value="{{#keyword}}{{keyword}}{{/keyword}}"
-                       placeholder="공연장명을 검색해보세요">
+                       value="{{keyword}}"
+                       placeholder="{{searchPlaceholder}}">
+
                 <button type="submit" class="cc-icon-btn admin-search-btn" aria-label="검색">
                     <svg class="cc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="7"/>
@@ -35,9 +47,11 @@
             <div class="cc-header__actions admin-actions">
                 <a class="admin-text-link" href="/">사용자 화면</a>
 
-                <a class="cc-signup-link admin-header-save-btn" href="/admin/venues/save">
-                    + 공연장 등록
-                </a>
+                {{#createUrl}}
+                    <a class="cc-signup-link admin-header-save-btn" href="{{createUrl}}">
+                        {{createLabel}}
+                    </a>
+                {{/createUrl}}
 
                 <form action="/logout" method="post" style="margin:0;">
                     {{#_csrf}}
