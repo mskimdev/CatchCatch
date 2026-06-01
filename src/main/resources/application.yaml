@@ -2,6 +2,8 @@ spring:
   profiles:
     active:
       - dev
+  config:
+    import: optional:file:.env[.properties]
 
 springdoc:
   swagger-ui:
@@ -11,3 +13,13 @@ springdoc:
   api-docs:
     path:
       - /v3/api-docs
+
+
+oauth:
+  kakao:
+    client-id: ${KAKAO_CLIENT_ID}
+    client-secret: ${KAKAO_CLIENT_SECRET}
+    admin-key: ${KAKAO_ADMIN_KEY}
+
+catchcatch:
+  key: ${CATCHCATCH_KEY}

@@ -12,7 +12,7 @@
                     <span class="cc-input-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
                     </span>
-                    <input class="cc-input" type="text" name="username" placeholder="이메일 또는 아이디" autocomplete="username" value="ssar">
+                    <input class="cc-input" type="email" name="email" placeholder="이메일" autocomplete="email" value="ssar@naver.com">
                 </div>
                 <div class="cc-input-wrap">
                     <span class="cc-input-icon" aria-hidden="true">
@@ -31,7 +31,7 @@
             </form>
             <div class="cc-divider">또는</div>
             <div class="cc-social-row">
-                <a class="cc-social cc-social--kakao" href="/oauth2/authorization/kakao">카카오로 로그인</a>
+                <a class="cc-social cc-social--kakao" href="https://kauth.kakao.com/oauth/authorize?client_id=4e7fa8278a6bbe1e2032b780165fe695&redirect_uri=http://localhost:8080/kakao-redirect&response_type=code">카카오로 로그인</a>
                 <a class="cc-social cc-social--naver" href="/oauth2/authorization/naver">네이버로 로그인</a>
                 <a class="cc-social" href="/oauth2/authorization/google">Google 로그인</a>
             </div>
