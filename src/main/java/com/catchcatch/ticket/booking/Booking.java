@@ -56,4 +56,6 @@ public class Booking {
     // 예매 취소 시간
     @Column(name = "canceled_at")
     private Timestamp canceledAt;
+
+
 }
