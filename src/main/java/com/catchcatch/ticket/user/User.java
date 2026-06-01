@@ -71,7 +71,6 @@ public class User {
     private boolean isDeleted;
 
     @Builder
-
     public User(String username, String password, String email,
                 String phone, String profileImage, OauthProvider
                             oauthProvider, Role role) {

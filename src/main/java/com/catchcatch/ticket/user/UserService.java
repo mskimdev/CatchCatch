@@ -30,6 +30,7 @@ public class UserService {
                 .password(passwordEncoder.encode(req.getPassword()))
                 .phone(req.getPhone())
                 .oauthProvider(OauthProvider.LOCAL)
+                .role(Role.USER)
                 .build();
 
         userRepository.save(user);
