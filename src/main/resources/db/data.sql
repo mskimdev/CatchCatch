@@ -76,50 +76,37 @@ VALUES
 
 
 -- =====================================================
---  3. concert_tb
+--  3. concert_tb (💡 새로운 엔티티 필드에 맞춰 대폭 확장!)
 -- =====================================================
 INSERT INTO concert_tb
-(id, venue_id, title, artist, description, poster_url, status, created_at)
+(id, venue_id, title, artist, description, poster_url, status,
+ category, genre, start_date, end_date, age_limit, runtime, organizer, contact,
+ detail_banner_url, detail_title, detail_description1, detail_description2, created_at)
 VALUES
     (1, 1,
-     '아이유 콘서트 2025 [HEREH]',
-     '아이유',
-     '아이유의 2025년 단독 콘서트. 새 앨범 수록곡을 포함한 화려한 무대.',
-     '/images/sample/poster-music.svg',
-     'OPEN',
-     NOW()),
+     '아이유 콘서트 2025 [HEREH]', '아이유', '아이유의 2025년 단독 콘서트. 새 앨범 수록곡을 포함한 화려한 무대.', '/images/sample/poster-music.svg', 'OPEN',
+     '콘서트', '발라드/팝', '2025-08-01', '2025-08-02', '만 7세 이상 관람가', '150분', 'EDAM 엔터테인먼트', '1544-1111',
+     '/images/sample/detail-banner.svg', '여름밤을 수놓을 아름다운 목소리', '아이유와 함께하는 잊지 못할 특별한 시간', '놓칠 수 없는 단 이틀간의 공연', NOW()),
 
     (2, 2,
-     'BTS WORLD TOUR 2025',
-     'BTS',
-     'BTS 월드투어 서울 공연. 역대 최대 규모의 세트와 퍼포먼스.',
-     '/images/sample/poster-music.svg',
-     'OPEN',
-     NOW()),
+     'BTS WORLD TOUR 2025', 'BTS', 'BTS 월드투어 서울 공연. 역대 최대 규모의 세트와 퍼포먼스.', '/images/sample/poster-music.svg', 'OPEN',
+     '콘서트', 'K-POP/댄스', '2025-09-05', '2025-09-07', '만 12세 이상 관람가', '180분', 'BIGHIT MUSIC', '1544-2222',
+     '/images/sample/detail-banner.svg', '전 세계가 기다려온 단 하나의 무대', '가장 화려하고 완벽한 귀환', 'ARMY를 위한 특별한 무대', NOW()),
 
     (3, 3,
-     '임영웅 콘서트 [IM HERO]',
-     '임영웅',
-     '임영웅의 전국투어 서울 공연.',
-     '/images/sample/poster-music.svg',
-     'OPEN',
-     NOW()),
+     '임영웅 콘서트 [IM HERO]', '임영웅', '임영웅의 전국투어 서울 공연.', '/images/sample/poster-music.svg', 'OPEN',
+     '콘서트', '트로트/발라드', '2025-10-10', '2025-10-11', '전체 관람가', '160분', '물고기뮤직', '1544-3333',
+     '/images/sample/detail-banner.svg', '영웅시대와 함께 만드는 또 하나의 기적', '가슴을 울리는 감동의 라이브', '서울에서 펼쳐지는 푸른 물결', NOW()),
 
     (4, 4,
-     '부산 재즈 페스티벌 2025',
-     '다수 아티스트',
-     '국내외 유명 재즈 아티스트들의 합동 공연.',
-     '/images/sample/poster-music.svg',
-     'OPEN',
-     NOW()),
+     '부산 재즈 페스티벌 2025', '다수 아티스트', '국내외 유명 재즈 아티스트들의 합동 공연.', '/images/sample/poster-music.svg', 'OPEN',
+     '페스티벌', '재즈/블루스', '2025-07-20', '2025-07-20', '만 15세 이상 관람가', '240분(인터미션 포함)', '부산문화재단', '1544-4444',
+     '/images/sample/detail-banner.svg', '한여름 밤의 낭만적인 재즈 선율', '국내외 최정상급 재즈 뮤지션 총출동', '사직실내체육관에서 즐기는 감미로운 축제', NOW()),
 
     (5, 1,
-     '세븐틴 콘서트 [FOLLOW]',
-     'SEVENTEEN',
-     '세븐틴의 국내 단독 콘서트.',
-     '/images/sample/poster-music.svg',
-     'CLOSED',
-     NOW());
+     '세븐틴 콘서트 [FOLLOW]', 'SEVENTEEN', '세븐틴의 국내 단독 콘서트.', '/images/sample/poster-music.svg', 'CLOSED',
+     '콘서트', 'K-POP/댄스', '2025-06-01', '2025-06-01', '만 7세 이상 관람가', '180분', 'PLEDIS 엔터테인먼트', '1544-5555',
+     '/images/sample/detail-banner.svg', 'SEVENTEEN과 CARAT이 하나 되는 시간', '눈을 뗄 수 없는 압도적인 퍼포먼스', 'FOLLOW TO SEOUL', NOW());
 
 
 -- =====================================================

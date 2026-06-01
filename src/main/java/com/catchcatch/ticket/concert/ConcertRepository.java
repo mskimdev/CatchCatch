@@ -9,8 +9,7 @@ import java.util.Optional;
 
 public interface ConcertRepository extends JpaRepository<Concert, Integer> {
 
-
-    // 1. 공연 목록 조회 (최신순)
+    // 1. [홈페이지/목록용] 예매 상태별 공연 목록 조회 (공연장, 회차 동시 페치)
     @Query("SELECT DISTINCT c FROM Concert c " +
             "JOIN FETCH c.venue " +
             "JOIN FETCH c.sessions " +
@@ -18,32 +17,25 @@ public interface ConcertRepository extends JpaRepository<Concert, Integer> {
             "ORDER BY c.createdAt DESC")
     List<Concert> findAllByStatusWithFetchJoin(@Param("status") ConcertStatus concertStatus);
 
-    // 2. 공연 정보 + 공연장(Venue) + 회차(Sessions)
+    // 2. [상세 페이지용] 공연 정보 + 공연장(Venue) + 회차(Sessions) 모두 한 번에 조회
     @Query("SELECT DISTINCT c FROM Concert c " +
             "JOIN FETCH c.venue " +
             "JOIN FETCH c.sessions " +
             "WHERE c.id = :id")
     Optional<Concert> findByIdWithDetails(@Param("id") Integer id);
 
-    // 3. 공연 상세 + 회차 정보 (Fetch Join)
+    // 3. 💡 [빠른 예매용] 공연 상세 + 회차 정보만 조회 (N+1 방지)
     @Query("SELECT DISTINCT c FROM Concert c JOIN FETCH c.sessions WHERE c.id = :concertId")
     Optional<Concert> findByIdWithSessions(@Param("concertId") Integer concertId);
 
-    // 4. 공연 상세 + 공연장 정보 (Fetch Join)
+    // 4. 공연 상세 + 공연장 정보만 조회
     @Query("SELECT c FROM Concert c JOIN FETCH c.venue WHERE c.id = :id")
     Optional<Concert> findByIdWithVenue(@Param("id") Integer id);
 
-    // 5. 검색 기능 (OR 조건)
+    // 5. 검색 기능 (제목 또는 아티스트명)
     List<Concert> findByTitleContainingOrArtistContaining(String title, String artist);
 
-    // 6. 예매 가능 공연만 조회 (고정 쿼리)
+    // 6. 예매 가능(OPEN) 공연만 단순 조회
     @Query("SELECT c FROM Concert c WHERE c.concertStatus = 'OPEN' ORDER BY c.createdAt DESC")
     List<Concert> findAllByStatusOpen();
-
-
-//    // 6. [추가 추천] 대규모 트래픽 대비 페이징 처리 버전
-//    // 메인 페이지에 수천 개의 공연이 뜰 경우를 대비해 Pageable을 사용하는 것이 좋습니다.
-//    Page<Concert> findAllByStatus(String status, Pageable pageable);
-
-
 }

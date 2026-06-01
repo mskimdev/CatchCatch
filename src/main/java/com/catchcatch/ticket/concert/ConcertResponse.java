@@ -1,93 +1,223 @@
 package com.catchcatch.ticket.concert;
 
-import lombok.Data;
+import com.catchcatch.ticket.seat.Seat;
+import com.catchcatch.ticket.seat.SeatGrade;
+import com.catchcatch.ticket.session.ConcertSession;
+import lombok.Builder;
+import lombok.Getter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class ConcertResponse {
 
-    @Data
+    // ==========================================
+    // 1. 메인/목록 페이지용 DTO
+    // ==========================================
+    @Getter
     public static class ListDTO {
         private Integer id;
         private String posterUrl;
-        private String category; // "콘서트", "뮤지컬" 등
+        private String category;
         private String title;
-
-        // 프론트엔드가 요구하는 '2026.04.11 - 2026.04.12' 형태의 텍스트
         private String dateRange;
-
         private String venueName;
-        private String region; // "인천", "서울" 등
-
-        // TODO 평점 및 리뷰 수 DB 테이블(Review 등)
+        private String region;
         private Double rating;
         private Integer reviewCount;
-        private String badge; // "단독판매", "매진임박" 등
+        private String badge;
 
         public ListDTO(Concert concert) {
             this.id = concert.getId();
             this.posterUrl = concert.getPosterUrl();
-            this.category = "콘서트"; // 추후 DB 컬럼 추가 필요
             this.title = concert.getTitle();
             this.venueName = concert.getVenue().getName();
 
-            // 공연장의 전체 주소(address)에서 앞 2글자(지역명)만 추출
-            // 예: "인천광역시 중구..." -> "인천"
+            // 💡 더 이상 하드코딩하지 않고 엔티티 필드 직접 사용!
+            this.category = concert.getCategory() != null ? concert.getCategory() : "콘서트";
+
+            // 지역명 추출
             if (concert.getVenue().getAddress() != null && concert.getVenue().getAddress().length() >= 2) {
                 this.region = concert.getVenue().getAddress().substring(0, 2);
             } else {
                 this.region = "미상";
             }
 
-            // 날짜 범위 계산 로직 (시작일 ~ 종료일)
-            List<LocalDate> dates = concert.getSessions().stream()
-                    .map(session -> session.getSessionDate())
-                    .sorted() // 날짜순 정렬
-                    .collect(Collectors.toList());
-
-            if (!dates.isEmpty()) {
+            // 💡 복잡한 계산 없이 startDate, endDate 직접 사용!
+            if (concert.getStartDate() != null && concert.getEndDate() != null) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
-                String startDate = dates.get(0).format(formatter);
-                String endDate = dates.get(dates.size() - 1).format(formatter);
-
-                if (startDate.equals(endDate)) {
-                    this.dateRange = startDate; // 하루짜리 공연
-                } else {
-                    this.dateRange = startDate + " - " + endDate; // 여러 날짜 공연
-                }
+                String start = concert.getStartDate().format(formatter);
+                String end = concert.getEndDate().format(formatter);
+                this.dateRange = start.equals(end) ? start : start + " - " + end;
             } else {
                 this.dateRange = "일정 미정";
             }
 
-            //TODO 더미 데이터 (추후 Review 도메인이 생기면 연동)
             this.rating = 4.9;
             this.reviewCount = 2765;
-            this.badge = "예매가능"; // Concert의 Status 값에 따라 변경 가능
+            this.badge = "예매가능";
         }
-    } // end of ListDTO
+    }
 
-    @Data
+    @Getter
     public static class BannerDTO {
-        private String imageUrl;     // 배경 이미지
-        private String eyebrow;      // 작은 부제목 (예: "단독 판매")
-        private String title;        // 큰 제목
-        private String highlight;    // 강조할 단어
-        private String description;  // 설명
-        private String linkUrl;      // 클릭 시 이동할 주소 (/concerts/1)
-        private String buttonText;   // 버튼 텍스트 (예: "예매하기")
+        private String imageUrl;
+        private String eyebrow;
+        private String title;
+        private String highlight;
+        private String description;
+        private String linkUrl;
+        private String buttonText;
 
-        // TODO Banner 테이블 생성 시 연결 예정
         public BannerDTO(String imageUrl, String eyebrow, String title, String highlight, String description, Integer concertId) {
             this.imageUrl = imageUrl;
             this.eyebrow = eyebrow;
             this.title = title;
             this.highlight = highlight;
             this.description = description;
-            this.linkUrl = "/concerts/" + concertId;
+            this.linkUrl = "/concert/" + concertId; // 경로 수정 (concerts -> concert)
             this.buttonText = "예매하기";
         }
-    }// end of BannerDTO
-}
+    }
+
+    // ==========================================
+    // 2. 상세 페이지(Detail)용 DTO (새로 추가됨)
+    // ==========================================
+    @Getter
+    @Builder
+    public static class DetailDTO {
+        private Integer id;
+        private String title;
+        private String posterUrl;
+        private String category;
+        private String genre;
+        private String dateRange;
+        private String venueName;
+        private String ageLimit;
+        private String runtime;
+        private String organizer;
+        private String contact;
+        private String detailBannerUrl;
+        private String detailTitle;
+        private String detailDescription1;
+        private String detailDescription2;
+        private Integer reviewCount;
+
+        private List<SessionDTO> sessions;
+        private List<DateDTO> dates;
+        private List<PriceDTO> prices;
+
+        public static DetailDTO of(Concert concert, List<Seat> seats) {
+            String safeDateRange = (concert.getStartDate() != null && concert.getEndDate() != null)
+                    ? concert.getStartDate() + " ~ " + concert.getEndDate() : "일정 미정";
+            String safeVenueName = (concert.getVenue() != null) ? concert.getVenue().getName() : "공연장 미정";
+
+            // 💡 1. SessionDTO 조립 (엔티티에 turn 필드가 없어졌으므로 인덱스로 회차 부여)
+            List<SessionDTO> sessionDTOs = new ArrayList<>();
+            List<ConcertSession> concertSessions = concert.getSessions();
+            for (int i = 0; i < concertSessions.size(); i++) {
+                sessionDTOs.add(SessionDTO.of(concertSessions.get(i), i + 1));
+            }
+
+            // 💡 2. 낱개 좌석(Seat)들에서 등급(VIP, R 등)별 가격 정보만 추출 및 중복 제거
+            List<PriceDTO> priceDTOs = seats.stream()
+                    // SeatGrade를 키(Key)로 삼아 중복되는 등급의 좌석은 덮어씁니다 (Map 변환)
+                    .collect(Collectors.toMap(
+                            Seat::getGrade,
+                            seat -> PriceDTO.of(seat.getGrade(), seat.getPrice()),
+                            (existing, replacement) -> existing // 중복 시 첫 번째 값 유지
+                    ))
+                    .values().stream()
+                    .collect(Collectors.toList());
+
+            return DetailDTO.builder()
+                    .id(concert.getId())
+                    .title(concert.getTitle())
+                    .posterUrl(concert.getPosterUrl())
+                    .category(concert.getCategory())
+                    .genre(concert.getGenre())
+                    .dateRange(safeDateRange)
+                    .venueName(safeVenueName)
+                    .ageLimit(concert.getAgeLimit())
+                    .runtime(concert.getRuntime())
+                    .organizer(concert.getOrganizer())
+                    .contact(concert.getContact())
+                    .detailBannerUrl(concert.getDetailBannerUrl())
+                    .detailTitle(concert.getDetailTitle())
+                    .detailDescription1(concert.getDetailDescription1())
+                    .detailDescription2(concert.getDetailDescription2())
+                    .reviewCount(0)
+                    .sessions(sessionDTOs)
+                    .dates(concert.getSessions().stream()
+                            .map(ConcertSession::getSessionDate)
+                            .distinct()
+                            .sorted()
+                            .map(DateDTO::of)
+                            .collect(Collectors.toList()))
+                    .prices(priceDTOs) // 중복 제거된 가격 리스트 세팅
+                    .build();
+        }
+    }
+
+    @Getter
+    @Builder
+    public static class SessionDTO {
+        private Integer id;
+        private String label;
+
+        // 💡 엔티티 변경 반영: index 번호를 받아 회차를 생성하고, Date와 Time 필드를 합칩니다.
+        public static SessionDTO of(ConcertSession session, int turnIndex) {
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd (E)");
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
+            // 포맷 예시: "1회차 2026.06.27 (토) 18:00"
+            String label = String.format("%d회차 %s %s",
+                    turnIndex,
+                    session.getSessionDate().format(dateFormatter),
+                    session.getSessionTime().format(timeFormatter));
+
+            return SessionDTO.builder()
+                    .id(session.getId())
+                    .label(label)
+                    .build();
+        }
+    }
+
+    @Getter
+    @Builder
+    public static class DateDTO {
+        private String value;
+        private String label;
+
+        public static DateDTO of(LocalDate date) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd (E)");
+            return DateDTO.builder()
+                    .value(date.toString())
+                    .label(date.format(formatter))
+                    .build();
+        }
+    }
+
+    @Getter
+    @Builder
+    public static class PriceDTO {
+        private String gradeClass;
+        private String gradeName;
+        private String priceText;
+
+        // 💡 엔티티 변경 반영: Enum 기반 추출
+        public static PriceDTO of(SeatGrade grade, Integer price) {
+            return PriceDTO.builder()
+                    // Enum "VIP" -> "vip" 로 변환 (CSS 클래스 매핑용)
+                    .gradeClass(grade.name().toLowerCase())
+                    // Enum "VIP" -> "VIP석" 으로 변환 (화면 노출용)
+                    .gradeName(grade.name() + "석")
+                    .priceText(String.format("%,d원", price))
+                    .build();
+        }
+    }
+
+} // end of class
