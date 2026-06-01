@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface ConcertRepository extends JpaRepository<Concert, Integer> {
+public interface ConcertRepository extends JpaRepository<Concert, Integer>{
 
     // 1. [홈페이지/목록용] 예매 상태별 공연 목록 조회 (공연장, 회차 동시 페치)
     @Query("SELECT DISTINCT c FROM Concert c " +

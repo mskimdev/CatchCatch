@@ -81,5 +81,34 @@ public class ConcertService {
 
         // 3. 엔티티 데이터를 DTO 팩토리 메서드로 넘겨 조립합니다.
         return ConcertResponse.DetailDTO.of(concert, seats);
+    } // end of getConcertDetail
+
+
+//    /**
+//     * [목록 페이지용] 동적 필터 및 검색 적용
+//     */
+//    public ConcertResponse.ConcertListResponseDTO searchConcertList(Concert.ConcertSearchCondition condition) {
+//        // QueryDSL로 구현한 커스텀 메서드를 바로 호출합니다.
+//        return concertRepository.findConcertsByFilters(condition);
+//    } // end of searchConcertList
+//
+
+    // 💡 방금 만든 Raw 레포지토리 추가 주입!
+    private final ConcertRepositoryRaw concertRepositoryRaw;
+
+    /**
+     * [목록 페이지용] 동적 필터 및 검색 적용
+     */
+    public ConcertResponse.ConcertListResponseDTO searchConcertList(Concert.ConcertSearchCondition condition) {
+
+        // 기존 QueryDSL 호출 주석 처리 (나중에 다시 풀어서 쓸 수 있게)
+        // return concertRepository.findConcertsByFilters(condition);
+
+        // 💡 Raw JPQL 방식으로 호출!
+        return concertRepositoryRaw.findConcertsByFiltersRaw(condition);
     }
+
+
+
+
 }

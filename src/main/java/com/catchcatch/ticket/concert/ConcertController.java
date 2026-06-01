@@ -32,16 +32,29 @@ public class ConcertController {
     }
 
     @GetMapping({"/concerts", "/concert/list"})
-    public String list(Model model){
+    public String list(Concert.ConcertSearchCondition condition, Model model){
+
+        // 1. 서비스에 검색/필터 조건(condition)을 넘겨서 결과 DTO를 받아옵니다.
+        ConcertResponse.ConcertListResponseDTO responseData = concertService.searchConcertList(condition);
+
+        // 2. 화면(Mustache)이 필요로 하는 데이터들을 Model에 담아줍니다.
+        model.addAttribute("concerts", responseData.getConcerts());
+        model.addAttribute("resultCount", responseData.getResultCount());
+        model.addAttribute("openSoonCount", responseData.getOpenSoonCount());
+        model.addAttribute("availableCount", responseData.getAvailableCount());
+        model.addAttribute("deadlineCount", responseData.getDeadlineCount());
+
+        // 3. 기존 공통 헤더/UI 설정들 유지
         model.addAttribute("pageTitle", "콘서트 일정");
-        model.addAttribute("showConcertFilters", true);
-        model.addAttribute("activeSchedule", true);
+        model.addAttribute("currentStatus", condition.getStatus());
+        model.addAttribute("loginHeader", true);
+
         return "concert/list";
     }
 
     // 💡 변경됨: 동적 ID를 받아 데이터를 모델에 심어 반환
     @GetMapping("/concerts/{id}")
-    public String detail(@PathVariable Integer id, Model model){
+    public String detail(@PathVariable Integer id, Model model) {
         ConcertResponse.DetailDTO responseDTO = concertService.getConcertDetail(id);
         model.addAttribute("concert", responseDTO);
         model.addAttribute("backHeader", true);
