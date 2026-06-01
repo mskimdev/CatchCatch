@@ -47,6 +47,7 @@
                         <th>주소</th>
                         <th>총 수용 인원</th>
                         <th>등록일</th>
+                        <th>관리</th>
                     </tr>
                     </thead>
 
@@ -66,20 +67,34 @@
                             </td>
 
                             <td>
-                            <span class="cc-badge">
-                                {{totalCapacity}}명
-                            </span>
+            <span class="cc-badge">
+                {{totalCapacity}}명
+            </span>
                             </td>
 
                             <td>
                                 {{createdAt}}
+                            </td>
+
+                            <td>
+                                <form action="/admin/venues/{{id}}/delete"
+                                      method="post"
+                                      onsubmit="return confirm('이 공연장을 삭제하시겠습니까?');">
+                                    {{#_csrf}}
+                                        <input type="hidden" name="{{parameterName}}" value="{{token}}">
+                                    {{/_csrf}}
+
+                                    <button class="admin-venue-delete-btn" type="submit">
+                                        삭제
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     {{/venues}}
 
                     {{^venues}}
                         <tr>
-                            <td colspan="5">
+                            <td colspan="6">
                                 <div class="admin-venue-empty">
                                     <p>아직 등록된 공연장이 없습니다.</p>
 

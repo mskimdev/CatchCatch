@@ -25,5 +25,10 @@ public class VenueService {
         return venueRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
     }
 
+    @Transactional
+    public void deleteById(Integer id){
+        venueRepository.deleteById(id);
+    }
+
 
 }
