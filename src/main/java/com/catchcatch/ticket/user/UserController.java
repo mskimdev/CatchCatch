@@ -2,6 +2,7 @@ package com.catchcatch.ticket.user;
 
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.ProfileImageStorage;
+import com.catchcatch.ticket.user.dto.UserRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -97,10 +98,7 @@ public class UserController {
 
     private void addProfileAttributes(Model model, User user) {
         model.addAttribute("pageTitle", "회원 정보 수정");
-        model.addAttribute("loginHeader", true);
         model.addAttribute("keyword", "");
-        model.addAttribute("hideConcertFilters", true);
-        model.addAttribute("hideNavMenu", true);
         model.addAttribute("activeProfile", true);
         model.addAttribute("username", user.getUsername());
         model.addAttribute("usernameInitial", user.getUsername().substring(0, 1).toUpperCase());

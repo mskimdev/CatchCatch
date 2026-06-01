@@ -31,8 +31,5 @@ public class InformationController {
     private void addPublicPageAttributes(Model model, String pageTitle) {
         model.addAttribute("pageTitle", pageTitle);
         model.addAttribute("keyword", "");
-        model.addAttribute("loginHeader", true);
-        model.addAttribute("hideConcertFilters", true);
-        model.addAttribute("hideNavMenu", true);
     }
 }

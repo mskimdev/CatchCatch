@@ -23,5 +23,9 @@ public class SessionInterceptor implements HandlerInterceptor {
         if (sessionUser != null) {
             modelAndView.addObject(Define.SESSION_USER, sessionUser);
         }
+
+        if (!modelAndView.getModel().containsKey("keyword")) {
+            modelAndView.addObject("keyword", "");
+        }
     }
 }
