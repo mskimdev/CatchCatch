@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -28,23 +29,71 @@ public class SeatService {
      */
     public SeatResponse.SummaryDTO 좌석요약조회(Integer sessionId) {
         long totalSeatCount = seatRepository.countByConcertSession_Id(sessionId);
-        long availableSeatCount = seatRepository.countByConcertSession_IdAndStatus(sessionId, SeatStatus.AVAILABLE);
-        long heldSeatCount = seatRepository.countByConcertSession_IdAndStatus(sessionId, SeatStatus.HELD);
-        long soldSeatCount = seatRepository.countByConcertSession_IdAndStatus(sessionId, SeatStatus.SOLD);
+
+        long availableSeatCount = seatRepository.countByConcertSession_IdAndStatus(
+                sessionId,
+                SeatStatus.AVAILABLE
+        );
+
+        long heldSeatCount = seatRepository.countByConcertSession_IdAndStatus(
+                sessionId,
+                SeatStatus.HELD
+        );
 
         return new SeatResponse.SummaryDTO(
                 totalSeatCount,
                 availableSeatCount,
-                heldSeatCount,
-                soldSeatCount
+                heldSeatCount
         );
     }
 
     /**
-     * 좌석 임시 점유
+     * 좌석 선택 화면에서 좌석 등급별 요약 조회
      *
-     * 사용자가 좌석을 선택하고 다음 단계로 넘어갈 때 호출.
-     * AVAILABLE 좌석만 HELD로 변경한다.
+     * 예:
+     * VIP - 총 100석, 남은 20석, 매진 70석
+     * R   - 총 300석, 남은 120석, 매진 100석
+     */
+    public List<SeatResponse.GradeSummaryDTO> 좌석등급별요약조회(Integer sessionId) {
+        return Arrays.stream(SeatGrade.values())
+                .map(grade -> {
+                    long totalSeatCount = seatRepository.countByConcertSession_IdAndGrade(
+                            sessionId,
+                            grade
+                    );
+
+                    long remainingSeatCount = seatRepository.countByConcertSession_IdAndGradeAndStatus(
+                            sessionId,
+                            grade,
+                            SeatStatus.AVAILABLE
+                    );
+
+                    long heldSeatCount = seatRepository.countByConcertSession_IdAndGradeAndStatus(
+                            sessionId,
+                            grade,
+                            SeatStatus.HELD
+                    );
+
+                    long soldSeatCount = seatRepository.countByConcertSession_IdAndGradeAndStatus(
+                            sessionId,
+                            grade,
+                            SeatStatus.SOLD
+                    );
+
+                    return new SeatResponse.GradeSummaryDTO(
+                            grade,
+                            totalSeatCount,
+                            remainingSeatCount,
+                            heldSeatCount,
+                            soldSeatCount
+                    );
+                })
+                .filter(summary -> summary.getTotalSeatCount() > 0)
+                .toList();
+    }
+
+    /**
+     * 좌석 임시 점유
      */
     @Transactional
     public List<SeatResponse.SeatDTO> 좌석임시점유(
@@ -58,6 +107,7 @@ public class SeatService {
         List<Integer> seatIds = requestDTO.getSeatIds()
                 .stream()
                 .distinct()
+                .sorted()
                 .toList();
 
         if (seatIds.size() > 4) {
@@ -82,9 +132,6 @@ public class SeatService {
 
     /**
      * 좌석 임시 점유 해제
-     *
-     * 사용자가 이전 단계로 돌아가거나,
-     * 좌석 보관 시간이 만료되었을 때 사용.
      */
     @Transactional
     public void 좌석해제(Integer sessionId, List<Integer> seatIds) {
@@ -92,9 +139,14 @@ public class SeatService {
             return;
         }
 
+        List<Integer> distinctSeatIds = seatIds.stream()
+                .distinct()
+                .sorted()
+                .toList();
+
         List<Seat> seats = seatRepository.findAllByIdInAndSessionIdForUpdate(
                 sessionId,
-                seatIds.stream().distinct().toList()
+                distinctSeatIds
         );
 
         seats.forEach(Seat::release);

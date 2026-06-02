@@ -6,60 +6,55 @@
     <title>{{#pageTitle}}{{pageTitle}} | {{/pageTitle}}CatchCatch</title>
     <link rel="stylesheet" href="/css/common.css">
 </head>
-<body class="cc-page {{#loginHeader}}cc-login-page{{/loginHeader}}">
+<body class="cc-page {{#sessionUser}}cc-login-page{{/sessionUser}}">
 <header class="cc-header">
     <div class="cc-container">
-        {{#loginHeader}}
         <div class="cc-header__top">
+            {{#sessionUser}}
+            {{#backHeader}}
+            <button type="button" class="cc-icon-btn" onclick="history.back()" aria-label="뒤로가기">
+                <svg class="cc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19 8 12l7-7"/></svg>
+            </button>
+            <form class="cc-searchbar" action="/concerts" method="get" role="search">
+                <input class="cc-searchbar__input" type="search" name="keyword" value="{{#keyword}}{{keyword}}{{/keyword}}" placeholder="아티스트, 공연, 장소를 검색해보세요">
+                <button type="reset" class="cc-searchbar__clear" aria-label="검색어 지우기">×</button>
+            </form>
+            <div class="cc-header__actions">
+                <a class="cc-icon-btn" href="/" aria-label="홈">
+                    <svg class="cc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10.5V21h14V10.5"/><path d="M9 21v-6h6v6"/></svg>
+                </a>
+                {{> layout/user-menu}}
+            </div>
+            {{/backHeader}}
+            {{^backHeader}}
             <a class="cc-logo" href="/">CatchCatch</a>
             <form class="cc-searchbar" action="/concerts" method="get" role="search">
-                <input class="cc-searchbar__input" type="search" name="keyword" value="{{keyword}}" placeholder="아티스트, 공연, 장소를 검색해보세요">
+                <input class="cc-searchbar__input" type="search" name="keyword" value="{{#keyword}}{{keyword}}{{/keyword}}" placeholder="아티스트, 공연, 장소를 검색해보세요">
                 <button type="submit" class="cc-icon-btn" aria-label="검색">
                     <svg class="cc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
                 </button>
             </form>
             <div class="cc-header__actions">
-                {{#sessionUser}}
                 {{> layout/user-menu}}
-                {{/sessionUser}}
-                {{^sessionUser}}
-                <a class="cc-login-link" href="/login">로그인</a>
-                <a class="cc-signup-link" href="/join">회원가입</a>
-                {{/sessionUser}}
             </div>
-        </div>
-        {{/loginHeader}}
-
-        {{^loginHeader}}
-        <div class="cc-header__top">
-            {{#isHome}}
+            {{/backHeader}}
+            {{/sessionUser}}
+            {{^sessionUser}}
             <a class="cc-logo" href="/">CatchCatch</a>
-            {{/isHome}}
-            {{^isHome}}
-            <button type="button" class="cc-icon-btn" onclick="history.back()" aria-label="뒤로가기">
-                <svg class="cc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19 8 12l7-7"/></svg>
-            </button>
-            {{/isHome}}
             <form class="cc-searchbar" action="/concerts" method="get" role="search">
-                <input class="cc-searchbar__input" type="search" name="keyword" value="{{#keyword}}{{keyword}}{{/keyword}}" placeholder="검색어를 입력하세요">
-                <button type="reset" class="cc-searchbar__clear" aria-label="검색어 지우기">×</button>
+                <input class="cc-searchbar__input" type="search" name="keyword" value="{{#keyword}}{{keyword}}{{/keyword}}" placeholder="아티스트, 공연, 장소를 검색해보세요">
+                <button type="submit" class="cc-icon-btn" aria-label="검색">
+                    <svg class="cc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                </button>
             </form>
             <div class="cc-header__actions">
-                {{#sessionUser}}
-                {{> layout/user-menu}}
-                {{/sessionUser}}
-                {{^sessionUser}}
-                {{^isHome}}
-                <a class="cc-icon-btn" href="/" aria-label="홈">
-                    <svg class="cc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10.5V21h14V10.5"/><path d="M9 21v-6h6v6"/></svg>
-                </a>
-                {{/isHome}}
-                {{/sessionUser}}
+                <a class="cc-login-link" href="/login">로그인</a>
+                <a class="cc-signup-link" href="/join">회원가입</a>
             </div>
+            {{/sessionUser}}
         </div>
-        {{/loginHeader}}
 
-        {{^isHome}}
+        {{#showConcertFilters}}
         <div class="cc-header__filters">
             <div class="cc-filter-left">
                 <button type="button" class="cc-pill cc-pill--ghost">장르 <span>⌄</span></button>
@@ -76,17 +71,10 @@
                 </button>
             </div>
         </div>
-        {{/isHome}}
+        {{/showConcertFilters}}
     </div>
     <nav class="cc-header__nav" aria-label="콘서트 메뉴">
-        <div class="cc-container cc-nav-row cc-nav-row--center {{#isHome}}cc-nav-row--home{{/isHome}}">
-            {{^isHome}}
-            {{^sessionUser}}
-            <button type="button" class="cc-icon-btn cc-nav__menu" aria-label="전체 메뉴">
-                <svg class="cc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
-            </button>
-            {{/sessionUser}}
-            {{/isHome}}
+        <div class="cc-container cc-nav-row cc-nav-row--center">
             <a class="cc-nav__link {{#activeSchedule}}is-active{{/activeSchedule}}" href="/concerts">콘서트 일정</a>
             <a class="cc-nav__link {{#activeOpen}}is-active{{/activeOpen}}" href="/concerts/open-soon">오픈 예정</a>
             <a class="cc-nav__link {{#activeEvent}}is-active{{/activeEvent}}" href="/events">이벤트</a>

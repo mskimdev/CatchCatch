@@ -11,22 +11,22 @@ public class ConcertSessionResponse {
 
         private Integer sessionId;
         private LocalTime sessionTime;
+        private Long totalSeatCount;
         private Long remainingSeatCount;
         private Boolean soldOut;
-        private String remainingDisplay;
 
         public TimeDTO(
                 Integer sessionId,
                 LocalTime sessionTime,
+                Long totalSeatCount,
                 Long remainingSeatCount,
-                Boolean soldOut,
-                String remainingDisplay
+                Boolean soldOut
         ) {
             this.sessionId = sessionId;
             this.sessionTime = sessionTime;
+            this.totalSeatCount = totalSeatCount;
             this.remainingSeatCount = remainingSeatCount;
             this.soldOut = soldOut;
-            this.remainingDisplay = remainingDisplay;
         }
     }
 }

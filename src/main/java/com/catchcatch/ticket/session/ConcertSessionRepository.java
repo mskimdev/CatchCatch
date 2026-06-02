@@ -41,4 +41,16 @@ public interface ConcertSessionRepository extends JpaRepository<ConcertSession, 
             Integer sessionId,
             Integer concertId
     );
+
+    @Query("""
+        select cs
+        from ConcertSession cs
+        where cs.concert.id = :concertId
+          and cs.sessionDate = :sessionDate
+        order by cs.sessionTime asc
+        """)
+    List<ConcertSession> findSessionsByConcertIdAndDate(
+            @Param("concertId") Integer concertId,
+            @Param("sessionDate") LocalDate sessionDate
+    );
 }

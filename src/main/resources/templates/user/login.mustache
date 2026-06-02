@@ -1,4 +1,4 @@
-{{> layout/header-login}}
+{{> layout/header}}
 <link rel="stylesheet" href="/css/user-login.css">
 <main class="cc-login-main">
     <section class="cc-login-shell">
@@ -12,13 +12,13 @@
                     <span class="cc-input-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
                     </span>
-                    <input class="cc-input" type="text" name="username" placeholder="이메일 또는 아이디" autocomplete="username">
+                    <input class="cc-input" type="email" name="email" placeholder="이메일" autocomplete="email" value="ssar@naver.com">
                 </div>
                 <div class="cc-input-wrap">
                     <span class="cc-input-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
                     </span>
-                    <input class="cc-input" id="loginPassword" type="password" name="password" placeholder="비밀번호" autocomplete="current-password">
+                    <input class="cc-input" id="loginPassword" type="password" name="password" placeholder="비밀번호" autocomplete="current-password" value="ssar1234">
                     <button class="cc-input-eye" type="button" data-toggle-pw="loginPassword" aria-label="비밀번호 보기" aria-pressed="false">
                         <svg class="cc-eye-icon cc-eye-icon--show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
                         <svg class="cc-eye-icon cc-eye-icon--hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 3 18 18"/><path d="M10.6 10.6a3 3 0 0 0 4.2 4.2"/><path d="M9.9 5.2A10.7 10.7 0 0 1 12 5c6.5 0 10 7 10 7a18.5 18.5 0 0 1-2.4 3.3"/><path d="M6.4 6.4C3.6 8.2 2 12 2 12s3.5 7 10 7c1.5 0 2.8-.3 4-.8"/></svg>
@@ -31,7 +31,7 @@
             </form>
             <div class="cc-divider">또는</div>
             <div class="cc-social-row">
-                <a class="cc-social cc-social--kakao" href="/oauth2/authorization/kakao">카카오로 로그인</a>
+                <a class="cc-social cc-social--kakao" href="https://kauth.kakao.com/oauth/authorize?client_id=4e7fa8278a6bbe1e2032b780165fe695&redirect_uri=http://localhost:8080/kakao-redirect&response_type=code">카카오로 로그인</a>
                 <a class="cc-social cc-social--naver" href="/oauth2/authorization/naver">네이버로 로그인</a>
                 <a class="cc-social" href="/oauth2/authorization/google">Google 로그인</a>
             </div>

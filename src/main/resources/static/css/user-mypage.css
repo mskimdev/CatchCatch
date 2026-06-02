@@ -35,6 +35,39 @@
 /* 회원 정보 수정 */
 .cc-field { margin-bottom: 16px; }
 .cc-field label { display: block; margin-bottom: 8px; font-weight: 900; font-size: 14px; }
+.cc-profile-page-head { align-items: end; padding: 26px 30px; border-radius: 22px; color: #fff; background: linear-gradient(135deg, var(--cc-primary-dark), var(--cc-primary) 68%, #a855f7); box-shadow: var(--cc-shadow); }
+.cc-profile-page-head h2 { font-size: 27px; }
+.cc-profile-page-head p { margin: 8px 0 0; color: rgba(255,255,255,.78); font-weight: 700; }
+.cc-profile-kicker { margin: 0 0 6px !important; color: #d8b4fe !important; font-size: 12px; font-weight: 950 !important; letter-spacing: 1.5px; }
+.cc-profile-edit-layout { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 18px; align-items: start; }
+.cc-profile-edit-card { padding: 28px; }
+.cc-profile-image-edit { display: grid; grid-template-columns: 82px 1fr; align-items: center; gap: 16px; margin-bottom: 24px; padding: 16px; border: 1px solid var(--cc-line); border-radius: 16px; background: linear-gradient(135deg, var(--cc-primary-softer), #fff); }
+.cc-profile-image-edit__preview { position: relative; width: 82px; height: 82px; display: grid; place-items: center; overflow: hidden; border: 2px solid var(--cc-line-strong); border-radius: 50%; background: #fff; color: var(--cc-primary-dark); cursor: pointer; }
+.cc-profile-image-edit__preview img { position: absolute; inset: 0; width: 100%; height: 100%; display: none; object-fit: cover; }
+.cc-profile-image-edit__preview.has-image img { display: block; }
+.cc-profile-image-edit__preview.has-image .cc-profile-image-edit__fallback { display: none; }
+.cc-profile-image-edit__fallback svg { width: 34px; height: 34px; }
+.cc-profile-image-edit strong { font-size: 15px; }
+.cc-profile-image-edit p { margin: 5px 0 10px; color: var(--cc-muted); font-size: 12px; font-weight: 700; line-height: 1.45; }
+.cc-profile-image-edit__button { display: inline-flex; padding: 7px 11px; border: 1px solid var(--cc-line-strong); border-radius: 9px; color: var(--cc-primary-dark); background: #fff; font-size: 12px; font-weight: 900; cursor: pointer; }
+.cc-profile-image-edit input[type="file"] { display: none; }
+.cc-profile-alert { margin: 0 0 18px; padding: 12px 14px; border-radius: 12px; font-size: 14px; font-weight: 850; }
+.cc-profile-alert--success { color: #166534; background: #f0fff4; border: 1px solid #bbf7d0; }
+.cc-profile-alert--error { color: var(--cc-danger); background: #fff0f0; border: 1px solid #fecaca; }
+.cc-profile-form-section + .cc-profile-form-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--cc-line); }
+.cc-profile-form-section__head { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.cc-profile-form-section__head > span { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; border-radius: 11px; color: #fff; background: linear-gradient(135deg, var(--cc-primary), var(--cc-primary-dark)); font-size: 12px; font-weight: 950; }
+.cc-profile-form-section__head h3 { margin: 0; font-size: 17px; }
+.cc-profile-form-section__head p { margin: 4px 0 0; color: var(--cc-muted); font-size: 13px; font-weight: 700; }
+.cc-profile-edit-card .cc-input-wrap { margin-bottom: 0; }
+.cc-profile-edit-card .cc-input:disabled { color: var(--cc-muted); background: var(--cc-surface-soft); }
+.cc-field-note { margin-left: 6px; color: var(--cc-muted); font-size: 12px; font-weight: 750; }
+.cc-profile-guide { padding: 24px; background: linear-gradient(145deg, #fff, var(--cc-primary-softer)); }
+.cc-profile-guide__icon { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 15px; color: var(--cc-primary-dark); background: var(--cc-primary-soft); }
+.cc-profile-guide__icon svg { width: 26px; height: 26px; }
+.cc-profile-guide h3 { margin: 18px 0 8px; font-size: 18px; }
+.cc-profile-guide p { margin: 0; color: var(--cc-subtext); font-size: 14px; font-weight: 700; line-height: 1.6; }
+.cc-profile-guide ul { display: grid; gap: 9px; margin: 18px 0 0; padding: 16px 0 0 18px; border-top: 1px solid var(--cc-line); color: var(--cc-muted); font-size: 13px; font-weight: 750; }
 
 /* 관심 공연 그리드 */
 .cc-concert-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
@@ -53,6 +86,7 @@
   .cc-booking-item { grid-template-columns: 70px 1fr; }
   .cc-booking-item__price { grid-column: 2; }
   .cc-concert-grid { grid-template-columns: repeat(2, 1fr); }
+  .cc-profile-edit-layout { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 600px) {
