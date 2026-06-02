@@ -1,0 +1,171 @@
+/*
+ * booking-seat.css
+ * 좌석 선택 화면 전용 CSS
+ * 기존 화면의 좌/중앙/우측 틀은 유지하고, 중앙 좌석 UX만 보강한다.
+ */
+
+/* 좌석 맵 영역 */
+.cc-seat-map-card {
+    position: relative;
+}
+
+.cc-arena {
+    position: relative;
+    overflow: visible;
+    min-height: 520px;
+}
+
+/* 구역 단위 확대 */
+.cc-zone {
+    position: absolute;
+    transition: transform 0.18s ease, filter 0.18s ease;
+    transform-origin: center center;
+}
+
+.cc-zone:hover,
+.cc-zone.is-hovered {
+    z-index: 50;
+    transform: scale(1.65);
+    filter: drop-shadow(0 16px 30px rgba(60, 24, 150, 0.24));
+}
+
+.cc-zone:hover .cc-zone__dots,
+.cc-zone.is-hovered .cc-zone__dots {
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid rgba(105, 52, 219, 0.22);
+    border-radius: 16px;
+    padding: 8px;
+    box-shadow: 0 12px 24px rgba(43, 21, 91, 0.10);
+}
+
+/* 구역명도 확대 상태에서 잘 보이게 */
+.cc-zone:hover .cc-zone__name,
+.cc-zone.is-hovered .cc-zone__name {
+    z-index: 60;
+    color: #2d174f;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 999px;
+    padding: 2px 7px;
+    box-shadow: 0 5px 12px rgba(43, 21, 91, 0.12);
+}
+
+/* 좌석 버튼 */
+.cc-seat-dot {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+    border: 0;
+    cursor: pointer;
+    transition: transform 0.12s ease, outline-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.cc-seat-dot:hover,
+.cc-seat-dot:focus-visible {
+    z-index: 70;
+    transform: scale(1.45);
+    outline: 2px solid #2d174f;
+    outline-offset: 2px;
+    box-shadow: 0 8px 18px rgba(43, 21, 91, 0.18);
+}
+
+.cc-seat-dot--sold,
+.cc-seat-dot.is-sold,
+.cc-seat-dot[disabled] {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.cc-seat-dot--sold:hover,
+.cc-seat-dot.is-sold:hover,
+.cc-seat-dot[disabled]:hover {
+    transform: none;
+    outline: none;
+    box-shadow: none;
+}
+
+/* 좌석 내부 번호: 전체 지도에서는 숨기고 구역 확대 때만 표시 */
+.cc-seat-no {
+    opacity: 0;
+    max-width: 18px;
+    font-size: 0;
+    font-weight: 900;
+    line-height: 1;
+    color: #21143d;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.cc-zone:hover .cc-seat-no,
+.cc-zone.is-hovered .cc-seat-no {
+    opacity: 1;
+    font-size: 8px;
+}
+
+/* 선택 체크는 번호보다 위 */
+.cc-seat-check {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10px;
+    font-weight: 900;
+    color: #fff;
+    pointer-events: none;
+}
+
+/* 좌석 hover 안내/가격 박스 */
+.cc-seat-hover-info {
+    margin: 10px auto 0;
+    width: fit-content;
+    min-width: 300px;
+    max-width: 520px;
+    padding: 10px 16px;
+    border: 1px solid #e6def7;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 10px 24px rgba(43, 21, 91, 0.08);
+    text-align: center;
+}
+
+.cc-seat-hover-info strong {
+    display: block;
+    color: #2d174f;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.cc-seat-hover-info span {
+    display: block;
+    margin-top: 3px;
+    color: #6f6580;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* 하단 컨트롤과 hover 정보 간격 */
+.cc-map-controls {
+    margin-top: 14px;
+}
+
+/* 오른쪽 예매 버튼 분리 */
+.cc-payment-form {
+    margin-top: 14px;
+}
+
+.cc-prev-link {
+    margin-top: 10px;
+}
+
+/* 모바일/작은 화면에서는 과확대 방지 */
+@media (max-width: 1100px) {
+    .cc-zone:hover,
+    .cc-zone.is-hovered {
+        transform: scale(1.35);
+    }
+
+    .cc-zone:hover .cc-seat-no,
+    .cc-zone.is-hovered .cc-seat-no {
+        font-size: 7px;
+    }
+}

@@ -77,8 +77,16 @@
                                 {{#seats}}
                                     <button type="button"
                                             class="cc-seat-dot cc-seat-dot--{{gradeClass}} {{statusClass}} {{#selected}}cc-seat-dot--selected{{/selected}}"
-                                            data-seat-id="{{id}}" aria-label="{{seatNumber}}">{{#selected}}
-                                        ✓{{/selected}}</button>{{/seats}}
+                                            data-seat-id="{{id}}"
+                                            data-zone="{{../name}}"
+                                            data-seat-name="{{seatNumber}}"
+                                            data-seat-no="{{seatNo}}"
+                                            data-grade="{{grade}}"
+                                            data-price="{{priceText}}"
+                                            aria-label="{{seatNumber}} {{grade}} {{priceText}}">
+                                        <span class="cc-seat-no">{{seatNo}}</span>
+                                        {{#selected}}<span class="cc-seat-check">✓</span>{{/selected}}
+                                    </button>{{/seats}}
                             </div>
                         </section>
                     {{/seatZones}}
@@ -577,6 +585,10 @@
                         </section>
                     {{/seatZones}}
                 </div>
+                <div class="cc-seat-hover-info" id="seatHoverInfo">
+                    <strong>좌석에 마우스를 올려보세요</strong>
+                    <span>구역에 커서를 올리면 확대되고, 좌석 번호와 가격이 표시됩니다.</span>
+                </div>
                 <div class="cc-map-controls">
                     <button class="cc-small-btn" type="button">좌석등급 전체보기 ☰</button>
                     <div class="cc-control-group"><span>구역 선택</span><select class="cc-select"
@@ -632,13 +644,12 @@
                             2{{/selectedCount}}석</span><strong
                             class="cc-total__price">{{#totalPriceText}}{{totalPriceText}}{{/totalPriceText}}{{^totalPriceText}}
                         308,000원{{/totalPriceText}}</strong></div>
-                    <form action="/booking/payment" method="post">
+                    <form action="/booking/payment" method="post" class="cc-payment-form">
                         {{#_csrf}}<input type="hidden" name="{{parameterName}}" value="{{token}}">{{/_csrf}}
                         <button class="cc-btn cc-btn--primary cc-btn--full" type="submit">다음 단계</button>
-                        <a class="cc-btn cc-btn--outline cc-btn--full" style="margin-top:10px"
-                           href="/concerts/{{#concert.id}}{{concert.id}}{{/concert.id}}{{^concert.id}}1{{/concert.id}}">이전
-                            단계</a>
                     </form>
+                    <a class="cc-btn cc-btn--outline cc-btn--full cc-prev-link"
+                       href="/concerts/{{#concert.id}}{{concert.id}}{{/concert.id}}{{^concert.id}}1{{/concert.id}}">이전 단계</a>
                 </div>
                 <div class="cc-card cc-notice-card">
                     <h3>ⓘ 알려드려요</h3>
@@ -652,4 +663,5 @@
         </section>
     </div>
 </main>
+<script src="/js/booking-seat.js"></script>
 {{> layout/footer}}
