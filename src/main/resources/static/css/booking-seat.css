@@ -7,96 +7,552 @@
   align-items: start;
 }
 
-.cc-booking-summary { padding: 16px; }
-.cc-booking-summary__dark { background: #0f1224; color: #fff; border-radius: 16px; padding: 18px; }
-.cc-booking-summary h2 { margin: 10px 0 16px; font-size: 20px; line-height: 1.32; }
-.cc-booking-summary__line { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,.88); font-size: 13px; font-weight: 750; margin: 8px 0; }
-.cc-booking-summary__poster { margin-top: 16px; border-radius: 12px; overflow: hidden; }
-.cc-booking-summary__poster img { width: 100%; aspect-ratio: 3/4; object-fit: cover; }
+/* 왼쪽 예매 요약 */
+.cc-booking-summary {
+  padding: 16px;
+}
 
-.cc-booking-info { margin-top: 16px; padding: 18px; }
-.cc-mini-row { display: grid; grid-template-columns: 72px 1fr; gap: 8px; margin: 10px 0; font-size: 13px; }
-.cc-mini-row b { color: var(--cc-muted); }
+.cc-booking-summary__dark {
+  background: #0f1224;
+  color: #fff;
+  border-radius: 16px;
+  padding: 18px;
+}
 
-.cc-seat-map-card { padding: 18px; min-height: 670px; overflow: hidden; }
-.cc-seat-map-head { display: grid; grid-template-columns: 140px 1fr 116px; gap: 12px; }
-.cc-grade-list h3 { margin: 0 0 12px; font-size: 16px; }
-.cc-grade-row { display: flex; align-items: center; gap: 8px; margin: 12px 0; font-size: 13px; font-weight: 850; }
-.cc-grade-row small { display: block; margin-left: 26px; margin-top: 2px; color: var(--cc-muted); }
+.cc-booking-summary h2 {
+  margin: 10px 0 16px;
+  font-size: 20px;
+  line-height: 1.32;
+}
 
-.cc-stage { height: 54px; border-radius: 8px 8px 22px 22px; background: linear-gradient(135deg, #2a2534, #13111b); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 950; letter-spacing: .02em; margin: 2px auto 10px; width: min(320px, 70%); }
-
-.cc-seat-status { padding-top: 6px; font-size: 12px; color: var(--cc-muted); font-weight: 850; }
-.cc-seat-status div { display: flex; align-items: center; gap: 7px; margin: 8px 0; }
-
-.cc-arena { position: relative; margin: 4px auto 0; width: min(100%, 640px); height: 500px; }
-.cc-zone { position: absolute; border: 1px solid #ece7f4; border-radius: 16px; background: rgba(255,255,255,.56); display: grid; place-items: center; padding: 24px 14px 14px; }
-.cc-zone__name { position: absolute; top: 10px; left: 0; right: 0; text-align: center; font-weight: 900; color: var(--cc-text); }
-.cc-zone__dots { display: grid; grid-template-columns: repeat(8, 12px); gap: 8px; align-content: center; justify-content: center; }
-.cc-zone--n { left: 50%; top: 50px; width: 178px; height: 250px; transform: translateX(-50%); }
-.cc-zone--g { left: 23%; top: 78px; width: 132px; height: 210px; transform: rotate(8deg); }
-.cc-zone--d { right: 23%; top: 78px; width: 132px; height: 210px; transform: rotate(-8deg); }
-.cc-zone--b { left: 7%; top: 230px; width: 148px; height: 230px; transform: rotate(-14deg); }
-.cc-zone--r { right: 7%; top: 230px; width: 148px; height: 230px; transform: rotate(14deg); }
-.cc-zone--a { left: 29%; bottom: 34px; width: 120px; height: 190px; }
-.cc-zone--j { left: 50%; bottom: 22px; width: 120px; height: 205px; transform: translateX(-50%); }
-.cc-zone--ch { right: 29%; bottom: 34px; width: 120px; height: 190px; }
-
-.cc-seat-dot { width: 12px; height: 12px; border-radius: 50%; border: 0; padding: 0; font-size: 8px; line-height: 12px; color: #fff; display: inline-flex; align-items: center; justify-content: center; }
-.cc-seat-dot--vip  { background: #7c3aed; }
-.cc-seat-dot--r    { background: #60a5fa; }
-.cc-seat-dot--s    { background: #5eead4; }
-.cc-seat-dot--a    { background: #fbbf24; }
-.cc-seat-dot--sold { background: #e5e1ea; }
-.cc-seat-dot--held { background: #f59e0b; }
-.cc-seat-dot--selected { background: #4c1d95; box-shadow: 0 0 0 3px rgba(124,58,237,.16); }
-
-.cc-seat-hover-info {
-  margin-top: 6px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: #fbfaff;
-  border: 1px solid var(--cc-line);
+.cc-booking-summary__line {
   display: flex;
   align-items: center;
   gap: 8px;
+  color: rgba(255, 255, 255, .88);
   font-size: 13px;
+  font-weight: 750;
+  margin: 8px 0;
+}
+
+.cc-booking-summary__poster {
+  margin-top: 16px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.cc-booking-summary__poster img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+}
+
+.cc-booking-info {
+  margin-top: 16px;
+  padding: 18px;
+}
+
+.cc-mini-row {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 8px;
+  margin: 10px 0;
+  font-size: 13px;
+}
+
+.cc-mini-row b {
+  color: var(--cc-muted);
+}
+
+/* 중앙 좌석 카드 */
+.cc-seat-map-card {
+  padding: 16px;
+  min-height: 670px;
+  overflow: hidden;
+}
+
+/* 새 좌석 선택 구조 */
+.cc-seat-redesign {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  gap: 16px;
+  min-height: 630px;
+}
+
+/* 전체 좌석도 */
+.cc-zone-overview {
+  border: 1px solid var(--cc-line);
+  border-radius: 16px;
+  background: #fbfaff;
+  padding: 14px;
+}
+
+.cc-zone-overview__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.cc-zone-overview__head strong {
+  font-size: 16px;
+  font-weight: 950;
+  color: var(--cc-text);
+}
+
+.cc-zone-overview__head span {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--cc-muted);
+}
+
+.cc-zone-overview__image-box {
+  width: 100%;
+  height: 250px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #ded6ea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cc-zone-overview__image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #fff;
+}
+
+.cc-zone-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.cc-zone-tab {
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid #ded6ea;
+  background: #fff;
+  color: #2d2740;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.cc-zone-tab:hover {
+  border-color: #7c3aed;
+  color: #4c1d95;
+}
+
+.cc-zone-tab.is-active {
+  background: linear-gradient(135deg, #7c3aed, #4c1d95);
+  color: #fff;
+  border-color: #4c1d95;
+}
+
+.cc-zone-legend {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e8e1f2;
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 850;
   color: var(--cc-subtext);
 }
-.cc-seat-hover-info strong { color: var(--cc-text); }
 
-.cc-map-controls { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
-.cc-control-group { display: flex; align-items: center; gap: 10px; }
-.cc-small-btn { height: 38px; min-width: 38px; padding: 0 14px; border: 1px solid var(--cc-line); background: #fff; border-radius: 10px; font-weight: 900; }
+.cc-zone-legend div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
 
-.cc-selected-card, .cc-notice-card { padding: 20px; }
-.cc-selected-card h3, .cc-notice-card h3 { margin: 0 0 16px; }
-.cc-timer { display: flex; justify-content: space-between; color: var(--cc-muted); font-size: 13px; font-weight: 850; border-bottom: 1px solid var(--cc-line); padding-bottom: 14px; margin-bottom: 18px; }
-.cc-timer b { color: var(--cc-primary-dark); font-size: 16px; }
-.cc-selected-list { display: grid; gap: 12px; }
-.cc-selected-seat { display: grid; grid-template-columns: 1fr 26px; gap: 8px; align-items: center; }
-.cc-selected-seat__name { font-weight: 900; }
-.cc-selected-seat__price { color: var(--cc-muted); font-size: 13px; margin-top: 3px; }
-.cc-remove { width: 26px; height: 26px; border-radius: 50%; background: var(--cc-primary-softer); color: var(--cc-primary-dark); font-weight: 900; }
-.cc-total { margin: 22px 0 16px; padding-top: 18px; border-top: 1px solid var(--cc-line); display: flex; justify-content: space-between; align-items: center; font-weight: 900; }
-.cc-total__price { color: var(--cc-primary-dark); font-size: 24px; }
-.cc-notice-card { margin-top: 16px; background: linear-gradient(135deg, var(--cc-primary-softer), #fff); }
-.cc-notice-card ul { margin: 0; padding-left: 18px; color: var(--cc-subtext); font-size: 13px; line-height: 1.7; }
+.cc-seat-sample {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  display: inline-block;
+  border: 1px solid #b8bfd2;
+}
+
+.cc-seat-sample--available {
+  background: #536687;
+}
+
+.cc-seat-sample--selected {
+  background: #7c3aed;
+  border-color: #7c3aed;
+}
+
+.cc-seat-sample--sold {
+  background: #d8d2e2;
+}
+
+/* 구역 확대 */
+.cc-zone-detail {
+  border: 1px solid var(--cc-line);
+  border-radius: 16px;
+  background: #fff;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cc-zone-detail__top {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 16px;
+  align-items: center;
+}
+
+.cc-zone-detail__top h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 950;
+  color: #21172f;
+}
+
+.cc-zone-detail__top p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--cc-muted);
+}
+
+.cc-zone-stage {
+  height: 48px;
+  border-radius: 12px 12px 24px 24px;
+  background: linear-gradient(135deg, #2a2534, #13111b);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 23px;
+  font-weight: 950;
+  letter-spacing: .04em;
+}
+
+.cc-zone-guide {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f8f5ff;
+  color: #4c1d95;
+  border: 1px solid #e6dcff;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.cc-zone-seat-grid {
+  flex: 1;
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(124, 58, 237, .04), rgba(255, 255, 255, .7)),
+    #ffffff;
+  border: 1px solid #eee8f7;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.cc-seat-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 5px 0;
+}
+
+.cc-seat-row__label {
+  width: 34px;
+  text-align: right;
+  margin-right: 8px;
+  font-size: 13px;
+  font-weight: 950;
+  color: #2b2440;
+}
+
+.cc-real-seat {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: #536687;
+  color: #fff;
+  border: 1px solid #42516d;
+  font-size: 12px;
+  font-weight: 950;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .08s ease, box-shadow .08s ease;
+}
+
+.cc-real-seat:hover {
+  transform: translateY(-2px) scale(1.08);
+  box-shadow: 0 6px 12px rgba(40, 26, 80, .18);
+}
+
+.cc-real-seat.is-selected {
+  background: #7c3aed;
+  border-color: #4c1d95;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, .18);
+}
+
+.cc-real-seat.is-sold {
+  background: #d8d2e2;
+  border-color: #ccc4d8;
+  color: #9a92aa;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.cc-real-seat.is-sold:hover {
+  transform: none;
+}
+
+.cc-real-seat--vip {
+  background: #536687;
+  border-color: #42516d;
+}
+
+.cc-real-seat--r {
+  background: #18a829;
+  border-color: #0e8a1d;
+}
+
+.cc-real-seat--s {
+  background: #28aee8;
+  border-color: #168fca;
+}
+
+.cc-real-seat--a {
+  background: #ff8a3d;
+  border-color: #e46f20;
+}
+
+.cc-real-seat--b {
+  background: #9acd32;
+  border-color: #78a91f;
+}
+
+.cc-zone-bottom {
+  min-height: 42px;
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cc-zone-bottom #seatHoverInfo {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--cc-subtext);
+}
+
+/* 오른쪽 선택 좌석 */
+.cc-selected-card,
+.cc-notice-card {
+  padding: 20px;
+}
+
+.cc-selected-card h3,
+.cc-notice-card h3 {
+  margin: 0 0 16px;
+}
+
+.cc-timer {
+  display: flex;
+  justify-content: space-between;
+  color: var(--cc-muted);
+  font-size: 13px;
+  font-weight: 850;
+  border-bottom: 1px solid var(--cc-line);
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+}
+
+.cc-timer b {
+  color: var(--cc-primary-dark);
+  font-size: 16px;
+}
+
+.cc-selected-list {
+  min-height: 120px;
+  display: grid;
+  gap: 12px;
+}
+
+.cc-selected-seat {
+  display: grid;
+  grid-template-columns: 1fr 26px;
+  gap: 8px;
+  align-items: center;
+}
+
+.cc-selected-seat__name {
+  font-weight: 900;
+}
+
+.cc-selected-seat__price {
+  color: var(--cc-muted);
+  font-size: 13px;
+  margin-top: 3px;
+}
+
+.cc-remove {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--cc-primary-softer);
+  color: var(--cc-primary-dark);
+  font-weight: 900;
+}
+
+.cc-total {
+  margin: 22px 0 16px;
+  padding-top: 18px;
+  border-top: 1px solid var(--cc-line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 900;
+}
+
+.cc-total__price {
+  color: var(--cc-primary-dark);
+  font-size: 24px;
+}
+
+.cc-payment-form {
+  margin-bottom: 8px;
+}
+
+.cc-prev-link {
+  margin-top: 8px;
+}
+
+.cc-notice-card {
+  margin-top: 16px;
+  background: linear-gradient(135deg, var(--cc-primary-softer), #fff);
+}
+
+.cc-notice-card ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--cc-subtext);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.cc-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+.cc-dot--vip {
+  background: #7c3aed;
+}
+
+.cc-dot--r {
+  background: #60a5fa;
+}
+
+.cc-dot--s {
+  background: #5eead4;
+}
+
+.cc-dot--a {
+  background: #fbbf24;
+}
+
+.cc-dot--b {
+  background: #9acd32;
+}
+
+.cc-dot--gray {
+  background: #d8d2e2;
+}
+
+.cc-small-btn {
+  height: 38px;
+  min-width: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--cc-line);
+  background: #fff;
+  border-radius: 10px;
+  font-weight: 900;
+}
 
 @media (max-width: 1180px) {
-  .cc-seat-layout { grid-template-columns: 1fr; }
-  .cc-seat-layout > aside { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cc-seat-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-seat-layout > aside {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .cc-seat-redesign {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-zone-overview__image-box {
+    height: 320px;
+  }
 }
 
 @media (max-width: 700px) {
-  .cc-seat-map-card { min-height: auto; padding: 16px; overflow-x: auto; }
-  .cc-seat-map-head { grid-template-columns: 1fr; }
-  .cc-grade-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
-  .cc-stage { width: min(280px, 86%); height: 48px; font-size: 20px; }
-  .cc-arena { width: 650px; transform: scale(.72); transform-origin: top left; margin-bottom: -148px; }
-  .cc-map-controls { align-items: flex-start; flex-direction: column; }
-  .cc-seat-layout > aside { display: block; }
-  .cc-stepper { overflow-x: auto; justify-content: flex-start; }
-  .cc-step-line { width: 28px; flex: 0 0 28px; }
-  .cc-selected-card, .cc-notice-card, .cc-booking-summary, .cc-booking-info { padding: 16px; }
+  .cc-seat-map-card {
+    min-height: auto;
+    padding: 16px;
+    overflow-x: auto;
+  }
+
+  .cc-seat-layout > aside {
+    display: block;
+  }
+
+  .cc-zone-detail__top {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-zone-seat-grid {
+    align-items: flex-start;
+  }
+
+  .cc-real-seat {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+
+  .cc-stepper {
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+
+  .cc-step-line {
+    width: 28px;
+    flex: 0 0 28px;
+  }
+
+  .cc-selected-card,
+  .cc-notice-card,
+  .cc-booking-summary,
+  .cc-booking-info {
+    padding: 16px;
+  }
 }
