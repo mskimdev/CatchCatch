@@ -25,4 +25,5 @@ oauth:
     client-secret: ${GOOGLE_CLIENT_SECRET}
 
 catchcatch:
-  key: ${CATCHCATCH_KEY}
+  #key: ${CATCHCATCH_KEY}
+  key: dummy

@@ -362,14 +362,14 @@ VALUES
      DATEADD('MINUTE', -25, NOW()),
      DATEADD('MINUTE', -30, NOW()));
 
+-- =====================================================
+--  9. refund_tb
+-- =====================================================
+INSERT INTO refund_tb
+(id, payment_id, booking_id, amount, fee, reason, refunded_at)
+VALUES
+    (1, 4, 5, 99000, 11000, '개인 사정으로 인한 취소', DATEADD('HOUR', -2, NOW()));
 
- -- =====================================================
- --  9. refund_tb
- -- =====================================================
- INSERT INTO refund_tb
- (id, payment_id, booking_id, amount, fee, reason, refunded_at)
- VALUES
-     (1, 4, 5, 99000, 11000, '개인 사정으로 인한 취소', DATEADD('HOUR', -2, NOW()));
 
 /*
 -- =====================================================
@@ -420,3 +420,9 @@ FROM queue_tb q
 ORDER BY q.id;
 
 */
+
+-- =====================================================
+-- AUTO_INCREMENT 시작 번호 보정
+-- 기존 테스트 데이터가 id를 직접 넣었기 때문에 다음 생성 id를 맞춰준다.
+-- =====================================================
+ALTER TABLE booking_tb ALTER COLUMN id RESTART WITH 7;

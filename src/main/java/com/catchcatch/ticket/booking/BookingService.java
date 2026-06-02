@@ -1,5 +1,7 @@
 package com.catchcatch.ticket.booking;
 
+import com.catchcatch.ticket.booking.dto.BookingRequest;
+import com.catchcatch.ticket.booking.dto.BookingResponse;
 import com.catchcatch.ticket.user.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
