@@ -56,20 +56,20 @@ public class VenueController {
 
         List<Venue> venues = venueService.findAll(keyword);
 
+        boolean isSearch = keyword != null && !keyword.isBlank();
+
         model.addAttribute("pageTitle", "공연장 관리");
         model.addAttribute("pageCss", "/css/venue-list.css");
 
         model.addAttribute("activeVenue", true);
 
-        // 검색어 유지
-        model.addAttribute("keyword", keyword == null ? "" : keyword);
+        model.addAttribute("keyword", isSearch ? keyword : "");
+        model.addAttribute("isSearch", isSearch);
 
-        // 관리자 공통 헤더 검색 설정
         model.addAttribute("searchAction", "/admin/venues");
         model.addAttribute("searchLabel", "공연장");
         model.addAttribute("searchPlaceholder", "공연장명을 검색해보세요");
 
-        // 등록 버튼 설정
         model.addAttribute("createUrl", "/admin/venues/save");
         model.addAttribute("createLabel", "+ 공연장 등록");
 
