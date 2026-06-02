@@ -22,19 +22,17 @@ public class QRefund extends EntityPathBase<Refund> {
 
     public static final QRefund refund = new QRefund("refund");
 
-    public final NumberPath<Integer> amount = createNumber("amount", Integer.class);
-
-    public final com.catchcatch.ticket.booking.QBooking booking;
-
-    public final NumberPath<Integer> fee = createNumber("fee", Integer.class);
+    public final NumberPath<Integer> cancelFee = createNumber("cancelFee", Integer.class);
 
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
 
     public final com.catchcatch.ticket.payment.QPayment payment;
 
-    public final StringPath reason = createString("reason");
+    public final DateTimePath<java.time.LocalDateTime> refundedAt = createDateTime("refundedAt", java.time.LocalDateTime.class);
 
-    public final DateTimePath<java.sql.Timestamp> refundedAt = createDateTime("refundedAt", java.sql.Timestamp.class);
+    public final NumberPath<Integer> refundPrice = createNumber("refundPrice", Integer.class);
+
+    public final StringPath refundReason = createString("refundReason");
 
     public QRefund(String variable) {
         this(Refund.class, forVariable(variable), INITS);
@@ -54,7 +52,6 @@ public class QRefund extends EntityPathBase<Refund> {
 
     public QRefund(Class<? extends Refund> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.booking = inits.isInitialized("booking") ? new com.catchcatch.ticket.booking.QBooking(forProperty("booking"), inits.get("booking")) : null;
         this.payment = inits.isInitialized("payment") ? new com.catchcatch.ticket.payment.QPayment(forProperty("payment"), inits.get("payment")) : null;
     }
 
