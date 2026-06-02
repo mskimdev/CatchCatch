@@ -17,9 +17,13 @@ springdoc:
 
 oauth:
   kakao:
-    client-id: ${KAKAO_CLIENT_ID}
-    client-secret: ${KAKAO_CLIENT_SECRET}
-    admin-key: ${KAKAO_ADMIN_KEY}
+    #client-id: ${KAKAO_CLIENT_ID}
+    #client-secret: ${KAKAO_CLIENT_SECRET}
+    #admin-key: ${KAKAO_ADMIN_KEY}
+    client-id: 카카오_REST_API_KEY
+    client-secret: dummy
+    admin-key: dummy
 
 catchcatch:
-  key: ${CATCHCATCH_KEY}
+  #key: ${CATCHCATCH_KEY}
+  key: dummy

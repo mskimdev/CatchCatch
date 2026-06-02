@@ -1,11 +1,13 @@
-package com.catchcatch.ticket.booking;
+package com.catchcatch.ticket.booking.dto;
 
+import com.catchcatch.ticket.booking.Booking;
 import lombok.Getter;
 
 import java.sql.Timestamp;
 
 public class BookingResponse {
 
+    // 예매 상세 조회 DTO
     @Getter
     public static class DetailDTO {
         private Integer id;
@@ -31,6 +33,7 @@ public class BookingResponse {
         }
     }
 
+    // 예매 목록 조회 DTO
     @Getter
     public static class ListDTO {
         private Integer id;
@@ -42,6 +45,26 @@ public class BookingResponse {
 
         public ListDTO(Booking booking) {
             this.id = booking.getId();
+            this.bookingNumber = booking.getBookingNumber();
+            this.concertSessionId = booking.getConcertSessionId();
+            this.seatId = booking.getSeatId();
+            this.status = booking.getStatus();
+            this.createdAt = booking.getCreatedAt();
+        }
+    }
+
+    // 예매 완료 화면 DTO
+    @Getter
+    public static class CompleteDTO {
+        private Integer bookingId;
+        private String bookingNumber;
+        private Integer concertSessionId;
+        private Integer seatId;
+        private String status;
+        private Timestamp createdAt;
+
+        public CompleteDTO(Booking booking) {
+            this.bookingId = booking.getId();
             this.bookingNumber = booking.getBookingNumber();
             this.concertSessionId = booking.getConcertSessionId();
             this.seatId = booking.getSeatId();
