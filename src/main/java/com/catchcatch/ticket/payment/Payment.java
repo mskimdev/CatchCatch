@@ -34,7 +34,7 @@ public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
-    private Integer Id;
+    private Integer id;
 
     // 예매 ID (booking_tb.id 참조)
     @OneToOne(fetch = FetchType.LAZY) // CatchCatch 명세서상 1:1 관계 (성능을 위해 LAZY 권장)
