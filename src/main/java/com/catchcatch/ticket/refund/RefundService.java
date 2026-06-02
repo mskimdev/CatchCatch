@@ -5,6 +5,7 @@ import com.catchcatch.ticket.booking.BookingRepository;
 import com.catchcatch.ticket.core.errors.BadRequestException;
 import com.catchcatch.ticket.core.errors.NotFoundException;
 import com.catchcatch.ticket.payment.Payment;
+import com.catchcatch.ticket.payment.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
