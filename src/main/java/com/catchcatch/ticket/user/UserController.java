@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,27 +43,29 @@ public class UserController {
         }
     }
 
-    // 1. 동의 항목 승인 이후 카카오 인가 서버에서 인가코드가 리다이렉트 됨.
-    @GetMapping("/kakao-redirect")
-    public String kakaoCallback(@RequestParam(name = "code") String code, HttpSession session, Model model) {
+    @GetMapping("/{provider}-redirect")
+    public String oauthCallback(
+            @PathVariable String provider,
+            @RequestParam String code,
+            HttpSession session,
+            Model model) {
+        try {
+            User user = userService.socialLogin(provider, code);
 
-        try{
-            User user = userService.kakaoLogin(code);
-
-            if(user.getId() == null){
+            if (user.getId() == null) {
                 session.setAttribute("tempUser", user);
                 return "redirect:/social-join";
             }
 
-            // 우리 서버 세션에 회원 정보 저장해야 로그인 처리 됨.
             session.setAttribute(Define.SESSION_USER, user);
-        } catch(Exception e){
-            log.error("카카오 로그인 실패 " + e.getMessage());
+        } catch (Exception e) {
+            log.error("소셜 로그인 실패: {}", e.getMessage());
             throw new UnauthorizedException("소셜 로그인 실패");
         }
 
         return "redirect:/";
     }
+
 
     @GetMapping("/social-join")
     public String socialJoinForm(Model model, HttpSession session) {
