@@ -83,7 +83,7 @@ public class Concert {
     @Getter
     @Setter
     public class ConcertSearchCondition {
-        // 💡 프론트엔드(머스태치)의 URL 파라미터명(?status=...&genre=...)과 일치해야 합니다.
+        // 💡 프론트엔드(머스태치)의 URL 파라미터명(?status=...&genre=...)과 일치해야 한다.
         private String keyword; // 검색어 (제목 또는 아티스트)
         private String status;  // 상태 (all, open-soon, available, deadline)
         private String genre;   // 장르 (all, concert, festival)
