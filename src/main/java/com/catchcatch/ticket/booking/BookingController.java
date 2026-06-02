@@ -40,7 +40,7 @@ public class BookingController {
     }
 
     // URL: http://localhost:8080/booking/seat
-    // 좌석 선택 화면으로 이동
+// 좌석 선택 화면으로 이동
     @GetMapping("/seat")
     public String seatForm(Model model, HttpSession session) {
         User sessionUser = getSessionUser(session);
@@ -52,8 +52,21 @@ public class BookingController {
         Integer concertId = (Integer) session.getAttribute("bookingConcertId");
         Integer sessionId = (Integer) session.getAttribute("bookingSessionId");
 
+        /*
+         * TODO: 현재 좌석 선택/예매 저장 테스트를 위해 아이유 콘서트 1회차로 고정
+         *
+         * 테스트 DB 기준:
+         * concert_tb.id = 1  -> 아이유 콘서트
+         * concert_session_tb.id = 1 -> 아이유 2025-08-01 18:00 회차
+         *
+         * 추후 공연 상세 페이지에서 넘어오는 concertId, sessionId를 정상 사용하도록 변경 예정
+         */
         if (concertId == null || sessionId == null) {
-            return "redirect:/";
+            concertId = 1;
+            sessionId = 1;
+
+            session.setAttribute("bookingConcertId", concertId);
+            session.setAttribute("bookingSessionId", sessionId);
         }
 
         model.addAttribute("userId", sessionUser.getId());
@@ -62,18 +75,22 @@ public class BookingController {
         model.addAttribute("sessionId", sessionId);
 
         // TODO: 나중에 좌석 목록, 좌석 등급, 공연 정보 model에 추가
+        // TODO: 현재는 프론트 테스트 좌석 UI를 사용하고, seatId만 DB의 seat_tb.id와 맞춰서 전달
 
         return "booking/seat";
     }
 
-    // URL: http://localhost:8080/booking/payment
-    // 좌석 선택 후 결제 단계 진입 처리
     @PostMapping("/payment")
     public String startPayment(
             BookingRequest.PaymentStartDTO req,
             HttpSession session
     ) {
         User sessionUser = getSessionUser(session);
+
+        System.out.println("===== /booking/payment POST 진입 =====");
+        System.out.println("sessionUser = " + sessionUser);
+        System.out.println("req.seatId = " + req.getSeatId());
+        System.out.println("session bookingSessionId = " + session.getAttribute("bookingSessionId"));
 
         if (sessionUser == null) {
             return "redirect:/login";
@@ -83,14 +100,22 @@ public class BookingController {
 
         Integer sessionId = (Integer) session.getAttribute("bookingSessionId");
 
+        /*
+         * TODO: 좌석 선택 저장 테스트용 아이유 콘서트 1회차 고정
+         */
         if (sessionId == null) {
-            return "redirect:/";
+            sessionId = 1;
+            session.setAttribute("bookingSessionId", sessionId);
         }
 
         BookingRequest.SaveDTO saveDTO = new BookingRequest.SaveDTO();
         saveDTO.setUserId(sessionUser.getId());
         saveDTO.setConcertSessionId(sessionId);
         saveDTO.setSeatId(req.getSeatId());
+
+        System.out.println("saveDTO.userId = " + saveDTO.getUserId());
+        System.out.println("saveDTO.concertSessionId = " + saveDTO.getConcertSessionId());
+        System.out.println("saveDTO.seatId = " + saveDTO.getSeatId());
 
         BookingResponse.DetailDTO booking = bookingService.save(saveDTO);
 

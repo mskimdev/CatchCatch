@@ -397,6 +397,8 @@
                         <input type="hidden" name="concertId"
                                value="{{#concert.id}}{{concert.id}}{{/concert.id}}{{^concert.id}}1{{/concert.id}}">
 
+                        <input type="hidden" name="seatId" id="selectedSeatId">
+
                         <button class="cc-btn cc-btn--primary cc-btn--full" type="submit">다음 단계</button>
                     </form>
 
@@ -406,12 +408,9 @@
                     </a>
                 </div>
 
-                <div class="cc-card cc-notice-card">
-                    <h3>ⓘ 알려드려요</h3>
-                    <ul>
-                        <li>좌석을 선택하신 후 10분 이내에 다음 단계로 진행해주세요.</li>
-                        <li>좌석 보관 시간이 초과되면 선택 좌석이 자동으로 해제됩니다.</li>
-                        <li>무통장 입금 선택 시 예매 당일 23:59까지 입금해야 예매가 완료됩니다.</li>
+                <div class="cc-card cc-notice-card"> \
+                    git<li>좌석 보관 시간이 초과되면 선택 좌석이 자동으로 해제됩니다.</li>
+                    <li>무통장 입금 선택 시 예매 당일 23:59까지 입금해야 예매가 완료됩니다.</li>
                     </ul>
                 </div>
             </aside>

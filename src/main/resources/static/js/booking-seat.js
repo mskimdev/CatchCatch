@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const totalPriceEl = document.querySelector(".cc-total__price");
   const paymentForm = document.querySelector(".cc-payment-form");
   const timerEl = document.querySelector("[data-countdown]");
+  const selectedSeatIdInput = document.querySelector("#selectedSeatId");
 
   let currentZone = "나";
   let selectedSeats = [];
@@ -79,7 +80,43 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function makeSeatId(zone, row, col) {
-    return `${zone}-${row}-${col}`;
+    // TODO: 테스트 DB 기준 아이유 콘서트 1회차 seat_tb.id 임시 매핑
+    // 실제 구현 시에는 서버에서 seat_tb.id를 조회해서 화면에 내려줘야 함
+    const availableSeatIds = [
+      4, 5,
+      9, 10, 11, 12, 13, 14, 15,
+      17, 18, 19, 20, 21, 22, 23, 24, 25,
+      26, 27, 28, 29, 30, 31, 32, 33, 34, 35
+    ];
+
+    const zoneOrder = {
+      "가": 0,
+      "나": 1,
+      "다": 2,
+      "라": 3,
+      "마": 4,
+      "바": 5
+    };
+
+    const rowOrder = {
+      "A": 0,
+      "B": 1,
+      "C": 2,
+      "D": 3,
+      "E": 4,
+      "F": 5,
+      "G": 6,
+      "H": 7,
+      "I": 8,
+      "J": 9
+    };
+
+    const zoneIndex = zoneOrder[zone] || 0;
+    const rowIndex = rowOrder[row] || 0;
+
+    const index = (zoneIndex * 20 + rowIndex * 14 + col - 1) % availableSeatIds.length;
+
+    return availableSeatIds[index];
   }
 
   function isMockSoldSeat(zone, rowIndex, col) {
@@ -261,34 +298,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderHiddenInputs() {
-    if (!paymentForm) return;
+    if (!paymentForm || !selectedSeatIdInput) return;
 
-    paymentForm
-      .querySelectorAll("input[data-seat-dynamic='true']")
-      .forEach((input) => input.remove());
+    // 현재 백엔드는 seatId 1개만 받음
+    // 그래서 선택한 좌석 중 첫 번째 좌석만 seatId로 전달
+    if (selectedSeats.length === 0) {
+      selectedSeatIdInput.value = "";
+      return;
+    }
 
-    selectedSeats.forEach((seat) => {
-      const seatIdInput = document.createElement("input");
-      seatIdInput.type = "hidden";
-      seatIdInput.name = "seatIds";
-      seatIdInput.value = seat.id;
-      seatIdInput.dataset.seatDynamic = "true";
-      paymentForm.appendChild(seatIdInput);
-
-      const seatNameInput = document.createElement("input");
-      seatNameInput.type = "hidden";
-      seatNameInput.name = "seatNames";
-      seatNameInput.value = seat.seatNumber;
-      seatNameInput.dataset.seatDynamic = "true";
-      paymentForm.appendChild(seatNameInput);
-
-      const seatPriceInput = document.createElement("input");
-      seatPriceInput.type = "hidden";
-      seatPriceInput.name = "seatPrices";
-      seatPriceInput.value = seat.price;
-      seatPriceInput.dataset.seatDynamic = "true";
-      paymentForm.appendChild(seatPriceInput);
-    });
+    selectedSeatIdInput.value = selectedSeats[0].id;
   }
 
   function removeSelectedSeat(seatId) {

@@ -26,26 +26,26 @@ public class BookingRequest {
     }
 
     // 예매 저장 요청 DTO
-    // userId는 세션에서 꺼내야 하므로 DTO에 넣지 않는 것을 추천
-    @Getter
-    @Setter
-    public static class SaveDTO {
-        private Integer concertSessionId;
-        private Integer seatId;
-        private String userId;
+    // userId는 세션에서 꺼내서 컨트롤러에서 세팅
+        @Getter
+        @Setter
+        public static class SaveDTO {
+            private Integer userId;
+            private Integer concertSessionId;
+            private Integer seatId;
 
-        public void validate() {
-            if (concertSessionId == null) {
-                throw new BadRequestException("공연 회차 정보가 없습니다.");
-            }
-            if (seatId == null) {
-                throw new BadRequestException("좌석 정보가 없습니다.");
+            public void validate() {
+                if (userId == null) {
+                    throw new BadRequestException("사용자 정보가 없습니다.");
+                }
+                if (concertSessionId == null) {
+                    throw new BadRequestException("공연 회차 정보가 없습니다.");
+                }
+                if (seatId == null) {
+                    throw new BadRequestException("좌석 정보가 없습니다.");
+                }
             }
         }
-
-        public void setUserId(Integer id) {
-        }
-    }
 
     // 좌석 선택 후 결제 단계로 넘어갈 때 사용
     @Getter
