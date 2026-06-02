@@ -27,6 +27,8 @@ public class QUser extends EntityPathBase<User> {
 
     public final BooleanPath isDeleted = createBoolean("isDeleted");
 
+    public final StringPath oauthId = createString("oauthId");
+
     public final EnumPath<com.catchcatch.ticket.user.enums.OauthProvider> oauthProvider = createEnum("oauthProvider", com.catchcatch.ticket.user.enums.OauthProvider.class);
 
     public final StringPath password = createString("password");

@@ -23,16 +23,14 @@ public class ConcertRepositoryRaw {
         // 1. jpql 뼈대 생성 (N+1 방지를위해 v(Venue) 조인)
         // WHERE 1=1 조건을 넣어서 뒤에 오는 조건들이 무조건 AND로 붙을 수 있게한다.
         StringBuilder jpql = new StringBuilder("SELECT c FROM Concert c JOIN FETCH c.venue v WHERE 1 = 1");
-
-        // 파라미터를 담아둘 바구니
-        Map<String, Object> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();  // 파라미터를 담아둘 바구니
 
 
         // 2. 문자열 조립
 
         // 검색어(제목 도는 아티스트 )
         if (StringUtils.hasText(condition.getKeyword())) {
-            jpql.append("AND (LOWER(c.title) LIKE : keyword OR LOWER(c.artist) LIKE :keyword)");
+            jpql.append(" AND (LOWER(c.title) LIKE :keyword OR LOWER(c.artist) LIKE :keyword)");
             params.put("keyword", "%" + condition.getKeyword().toLowerCase() + "%");
         }
 
@@ -45,7 +43,7 @@ public class ConcertRepositoryRaw {
 
         // 상태 (status)
         if (StringUtils.hasText(condition.getStatus())) {
-            jpql.append("AND c.concertStatus = :status");
+            jpql.append(" AND c.concertStatus = :status");
             if ("COMING_SOON".equalsIgnoreCase(condition.getStatus()))params.put("status", ConcertStatus.COMING_SOON);
             else if ("OPEN".equalsIgnoreCase(condition.getStatus()))params.put("status", ConcertStatus.OPEN);
             else if ("CLOSED".equalsIgnoreCase(condition.getStatus()))params.put("status", ConcertStatus.CLOSED);
@@ -55,14 +53,14 @@ public class ConcertRepositoryRaw {
 
         // 장르 (genre)
         if (StringUtils.hasText(condition.getGenre())){
-            jpql.append("AND c.category = :genre");
+            jpql.append(" AND c.category = :genre");
             params.put("genre",condition.getGenre());
         }
 
 
         // 지역 (region)
         if (StringUtils.hasText(condition.getRegion())) {
-            jpql.append("AND v.name LIKE :region");
+            jpql.append(" AND v.name LIKE :region");
             String krRegion = convertRegionToKorean(condition.getRegion());
             params.put("region", "%" + condition.getRegion() + "%");
         }
