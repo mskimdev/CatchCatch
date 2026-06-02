@@ -53,7 +53,8 @@ public class ConcertService {
         // TODO - 지금은 하드코딩으로 임시 대체
         return List.of(
                 new ConcertResponse.BannerDTO("/images/sample/banner-main.svg", "캐치캐치 단독", "아이유 2026 월드 투어", "서울", "놓칠 수 없는 단 하루의 무대", 1),
-                new ConcertResponse.BannerDTO("/images/sample/banner-sub.svg", "매진 임박", "에스파 LIVE TOUR", "SYNK", "지금 바로 예매하세요", 2)
+                new ConcertResponse.BannerDTO("/images/sample/banner-sub.svg", "매진 임박", "에스파 LIVE TOUR", "SYNK", "지금 바로 예매하세요", 2),
+                new ConcertResponse.BannerDTO("/images/sample/banner-sub.svg", "매진 임박", "김민수 LIVE TOUR", "SYNK", "지금 바로 예매하세요", 2)
         );
     } // end of getHeroBanners
 

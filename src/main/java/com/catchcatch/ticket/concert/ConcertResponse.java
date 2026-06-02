@@ -78,7 +78,7 @@ public class ConcertResponse {
             this.title = title;
             this.highlight = highlight;
             this.description = description;
-            this.linkUrl = "/concert/" + concertId; // TODO 경로 수정 (concert -> concerts)
+            this.linkUrl = "concerts/" + concertId; // TODO 경로 수정 (concert -> concerts)
             this.buttonText = "예매하기";
         }
     }
