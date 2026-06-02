@@ -2,7 +2,6 @@ package com.catchcatch.ticket.user.dto;
 
 import com.catchcatch.ticket.core.errors.BadRequestException;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 public class UserRequest {
 
@@ -12,7 +11,6 @@ public class UserRequest {
         private String email;
         private String password;
         private String passwordConfirm;
-        private MultipartFile profileImage;
         private String phone;
 
         public void validate() {
@@ -39,7 +37,6 @@ public class UserRequest {
         private String email;
         private String username;
         private String phone;
-        private MultipartFile profileImage;
 
         public void validate() {
             if (username == null || username.isBlank()) {
@@ -62,18 +59,20 @@ public class UserRequest {
         private String newPassword;
         private String newPasswordConfirm;
 
-        public void validate() {
+        public void validate(boolean isLocal) {
             if (username == null || username.isBlank()) {
                 throw new BadRequestException("아이디를 입력해주세요.");
             }
-            if (currentPassword == null || currentPassword.isBlank()) {
-                throw new BadRequestException("현재 비밀번호를 입력해주세요.");
-            }
-            if (newPassword != null && !newPassword.isBlank() && newPassword.length() < 8) {
-                throw new BadRequestException("새 비밀번호는 8자 이상이어야 합니다.");
-            }
-            if (newPassword != null && !newPassword.isBlank() && !newPassword.equals(newPasswordConfirm)) {
-                throw new BadRequestException("새 비밀번호가 일치하지 않습니다.");
+            if (isLocal) {
+                if (currentPassword == null || currentPassword.isBlank()) {
+                    throw new BadRequestException("현재 비밀번호를 입력해주세요.");
+                }
+                if (newPassword != null && !newPassword.isBlank() && newPassword.length() < 8) {
+                    throw new BadRequestException("새 비밀번호는 8자 이상이어야 합니다.");
+                }
+                if (newPassword != null && !newPassword.isBlank() && !newPassword.equals(newPasswordConfirm)) {
+                    throw new BadRequestException("새 비밀번호가 일치하지 않습니다.");
+                }
             }
         }
     }

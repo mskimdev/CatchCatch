@@ -1,10 +1,10 @@
 <article class="cc-card cc-result-card">
-    <a class="cc-result-card__poster" href="#">
+    <a class="cc-result-card__poster" href="concerts/{{id}}">
         <img src="{{posterUrl}}" alt="{{title}} 포스터">
     </a>
     <div class="cc-result-card__body">
         <span class="cc-concert-card__category">{{#category}}{{category}}{{/category}}{{^category}}콘서트{{/category}}</span>
-        <h3 class="cc-result-card__title"><a href="#">{{title}}</a></h3>
+        <h3 class="cc-result-card__title"><a href="concerts/{{id}}">{{title}}</a></h3>
         <p class="cc-result-card__line">{{dateRange}}</p>
         <p class="cc-result-card__line">{{venueName}}</p>
         <p class="cc-result-card__line">{{region}}</p>

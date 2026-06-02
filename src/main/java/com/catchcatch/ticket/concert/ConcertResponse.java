@@ -78,7 +78,7 @@ public class ConcertResponse {
             this.title = title;
             this.highlight = highlight;
             this.description = description;
-            this.linkUrl = "/concert/" + concertId; // 경로 수정 (concerts -> concert)
+            this.linkUrl = "concerts/" + concertId; // TODO 경로 수정 (concert -> concerts)
             this.buttonText = "예매하기";
         }
     }
@@ -218,6 +218,21 @@ public class ConcertResponse {
                     .priceText(String.format("%,d원", price))
                     .build();
         }
+    }
+
+    @Getter
+    @Builder
+    public static class ConcertListResponseDTO {
+
+        // 1. 상단 칩(Chip)에 들어갈 상태별 카운트 정보 (ConcertStatus 기반)
+        private Long resultCount;       // 현재 필터링/검색된 결과 총 건수
+        private Long openSoonCount;     // 오픈 예정 건수 (ConcertStatus.COMING_SOON)
+        private Long availableCount;    // 예매 가능 건수 (ConcertStatus.OPEN)
+        private Long deadlineCount;     // 종료 임박/종료 건수 (ConcertStatus.CLOSED / ENDED)
+        private Long endCount;
+
+        // 2. 콘서트 상세 목록
+        private List<ConcertResponse.ListDTO> concerts;
     }
 
 } // end of class

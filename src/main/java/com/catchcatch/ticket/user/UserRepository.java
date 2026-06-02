@@ -1,6 +1,6 @@
 package com.catchcatch.ticket.user;
 
-import com.catchcatch.ticket.user.enums.OauthProvider;
+import com.catchcatch.ticket.user.enums.OAuthProvider;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
@@ -14,5 +14,5 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     boolean existsByEmail(String email);
 
-    Optional<User> findByOauthProviderAndOauthId(OauthProvider oauthProvider, String kakaoId);
+    Optional<User> findByOauthProviderAndOauthId(OAuthProvider oauthProvider, String kakaoId);
 }
