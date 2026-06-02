@@ -81,5 +81,19 @@ public class ConcertService {
 
         // 3. 엔티티 데이터를 DTO 팩토리 메서드로 넘겨 조립합니다.
         return ConcertResponse.DetailDTO.of(concert, seats);
+    } // end of getConcertDetail
+
+
+    /**
+     * [목록 페이지용] 동적 필터 및 검색 적용
+     */
+    public ConcertResponse.ConcertListResponseDTO searchConcertList(Concert.ConcertSearchCondition condition) {
+
+        // 💡 2. 다시 QueryDSL로 스위치 ON!
+        return concertRepository.findConcertsByFilters(condition);
     }
+
+
+
+
 }

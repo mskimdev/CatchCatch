@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -32,16 +33,52 @@ public class ConcertController {
     }
 
     @GetMapping({"/concerts", "/concert/list"})
-    public String list(Model model){
+    public String list(Concert.ConcertSearchCondition condition, Model model) {
+
+        ConcertResponse.ConcertListResponseDTO responseData = concertService.searchConcertList(condition);
+
+        // [추가] 동적 검색 타이틀 생성 로직
+        String searchTitle = "전체 공연"; // 기본값
+        if (StringUtils.hasText(condition.getKeyword())) {
+            searchTitle = "'" + condition.getKeyword() + "'";
+        } else if (StringUtils.hasText(condition.getGenre()) && !"all".equals(condition.getGenre())) {
+            searchTitle = switch (condition.getGenre()) {
+                case "concert" -> "콘서트";
+                case "festival" -> "페스티벌";
+                case "musical" -> "뮤지컬";
+                case "classic" -> "클래식";
+                case "fanmeeting" -> "팬미팅";
+                default -> "기타";
+            };
+        } else if (StringUtils.hasText(condition.getRegion()) && !"all".equals(condition.getRegion())) {
+            searchTitle = switch (condition.getRegion()) {
+                case "seoul" -> "서울";
+                case "gyeonggi" -> "경기";
+                case "incheon" -> "인천";
+                case "busan" -> "부산";
+                case "daegu" -> "대구";
+                default -> "지역";
+            };
+        }
+
+        model.addAttribute("searchTitle", searchTitle); // Mustache로 전달
+
+        // ... 기존 model.addAttribute 코드들 유지 ...
+        model.addAttribute("concerts", responseData.getConcerts());
+        model.addAttribute("resultCount", responseData.getResultCount());
+        model.addAttribute("openSoonCount", responseData.getOpenSoonCount());
+        model.addAttribute("availableCount", responseData.getAvailableCount());
+        model.addAttribute("deadlineCount", responseData.getDeadlineCount());
+
         model.addAttribute("pageTitle", "콘서트 일정");
-        model.addAttribute("showConcertFilters", true);
-        model.addAttribute("activeSchedule", true);
+        model.addAttribute("loginHeader", true);
+
         return "concert/list";
     }
 
     // 💡 변경됨: 동적 ID를 받아 데이터를 모델에 심어 반환
     @GetMapping("/concerts/{id}")
-    public String detail(@PathVariable Integer id, Model model){
+    public String detail(@PathVariable Integer id, Model model) {
         ConcertResponse.DetailDTO responseDTO = concertService.getConcertDetail(id);
         model.addAttribute("concert", responseDTO);
         model.addAttribute("backHeader", true);

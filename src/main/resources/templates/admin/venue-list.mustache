@@ -1,112 +1,172 @@
 {{> layout/header-admin}}
-<link rel="stylesheet" href="/css/venue-list.css">
 
-<main class="cc-main">
+<main class="cc-main admin-venue-page">
     <div class="cc-container">
 
         <!-- 상단 소개 영역 -->
-        <section class="cc-card admin-venue-hero">
+        <section class="admin-venue-hero">
             <div class="admin-venue-hero__content">
-                <p class="admin-venue-eyebrow">관리자 메뉴</p>
+                <div class="admin-venue-hero__badge">
+                    <span class="admin-venue-dot"></span>
+                    관리자 메뉴
+                </div>
 
                 <h1 class="admin-venue-title">공연장 관리</h1>
 
                 <p class="admin-venue-desc">
-                    콘서트 예매에 사용할 공연장 정보를 등록하고 관리합니다.
+                    콘서트 예매에 사용할 공연장 정보를 등록하고, 수용 인원과 주소 정보를 한눈에 관리합니다.
                 </p>
+
+                <div class="admin-venue-meta">
+                    <div class="admin-venue-meta-card">
+                        <span class="admin-venue-meta-label">등록 공연장</span>
+                        <strong>{{venueCount}}건</strong>
+                    </div>
+
+                    {{#isSearch}}
+                        <div class="admin-venue-search-pill">
+                            <span>검색어</span>
+                            <strong>{{keyword}}</strong>
+                        </div>
+                    {{/isSearch}}
+                </div>
             </div>
 
             <div class="admin-venue-hero__action">
-                <a class="cc-btn cc-btn--primary admin-venue-create-btn" href="/admin/venues/save">
-                    + 공연장 등록
+                <a class="admin-venue-create-btn" href="/admin/venues/save">
+                    <span>+</span>
+                    공연장 등록
                 </a>
             </div>
         </section>
 
         <!-- 공연장 목록 영역 -->
-        <section class="cc-section">
-            <div class="cc-section__head">
-                <h2 class="cc-section__title">
-                    공연장 목록
-                    <span class="cc-accent-text">
-                        {{#venueCount}}{{venueCount}}{{/venueCount}}{{^venueCount}}0{{/venueCount}}건
-                    </span>
-                </h2>
+        <section class="admin-venue-list-section">
+            <div class="admin-venue-list-head">
+                <div>
+                    <p class="admin-venue-section-label">Venue List</p>
+                    <h2>공연장 목록</h2>
+                </div>
 
-                <a class="cc-more" href="/admin/venues">
-                    새로고침 ↻
-                </a>
+                {{#isSearch}}
+                    <a class="admin-venue-refresh-link" href="/admin/venues">
+                        전체 목록 보기
+                    </a>
+                {{/isSearch}}
+
+                {{^isSearch}}
+                    <a class="admin-venue-refresh-link" href="/admin/venues">
+                        새로고침 ↻
+                    </a>
+                {{/isSearch}}
             </div>
 
-            <div class="cc-card admin-venue-table-card">
-                <table class="admin-venue-table">
-                    <thead>
-                    <tr>
-                        <th>번호</th>
-                        <th>공연장명</th>
-                        <th>주소</th>
-                        <th>총 수용 인원</th>
-                        <th>등록일</th>
-                        <th>관리</th>
-                    </tr>
-                    </thead>
+            <div class="admin-venue-table-card">
+                <div class="admin-venue-table-top">
+                    <div>
+                        <strong>총 {{venueCount}}개의 공연장</strong>
+                        <p>최근 등록된 공연장 순으로 표시됩니다.</p>
+                    </div>
+                </div>
 
-                    <tbody>
-                    {{#venues}}
+                <div class="admin-venue-table-wrap">
+                    <table class="admin-venue-table">
+                        <thead>
                         <tr>
-                            <td>{{id}}</td>
-
-                            <td>
-                                <strong class="admin-venue-name">
-                                    {{name}}
-                                </strong>
-                            </td>
-
-                            <td>
-                                {{address}}
-                            </td>
-
-                            <td>
-            <span class="cc-badge">
-                {{totalCapacity}}명
-            </span>
-                            </td>
-
-                            <td>
-                                {{createdAt}}
-                            </td>
-
-                            <td>
-                                <form action="/admin/venues/{{id}}/delete"
-                                      method="post"
-                                      onsubmit="return confirm('이 공연장을 삭제하시겠습니까?');">
-                                    {{#_csrf}}
-                                        <input type="hidden" name="{{parameterName}}" value="{{token}}">
-                                    {{/_csrf}}
-
-                                    <button class="admin-venue-delete-btn" type="submit">
-                                        삭제
-                                    </button>
-                                </form>
-                            </td>
+                            <th>번호</th>
+                            <th>공연장명</th>
+                            <th>주소</th>
+                            <th>총 수용 인원</th>
+                            <th>등록일</th>
+                            <th>관리</th>
                         </tr>
-                    {{/venues}}
+                        </thead>
 
-                    {{^venues}}
-                        <tr>
-                            <td colspan="6">
-                                <div class="admin-venue-empty">
-                                    <p>아직 등록된 공연장이 없습니다.</p>
+                        <tbody>
+                        {{#venues}}
+                            <tr>
+                                <td>
+                                    <span class="admin-venue-id">#{{id}}</span>
+                                </td>
 
-                                    <a class="cc-btn cc-btn--outline" href="/admin/venues/save">
-                                        첫 공연장 등록하기
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    {{/venues}}
-                    </tbody>
-                </table>
+                                <td>
+                                    <div class="admin-venue-name-cell">
+                                        <div class="admin-venue-icon">
+                                            🎤
+                                        </div>
+
+                                        <strong class="admin-venue-name">
+                                            {{name}}
+                                        </strong>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="admin-venue-address">
+                                        {{address}}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="admin-venue-capacity-badge">
+                                        {{totalCapacity}}명
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="admin-venue-date">
+                                        {{formattedCreatedAt}}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <form action="/admin/venues/{{id}}/delete"
+                                          method="post"
+                                          onsubmit="return confirm('이 공연장을 삭제하시겠습니까?');">
+                                        {{#_csrf}}
+                                            <input type="hidden" name="{{parameterName}}" value="{{token}}">
+                                        {{/_csrf}}
+
+                                        <button class="admin-venue-delete-btn" type="submit">
+                                            삭제
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {{/venues}}
+
+                        {{^venues}}
+                            <tr>
+                                <td colspan="6">
+                                    <div class="admin-venue-empty">
+                                        <div class="admin-venue-empty-icon">⌕</div>
+
+                                        {{#isSearch}}
+                                            <h3>검색 결과가 없습니다</h3>
+                                            <p>
+                                                <strong>{{keyword}}</strong>에 해당하는 공연장을 찾지 못했습니다.
+                                            </p>
+
+                                            <a class="admin-venue-empty-btn" href="/admin/venues">
+                                                전체 공연장 보기
+                                            </a>
+                                        {{/isSearch}}
+
+                                        {{^isSearch}}
+                                            <h3>아직 등록된 공연장이 없습니다</h3>
+                                            <p>첫 공연장을 등록하면 이곳에서 목록을 관리할 수 있습니다.</p>
+
+                                            <a class="admin-venue-empty-btn" href="/admin/venues/save">
+                                                첫 공연장 등록하기
+                                            </a>
+                                        {{/isSearch}}
+                                    </div>
+                                </td>
+                            </tr>
+                        {{/venues}}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
