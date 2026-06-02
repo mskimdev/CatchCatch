@@ -1,6 +1,11 @@
 /* booking-seat.css — 좌석 선택 페이지 전용 */
 
-.cc-seat-layout { display: grid; grid-template-columns: 250px 1fr 250px; gap: 20px; align-items: start; }
+.cc-seat-layout {
+  display: grid;
+  grid-template-columns: 230px minmax(640px, 1fr) 240px;
+  gap: 16px;
+  align-items: start;
+}
 
 .cc-booking-summary { padding: 16px; }
 .cc-booking-summary__dark { background: #0f1224; color: #fff; border-radius: 16px; padding: 18px; }
@@ -13,8 +18,8 @@
 .cc-mini-row { display: grid; grid-template-columns: 72px 1fr; gap: 8px; margin: 10px 0; font-size: 13px; }
 .cc-mini-row b { color: var(--cc-muted); }
 
-.cc-seat-map-card { padding: 20px; min-height: 702px; }
-.cc-seat-map-head { display: grid; grid-template-columns: 150px 1fr 120px; gap: 12px; }
+.cc-seat-map-card { padding: 18px; min-height: 670px; overflow: hidden; }
+.cc-seat-map-head { display: grid; grid-template-columns: 140px 1fr 116px; gap: 12px; }
 .cc-grade-list h3 { margin: 0 0 12px; font-size: 16px; }
 .cc-grade-row { display: flex; align-items: center; gap: 8px; margin: 12px 0; font-size: 13px; font-weight: 850; }
 .cc-grade-row small { display: block; margin-left: 26px; margin-top: 2px; color: var(--cc-muted); }
@@ -24,7 +29,7 @@
 .cc-seat-status { padding-top: 6px; font-size: 12px; color: var(--cc-muted); font-weight: 850; }
 .cc-seat-status div { display: flex; align-items: center; gap: 7px; margin: 8px 0; }
 
-.cc-arena { position: relative; margin: 8px auto 0; width: min(100%, 650px); height: 530px; }
+.cc-arena { position: relative; margin: 4px auto 0; width: min(100%, 640px); height: 500px; }
 .cc-zone { position: absolute; border: 1px solid #ece7f4; border-radius: 16px; background: rgba(255,255,255,.56); display: grid; place-items: center; padding: 24px 14px 14px; }
 .cc-zone__name { position: absolute; top: 10px; left: 0; right: 0; text-align: center; font-weight: 900; color: var(--cc-text); }
 .cc-zone__dots { display: grid; grid-template-columns: repeat(8, 12px); gap: 8px; align-content: center; justify-content: center; }
@@ -46,7 +51,21 @@
 .cc-seat-dot--held { background: #f59e0b; }
 .cc-seat-dot--selected { background: #4c1d95; box-shadow: 0 0 0 3px rgba(124,58,237,.16); }
 
-.cc-map-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
+.cc-seat-hover-info {
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fbfaff;
+  border: 1px solid var(--cc-line);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--cc-subtext);
+}
+.cc-seat-hover-info strong { color: var(--cc-text); }
+
+.cc-map-controls { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
 .cc-control-group { display: flex; align-items: center; gap: 10px; }
 .cc-small-btn { height: 38px; min-width: 38px; padding: 0 14px; border: 1px solid var(--cc-line); background: #fff; border-radius: 10px; font-weight: 900; }
 
@@ -66,6 +85,7 @@
 
 @media (max-width: 1180px) {
   .cc-seat-layout { grid-template-columns: 1fr; }
+  .cc-seat-layout > aside { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 }
 
 @media (max-width: 700px) {
@@ -75,5 +95,8 @@
   .cc-stage { width: min(280px, 86%); height: 48px; font-size: 20px; }
   .cc-arena { width: 650px; transform: scale(.72); transform-origin: top left; margin-bottom: -148px; }
   .cc-map-controls { align-items: flex-start; flex-direction: column; }
+  .cc-seat-layout > aside { display: block; }
+  .cc-stepper { overflow-x: auto; justify-content: flex-start; }
+  .cc-step-line { width: 28px; flex: 0 0 28px; }
   .cc-selected-card, .cc-notice-card, .cc-booking-summary, .cc-booking-info { padding: 16px; }
 }

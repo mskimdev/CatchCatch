@@ -28,7 +28,7 @@
         body {
             margin: 0;
             padding: 0;
-            min-width: 1120px;
+            min-width: 0;
             background: var(--cc-bg);
             color: var(--cc-text);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", Arial, sans-serif;
@@ -51,18 +51,19 @@
         }
 
         .cc-main {
-            padding: 14px;
+            min-height: 100vh;
+            padding: 20px 24px 28px;
         }
 
         .cc-container {
             width: 100%;
-            max-width: 1280px;
+            max-width: 1240px;
             margin: 0 auto;
         }
 
         .cc-popup-header {
-            height: 54px;
-            margin-bottom: 14px;
+            min-height: 56px;
+            margin-bottom: 10px;
             padding: 0 18px;
             border-radius: 16px;
             background: #fff;
@@ -95,6 +96,62 @@
             background: #f3effa;
             color: var(--cc-primary-dark);
             font-weight: 900;
+        }
+
+
+        .cc-stepper {
+            height: 44px;
+            margin-bottom: 14px;
+            padding: 0 18px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, .72);
+            border: 1px solid var(--cc-line);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 8px 20px rgba(43, 21, 91, .045);
+        }
+
+        .cc-step {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--cc-muted);
+            font-size: 13px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .cc-step__num {
+            width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #eee8f7;
+            color: #8a8299;
+            font-size: 12px;
+            font-weight: 950;
+        }
+
+        .cc-step.is-done,
+        .cc-step.is-active {
+            color: var(--cc-primary-dark);
+        }
+
+        .cc-step.is-done .cc-step__num,
+        .cc-step.is-active .cc-step__num {
+            background: linear-gradient(135deg, #7c3aed, #4c1d95);
+            color: #fff;
+        }
+
+        .cc-step-line {
+            width: 46px;
+            height: 2px;
+            border-radius: 999px;
+            background: #ded6ea;
         }
 
         .cc-card {
