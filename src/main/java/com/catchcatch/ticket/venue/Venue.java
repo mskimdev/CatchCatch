@@ -36,4 +36,12 @@ public class Venue {
         this.address = address;
         this.totalCapacity = totalCapacity;
     }
+
+    public String getFormattedCreatedAt() {
+        if (createdAt == null) {
+            return "";
+        }
+
+        return new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(createdAt);
+    }
 }
