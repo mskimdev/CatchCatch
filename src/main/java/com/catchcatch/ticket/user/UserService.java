@@ -4,25 +4,15 @@ import com.catchcatch.ticket.core.errors.BadRequestException;
 import com.catchcatch.ticket.core.oauth.OAuthClientFactory;
 import com.catchcatch.ticket.core.oauth.OAuthUserInfo;
 import com.catchcatch.ticket.user.dto.UserRequest;
-import com.catchcatch.ticket.user.dto.UserResponse;
 import com.catchcatch.ticket.user.enums.OAuthProvider;
 import com.catchcatch.ticket.user.enums.Role;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -34,17 +24,11 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final OAuthClientFactory oAuthClientFactory;
 
-    @Value("${oauth.kakao.client-id}")
-    private String kakaoClientId;
-
-    @Value("${oauth.kakao.client-secret}")
-    private String kakaoClientSecret;
-
-    @Value("${catchcatch.key}")
+    @Value("${catchcatch-key}")
     private String catchcatchKey;
 
     @Transactional
-    public void join(UserRequest.JoinDTO req) {
+    public void join(UserRequest.JoinDTO req, String profileImageUrl) {
         if (userRepository.existsByUsername(req.getUsername())) {
             throw new BadRequestException("이미 사용 중인 아이디입니다.");
         }
@@ -52,12 +36,12 @@ public class UserService {
             throw new BadRequestException("이미 사용 중인 이메일입니다.");
         }
 
-
         User user = User.builder()
                 .username(req.getUsername())
                 .email(req.getEmail())
                 .password(passwordEncoder.encode(req.getPassword()))
                 .phone(req.getPhone())
+                .profileImage(profileImageUrl)
                 .oauthProvider(OAuthProvider.LOCAL)
                 .role(Role.USER)
                 .build();
@@ -66,19 +50,21 @@ public class UserService {
     }
 
     @Transactional
-    public void socialJoin(UserRequest.SocialJoinDTO req, HttpSession session) {
+    public void socialJoin(UserRequest.SocialJoinDTO req, String profileImageUrl, HttpSession session) {
         if (userRepository.existsByUsername(req.getUsername())) {
             throw new BadRequestException("이미 사용 중인 아이디입니다.");
         }
         if (userRepository.existsByEmail(req.getEmail())) {
             throw new BadRequestException("이미 사용 중인 이메일입니다.");
         }
-        User tempUser = (User)session.getAttribute("tempUser");
+        User tempUser = (User) session.getAttribute("tempUser");
 
         User user = User.builder()
                 .username(req.getUsername())
                 .email(req.getEmail())
                 .phone(req.getPhone())
+                .password(passwordEncoder.encode(catchcatchKey))
+                .profileImage(profileImageUrl)
                 .oauthProvider(tempUser.getOauthProvider())
                 .oauthId(tempUser.getOauthId())
                 .role(Role.USER)
@@ -103,9 +89,16 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BadRequestException("회원 정보를 찾을 수 없습니다."));
 
-        if (!passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
-            throw new BadRequestException("현재 비밀번호가 올바르지 않습니다.");
+        // 로컬 가입 사용자만 비밀번호 검증
+        if (user.getOauthProvider() == OAuthProvider.LOCAL) {
+            if (!passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
+                throw new BadRequestException("현재 비밀번호가 올바르지 않습니다.");
+            }
+            if (req.getNewPassword() != null && !req.getNewPassword().isBlank()) {
+                user.setPassword(passwordEncoder.encode(req.getNewPassword()));
+            }
         }
+
         if (!user.getUsername().equals(req.getUsername()) && userRepository.existsByUsername(req.getUsername())) {
             throw new BadRequestException("이미 사용 중인 아이디입니다.");
         }
@@ -114,9 +107,6 @@ public class UserService {
         user.setPhone(req.getPhone());
         if (profileImageUrl != null) {
             user.setProfileImage(profileImageUrl);
-        }
-        if (req.getNewPassword() != null && !req.getNewPassword().isBlank()) {
-            user.setPassword(passwordEncoder.encode(req.getNewPassword()));
         }
 
         return user;

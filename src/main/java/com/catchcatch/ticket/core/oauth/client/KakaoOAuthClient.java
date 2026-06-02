@@ -38,28 +38,14 @@ public class KakaoOAuthClient implements OAuthClient{
     public OAuthUserInfo getUserInfo(String code) {
         String accessToken = getAccessToken(code);
         KakaoProfile profile = getKakaoProfile(accessToken);
-
-        String email = profile.kakaoAccount != null
-                ? profile.kakaoAccount.email
-                : null;
-
-        String nickname = profile.kakaoAccount != null
-                && profile.kakaoAccount.profile != null
-                ? profile.kakaoAccount.profile.nickname
-                : null;
-
-        String profileImage = profile.kakaoAccount != null
-                && profile.kakaoAccount.profile != null
-                ? profile.kakaoAccount.profile.profileImageUrl
-                : null;
-
+        KakaoProfile.KakaoAccount account = profile.getKakaoAccount();
 
         return OAuthUserInfo.builder()
                 .oauthId(String.valueOf(profile.id))
                 .provider(OAuthProvider.KAKAO)
-                .email(email)
-                .username(nickname)
-                .profileImage(profileImage)
+                .email(account != null ? account.email : null)
+                .username(account != null ? account.profile.nickname : null)
+                .profileImage(account != null ? account.profile.profileImageUrl : null)
                 .build();
     }
 

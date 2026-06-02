@@ -363,14 +363,13 @@ VALUES
      DATEADD('MINUTE', -30, NOW()));
 
 
--- -- =====================================================
--- --  9. refund_tb
--- -- =====================================================
--- INSERT INTO refund_tb
--- (id, payment_id, booking_id, amount, fee, reason, refunded_at)
--- VALUES
---     (1, 4, 5, 99000, 11000, '개인 사정으로 인한 취소', DATEADD('HOUR', -2, NOW()));
---
+ -- =====================================================
+ --  9. refund_tb
+ -- =====================================================
+ INSERT INTO refund_tb
+ (id, payment_id, booking_id, amount, fee, reason, refunded_at)
+ VALUES
+     (1, 4, 5, 99000, 11000, '개인 사정으로 인한 취소', DATEADD('HOUR', -2, NOW()));
 
 /*
 -- =====================================================
