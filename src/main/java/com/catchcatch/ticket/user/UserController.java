@@ -7,6 +7,7 @@ import com.catchcatch.ticket.user.dto.UserRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,8 +26,16 @@ public class UserController {
     private final UserService userService;
     private final ProfileImageStorage profileImageStorage;
 
+    @Value("${oauth.kakao.client-id}")
+    private String kakaoClientId;
+
+    @Value("${oauth.google.client-id}")
+    private String googleClientId;
+
     @GetMapping("/login")
-    public String loginForm() {
+    public String loginForm(Model model) {
+        model.addAttribute("kakaoClientId", kakaoClientId);
+        model.addAttribute("googleClientId", googleClientId);
         return "user/login";
     }
 
@@ -73,34 +82,42 @@ public class UserController {
         return "user/social-join";
     }
 
+
     @PostMapping("/social-join")
-    public String socialJoinProc(UserRequest.SocialJoinDTO req, Model model, HttpSession session) {
-        try{
+    public String socialJoinProc(UserRequest.SocialJoinDTO req, MultipartFile profileImage, Model model, HttpSession session) {
+        String profileImageUrl = null;
+        try {
             req.validate();
-            userService.socialJoin(req, session);
+            profileImageUrl = profileImageStorage.save(profileImage);
+            userService.socialJoin(req, profileImageUrl, session);
             return "redirect:/login";
-        } catch(Exception e){
+        } catch (Exception e) {
+            profileImageStorage.delete(profileImageUrl);
             model.addAttribute("errorMessage", e.getMessage());
             return "user/social-join";
+        } finally {
+            session.removeAttribute("tempUser");
         }
     }
 
     @GetMapping("/join")
-    public String joinForm() {
+    public String joinForm(Model model) {
+        model.addAttribute("kakaoClientId", kakaoClientId);
         return "user/join";
     }
 
     @PostMapping("/join")
-    public String join(UserRequest.JoinDTO req, Model model, HttpSession session) {
+    public String join(UserRequest.JoinDTO req, MultipartFile profileImage, Model model, HttpSession session) {
+        String profileImageUrl = null;
         try {
             req.validate();
-            userService.join(req);
+            profileImageUrl = profileImageStorage.save(profileImage);
+            userService.join(req, profileImageUrl);
             return "redirect:/login";
         } catch (Exception e) {
+            profileImageStorage.delete(profileImageUrl);
             model.addAttribute("errorMessage", e.getMessage());
             return "user/join";
-        } finally {
-            session.removeAttribute("tempUser");
         }
     }
 
@@ -124,7 +141,7 @@ public class UserController {
         if (user == null) return "redirect:/login";
         String newProfileImageUrl = null;
         try {
-            req.validate();
+            req.validate(user.getOauthProvider() == com.catchcatch.ticket.user.enums.OAuthProvider.LOCAL);
             newProfileImageUrl = profileImageStorage.save(profileImage);
             String previousProfileImageUrl = user.getProfileImage();
             User updatedUser = userService.updateProfile(user.getId(), req, newProfileImageUrl);
@@ -156,5 +173,6 @@ public class UserController {
         model.addAttribute("email", user.getEmail());
         model.addAttribute("phone", user.getPhone() == null ? "" : user.getPhone());
         model.addAttribute("profileImage", user.getProfileImage());
+        model.addAttribute("isLocalUser", user.getOauthProvider() == com.catchcatch.ticket.user.enums.OAuthProvider.LOCAL);
     }
 }
