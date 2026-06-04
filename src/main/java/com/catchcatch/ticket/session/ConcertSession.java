@@ -1,6 +1,6 @@
 package com.catchcatch.ticket.session;
 
-import com.catchcatch.ticket.concert.Concert;
+import com.catchcatch.ticket.concert.core.Concert;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;

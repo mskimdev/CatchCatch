@@ -1,5 +1,7 @@
-package com.catchcatch.ticket.concert;
+package com.catchcatch.ticket.concert.repository;
 
+import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.concert.core.ConcertStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -7,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface ConcertRepository extends JpaRepository<Concert, Integer>, ConcertRepositoryCustom{
+public interface ConcertRepository extends JpaRepository<Concert, Integer>, ConcertRepositoryCustom {
 
     // 1. [홈페이지/목록용] 예매 상태별 공연 목록 조회 (공연장, 회차 동시 페치)
     @Query("SELECT DISTINCT c FROM Concert c " +

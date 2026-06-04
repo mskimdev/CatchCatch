@@ -1,4 +1,4 @@
-package com.catchcatch.ticket.concert;
+package com.catchcatch.ticket.concert.core;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 
@@ -16,7 +16,7 @@ import com.querydsl.core.types.dsl.PathInits;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QConcert extends EntityPathBase<Concert> {
 
-    private static final long serialVersionUID = -2127726595L;
+    private static final long serialVersionUID = -648990688L;
 
     private static final PathInits INITS = PathInits.DIRECT2;
 
@@ -49,6 +49,8 @@ public class QConcert extends EntityPathBase<Concert> {
     public final StringPath genre = createString("genre");
 
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
+
+    public final BooleanPath isDeleted = createBoolean("isDeleted");
 
     public final StringPath organizer = createString("organizer");
 
