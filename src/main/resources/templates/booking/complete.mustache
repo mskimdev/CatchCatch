@@ -1,49 +1,90 @@
-{{> layout/header}}
-<link rel="stylesheet" href="/css/booking-complete.css">
-<main class="cc-main">
-    <div class="cc-container">
-        <div class="cc-stepper" aria-label="예매 진행 단계">
-            <div class="cc-step is-done"><span class="cc-step__num">✓</span>예매정보</div><span class="cc-step-line"></span>
-            <div class="cc-step is-done"><span class="cc-step__num">✓</span>좌석선택</div><span class="cc-step-line"></span>
-            <div class="cc-step is-done"><span class="cc-step__num">✓</span>결제</div><span class="cc-step-line"></span>
-            <div class="cc-step is-active"><span class="cc-step__num">4</span>완료</div>
+{{> layout/header-booking}}
+
+<div class="cc-stepper" aria-label="예매 진행 단계">
+    <div class="cc-step is-done">
+        <span class="cc-step__num">✓</span>좌석선택
+    </div>
+    <span class="cc-step-line"></span>
+
+    <div class="cc-step is-done">
+        <span class="cc-step__num">✓</span>결제
+    </div>
+    <span class="cc-step-line"></span>
+
+    <div class="cc-step is-active">
+        <span class="cc-step__num">3</span>완료
+    </div>
+</div>
+
+<section class="cc-complete-wrap">
+    <div class="cc-complete-icon">✓</div>
+
+    <h2 class="cc-complete-title">예매가 완료되었습니다!</h2>
+    <p class="cc-complete-sub">예매 확인서는 마이페이지에서 확인하실 수 있습니다.</p>
+
+    <div class="cc-card cc-complete-ticket">
+        <div class="cc-complete-ticket__left">
+            <img src="{{#posterUrl}}{{posterUrl}}{{/posterUrl}}{{^posterUrl}}/images/sample/poster-legend-seoul.svg{{/posterUrl}}"
+                 alt="공연 포스터">
         </div>
 
-        <section class="cc-complete-wrap">
-            <div class="cc-complete-icon">✓</div>
-            <h2 class="cc-complete-title">예매가 완료되었습니다!</h2>
-            <p class="cc-complete-sub">예매 확인서는 마이페이지에서 확인하실 수 있습니다.</p>
-
-            <div class="cc-card cc-complete-ticket">
-                <div class="cc-complete-ticket__left">
-                    <img src="{{#posterUrl}}{{posterUrl}}{{/posterUrl}}{{^posterUrl}}/images/sample/poster-legend-seoul.svg{{/posterUrl}}" alt="공연 포스터">
-                </div>
-                <div class="cc-complete-ticket__right">
-                    <div class="cc-complete-ticket__number">
-                        예매번호 <strong>{{#bookingNumber}}{{bookingNumber}}{{/bookingNumber}}{{^bookingNumber}}CC2026-000001{{/bookingNumber}}</strong>
-                    </div>
-                    <h3>{{#concertTitle}}{{concertTitle}}{{/concertTitle}}{{^concertTitle}}2026 무명전설 전국투어 콘서트 - 서울{{/concertTitle}}</h3>
-                    <div class="cc-info-list" style="margin-top:16px">
-                        <div class="cc-info-row"><span class="cc-info-row__label">📅 공연일시</span><span>{{#sessionText}}{{sessionText}}{{/sessionText}}{{^sessionText}}2026.06.27 (토) 18:00{{/sessionText}}</span></div>
-                        <div class="cc-info-row"><span class="cc-info-row__label">📍 공연장소</span><span>{{#venueText}}{{venueText}}{{/venueText}}{{^venueText}}서울 · 올림픽공원 올림픽홀{{/venueText}}</span></div>
-                        <div class="cc-info-row"><span class="cc-info-row__label">💺 좌석</span>
-                            <span>
-                                {{#selectedSeats}}{{seatNumber}} ({{grade}}){{/selectedSeats}}
-                                {{^selectedSeats}}나구역 12열 15번 (VIP), 나구역 12열 16번 (VIP){{/selectedSeats}}
-                            </span>
-                        </div>
-                        <div class="cc-info-row"><span class="cc-info-row__label">💳 결제금액</span><strong style="color:var(--cc-primary-dark)">{{#totalPriceText}}{{totalPriceText}}{{/totalPriceText}}{{^totalPriceText}}308,000원{{/totalPriceText}}</strong></div>
-                        <div class="cc-info-row"><span class="cc-info-row__label">🕒 예매일시</span><span>{{#createdAt}}{{createdAt}}{{/createdAt}}{{^createdAt}}2026.05.29 14:32{{/createdAt}}</span></div>
-                    </div>
-                </div>
+        <div class="cc-complete-ticket__right">
+            <div class="cc-complete-ticket__number">
+                예매번호
+                <strong>{{#bookingNumber}}{{bookingNumber}}{{/bookingNumber}}{{^bookingNumber}}CC2026-000001{{/bookingNumber}}</strong>
             </div>
 
-            <div class="cc-complete-actions">
-                <a class="cc-btn cc-btn--primary" href="/mypage/bookings">예매 내역 확인</a>
-                <a class="cc-btn cc-btn--outline" href="/concerts">콘서트 더 보기</a>
+            <h3>
+                {{#concertTitle}}{{concertTitle}}{{/concertTitle}}{{^concertTitle}}2026 무명전설 전국투어 콘서트 - 서울{{/concertTitle}}
+            </h3>
+
+            <div class="cc-info-list">
+                <div class="cc-info-row">
+                    <span class="cc-info-row__label">📅 공연일시</span>
+                    <span>{{#sessionText}}{{sessionText}}{{/sessionText}}{{^sessionText}}2026.06.27 (토) 18:00{{/sessionText}}</span>
+                </div>
+
+                <div class="cc-info-row">
+                    <span class="cc-info-row__label">📍 공연장소</span>
+                    <span>{{#venueText}}{{venueText}}{{/venueText}}{{^venueText}}서울 · 올림픽공원 올림픽홀{{/venueText}}</span>
+                </div>
+
+                <div class="cc-info-row">
+                    <span class="cc-info-row__label">💺 좌석</span>
+                    <span>
+                        {{#selectedSeats}}
+                            {{seatNumber}} ({{grade}})
+                        {{/selectedSeats}}
+                        {{^selectedSeats}}
+                            나구역 12열 15번 (VIP), 나구역 12열 16번 (VIP)
+                        {{/selectedSeats}}
+                    </span>
+                </div>
+
+                <div class="cc-info-row">
+                    <span class="cc-info-row__label">💳 결제금액</span>
+                    <strong class="cc-complete-price">
+                        {{#totalPriceText}}{{totalPriceText}}{{/totalPriceText}}{{^totalPriceText}}308,000원{{/totalPriceText}}
+                    </strong>
+                </div>
+
+                <div class="cc-info-row">
+                    <span class="cc-info-row__label">🕒 예매일시</span>
+                    <span>{{#createdAt}}{{createdAt}}{{/createdAt}}{{^createdAt}}2026.05.29 14:32{{/createdAt}}</span>
+                </div>
             </div>
-        </section>
+        </div>
     </div>
-</main>
 
-{{> layout/footer}}
+    <div class="cc-complete-actions">
+        <button type="button" class="cc-btn cc-btn--primary" onclick="closeBookingWindow()">
+            예매 종료
+        </button>
+
+        <button type="button" class="cc-btn cc-btn--outline" onclick="openMyBookingAndClose()">
+            예매 내역 확인
+        </button>
+    </div>
+</section>
+
+{{> layout/footer-booking}}
