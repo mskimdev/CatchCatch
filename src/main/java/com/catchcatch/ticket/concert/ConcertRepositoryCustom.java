@@ -1,5 +1,7 @@
 package com.catchcatch.ticket.concert;
 
+import java.util.List;
+
 public interface ConcertRepositoryCustom {
 
     /*
@@ -10,4 +12,6 @@ public interface ConcertRepositoryCustom {
      */
     ConcertResponse.ConcertListResponseDTO findConcertsByFilters(Concert.ConcertSearchCondition condition);
 
+    // 오픈 예정 콘서트 목록 조회 메서드 추가
+    List<Concert> findOpenSoonConcerts(String genre);
 }

@@ -60,6 +60,8 @@ public class QConcert extends EntityPathBase<Concert> {
 
     public final DatePath<java.time.LocalDate> startDate = createDate("startDate", java.time.LocalDate.class);
 
+    public final DateTimePath<java.time.LocalDateTime> ticketOpenDate = createDateTime("ticketOpenDate", java.time.LocalDateTime.class);
+
     public final StringPath title = createString("title");
 
     public final com.catchcatch.ticket.venue.QVenue venue;

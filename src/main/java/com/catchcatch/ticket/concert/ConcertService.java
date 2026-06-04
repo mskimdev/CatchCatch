@@ -94,7 +94,25 @@ public class ConcertService {
         return concertRepository.findConcertsByFilters(condition);
     }
 
+    // ==========================================
+    // 3. 콘서트오픈예정 페이지(open-soon) 메서드
+    // ==========================================
+    @Transactional(readOnly = true)
+    public ConcertResponse.OpenSoonPageResponse getOpenSoonPageData(String genre) {
+        // 1. DB에서 장르 필터링 조건에 맞게 조회
+        List<Concert> concerts = concertRepository.findOpenSoonConcerts(genre);
+
+        // 2. 엔티티 리스트를 카드 DTO 리스트로 변환
+        List<ConcertResponse.OpenSoonConcertResponse> concertDTOs = concerts.stream()
+                .map(ConcertResponse.OpenSoonConcertResponse::from)
+                .toList();
+
+        // 3. 래퍼 DTO로 최종 조립하여 반환
+        return ConcertResponse.OpenSoonPageResponse.builder()
+                .currentGenre(genre != null ? genre : "all") // null 일때 "all" 방어 코드
+                .openSoonList(concertDTOs)
+                .build();
+    }
 
 
-
-}
+} // end of class

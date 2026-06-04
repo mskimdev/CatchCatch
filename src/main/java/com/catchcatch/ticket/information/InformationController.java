@@ -7,13 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class InformationController {
 
-    @GetMapping("/concerts/open-soon")
-    public String openSoon(Model model) {
-        addPublicPageAttributes(model, "오픈 예정");
-        model.addAttribute("activeOpen", true);
-        return "information/open-soon";
-    }
-
     @GetMapping("/events")
     public String events(Model model) {
         addPublicPageAttributes(model, "이벤트");
