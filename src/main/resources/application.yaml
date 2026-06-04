@@ -14,7 +14,11 @@ springdoc:
     path:
       - /v3/api-docs
 
-
+portone:
+  store-id: ${PORTONE_STORE_ID}
+  channel-key: ${PORTONE_CHANNEL_KEY}
+  api-secret: ${PORTONE_API_SECRET}
+  
 oauth:
   kakao:
     client-id: ${KAKAO_CLIENT_ID}
@@ -25,5 +29,4 @@ oauth:
     client-secret: ${GOOGLE_CLIENT_SECRET}
 
 catchcatch:
-  #key: ${CATCHCATCH_KEY}
-  key: dummy
+  key: ${CATCHCATCH_KEY}

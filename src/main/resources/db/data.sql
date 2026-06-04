@@ -343,7 +343,7 @@ VALUES
 --  PaymentStatus: READY, PAID, CANCELLED, FAILED
 -- =====================================================
 INSERT INTO payment_tb
-(id, booking_id, user_id, imp_uid, merchant_uid, amount, method, status, paid_at, created_at)
+(id, booking_id, user_id, pg_tx_id, payment_id, amount, method, status, paid_at, created_at)
 VALUES
     (1, 1, 2,
      'imp_test_001',
@@ -412,7 +412,7 @@ VALUES
 --  9. refund_tb
 -- =====================================================
 INSERT INTO refund_tb
-(id, payment_id, amount, fee, reason, refunded_at)
+(id, payment_id, amount, cancel_fee, reason, refunded_at)
 VALUES
     (1, 4, 99000, 11000, '개인 사정으로 인한 취소', DATEADD('HOUR', -2, NOW()));
 

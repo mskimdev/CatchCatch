@@ -9,18 +9,18 @@ public class RefundResponse {
         private Integer id;
         private Integer paymentId;
         private Integer bookingId;
-        private Integer refundPrice;
+        private Integer amount;
         private Integer cancelFee;
-        private String refundReason;
+        private String reason;
         private LocalDateTime refundedAt;
 
         public DetailDTO(Refund refund) {
             this.id = refund.getId();
             this.paymentId = refund.getPayment().getId();
             this.bookingId = refund.getPayment().getBooking().getId();
-            this.refundPrice = refund.getRefundPrice();
+            this.amount = refund.getAmount();
             this.cancelFee = refund.getCancelFee();
-            this.refundReason = refund.getRefundReason();
+            this.reason = refund.getReason();
             this.refundedAt = refund.getRefundedAt();
         }
 
