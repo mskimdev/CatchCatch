@@ -252,8 +252,10 @@ public class UserController {
         if (user == null) return "redirect:/login";
         addSidebarAttributes(model, user);
         model.addAttribute("navLikedConcerts", true);
+        model.addAttribute("concerts", userService.findLikedConcertsByUser(user.getId()));
         return "user/liked-concerts";
     }
+
 
     private void addSidebarAttributes(Model model, User user) {
         model.addAttribute("username", user.getUsername());
