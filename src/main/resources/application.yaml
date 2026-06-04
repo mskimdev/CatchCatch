@@ -2,6 +2,8 @@ spring:
   profiles:
     active:
       - dev
+  config:
+    import: optional:file:.env[.properties]
 
 springdoc:
   swagger-ui:
@@ -11,3 +13,8 @@ springdoc:
   api-docs:
     path:
       - /v3/api-docs
+
+portone:
+  store-id: ${PORTONE_STORE_ID}
+  channel-key: ${PORTONE_CHANNEL_KEY}
+  api-secret: ${PORTONE_API_SECRET}
