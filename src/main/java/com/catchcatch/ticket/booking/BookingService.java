@@ -32,16 +32,20 @@ public class BookingService {
     private static final int MAX_SEAT_COUNT = 4;
     private static final int PAYMENT_EXPIRE_MINUTES = 10;
 
-    private static final String STATUS_PENDING = "PENDING";
-    private static final String STATUS_CONFIRMED = "CONFIRMED";
-    private static final String STATUS_PAID = "PAID";
-    private static final String STATUS_CANCELED = "CANCELED";
-    private static final String STATUS_EXPIRED = "EXPIRED";
-
     private final BookingRepository bookingRepository;
     private final SeatRepository seatRepository;
     private final ConcertSessionRepository concertSessionRepository;
 
+    /*
+     * TODO:
+     * UserRepository 생성 후 EntityManager 제거 예정.
+     *
+     * 변경 예정:
+     * - @PersistenceContext 제거
+     * - EntityManager 제거
+     * - UserRepository 주입
+     * - getUserReference() 내부를 userRepository.findById()로 교체
+     */
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -55,7 +59,7 @@ public class BookingService {
                 .concertSessionId(requestDTO.getConcertSessionId())
                 .seatId(requestDTO.getSeatId())
                 .bookingNumber(createBookingNumber())
-                .status(STATUS_PENDING)
+                .status("PENDING")
                 .expiresAt(createExpiresAt())
                 .build();
 
@@ -127,11 +131,11 @@ public class BookingService {
     public BookingResponse.DetailDTO pay(Integer id) {
         Booking booking = findBooking(id);
 
-        if (!STATUS_PENDING.equals(booking.getStatus())) {
+        if (!"PENDING".equals(booking.getStatus())) {
             throw new BadRequestException("결제 가능한 상태가 아닙니다.");
         }
 
-        booking.setStatus(STATUS_PAID);
+        booking.setStatus("PAID");
 
         return new BookingResponse.DetailDTO(booking);
     }
@@ -141,11 +145,11 @@ public class BookingService {
     public void cancel(Integer id) {
         Booking booking = findBooking(id);
 
-        if (STATUS_CANCELED.equals(booking.getStatus())) {
+        if ("CANCELED".equals(booking.getStatus())) {
             throw new BadRequestException("이미 취소된 예매입니다.");
         }
 
-        booking.setStatus(STATUS_CANCELED);
+        booking.setStatus("CANCELED");
         booking.setCanceledAt(now());
     }
 
@@ -153,9 +157,9 @@ public class BookingService {
     @Transactional
     public void expirePendingBookings() {
         List<Booking> expiredBookings =
-                bookingRepository.findByStatusAndExpiresAtBefore(STATUS_PENDING, now());
+                bookingRepository.findByStatusAndExpiresAtBefore("PENDING", now());
 
-        expiredBookings.forEach(booking -> booking.setStatus(STATUS_EXPIRED));
+        expiredBookings.forEach(booking -> booking.setStatus("EXPIRED"));
     }
 
     // 좌석 선택 화면 정보 조회
@@ -197,7 +201,7 @@ public class BookingService {
                 .concertSessionId(concertSessionId)
                 .seatId(seat.getId())
                 .bookingNumber(createBookingNumber())
-                .status(STATUS_CONFIRMED)
+                .status("CONFIRMED")
                 .expiresAt(null)
                 .build();
     }
