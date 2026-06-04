@@ -1,0 +1,22 @@
+<aside class="cc-card cc-mypage-sidebar">
+    <div class="cc-mypage-profile">
+        <div class="cc-mypage-avatar">
+            {{#profileImage}}
+                <img src="{{profileImage}}" alt="프로필 이미지">
+            {{/profileImage}}
+            {{^profileImage}}
+                <span>{{#usernameInitial}}{{usernameInitial}}{{/usernameInitial}}{{^usernameInitial}}U{{/usernameInitial}}</span>
+            {{/profileImage}}
+        </div>
+        <div>
+            <p class="cc-mypage-profile__name">{{#username}}{{username}}{{/username}}{{^username}}사용자{{/username}}</p>
+            <p class="cc-mypage-profile__email">{{#email}}{{email}}{{/email}}{{^email}}user@example.com{{/email}}</p>
+        </div>
+    </div>
+    <nav class="cc-mypage-nav">
+        <a class="cc-mypage-nav__link {{#navBookings}}is-active{{/navBookings}}" href="/users/bookings">예매 내역</a>
+        <a class="cc-mypage-nav__link {{#navLikedConcerts}}is-active{{/navLikedConcerts}}" href="/users/liked-concerts">관심 공연</a>
+        <a class="cc-mypage-nav__link {{#navProfile}}is-active{{/navProfile}}" href="/users/mypage">회원 정보 수정</a>
+        <a class="cc-mypage-nav__link" href="/logout">로그아웃</a>
+    </nav>
+</aside>

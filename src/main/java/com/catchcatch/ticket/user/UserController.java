@@ -1,5 +1,7 @@
 package com.catchcatch.ticket.user;
 
+import com.catchcatch.ticket.booking.BookingService;
+import com.catchcatch.ticket.booking.dto.BookingResponse;
 import com.catchcatch.ticket.core.errors.UnauthorizedException;
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.ProfileImageUtil;
@@ -20,7 +22,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 
 @Tag(name = "User", description = "회원 인증 및 프로필 관련 API")
@@ -32,6 +35,8 @@ public class UserController {
     private final UserService userService;
     private final ProfileImageUtil profileImageStorage;
 
+    private final BookingService bookingService;
+
     @Value("${oauth.kakao.client-id}")
     private String kakaoClientId;
 
@@ -41,8 +46,7 @@ public class UserController {
     @Operation(summary = "로그인 폼", description = "로그인 페이지를 반환합니다.")
     @GetMapping("/login")
     public String loginForm(Model model) {
-        model.addAttribute("kakaoClientId", kakaoClientId);
-        model.addAttribute("googleClientId", googleClientId);
+        addClientIdAttributes(model);
         return "user/login";
     }
 
@@ -63,9 +67,12 @@ public class UserController {
             return "redirect:/";
         } catch (Exception e) {
             model.addAttribute("errorMessage", e.getMessage());
+            addClientIdAttributes(model);
             return "user/login";
         }
     }
+
+
 
     @Operation(summary = "OAuth 콜백 처리", description = "소셜 로그인 인가 코드를 받아 로그인 또는 회원가입으로 분기합니다.")
     @ApiResponses({
@@ -159,7 +166,7 @@ public class UserController {
 
     @Operation(summary = "로그아웃", description = "세션을 초기화하고 홈으로 리다이렉트합니다.")
     @ApiResponse(responseCode = "302", description = "로그아웃 성공 - 홈으로 리다이렉트")
-    @GetMapping("/logout")
+    @GetMapping("/users/logout")
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/";
@@ -170,11 +177,12 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "프로필 페이지 반환"),
             @ApiResponse(responseCode = "302", description = "미로그인 - 로그인 페이지로 리다이렉트")
     })
-    @GetMapping("/mypage/profile")
+    @GetMapping("/users/mypage")
     public String profile(HttpSession session, Model model) {
         User user = getSessionUser(session);
         if (user == null) return "redirect:/login";
         addProfileAttributes(model, user);
+        model.addAttribute("navProfile", true);
         return "user/mypage";
     }
 
@@ -183,7 +191,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "수정 성공"),
             @ApiResponse(responseCode = "302", description = "미로그인 - 로그인 페이지로 리다이렉트")
     })
-    @PostMapping("/mypage/profile")
+    @PostMapping("/users/mypage")
     public String updateProfile(
             UserRequest.ProfileUpdateDTO req,
             @Parameter(description = "새 프로필 이미지 파일") MultipartFile profileImage,
@@ -209,6 +217,54 @@ public class UserController {
             model.addAttribute("errorMessage", e.getMessage());
             return "user/mypage";
         }
+
+    }
+
+    @Operation(summary = "예매 내역 조회", description = "로그인한 사용자의 예매 내역 페이지를 반환합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "예매 내역 페이지 반환"),
+            @ApiResponse(responseCode = "302", description = "미로그인 - 로그인 페이지로 리다이렉트")
+    })
+    @GetMapping("/users/bookings")
+    public String bookings(@RequestParam(required = false) String status, HttpSession session, Model model) {
+        User user = getSessionUser(session);
+        if (user == null) return "redirect:/login";
+        addSidebarAttributes(model, user);
+
+        List<BookingResponse.MyPageListDTO> bookings = userService.findBookingsByUser(user.getId(), status);
+
+        model.addAttribute("bookings", bookings);
+        model.addAttribute("navBookings", true);
+        model.addAttribute("statusAll",      status == null);
+        model.addAttribute("statusPaid",     "PAID".equals(status));
+        model.addAttribute("statusCanceled", "CANCELED".equals(status));
+        return "user/bookings";
+    }
+
+    @Operation(summary = "관심 공연 조회", description = "로그인한 사용자의 관심 공연 목록 페이지를 반환합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "관심 공연 페이지 반환"),
+            @ApiResponse(responseCode = "302", description = "미로그인 - 로그인 페이지로 리다이렉트")
+    })
+    @GetMapping("/users/liked-concerts")
+    public String likedConcerts(HttpSession session, Model model) {
+        User user = getSessionUser(session);
+        if (user == null) return "redirect:/login";
+        addSidebarAttributes(model, user);
+        model.addAttribute("navLikedConcerts", true);
+        return "user/liked-concerts";
+    }
+
+    private void addSidebarAttributes(Model model, User user) {
+        model.addAttribute("username", user.getUsername());
+        model.addAttribute("usernameInitial", user.getUsername().substring(0, 1).toUpperCase());
+        model.addAttribute("email", user.getEmail());
+        model.addAttribute("profileImage", user.getProfileImage());
+    }
+
+    private void addClientIdAttributes(Model model){
+        model.addAttribute("kakaoClientId", kakaoClientId);
+        model.addAttribute("googleClientId", googleClientId);
     }
 
     private User getSessionUser(HttpSession session) {

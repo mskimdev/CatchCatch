@@ -3,7 +3,9 @@ package com.catchcatch.ticket.core.config;
 import com.catchcatch.ticket.core.interceptor.AdminInterceptor;
 import com.catchcatch.ticket.core.interceptor.LoginInterceptor;
 import com.catchcatch.ticket.core.interceptor.SessionInterceptor;
+import com.samskivert.mustache.Mustache;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.mustache.MustacheResourceTemplateLoader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -31,6 +33,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(loginInterceptor)
                 .addPathPatterns(
                         /* 인증 처리 인터셉트 필요한 url*/
+                        "/users/**"
                 );
 
         registry.addInterceptor(adminInterceptor)
@@ -48,5 +51,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public Mustache.Compiler mustacheCompiler(Mustache.TemplateLoader templateLoader) {
+        return Mustache.compiler()
+                .defaultValue("")
+                .withLoader(templateLoader);
     }
 }

@@ -86,8 +86,8 @@ public class BookingService {
 
         Booking booking = Booking.builder()
                 .user(user)
-                .concertSessionId(requestDTO.getConcertSessionId())
-                .seatId(requestDTO.getSeatId())
+                // .concertSessionId(requestDTO.getConcertSessionId())
+                // .seatId(requestDTO.getSeatId())
                 .bookingNumber(createBookingNumber())
                 .status("PENDING")
                 .expiresAt(Timestamp.valueOf(LocalDateTime.now().plusMinutes(10)))
@@ -115,8 +115,8 @@ public class BookingService {
         for (Seat seat : selectedSeats) {
             Booking booking = Booking.builder()
                     .user(user)
-                    .concertSessionId(concertSessionId)
-                    .seatId(seat.getId())
+                    //.concertSessionId(concertSessionId)
+                    //.seatId(seat.getId())
                     .bookingNumber(createBookingNumber())
                     .status("CONFIRMED")
                     .expiresAt(null)
@@ -145,10 +145,10 @@ public class BookingService {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("예매 정보를 찾을 수 없습니다."));
 
-        Seat seat = seatRepository.findById(booking.getSeatId())
+        Seat seat = seatRepository.findById(booking.getSeat().getId())
                 .orElseThrow(() -> new BadRequestException("좌석 정보를 찾을 수 없습니다."));
 
-        ConcertSession concertSession = concertSessionRepository.findById(booking.getConcertSessionId())
+        ConcertSession concertSession = concertSessionRepository.findById(booking.getConcertSession().getId())
                 .orElseThrow(() -> new BadRequestException("공연 회차 정보를 찾을 수 없습니다."));
 
         Concert concert = concertSession.getConcert();
@@ -301,6 +301,9 @@ public class BookingService {
     private String createBookingNumber() {
         return "BOOK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
+
+
+
 
 
 }

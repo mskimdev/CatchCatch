@@ -4,34 +4,7 @@
     <div class="cc-container cc-mypage-layout">
 
         <!-- 사이드바 -->
-        <aside class="cc-card cc-mypage-sidebar">
-            <div class="cc-mypage-profile">
-                <div class="cc-mypage-avatar">
-                    {{#profileImage}}
-                        <img src="{{profileImage}}" alt="프로필 이미지">
-                    {{/profileImage}}
-                    {{^profileImage}}
-                        <span>{{#usernameInitial}}{{usernameInitial}}{{/usernameInitial}}{{^usernameInitial}}
-                            U{{/usernameInitial}}</span>
-                    {{/profileImage}}
-                </div>
-                <div>
-                    <p class="cc-mypage-profile__name">{{#username}}{{username}}{{/username}}{{^username}}
-                        사용자{{/username}}</p>
-                    <p class="cc-mypage-profile__email">{{#email}}{{email}}{{/email}}{{^email}}
-                        user@example.com{{/email}}</p>
-                </div>
-            </div>
-            <nav class="cc-mypage-nav">
-                <a class="cc-mypage-nav__link {{#activeBookings}}is-active{{/activeBookings}}" href="/mypage/bookings">예매
-                    내역</a>
-                <a class="cc-mypage-nav__link {{#activeWishlist}}is-active{{/activeWishlist}}" href="/mypage/wishlist">관심
-                    공연</a>
-                <a class="cc-mypage-nav__link {{#activeProfile}}is-active{{/activeProfile}}" href="/mypage/profile">회원
-                    정보 수정</a>
-                <a class="cc-mypage-nav__link" href="/logout">로그아웃</a>
-            </nav>
-        </aside>
+        {{> components/mypage-sidebar}}
 
         <!-- 메인 콘텐츠 -->
         <section class="cc-mypage-content">
@@ -45,7 +18,7 @@
                         <a class="cc-chip {{#statusPaid}}is-active{{/statusPaid}}" href="/mypage/bookings?status=PAID">예매
                             완료</a>
                         <a class="cc-chip {{#statusCanceled}}is-active{{/statusCanceled}}"
-                           href="/mypage/bookings?status=CANCELED">취소</a>
+                           href="/users/bookings?status=CANCELED">취소</a>
                     </div>
                 </div>
 
@@ -66,7 +39,7 @@
                             <strong>{{priceText}}</strong>
                             {{#isPaid}}
                                 <a class="cc-btn cc-btn--outline" style="height:38px;font-size:13px;margin-top:10px"
-                                   href="/mypage/bookings/{{id}}/cancel">취소 신청</a>{{/isPaid}}
+                                   href="/users/bookings/{{id}}/cancel">취소 신청</a>{{/isPaid}}
                         </div>
                     </div>
                 {{/bookings}}
@@ -111,7 +84,7 @@
                             <p class="cc-profile-alert cc-profile-alert--success">{{successMessage}}</p>{{/successMessage}}
                         {{#errorMessage}}
                             <p class="cc-profile-alert cc-profile-alert--error">{{errorMessage}}</p>{{/errorMessage}}
-                        <form action="/mypage/profile" method="post" enctype="multipart/form-data">
+                        <form action="/users/mypage" method="post" enctype="multipart/form-data">
                             {{#_csrf}}<input type="hidden" name="{{parameterName}}" value="{{token}}">{{/_csrf}}
                             <div class="cc-profile-image-edit">
                                 <label class="cc-profile-image-edit__preview {{#profileImage}}has-image{{/profileImage}}"

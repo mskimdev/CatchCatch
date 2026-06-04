@@ -1,7 +1,9 @@
 package com.catchcatch.ticket.booking.dto;
 
 import com.catchcatch.ticket.booking.Booking;
+import com.catchcatch.ticket.concert.Concert;
 import com.catchcatch.ticket.seat.Seat;
+import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.user.User;
 import lombok.Getter;
 
@@ -27,8 +29,8 @@ public class BookingResponse {
         public DetailDTO(Booking booking) {
             this.id = booking.getId();
             this.userId = booking.getUser().getId();
-            this.concertSessionId = booking.getConcertSessionId();
-            this.seatId = booking.getSeatId();
+            this.concertSessionId = booking.getConcertSession().getId();
+            this.seatId = booking.getSeat().getId();
             this.bookingNumber = booking.getBookingNumber();
             this.status = booking.getStatus();
             this.expiresAt = booking.getExpiresAt();
@@ -50,10 +52,57 @@ public class BookingResponse {
         public ListDTO(Booking booking) {
             this.id = booking.getId();
             this.bookingNumber = booking.getBookingNumber();
-            this.concertSessionId = booking.getConcertSessionId();
-            this.seatId = booking.getSeatId();
+            this.concertSessionId = booking.getConcertSession().getId();
+            this.seatId = booking.getSeat().getId();
             this.status = booking.getStatus();
             this.createdAt = booking.getCreatedAt();
+        }
+    }
+
+    // 마이페이지 예매 내역 화면용 DTO
+    @Getter
+    public static class MyPageListDTO {
+        private Integer id;
+        private String bookingNumber;
+        private Timestamp createdAt;
+
+        private String concertTitle;
+        private String posterUrl;
+        private String sessionText;
+        private String venueName;
+        private String seatNumber;
+        private String grade;
+        private String priceText;
+
+        private boolean isPaid;
+        private boolean isCanceled;
+        private String statusLabel;
+
+        public MyPageListDTO(Booking booking) {
+            this.id            = booking.getId();
+            this.bookingNumber = booking.getBookingNumber();
+            this.createdAt     = booking.getCreatedAt();
+            this.isPaid        = "PAID".equals(booking.getStatus());
+            this.isCanceled    = "CANCELED".equals(booking.getStatus());
+            this.statusLabel   = switch (booking.getStatus()) {
+                case "PAID"     -> "예매 완료";
+                case "CANCELED" -> "취소됨";
+                case "PENDING"  -> "결제 대기";
+                case "EXPIRED"  -> "만료됨";
+                default         -> booking.getStatus();
+            };
+
+            ConcertSession session = booking.getConcertSession();
+            Concert concert = session.getConcert();
+            this.concertTitle = concert.getTitle();
+            this.posterUrl    = concert.getPosterUrl();
+            this.sessionText  = session.getSessionDate() + " " + session.getSessionTime();
+            this.venueName    = concert.getVenue().getName();
+
+            var seat = booking.getSeat();
+            this.seatNumber = seat.getSeatNumber();
+            this.grade      = seat.getGrade().name();
+            this.priceText  = String.format("%,d원", seat.getPrice());
         }
     }
 
@@ -129,8 +178,8 @@ public class BookingResponse {
         public CompleteDTO(Booking booking, Seat seat, User sessionUser, String concertTitle) {
             this.bookingId = booking.getId();
             this.bookingNumber = booking.getBookingNumber();
-            this.concertSessionId = booking.getConcertSessionId();
-            this.seatId = booking.getSeatId();
+            this.concertSessionId = booking.getConcertSession().getId();
+            this.seatId = booking.getSeat().getId();
             this.status = booking.getStatus();
             this.createdAt = booking.getCreatedAt();
 

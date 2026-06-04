@@ -1,8 +1,11 @@
 package com.catchcatch.ticket.user;
 
+import com.catchcatch.ticket.booking.Booking;
+import com.catchcatch.ticket.booking.BookingRepository;
+import com.catchcatch.ticket.booking.dto.BookingResponse;
 import com.catchcatch.ticket.core.errors.BadRequestException;
-import com.catchcatch.ticket.core.oauth.OAuthClientFactory;
-import com.catchcatch.ticket.core.oauth.OAuthUserInfo;
+import com.catchcatch.ticket.oauth.OAuthClientFactory;
+import com.catchcatch.ticket.oauth.OAuthUserInfo;
 import com.catchcatch.ticket.user.dto.UserRequest;
 import com.catchcatch.ticket.user.enums.OAuthProvider;
 import com.catchcatch.ticket.user.enums.Role;
@@ -14,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 @Slf4j
@@ -23,6 +28,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final OAuthClientFactory oAuthClientFactory;
+
+    private final BookingRepository bookingRepository;
 
     @Value("${catchcatch-key}")
     private String catchcatchKey;
@@ -127,7 +134,15 @@ public class UserService {
                         .build()
                 );
     }
-    public User findByUsername(String username) {
-        return userRepository.findByUsername(username).orElse(null);
+
+    @Transactional(readOnly = true)
+    public List<BookingResponse.MyPageListDTO> findBookingsByUser(Integer userId, String status) {
+        List<Booking> bookings = status == null
+                ? bookingRepository.findAllWithDetailsByUserId(userId)
+                : bookingRepository.findAllWithDetailsByUserIdAndStatus(userId, status);
+
+        return bookings.stream()
+                .map(BookingResponse.MyPageListDTO::new)
+                .toList();
     }
 }

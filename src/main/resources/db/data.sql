@@ -59,6 +59,16 @@ VALUES
      'KAKAO',
      'USER',
      NOW(),
+     false),
+
+    ('ssar',
+     '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK',
+     'ssar@naver.com',
+     '010-1234-5678',
+     NULL,
+     'LOCAL',
+     'USER',
+     NOW(),
      false);
 
 
@@ -301,7 +311,31 @@ VALUES
  'CONFIRMED',
  DATEADD('MINUTE', -30, NOW()),
  NULL,
- NULL);
+ NULL),
+
+-- ssar 아이유 VIP-04 예매 완료
+(7, 6, 1, 4,
+ 'BK-20260604-0007',
+ 'PAID',
+ DATEADD('HOUR', -3, NOW()),
+ NULL,
+ NULL),
+
+-- ssar 아이유 R-04 예매 완료
+(8, 6, 1, 9,
+ 'BK-20260604-0008',
+ 'PAID',
+ DATEADD('HOUR', -3, NOW()),
+ NULL,
+ NULL),
+
+-- ssar 아이유 S-02 취소
+(9, 6, 1, 17,
+ 'BK-20260604-0009',
+ 'CANCELED',
+ DATEADD('HOUR', -5, NOW()),
+ NULL,
+ DATEADD('HOUR', -4, NOW()));
 
 
 -- =====================================================
@@ -354,7 +388,25 @@ VALUES
      'kakaopay',
      'PAID',
      DATEADD('MINUTE', -25, NOW()),
-     DATEADD('MINUTE', -30, NOW()));
+     DATEADD('MINUTE', -30, NOW())),
+
+    (6, 7, 6,
+     'imp_test_006',
+     'catchcatch_7_20260604_006',
+     165000,
+     'kakaopay',
+     'PAID',
+     DATEADD('HOUR', -3, NOW()),
+     DATEADD('HOUR', -3, NOW())),
+
+    (7, 8, 6,
+     'imp_test_007',
+     'catchcatch_8_20260604_007',
+     132000,
+     'card',
+     'PAID',
+     DATEADD('HOUR', -3, NOW()),
+     DATEADD('HOUR', -3, NOW()));
 
 -- =====================================================
 --  9. refund_tb
@@ -419,4 +471,9 @@ ORDER BY q.id;
 -- AUTO_INCREMENT 시작 번호 보정
 -- 기존 테스트 데이터가 id를 직접 넣었기 때문에 다음 생성 id를 맞춰준다.
 -- =====================================================
-ALTER TABLE booking_tb ALTER COLUMN id RESTART WITH 7;
+-- ssar 예매 좌석 SOLD 처리
+UPDATE seat_tb SET status = 'SOLD' WHERE id = 4;
+UPDATE seat_tb SET status = 'SOLD' WHERE id = 9;
+
+ALTER TABLE booking_tb ALTER COLUMN id RESTART WITH 10;
+ALTER TABLE payment_tb ALTER COLUMN id RESTART WITH 8;
