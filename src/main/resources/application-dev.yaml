@@ -5,61 +5,41 @@ server:
     encoding:
       charset: utf-8
       force: true
-  # 파일 업로드 설정
   multipart:
-    enabled: true  # 파일 업로드 활성화
-    max-file-size: 50MB  # 단일 파일 최대 크기 설정 (1MB)
-    max-request-size: 100MB # 전체 요청(Request) 최대 크기 설정
+    enabled: true
+    max-file-size: 50MB
+    max-request-size: 100MB
   port: 8080
 
-
-
+# log 설정
 logging:
   level:
-    root: INFO #모든 라이브러리는 INFO 이상만 출력
-    com.tenco: DEBUG # 내 프로젝트는 DEBUG 이상 모두 출력
+    root: INFO
+    com.tenco: DEBUG
 
+# mustache 설정
 spring:
   mustache:
     servlet:
-      # 머스태치 템플릿 엔진에서 request 객체와 세션 객체에 접근할 수 있도록 허용하는 설정 추가
       expose-session-attributes: false
       expose-request-attributes: true
 
-#  # 이메일 발송 설정
-#  mail:
-#    # SMTP 서버 호스트 주소 (Google의 경우 smtp.gmail.com 고정)
-#    host: smtp.gmail.com
-#    # SMTP 서버 포트 번호 (587: TLS(Transport Layer Security) 암호화 통신 전용 포트)
-#    # 인터넷으로 정보를 주고받을 때 정보를 암호화해서 아무도 훔쳐보지 못하게 하는 보안 기술
-#    port: 587
-#    # 발신자 계정 (본인의 전체 Gmail 주소)
-#    username: ${EMAIL_SENDER}
-#    # 발신자 인증 키 (Google 보안 설정에서 생성한 16자리 앱 비밀번호)
-#    # 주의: 일반 구글 로그인 비밀번호가 아님
-#    password: ${GOOGLE_APP_KEY}
-#    # JavaMail 추가 속성 설정
-#    properties:
-#      mail:
-#        smtp:
-#          # SMTP 서버 인증 활성화 (ID/PW 검사 여부)
-#          auth: true
-#          # STARTTLS 설정 (보안 연결)
-#          starttls:
-#            # 비암호화 연결을 암호화 연결(TLS)로 승격 활성화
-#            enable: true
-#            # TLS 연결을 강제할지 여부 (보안상 true 권장)
-#            required: true
-#          # [타임아웃 설정 - 서버 간 통신 기준]
-#          # 소켓 연결 제한 시간 (단위: 밀리초)
-#          # 서버에 접속을 시도할 때 5초(5000ms) 동안 응답이 없으면 연결 실패 처리
-#          connectiontimeout: 5000
-#          # 소켓 읽기 제한 시간 (단위: 밀리초)
-#          # 메일 전송 요청 후 서버로부터 응답(Response)을 기다리는 최대 시간
-#          timeout: 5000
-#          # 소켓 쓰기 제한 시간 (단위: 밀리초)
-#          # 데이터를 서버로 전송할 때 걸리는 최대 허용 시간
-#          writetimeout: 5000
+  # 이메일 발송 설정
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL_SENDER}
+    password: ${GOOGLE_APP_KEY}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
 
   #데이터베이스 연결 설정 (MySQL)
@@ -76,34 +56,19 @@ spring:
     console:
       enabled: true
 
-  #      초기 데이터 설정
-  # SQL 초기화 설정
   sql:
     init:
       mode: always  # 외부 DB(MySQL)에서도 실행되도록 설정
-      #mode: never  # 절대 실행 안됨
       data-locations:
         - classpath:db/data.sql
 
   jpa:
-    # Open Session In View -> false 설정
-    # true (기본 값) -> 뷰 렌더링까지 DB 세션 유지 됨(LAZY 로딩 가능)
-    # false : 트랜잭션 종료시 DB 세션 종료 ( Controller, View LAZY 로딩 불가)
-    # false 사용시 Service 필요한 데이터를 모두 조회하고 응답시 DTO 설계 방식으로 처리 한다.
     open-in-view: false
     hibernate:
-      # create 애플리케이션 시작시 테이블 새로 생성
-      # 기존 데이터는 모드 삭제됨 (개발용)
       ddl-auto: create
-    #SQL 쿼리를 콘솔에 출력 (개발용)
     show-sql: true
     properties:
       hibernate:
-        # SQL 쿼리를 보기 좋게 포맷팅
         format_sql: true
-        # N + 1 문제를 완화 하기위한 완충 장치 설정
-        # 기본 WHERE 절에서 in 절(in 쿼리로 변경 해준다)
         default_batch_fetch_size: 100
-
-     #data.sql 파일을 Hibernate 초기화 이후에 실행
     defer-datasource-initialization: true

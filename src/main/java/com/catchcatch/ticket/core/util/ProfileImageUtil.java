@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Component
-public class ProfileImageStorage {
+public class ProfileImageUtil {
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
