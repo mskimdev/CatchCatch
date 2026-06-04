@@ -19,15 +19,6 @@ import java.util.List;
 @RequestMapping("/booking")
 public class BookingController {
 
-    private static final int TEST_CONCERT_ID = 1;
-    private static final int TEST_SESSION_ID = 1;
-
-    private static final String SESSION_BOOKING_CONCERT_ID = "bookingConcertId";
-    private static final String SESSION_BOOKING_SESSION_ID = "bookingSessionId";
-    private static final String SESSION_BOOKING_SEAT_IDS = "bookingSeatIds";
-    private static final String SESSION_BOOKING_ID = "bookingId";
-    private static final String SESSION_BOOKING_IDS = "bookingIds";
-
     private final BookingService bookingService;
 
     @PostMapping("/start")
@@ -43,8 +34,8 @@ public class BookingController {
 
         req.validate();
 
-        session.setAttribute(SESSION_BOOKING_CONCERT_ID, req.getConcertId());
-        session.setAttribute(SESSION_BOOKING_SESSION_ID, req.getSessionId());
+        session.setAttribute("bookingConcertId", req.getConcertId());
+        session.setAttribute("bookingSessionId", req.getSessionId());
 
         return "redirect:/booking/seat";
     }
@@ -57,16 +48,8 @@ public class BookingController {
             return "redirect:/login";
         }
 
-        Integer concertId = getSessionInteger(session, SESSION_BOOKING_CONCERT_ID);
-        Integer sessionId = getSessionInteger(session, SESSION_BOOKING_SESSION_ID);
-
-        if (concertId == null || sessionId == null) {
-            concertId = TEST_CONCERT_ID;
-            sessionId = TEST_SESSION_ID;
-
-            session.setAttribute(SESSION_BOOKING_CONCERT_ID, concertId);
-            session.setAttribute(SESSION_BOOKING_SESSION_ID, sessionId);
-        }
+        Integer concertId = getSessionInteger(session, "bookingConcertId");
+        Integer sessionId = getSessionInteger(session, "bookingSessionId");
 
         BookingResponse.SeatFormDTO seat = bookingService.findSeatForm(sessionId);
 
@@ -92,20 +75,10 @@ public class BookingController {
 
         req.validate();
 
-        Integer concertId = getSessionInteger(session, SESSION_BOOKING_CONCERT_ID);
-        Integer sessionId = getSessionInteger(session, SESSION_BOOKING_SESSION_ID);
+        Integer concertId = getSessionInteger(session, "bookingConcertId");
+        Integer sessionId = getSessionInteger(session, "bookingSessionId");
 
-        if (concertId == null) {
-            concertId = TEST_CONCERT_ID;
-            session.setAttribute(SESSION_BOOKING_CONCERT_ID, concertId);
-        }
-
-        if (sessionId == null) {
-            sessionId = TEST_SESSION_ID;
-            session.setAttribute(SESSION_BOOKING_SESSION_ID, sessionId);
-        }
-
-        session.setAttribute(SESSION_BOOKING_SEAT_IDS, req.getSeatIds());
+        session.setAttribute("bookingSeatIds", req.getSeatIds());
 
         return "redirect:/booking/payment";
     }
@@ -118,7 +91,7 @@ public class BookingController {
             return "redirect:/login";
         }
 
-        String seatIds = (String) session.getAttribute(SESSION_BOOKING_SEAT_IDS);
+        String seatIds = (String) session.getAttribute("bookingSeatIds");
 
         if (seatIds == null || seatIds.isBlank()) {
             return "redirect:/booking/seat";
@@ -140,8 +113,8 @@ public class BookingController {
             return "redirect:/login";
         }
 
-        Integer sessionId = getSessionInteger(session, SESSION_BOOKING_SESSION_ID);
-        String seatIds = (String) session.getAttribute(SESSION_BOOKING_SEAT_IDS);
+        Integer sessionId = getSessionInteger(session, "bookingSessionId");
+        String seatIds = (String) session.getAttribute("bookingSeatIds");
 
         if (sessionId == null || seatIds == null || seatIds.isBlank()) {
             return "redirect:/booking/seat";
@@ -158,8 +131,8 @@ public class BookingController {
                 .map(BookingResponse.DetailDTO::getId)
                 .toList();
 
-        session.setAttribute(SESSION_BOOKING_IDS, bookingIds);
-        session.setAttribute(SESSION_BOOKING_ID, bookingIds.get(0));
+        session.setAttribute("bookingIds", bookingIds);
+        session.setAttribute("bookingId", bookingIds.get(0));
 
         return "redirect:/booking/complete";
     }
@@ -172,7 +145,7 @@ public class BookingController {
             return "redirect:/login";
         }
 
-        Integer bookingId = getSessionInteger(session, SESSION_BOOKING_ID);
+        Integer bookingId = getSessionInteger(session, "bookingId");
 
         if (bookingId == null) {
             return "redirect:/";

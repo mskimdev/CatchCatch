@@ -42,16 +42,6 @@ public class BookingService {
     private final SeatRepository seatRepository;
     private final ConcertSessionRepository concertSessionRepository;
 
-    /*
-     * TODO:
-     * UserRepository 생성 후 EntityManager 제거 예정.
-     *
-     * 변경 예정:
-     * - @PersistenceContext 제거
-     * - EntityManager 제거
-     * - UserRepository 주입
-     * - getUserReference() 내부를 userRepository.findById()로 교체
-     */
     @PersistenceContext
     private EntityManager entityManager;
 
