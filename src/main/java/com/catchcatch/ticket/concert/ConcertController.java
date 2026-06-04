@@ -66,6 +66,7 @@ public class ConcertController {
 
         model.addAttribute("concerts", responseData.getConcerts());
         model.addAttribute("resultCount", responseData.getResultCount());
+        model.addAttribute("totalCount", responseData.getTotalCount());
         model.addAttribute("openSoonCount", responseData.getOpenSoonCount());
         model.addAttribute("availableCount", responseData.getAvailableCount());
         model.addAttribute("deadlineCount", responseData.getDeadlineCount());
@@ -84,7 +85,6 @@ public class ConcertController {
     public String detail(@PathVariable Integer id, Model model) {
         ConcertResponse.DetailDTO responseDTO = concertService.getConcertDetail(id);
         model.addAttribute("concert", responseDTO);
-        model.addAttribute("backHeader", true);
         return "concert/detail";
     }
 

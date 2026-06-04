@@ -234,6 +234,7 @@ public class ConcertResponse {
         private Long availableCount;    // 예매 가능 건수 (ConcertStatus.OPEN)
         private Long deadlineCount;     // 종료 임박/종료 건수 (ConcertStatus.CLOSED / ENDED)
         private Long endCount;
+        private Long totalCount;
 
         // 2. 콘서트 상세 목록
         private List<ConcertResponse.ListDTO> concerts;

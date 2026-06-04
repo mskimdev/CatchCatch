@@ -41,6 +41,7 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
         long availableCount = getCountByStatus(ConcertStatus.OPEN);
         long deadlineCount = getCountByStatus(ConcertStatus.CLOSED_SOON);
         long endCount = getCountByStatus(ConcertStatus.ENDED);
+        long totalCount = getTotalCount();
 
         // 3. DTO 변환
         List<ConcertResponse.ListDTO> dtoList = content.stream()
@@ -54,6 +55,7 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
                 .availableCount(availableCount)
                 .deadlineCount(deadlineCount)
                 .endCount(endCount)
+                .totalCount(totalCount)
                 .concerts(dtoList)
                 .build();
     }
@@ -80,6 +82,14 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
                 .select(concert.count())
                 .from(concert)
                 .where(concert.concertStatus.eq(status))
+                .fetchOne();
+        return count != null ? count : 0L;
+    }
+
+    private long getTotalCount() {
+        Long count = queryFactory
+                .select(concert.count())
+                .from(concert)
                 .fetchOne();
         return count != null ? count : 0L;
     }
