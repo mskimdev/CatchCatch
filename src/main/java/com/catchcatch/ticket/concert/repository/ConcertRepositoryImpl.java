@@ -1,5 +1,8 @@
-package com.catchcatch.ticket.concert;
+package com.catchcatch.ticket.concert.repository;
 
+import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.concert.dto.ConcertResponse;
+import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +11,7 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.catchcatch.ticket.concert.QConcert.concert;
+import static com.catchcatch.ticket.concert.core.QConcert.concert;
 import static com.catchcatch.ticket.venue.QVenue.venue;
 
 @RequiredArgsConstructor
@@ -41,6 +44,7 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
         long availableCount = getCountByStatus(ConcertStatus.OPEN);
         long deadlineCount = getCountByStatus(ConcertStatus.CLOSED_SOON);
         long endCount = getCountByStatus(ConcertStatus.ENDED);
+        long totalCount = getTotalCount();
 
         // 3. DTO 변환
         List<ConcertResponse.ListDTO> dtoList = content.stream()
@@ -54,8 +58,23 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
                 .availableCount(availableCount)
                 .deadlineCount(deadlineCount)
                 .endCount(endCount)
+                .totalCount(totalCount)
                 .concerts(dtoList)
                 .build();
+    }
+
+    @Override
+    public List<Concert> findOpenSoonConcerts(String genre) {
+        return queryFactory
+                .selectFrom(concert)
+                .where(
+                        // 상태가 OPEN_SOON인 것만 필터링( Enu, 이름 확인 필수!)
+                        concert.concertStatus.eq(ConcertStatus.COMING_SOON),
+                        genreEq(genre)
+                )
+                .orderBy(concert.ticketOpenDate.asc())
+                .limit(10)
+                .fetch();
     }
 
     // =========================================================
@@ -66,6 +85,14 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
                 .select(concert.count())
                 .from(concert)
                 .where(concert.concertStatus.eq(status))
+                .fetchOne();
+        return count != null ? count : 0L;
+    }
+
+    private long getTotalCount() {
+        Long count = queryFactory
+                .select(concert.count())
+                .from(concert)
                 .fetchOne();
         return count != null ? count : 0L;
     }
@@ -97,9 +124,12 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
 
     // 3. 장르 (genre)
     private BooleanExpression genreEq(String genre) {
-        if (!StringUtils.hasText(genre) || "all".equalsIgnoreCase(genre)) return null;
-
-        return concert.genre.eq(genre); // 💡 쌍따옴표 없이 자바 코드로 깔끔하게 매핑!
+        // 💡 넘어온 값이 아예 없거나(null/빈칸), "all"일 경우에는 장르 조건을 무시
+        if (!StringUtils.hasText(genre) || "all".equals(genre)) {
+            return null;
+        }
+        // "concert", "musical" 등 특정 장르가 넘어왔을 때만 해당 장르를 필터링
+        return concert.genre.eq(genre);
     }
 
     // 4. 지역 (region)

@@ -1,4 +1,4 @@
-package com.catchcatch.ticket.core.oauth;
+package com.catchcatch.ticket.oauth;
 
 import com.catchcatch.ticket.user.enums.OAuthProvider;
 import lombok.Builder;

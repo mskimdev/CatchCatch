@@ -1,5 +1,7 @@
 package com.catchcatch.ticket.booking;
 
+import com.catchcatch.ticket.seat.Seat;
+import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -27,13 +29,14 @@ public class Booking {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // 예매한 공연 회차 ID
-    @Column(name = "concert_session_id", nullable = false)
-    private Integer concertSessionId;
+    @ManyToOne
+    @JoinColumn(name = "concert_session_id", nullable = false)
+    private ConcertSession concertSession;
 
-    // 예매한 좌석 ID - 좌석 1개 예매 기준
-    @Column(name = "seat_id", nullable = false)
-    private Integer seatId;
+
+    @ManyToOne
+    @JoinColumn(name = "seat_id", nullable = false)
+    private Seat seat;
 
     // 예매 번호 - 사용자 조회 및 티켓 확인용
     @Column(name = "booking_number", nullable = false, unique = true)

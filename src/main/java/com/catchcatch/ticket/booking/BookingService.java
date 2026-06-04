@@ -2,7 +2,7 @@ package com.catchcatch.ticket.booking;
 
 import com.catchcatch.ticket.booking.dto.BookingRequest;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
-import com.catchcatch.ticket.concert.Concert;
+import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.core.errors.BadRequestException;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.seat.SeatRepository;
@@ -56,8 +56,8 @@ public class BookingService {
 
         Booking booking = Booking.builder()
                 .user(user)
-                .concertSessionId(requestDTO.getConcertSessionId())
-                .seatId(requestDTO.getSeatId())
+                // .concertSessionId(requestDTO.getConcertSessionId())
+                // .seatId(requestDTO.getSeatId())
                 .bookingNumber(createBookingNumber())
                 .status("PENDING")
                 .expiresAt(createExpiresAt())

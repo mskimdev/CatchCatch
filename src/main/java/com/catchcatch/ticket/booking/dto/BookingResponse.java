@@ -1,7 +1,9 @@
 package com.catchcatch.ticket.booking.dto;
 
 import com.catchcatch.ticket.booking.Booking;
+import com.catchcatch.ticket.concert.Concert;
 import com.catchcatch.ticket.seat.Seat;
+import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.user.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,8 +35,8 @@ public class BookingResponse {
         public DetailDTO(Booking booking) {
             this.id = booking.getId();
             this.userId = booking.getUser().getId();
-            this.concertSessionId = booking.getConcertSessionId();
-            this.seatId = booking.getSeatId();
+            this.concertSessionId = booking.getConcertSession().getId();
+            this.seatId = booking.getSeat().getId();
             this.bookingNumber = booking.getBookingNumber();
             this.status = booking.getStatus();
             this.expiresAt = booking.getExpiresAt();
@@ -55,8 +57,8 @@ public class BookingResponse {
         public ListDTO(Booking booking) {
             this.id = booking.getId();
             this.bookingNumber = booking.getBookingNumber();
-            this.concertSessionId = booking.getConcertSessionId();
-            this.seatId = booking.getSeatId();
+            this.concertSessionId = booking.getConcertSession().getId();
+            this.seatId = booking.getSeat().getId();
             this.status = booking.getStatus();
             this.createdAt = booking.getCreatedAt();
         }
@@ -130,8 +132,8 @@ public class BookingResponse {
         public CompleteDTO(Booking booking, Seat seat, User sessionUser, String concertTitle) {
             this.bookingId = booking.getId();
             this.bookingNumber = booking.getBookingNumber();
-            this.concertSessionId = booking.getConcertSessionId();
-            this.seatId = booking.getSeatId();
+            this.concertSessionId = booking.getConcertSession().getId();
+            this.seatId = booking.getSeat().getId();
             this.status = booking.getStatus();
             this.createdAt = booking.getCreatedAt();
 

@@ -1,5 +1,6 @@
-package com.catchcatch.ticket.concert;
+package com.catchcatch.ticket.concert.dto;
 
+import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.seat.SeatGrade;
 import com.catchcatch.ticket.session.ConcertSession;
@@ -78,13 +79,13 @@ public class ConcertResponse {
             this.title = title;
             this.highlight = highlight;
             this.description = description;
-            this.linkUrl = "concerts/" + concertId; // TODO 경로 수정 (concert -> concerts)
+            this.linkUrl = "concerts/" + concertId;
             this.buttonText = "예매하기";
         }
     }
 
     // ==========================================
-    // 2. 상세 페이지(Detail)용 DTO (새로 추가됨)
+    // 2. 상세 페이지(Detail)용 DTO
     // ==========================================
     @Getter
     @Builder
@@ -220,6 +221,9 @@ public class ConcertResponse {
         }
     }
 
+    // ==========================================
+    // 2. 콘서트 일정(List)용 DTO
+    // ==========================================
     @Getter
     @Builder
     public static class ConcertListResponseDTO {
@@ -230,9 +234,55 @@ public class ConcertResponse {
         private Long availableCount;    // 예매 가능 건수 (ConcertStatus.OPEN)
         private Long deadlineCount;     // 종료 임박/종료 건수 (ConcertStatus.CLOSED / ENDED)
         private Long endCount;
+        private Long totalCount;
 
         // 2. 콘서트 상세 목록
         private List<ConcertResponse.ListDTO> concerts;
     }
+
+
+    // ==========================================
+    // 3. 콘서트 오픈 예정(open-soon)용 DTO
+    // ==========================================
+    @Getter
+    @Builder
+    public static class OpenSoonConcertResponse {
+
+        private Integer id;                 // 콘서트 ID (클릭 시 상세페이지 이동용)
+        private String title;            // 공연 제목
+        private String posterUrl;        // 포스터 이미지 URL
+        private String ticketOpenDate; // 💡 핵심: 티켓 오픈 일시
+        private String venueName;
+        private String address;
+        private String category;
+
+
+        // Entity -> DTO 변환 메서드
+        public static OpenSoonConcertResponse from(Concert concert) {
+
+            // 원하는 형태의 포맷 지정 (예: 2026년 06월 15일 20시 00분)
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분");
+            String formattedDate = concert.getTicketOpenDate() != null ? concert.getTicketOpenDate().format(formatter) : "미정";
+
+            return OpenSoonConcertResponse.builder()
+                    .id(concert.getId())
+                    .title(concert.getTitle())
+                    .posterUrl(concert.getPosterUrl())
+                    .ticketOpenDate(formattedDate)
+                    .venueName(concert.getVenue().getName())
+                    .address(concert.getVenue().getAddress())
+                    .category(concert.getCategory())
+                    .build();
+        }
+    } // end of OpenSoonConcert
+
+    // 💡 1. 화면 전체를 아우르는 최종 래퍼 DTO 추가
+    @Getter
+    @Builder
+    public static class OpenSoonPageResponse {
+        private String currentGenre;                           // 질문하신 현재 장르 상태값!
+        private List<OpenSoonConcertResponse> openSoonList;    // 동적 공연 목록 리스트
+    }
+
 
 } // end of class

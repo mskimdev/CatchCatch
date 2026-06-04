@@ -14,7 +14,6 @@ package com.catchcatch.ticket.user;
  */
 
 
-import com.catchcatch.ticket.concert.Concert;
 import com.catchcatch.ticket.user.enums.OAuthProvider;
 import com.catchcatch.ticket.user.enums.Role;
 import jakarta.persistence.*;
@@ -25,7 +24,6 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CurrentTimestamp;
 
 import java.sql.Timestamp;
-import java.util.List;
 
 @Data
 @NoArgsConstructor

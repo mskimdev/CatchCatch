@@ -1,4 +1,4 @@
-package com.catchcatch.ticket.concert;
+package com.catchcatch.ticket.concert.core;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 
@@ -16,7 +16,7 @@ import com.querydsl.core.types.dsl.PathInits;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QConcert extends EntityPathBase<Concert> {
 
-    private static final long serialVersionUID = -2127726595L;
+    private static final long serialVersionUID = -648990688L;
 
     private static final PathInits INITS = PathInits.DIRECT2;
 
@@ -50,6 +50,8 @@ public class QConcert extends EntityPathBase<Concert> {
 
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
 
+    public final BooleanPath isDeleted = createBoolean("isDeleted");
+
     public final StringPath organizer = createString("organizer");
 
     public final StringPath posterUrl = createString("posterUrl");
@@ -59,6 +61,8 @@ public class QConcert extends EntityPathBase<Concert> {
     public final ListPath<com.catchcatch.ticket.session.ConcertSession, com.catchcatch.ticket.session.QConcertSession> sessions = this.<com.catchcatch.ticket.session.ConcertSession, com.catchcatch.ticket.session.QConcertSession>createList("sessions", com.catchcatch.ticket.session.ConcertSession.class, com.catchcatch.ticket.session.QConcertSession.class, PathInits.DIRECT2);
 
     public final DatePath<java.time.LocalDate> startDate = createDate("startDate", java.time.LocalDate.class);
+
+    public final DateTimePath<java.time.LocalDateTime> ticketOpenDate = createDateTime("ticketOpenDate", java.time.LocalDateTime.class);
 
     public final StringPath title = createString("title");
 

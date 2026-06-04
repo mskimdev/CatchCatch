@@ -3,6 +3,7 @@ package com.catchcatch.ticket.payment;
 import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.user.User;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -46,12 +47,12 @@ public class Payment {
     private User user;
 
     // 포트원 결제 고유 번호
-    @Column(nullable = false)
-    private String impUid;
+    @Column(name = "pg_tx_id")
+    private String pgTxId;
 
     // 가맹점 주문 번호 (UNIQUE)
-    @Column(nullable = false,unique = true)
-    private String merchant_uid;
+    @Column(name = "payment_id", nullable = false,unique = true)
+    private String paymentId;
 
     // 결제 금액 (원)
     @Column(nullable = false)
@@ -75,4 +76,17 @@ public class Payment {
     @Column(nullable = false)
     private Timestamp createdAt;
 
+    @Builder
+    public Payment(Integer id, Booking booking, User user, String pgTxId, String paymentId, Integer amount, String method, PaymentStatus status, Timestamp paidAt, Timestamp createdAt) {
+        this.id = id;
+        this.booking = booking;
+        this.user = user;
+        this.paymentId = paymentId;
+        this.pgTxId = pgTxId;
+        this.amount = amount;
+        this.method = method;
+        this.status = status;
+        this.paidAt = paidAt;
+        this.createdAt = createdAt;
+    }
 }

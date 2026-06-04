@@ -1,0 +1,108 @@
+{{> layout/header}}
+<link rel="stylesheet" href="/css/information.css">
+<main class="cc-main">
+    <div class="cc-container cc-info-page">
+        <section class="cc-info-hero cc-info-hero--open">
+            <div>
+                <p class="cc-info-hero__eyebrow">TICKET OPEN CALENDAR</p>
+                <h1>오픈 예정</h1>
+                <p>놓치고 싶지 않은 공연의 티켓 오픈 일정을 미리 확인하세요.</p>
+            </div>
+            <div class="cc-info-hero__icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none">
+                    <rect x="10" y="13" width="44" height="41" rx="10"/>
+                    <path d="M20 8v11M44 8v11M10 25h44"/>
+                    <path d="m25 39 5 5 11-13"/>
+                </svg>
+            </div>
+        </section>
+
+        <section class="cc-info-section">
+            <div class="cc-info-section__head">
+                <div>
+                    <p class="cc-info-kicker">다가오는 티켓 오픈</p>
+                    <h2>이번 주 오픈 일정</h2>
+                </div>
+
+                <div class="cc-info-filter" id="genre-filter">
+                    <button type="button" data-genre="all">전체</button>
+                    <button type="button" data-genre="concert">콘서트</button>
+                    <button type="button" data-genre="musical">뮤지컬</button>
+                    <button type="button" data-genre="festival">페스티벌</button>
+                    <button type="button" data-genre="fanmeeting">팬미팅</button>
+                    <button type="button" data-genre="classic">클래식</button>
+                </div>
+            </div>
+            <div class="concert-container">
+                <div class="concert-list" style="display: flex; flex-direction: column; gap: 20px;">
+
+                    {{#openSoonList}}
+                        <article class="cc-card cc-list-card cc-open-soon-card" style="display: flex; flex-direction: row; align-items: center; padding: 16px; border-bottom: 1px solid #eee;">
+
+                            <a class="cc-list-card__poster" href="/concerts/{{id}}" style="flex-shrink: 0; width: 140px; margin-right: 24px;">
+                                <img src="{{posterUrl}}" alt="{{title}} 포스터" style="width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            </a>
+
+                            <div class="cc-list-card__body" style="flex-grow: 1; display: flex; flex-direction: column; gap: 6px;">
+                    <span class="cc-concert-card__category" style="font-size: 13px; color: #888;">
+                        {{#category}}{{category}}{{/category}}{{^category}}콘서트{{/category}}
+                    </span>
+
+                                <h3 class="cc-list-card__title" style="margin: 0; font-size: 1.3rem;">
+                                    <a href="/concerts/{{id}}" style="text-decoration: none; color: #333;">{{title}}</a>
+                                </h3>
+
+                                <p class="cc-list-card__line cc-open-date" style="color: var(--cc-main-color, #ff4081); font-weight: bold; margin: 4px 0 8px 0; font-size: 1.1rem;">
+                                    🔔 오픈일: {{ticketOpenDate}}
+                                </p>
+
+                                <p class="cc-list-card__line" style="margin: 0; color: #555;">{{venueName}}</p>
+                                <p class="cc-list-card__line" style="margin: 0; color: #888; font-size: 0.9rem;">{{address}}</p>
+                            </div>
+
+                            <button class="cc-heart" type="button" aria-label="관심 공연 등록" style="align-self: flex-start; margin-left: 16px; background: none; border: none; font-size: 24px; cursor: pointer;">♡</button>
+
+                        </article>
+                    {{/openSoonList}}
+
+                    {{^openSoonList}}
+                        <div class="no-data" style="text-align: center; padding: 50px;">
+                            <p>현재 오픈 예정인 정보가 없습니다. 😭</p>
+                        </div>
+                    {{/openSoonList}}
+
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+{{> layout/footer}}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const currentGenre = "{{currentGenre}}";
+        const buttons = document.querySelectorAll('#genre-filter button');
+        buttons.forEach(button => {
+            const targetGenre = button.getAttribute('data-genre');
+            if (targetGenre === currentGenre) {
+                button.classList.add('is-active');
+            } else {
+                button.classList.remove('is-active');
+            }
+            button.addEventListener('click', function() {
+                if (targetGenre === 'all') {
+                    location.href = '/concerts/open-soon';
+                } else {
+                    location.href = `/concerts/open-soon?genre=${targetGenre}`;
+                }
+            });
+        });
+
+        const posters = document.querySelectorAll('.concert-poster');
+        posters.forEach(function(img) {
+            img.addEventListener('error', function() {
+                this.src = '/images/sample/default-poster.svg';
+            }, { once: true });
+        });
+    });
+</script>

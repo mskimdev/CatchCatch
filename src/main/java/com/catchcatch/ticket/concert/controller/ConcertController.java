@@ -1,5 +1,8 @@
-package com.catchcatch.ticket.concert;
+package com.catchcatch.ticket.concert.controller;
 
+import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.concert.dto.ConcertResponse;
+import com.catchcatch.ticket.concert.service.ConcertService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -7,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -63,15 +67,18 @@ public class ConcertController {
 
         model.addAttribute("searchTitle", searchTitle); // Mustache로 전달
 
-        // ... 기존 model.addAttribute 코드들 유지 ...
         model.addAttribute("concerts", responseData.getConcerts());
         model.addAttribute("resultCount", responseData.getResultCount());
+        model.addAttribute("totalCount", responseData.getTotalCount());
         model.addAttribute("openSoonCount", responseData.getOpenSoonCount());
         model.addAttribute("availableCount", responseData.getAvailableCount());
         model.addAttribute("deadlineCount", responseData.getDeadlineCount());
 
         model.addAttribute("pageTitle", "콘서트 일정");
         model.addAttribute("loginHeader", true);
+
+        model.addAttribute("activeSchedule", true);
+
 
         return "concert/list";
     }
@@ -81,7 +88,23 @@ public class ConcertController {
     public String detail(@PathVariable Integer id, Model model) {
         ConcertResponse.DetailDTO responseDTO = concertService.getConcertDetail(id);
         model.addAttribute("concert", responseDTO);
-        model.addAttribute("backHeader", true);
         return "concert/detail";
     }
-}
+
+    // 오픈 예정 콘서트 목록 조회 API
+    @GetMapping("/concerts/open-soon")
+    public String getOpenSoonPage(@RequestParam(required = false) String genre, Model model) {
+        // 서비스에서 최종 조립된 래퍼 DTO 하나만 딱 받아옵니다.
+        ConcertResponse.OpenSoonPageResponse pageData = concertService.getOpenSoonPageData(genre);
+
+        // 💡 이 코드가 콘솔 창에 출력되는지 반드시 확인하세요!
+        System.out.println(" 컨트롤러 실행됨! 현재 장르: " + pageData.getCurrentGenre());
+
+        // model에 래퍼 DTO 자체를 통째로 담아서 보냅니다.
+        model.addAttribute("currentGenre", pageData.getCurrentGenre());
+        model.addAttribute("openSoonList", pageData.getOpenSoonList());
+
+        return "concert/open-soon";
+    }
+
+} // end of class

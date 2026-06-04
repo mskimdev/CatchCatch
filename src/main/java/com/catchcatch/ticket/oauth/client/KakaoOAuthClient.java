@@ -1,8 +1,8 @@
-package com.catchcatch.ticket.core.oauth.client;
+package com.catchcatch.ticket.oauth.client;
 
 
-import com.catchcatch.ticket.core.oauth.OAuthClient;
-import com.catchcatch.ticket.core.oauth.OAuthUserInfo;
+import com.catchcatch.ticket.oauth.OAuthClient;
+import com.catchcatch.ticket.oauth.OAuthUserInfo;
 import com.catchcatch.ticket.user.enums.OAuthProvider;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;

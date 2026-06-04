@@ -22,7 +22,7 @@ public class QConcertSession extends EntityPathBase<ConcertSession> {
 
     public static final QConcertSession concertSession = new QConcertSession("concertSession");
 
-    public final com.catchcatch.ticket.concert.QConcert concert;
+    public final com.catchcatch.ticket.concert.core.QConcert concert;
 
     public final DateTimePath<java.sql.Timestamp> createdAt = createDateTime("createdAt", java.sql.Timestamp.class);
 
@@ -50,7 +50,7 @@ public class QConcertSession extends EntityPathBase<ConcertSession> {
 
     public QConcertSession(Class<? extends ConcertSession> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.concert = inits.isInitialized("concert") ? new com.catchcatch.ticket.concert.QConcert(forProperty("concert"), inits.get("concert")) : null;
+        this.concert = inits.isInitialized("concert") ? new com.catchcatch.ticket.concert.core.QConcert(forProperty("concert"), inits.get("concert")) : null;
     }
 
 }
