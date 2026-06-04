@@ -6,15 +6,19 @@ import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.user.User;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Controller
 @RequestMapping("/booking")
+@Slf4j
 public class BookingController {
 
     private final BookingService bookingService;
@@ -40,7 +44,7 @@ public class BookingController {
     }
 
     // URL: http://localhost:8080/booking/seat
-// 좌석 선택 화면으로 이동
+    // 좌석 선택 화면으로 이동
     @GetMapping("/seat")
     public String seatForm(Model model, HttpSession session) {
         User sessionUser = getSessionUser(session);
@@ -75,11 +79,12 @@ public class BookingController {
         model.addAttribute("sessionId", sessionId);
 
         // TODO: 나중에 좌석 목록, 좌석 등급, 공연 정보 model에 추가
-        // TODO: 현재는 프론트 테스트 좌석 UI를 사용하고, seatId만 DB의 seat_tb.id와 맞춰서 전달
+        // TODO: 현재는 프론트 테스트 좌석 UI를 사용하고, seatIds만 DB의 seat_tb.id와 맞춰서 전달
 
         return "booking/seat";
     }
 
+    // 좌석 선택 후 결제 화면으로 이동
     @PostMapping("/payment")
     public String startPayment(
             BookingRequest.PaymentStartDTO req,
@@ -87,39 +92,51 @@ public class BookingController {
     ) {
         User sessionUser = getSessionUser(session);
 
-        System.out.println("===== /booking/payment POST 진입 =====");
-        System.out.println("sessionUser = " + sessionUser);
-        System.out.println("req.seatId = " + req.getSeatId());
-        System.out.println("session bookingSessionId = " + session.getAttribute("bookingSessionId"));
+        log.info("===== /booking/payment POST 진입 =====");
+        log.info("sessionUser = {}", sessionUser);
+        log.info("req.seatIds = {}", req.getSeatIds());
+        log.info("session bookingConcertId = {}", session.getAttribute("bookingConcertId"));
+        log.info("session bookingSessionId = {}", session.getAttribute("bookingSessionId"));
 
         if (sessionUser == null) {
+            log.warn("비로그인 사용자가 /booking/payment POST 요청");
             return "redirect:/login";
         }
 
         req.validate();
 
+        Integer concertId = (Integer) session.getAttribute("bookingConcertId");
         Integer sessionId = (Integer) session.getAttribute("bookingSessionId");
 
         /*
-         * TODO: 좌석 선택 저장 테스트용 아이유 콘서트 1회차 고정
+         * TODO: 좌석 선택 테스트용 기본값
+         * 추후 concert/detail에서 넘어온 concertId, sessionId만 사용하도록 변경
          */
+        if (concertId == null) {
+            concertId = 1;
+            session.setAttribute("bookingConcertId", concertId);
+            log.warn("bookingConcertId가 없어 테스트값 concertId=1 세팅");
+        }
+
         if (sessionId == null) {
             sessionId = 1;
             session.setAttribute("bookingSessionId", sessionId);
+            log.warn("bookingSessionId가 없어 테스트값 sessionId=1 세팅");
         }
 
-        BookingRequest.SaveDTO saveDTO = new BookingRequest.SaveDTO();
-        saveDTO.setUserId(sessionUser.getId());
-        saveDTO.setConcertSessionId(sessionId);
-        saveDTO.setSeatId(req.getSeatId());
+        String seatIds = req.getSeatIds();
 
-        System.out.println("saveDTO.userId = " + saveDTO.getUserId());
-        System.out.println("saveDTO.concertSessionId = " + saveDTO.getConcertSessionId());
-        System.out.println("saveDTO.seatId = " + saveDTO.getSeatId());
+        session.setAttribute("bookingSeatIds", seatIds);
 
-        BookingResponse.DetailDTO booking = bookingService.save(saveDTO);
+        log.info("선택 좌석 ID 목록 세션 저장 완료");
+        log.info("bookingConcertId = {}", concertId);
+        log.info("bookingSessionId = {}", sessionId);
+        log.info("bookingSeatIds = {}", seatIds);
 
-        session.setAttribute("bookingId", booking.getId());
+        String[] seatIdArray = seatIds.split(",");
+        for (int i = 0; i < seatIdArray.length; i++) {
+            log.info("선택 좌석 [{}] seatId = {}", i + 1, seatIdArray[i].trim());
+        }
 
         return "redirect:/booking/payment";
     }
@@ -134,52 +151,99 @@ public class BookingController {
             return "redirect:/login";
         }
 
-        Integer bookingId = (Integer) session.getAttribute("bookingId");
+        String seatIds = (String) session.getAttribute("bookingSeatIds");
+        Integer concertId = (Integer) session.getAttribute("bookingConcertId");
+        Integer sessionId = (Integer) session.getAttribute("bookingSessionId");
 
-        if (bookingId == null) {
+        log.info("===== /booking/payment GET 진입 =====");
+        log.info("sessionUser.id = {}", sessionUser.getId());
+        log.info("sessionUser.username = {}", sessionUser.getUsername());
+        log.info("bookingConcertId = {}", concertId);
+        log.info("bookingSessionId = {}", sessionId);
+        log.info("bookingSeatIds = {}", seatIds);
+
+        if (seatIds == null || seatIds.isBlank()) {
+            log.warn("결제 화면 진입 실패: 선택 좌석 정보 없음");
             return "redirect:/booking/seat";
         }
 
-        BookingResponse.DetailDTO booking = bookingService.findById(bookingId);
+        BookingResponse.PaymentDTO paymentDTO =
+                bookingService.getPaymentInfo(seatIds, sessionUser);
 
-        model.addAttribute("booking", booking);
-        model.addAttribute("bookingId", booking.getId());
-        model.addAttribute("merchantUid", booking.getBookingNumber());
+        log.info("결제 화면 DTO 생성 완료");
+        log.info("payment.seatCount = {}", paymentDTO.getSeatCount());
+        log.info("payment.seatName = {}", paymentDTO.getSeatName());
+        log.info("payment.totalPrice = {}", paymentDTO.getTotalPrice());
 
-        // TODO: 나중에 seatId 기준으로 실제 좌석명/가격 조회
-        model.addAttribute("concertTitle", "테스트 콘서트");
-        model.addAttribute("seatName", "A-1");
-        model.addAttribute("price", 50000);
+        model.addAttribute("payment", paymentDTO);
 
-        model.addAttribute("totalPrice", 50000);
-        model.addAttribute("totalPriceText", "50,000원");
-        model.addAttribute("ticketPriceText", "50,000원");
-        model.addAttribute("feeText", "0원");
-
-        model.addAttribute("userId", sessionUser.getId());
-        model.addAttribute("username", sessionUser.getUsername());
+        /*
+         * TODO:
+         * payment.mustache를 {{payment.totalPriceText}} 같은 방식으로 전부 바꾸면
+         * 아래 호환용 model.addAttribute들은 삭제 가능.
+         *
+         * 지금은 기존 payment.mustache가 {{totalPriceText}}, {{bookingId}}처럼
+         * 직접 변수를 찾을 수 있으므로 화면 에러 방지용으로 같이 넘김.
+         */
+        model.addAttribute("bookingId", paymentDTO.getBookingId());
+        model.addAttribute("merchantUid", paymentDTO.getMerchantUid());
+        model.addAttribute("seatIds", paymentDTO.getSeatIds());
+        model.addAttribute("seatCount", paymentDTO.getSeatCount());
+        model.addAttribute("concertTitle", paymentDTO.getConcertTitle());
+        model.addAttribute("seatName", paymentDTO.getSeatName());
+        model.addAttribute("price", paymentDTO.getPrice());
+        model.addAttribute("totalPrice", paymentDTO.getTotalPrice());
+        model.addAttribute("totalPriceText", paymentDTO.getTotalPriceText());
+        model.addAttribute("ticketPriceText", paymentDTO.getTicketPriceText());
+        model.addAttribute("feeText", paymentDTO.getFeeText());
+        model.addAttribute("userId", paymentDTO.getUserId());
+        model.addAttribute("username", paymentDTO.getUsername());
 
         return "booking/payment";
     }
 
     // URL: http://localhost:8080/booking/payment/confirm
-    // 결제하기 버튼 클릭 시 결제 요청 처리
+// 결제하기 버튼 클릭 시 결제 완료 처리
     @PostMapping("/payment/confirm")
-    public String paymentConfirm(
-            BookingRequest.PaymentConfirmDTO req,
-            HttpSession session
-    ) {
+    public String paymentConfirm(HttpSession session) {
         User sessionUser = getSessionUser(session);
 
         if (sessionUser == null) {
             return "redirect:/login";
         }
 
-        req.validate();
+        Integer sessionId = (Integer) session.getAttribute("bookingSessionId");
+        String seatIds = (String) session.getAttribute("bookingSeatIds");
 
-        BookingResponse.DetailDTO booking = bookingService.pay(req.getBookingId());
+        if (sessionId == null) {
+            log.warn("결제 완료 실패: bookingSessionId 없음");
+            return "redirect:/booking/seat";
+        }
 
-        session.setAttribute("bookingId", booking.getId());
+        if (seatIds == null || seatIds.isBlank()) {
+            log.warn("결제 완료 실패: bookingSeatIds 없음");
+            return "redirect:/booking/seat";
+        }
+
+        List<BookingResponse.DetailDTO> bookings =
+                bookingService.saveAllConfirmed(sessionId, seatIds, sessionUser);
+
+        if (bookings.isEmpty()) {
+            log.warn("결제 완료 실패: 저장된 예매 없음");
+            return "redirect:/booking/seat";
+        }
+
+        List<Integer> bookingIds = bookings.stream()
+                .map(BookingResponse.DetailDTO::getId)
+                .toList();
+
+        session.setAttribute("bookingIds", bookingIds);
+
+        // 기존 complete 화면 호환용: 첫 번째 예매 ID 저장
+        session.setAttribute("bookingId", bookingIds.get(0));
+
+        log.info("결제 완료 예매 저장 성공");
+        log.info("bookingIds = {}", bookingIds);
 
         return "redirect:/booking/complete";
     }
@@ -200,20 +264,19 @@ public class BookingController {
             return "redirect:/";
         }
 
-        BookingResponse.DetailDTO booking = bookingService.findById(bookingId);
+        BookingResponse.CompleteDTO booking = bookingService.findCompleteById(bookingId, sessionUser);
 
         model.addAttribute("booking", booking);
-        model.addAttribute("bookingId", booking.getId());
+        model.addAttribute("bookingId", booking.getBookingId());
         model.addAttribute("merchantUid", booking.getBookingNumber());
 
-        // TODO: 나중에 실제 공연/좌석 정보로 교체
-        model.addAttribute("concertTitle", "테스트 콘서트");
-        model.addAttribute("seatName", "A-1");
-        model.addAttribute("price", 50000);
-        model.addAttribute("totalPriceText", "50,000원");
+        model.addAttribute("concertTitle", booking.getConcertTitle());
+        model.addAttribute("seatName", booking.getSeatName());
+        model.addAttribute("price", booking.getPrice());
+        model.addAttribute("totalPriceText", booking.getTotalPriceText());
 
-        model.addAttribute("userId", sessionUser.getId());
-        model.addAttribute("username", sessionUser.getUsername());
+        model.addAttribute("userId", booking.getUserId());
+        model.addAttribute("username", booking.getUsername());
 
         return "booking/complete";
     }

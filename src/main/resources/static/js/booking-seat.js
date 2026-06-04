@@ -1,5 +1,4 @@
 // booking-seat.js — 구역 선택 + 구역 확대 좌석 테스트 버전
-
 document.addEventListener("DOMContentLoaded", () => {
   const MAX_SELECT_COUNT = 4;
 
@@ -15,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const totalPriceEl = document.querySelector(".cc-total__price");
   const paymentForm = document.querySelector(".cc-payment-form");
   const timerEl = document.querySelector("[data-countdown]");
-  const selectedSeatIdInput = document.querySelector("#selectedSeatId");
+  const selectedSeatIdsInput = document.querySelector("#selectedSeatIds");
 
   let currentZone = "나";
   let selectedSeats = [];
@@ -298,16 +297,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderHiddenInputs() {
-    if (!paymentForm || !selectedSeatIdInput) return;
+    if (!paymentForm || !selectedSeatIdsInput) return;
 
-    // 현재 백엔드는 seatId 1개만 받음
-    // 그래서 선택한 좌석 중 첫 번째 좌석만 seatId로 전달
-    if (selectedSeats.length === 0) {
-      selectedSeatIdInput.value = "";
-      return;
-    }
+    selectedSeatIdsInput.value = selectedSeats
+      .map((seat) => seat.id)
+      .join(",");
 
-    selectedSeatIdInput.value = selectedSeats[0].id;
+    console.log("hidden seatIds =", selectedSeatIdsInput.value);
   }
 
   function removeSelectedSeat(seatId) {
@@ -358,9 +354,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (paymentForm) {
       paymentForm.addEventListener("submit", (event) => {
+        renderHiddenInputs();
+
+        console.log("submit selectedSeats =", selectedSeats);
+        console.log("submit seatIds =", selectedSeatIdsInput ? selectedSeatIdsInput.value : null);
+
         if (selectedSeats.length === 0) {
           event.preventDefault();
           alert("좌석을 먼저 선택해주세요.");
+          return;
+        }
+
+        if (!selectedSeatIdsInput || selectedSeatIdsInput.value.trim() === "") {
+          event.preventDefault();
+          alert("좌석 정보가 정상적으로 입력되지 않았습니다.");
+          return;
+        }
+
+        if (selectedSeats.length > MAX_SELECT_COUNT) {
+          event.preventDefault();
+          alert(`좌석은 최대 ${MAX_SELECT_COUNT}석까지 선택할 수 있습니다.`);
         }
       });
     }

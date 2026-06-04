@@ -27,35 +27,53 @@ public class BookingRequest {
 
     // 예매 저장 요청 DTO
     // userId는 세션에서 꺼내서 컨트롤러에서 세팅
-        @Getter
-        @Setter
-        public static class SaveDTO {
-            private Integer userId;
-            private Integer concertSessionId;
-            private Integer seatId;
+    @Getter
+    @Setter
+    public static class SaveDTO {
+        private Integer userId;
+        private Integer concertSessionId;
+        private Integer seatId;
 
-            public void validate() {
-                if (userId == null) {
-                    throw new BadRequestException("사용자 정보가 없습니다.");
-                }
-                if (concertSessionId == null) {
-                    throw new BadRequestException("공연 회차 정보가 없습니다.");
-                }
-                if (seatId == null) {
-                    throw new BadRequestException("좌석 정보가 없습니다.");
-                }
+        public void validate() {
+            if (userId == null) {
+                throw new BadRequestException("사용자 정보가 없습니다.");
+            }
+            if (concertSessionId == null) {
+                throw new BadRequestException("공연 회차 정보가 없습니다.");
+            }
+            if (seatId == null) {
+                throw new BadRequestException("좌석 정보가 없습니다.");
             }
         }
+    }
 
     // 좌석 선택 후 결제 단계로 넘어갈 때 사용
     @Getter
     @Setter
     public static class PaymentStartDTO {
-        private Integer seatId;
+        private String seatIds;
 
         public void validate() {
-            if (seatId == null) {
+            if (seatIds == null || seatIds.isBlank()) {
                 throw new BadRequestException("좌석을 선택해주세요.");
+            }
+
+            String[] seatIdArray = seatIds.split(",");
+
+            if (seatIdArray.length > 4) {
+                throw new BadRequestException("좌석은 최대 4석까지 선택할 수 있습니다.");
+            }
+
+            for (String seatId : seatIdArray) {
+                if (seatId == null || seatId.isBlank()) {
+                    throw new BadRequestException("좌석 정보가 올바르지 않습니다.");
+                }
+
+                try {
+                    Integer.parseInt(seatId.trim());
+                } catch (NumberFormatException e) {
+                    throw new BadRequestException("좌석 정보가 올바르지 않습니다.");
+                }
             }
         }
     }
