@@ -19,6 +19,13 @@ repositories {
 }
 
 dependencies {
+
+    // QueryDSL 설정 (Spring Boot 3버전 기준)
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
     // 암호화
     implementation 'org.springframework.security:spring-security-crypto'
     // Source: https://mvnrepository.com/artifact/org.apache.commons/commons-lang3

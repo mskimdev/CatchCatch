@@ -1,0 +1,42 @@
+{{> layout/header}}
+<link rel="stylesheet" href="/css/user-mypage.css">
+<main class="cc-main">
+    <div class="cc-container cc-mypage-layout">
+
+        <!-- 사이드바 -->
+        {{> components/mypage-sidebar}}
+
+        <!-- 메인 콘텐츠 -->
+        <section class="cc-mypage-content">
+            <div class="cc-mypage-head">
+                <h2>관심 공연</h2>
+            </div>
+
+            <div class="cc-concert-grid">
+                {{#concerts}}
+                    <article class="cc-card cc-concert-card">
+                        <a class="cc-concert-card__poster" href="/concerts/{{id}}">
+                            <img src="{{posterUrl}}" alt="{{title}} 포스터">
+                        </a>
+                        <div class="cc-concert-card__body">
+                            <span class="cc-concert-card__category">{{#category}}{{category}}{{/category}}{{^category}}콘서트{{/category}}</span>
+                            <h3 class="cc-concert-card__title"><a href="/concerts/{{id}}">{{title}}</a></h3>
+                            <p class="cc-concert-card__meta">🎤 <span>{{artist}}</span></p>
+                            <p class="cc-concert-card__meta">📅 <span>{{startDate}} ~ {{endDate}}</span></p>
+                            <p class="cc-concert-card__meta">📍 <span>{{venueName}}</span></p>
+                        </div>
+                    </article>
+                {{/concerts}}
+                {{^concerts}}
+                    <div class="cc-empty-state" style="grid-column:1/-1">
+                        <p>관심 공연이 없습니다.</p>
+                        <a class="cc-btn cc-btn--primary" href="/concerts">콘서트 둘러보기</a>
+                    </div>
+                {{/concerts}}
+            </div>
+        </section>
+
+    </div>
+</main>
+
+{{> layout/footer}}

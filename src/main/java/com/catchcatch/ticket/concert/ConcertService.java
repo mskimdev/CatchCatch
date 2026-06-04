@@ -53,7 +53,8 @@ public class ConcertService {
         // TODO - 지금은 하드코딩으로 임시 대체
         return List.of(
                 new ConcertResponse.BannerDTO("/images/sample/banner-main.svg", "캐치캐치 단독", "아이유 2026 월드 투어", "서울", "놓칠 수 없는 단 하루의 무대", 1),
-                new ConcertResponse.BannerDTO("/images/sample/banner-sub.svg", "매진 임박", "에스파 LIVE TOUR", "SYNK", "지금 바로 예매하세요", 2)
+                new ConcertResponse.BannerDTO("/images/sample/banner-sub.svg", "매진 임박", "에스파 LIVE TOUR", "SYNK", "지금 바로 예매하세요", 2),
+                new ConcertResponse.BannerDTO("/images/sample/banner-sub.svg", "매진 임박", "김민수 LIVE TOUR", "SYNK", "지금 바로 예매하세요", 2)
         );
     } // end of getHeroBanners
 
@@ -81,5 +82,37 @@ public class ConcertService {
 
         // 3. 엔티티 데이터를 DTO 팩토리 메서드로 넘겨 조립합니다.
         return ConcertResponse.DetailDTO.of(concert, seats);
+    } // end of getConcertDetail
+
+
+    /**
+     * [목록 페이지용] 동적 필터 및 검색 적용
+     */
+    public ConcertResponse.ConcertListResponseDTO searchConcertList(Concert.ConcertSearchCondition condition) {
+
+        // 💡 2. 다시 QueryDSL로 스위치 ON!
+        return concertRepository.findConcertsByFilters(condition);
     }
-}
+
+    // ==========================================
+    // 3. 콘서트오픈예정 페이지(open-soon) 메서드
+    // ==========================================
+    @Transactional(readOnly = true)
+    public ConcertResponse.OpenSoonPageResponse getOpenSoonPageData(String genre) {
+        // 1. DB에서 장르 필터링 조건에 맞게 조회
+        List<Concert> concerts = concertRepository.findOpenSoonConcerts(genre);
+
+        // 2. 엔티티 리스트를 카드 DTO 리스트로 변환
+        List<ConcertResponse.OpenSoonConcertResponse> concertDTOs = concerts.stream()
+                .map(ConcertResponse.OpenSoonConcertResponse::from)
+                .toList();
+
+        // 3. 래퍼 DTO로 최종 조립하여 반환
+        return ConcertResponse.OpenSoonPageResponse.builder()
+                .currentGenre(genre != null ? genre : "all") // null 일때 "all" 방어 코드
+                .openSoonList(concertDTOs)
+                .build();
+    }
+
+
+} // end of class

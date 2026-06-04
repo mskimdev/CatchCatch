@@ -36,10 +36,11 @@ public class Refund {
     @Column(nullable = false)
     private Integer amount;
 
+
     // 취소 수수료 원
     @ColumnDefault("0")
-    @Column(nullable = false)
-    private Integer cancelFee;
+    @Column(name = "fee", nullable = false)
+    private Integer cancelFee = 0;
 
     // 환불 사유
     @Column(length = 255)

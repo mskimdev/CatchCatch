@@ -11,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +45,9 @@ public class Concert {
 
     @CreationTimestamp
     private Timestamp createdAt;
+
+    @Column(name = "ticket_open_date")
+    private LocalDateTime ticketOpenDate; // 티켓 예매 오픈 일시
 
     // ==========================================
     // 💡 화면(detail.mustache) 구성을 위해 추가된 상세 필드들
@@ -79,4 +83,15 @@ public class Concert {
     @OneToMany(mappedBy = "concert", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ConcertSession> sessions = new ArrayList<>(); // Null 에러 방지를 위해 초기화
 
-}
+
+    @Getter
+    @Setter
+    public class ConcertSearchCondition {
+        // 💡 프론트엔드(머스태치)의 URL 파라미터명(?status=...&genre=...)과 일치해야 한다.
+        private String keyword; // 검색어 (제목 또는 아티스트)
+        private String status;  // 상태 (all, open-soon, available, deadline)
+        private String genre;   // 장르 (all, concert, festival)
+        private String region;  // 지역 (all, seoul, incheon 등)
+    }
+
+} // end of class

@@ -1,44 +1,507 @@
 /* concert-detail.css — 콘서트 상세 페이지 전용 */
 
-.cc-detail-hero { display: grid; grid-template-columns: 340px 1fr 340px; gap: 28px; align-items: start; }
-.cc-poster-large { overflow: hidden; border-radius: 18px; background: #0f1224; box-shadow: var(--cc-shadow); }
-.cc-poster-large img { width: 100%; height: auto; aspect-ratio: 3 / 4.25; object-fit: cover; }
-
-.cc-detail-info { padding-top: 12px; }
-.cc-detail-category { color: var(--cc-muted); font-weight: 800; margin-bottom: 8px; }
-.cc-detail-title-row { display: flex; align-items: flex-start; gap: 18px; }
-.cc-detail-title { flex: 1; margin: 0; font-size: 30px; line-height: 1.24; letter-spacing: 0; overflow-wrap: anywhere; }
-.cc-detail-actions { display: flex; gap: 8px; }
-.cc-detail-tags { display: flex; gap: 8px; margin: 15px 0 26px; }
-
-.cc-price-list { margin-top: 24px; }
-.cc-price-list h3 { margin: 0 0 12px; }
-.cc-price-row { display: grid; grid-template-columns: 110px 1fr; align-items: center; margin: 10px 0; font-weight: 850; }
-
-.cc-quick-booking { padding: 24px; }
-.cc-quick-booking h3 { margin: 0 0 22px; }
-
-.cc-detail-banner { position: relative; overflow: hidden; min-height: 290px; border-radius: 20px; margin-top: 28px; background: #121323; color: #fff; }
-.cc-detail-banner::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(90deg, rgba(9,10,22,.78), rgba(9,10,22,.24)), var(--detail-img, linear-gradient(135deg,#121323,#2d1955)); background-size: cover; background-position: center; }
-.cc-detail-banner__content { position: relative; z-index: 1; padding: 58px; max-width: 560px; }
-.cc-detail-banner h2 { margin: 0 0 16px; font-size: 30px; }
-.cc-detail-banner p { margin: 8px 0; color: rgba(255,255,255,.86); font-weight: 650; }
-
-@media (max-width: 1180px) {
-  .cc-detail-hero { grid-template-columns: 300px 1fr; }
-  .cc-quick-booking { grid-column: 1 / -1; }
+.cc-detail-main {
+  overflow-x: hidden;
 }
+
+.cc-detail-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 410px;
+  gap: 48px;
+  align-items: start;
+}
+
+.cc-detail-content {
+  min-width: 0;
+}
+
+.cc-detail-hero {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.cc-poster-large {
+  overflow: hidden;
+  border-radius: 18px;
+  background: #0f1224;
+  box-shadow: var(--cc-shadow);
+}
+
+.cc-poster-large img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4.25;
+  object-fit: cover;
+}
+
+.cc-detail-info {
+  padding-top: 12px;
+}
+
+.cc-detail-category {
+  color: var(--cc-muted);
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.cc-detail-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.cc-detail-title {
+  flex: 1;
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.24;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.cc-detail-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.cc-detail-tags {
+  display: flex;
+  gap: 8px;
+  margin: 15px 0 26px;
+}
+
+.cc-price-list {
+  margin-top: 24px;
+}
+
+.cc-price-list h3 {
+  margin: 0 0 12px;
+}
+
+.cc-price-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  align-items: center;
+  margin: 10px 0;
+  font-weight: 850;
+}
+
+.cc-detail-banner {
+  position: relative;
+  overflow: hidden;
+  min-height: 290px;
+  border-radius: 20px;
+  margin-top: 28px;
+  background: #121323;
+  color: #fff;
+}
+
+.cc-detail-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(90deg, rgba(9,10,22,.78), rgba(9,10,22,.24)), var(--detail-img, linear-gradient(135deg,#121323,#2d1955));
+  background-size: cover;
+  background-position: center;
+}
+
+.cc-detail-banner__content {
+  position: relative;
+  z-index: 1;
+  padding: 58px;
+  max-width: 560px;
+}
+
+.cc-detail-banner h2 {
+  margin: 0 0 16px;
+  font-size: 30px;
+}
+
+.cc-detail-banner p {
+  margin: 8px 0;
+  color: rgba(255,255,255,.86);
+  font-weight: 650;
+}
+
+/* 오른쪽 예매 사이드바 */
+.cc-detail-sidebar {
+  position: sticky;
+  top: 96px;
+  align-self: start;
+  width: 410px;
+}
+
+.cc-quick-booking {
+  padding: 20px;
+  border-radius: 18px;
+  box-shadow: 0 18px 42px rgba(43, 21, 91, .08);
+}
+
+.cc-quick-booking h3 {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 950;
+}
+
+/* 관람일 + 회차 통합 패널 */
+.cc-booking-panel {
+  border: 1px solid #cfd5e3;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.cc-booking-section {
+  background: #fff;
+}
+
+.cc-booking-section + .cc-booking-section {
+  border-top: 1px solid #e2e6ef;
+}
+
+.cc-booking-section__head {
+  width: 100%;
+  min-height: 62px;
+  padding: 18px 24px;
+  border: 0;
+  background: #fff;
+  display: grid;
+  grid-template-columns: auto 1fr 26px;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cc-section-title {
+  font-size: 18px;
+  font-weight: 950;
+  color: #111;
+}
+
+.cc-selected-summary {
+  font-size: 17px;
+  font-weight: 950;
+  color: #111;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cc-toggle-icon {
+  width: 24px;
+  height: 24px;
+  position: relative;
+}
+
+.cc-toggle-icon::before,
+.cc-toggle-icon::after {
+  content: "";
+  position: absolute;
+  top: 11px;
+  width: 12px;
+  height: 2px;
+  background: #222;
+  border-radius: 99px;
+  transition: transform .18s ease;
+}
+
+.cc-toggle-icon::before {
+  left: 3px;
+  transform: rotate(-45deg);
+}
+
+.cc-toggle-icon::after {
+  right: 3px;
+  transform: rotate(45deg);
+}
+
+.cc-booking-section.is-collapsed .cc-toggle-icon::before {
+  transform: rotate(45deg);
+}
+
+.cc-booking-section.is-collapsed .cc-toggle-icon::after {
+  transform: rotate(-45deg);
+}
+
+.cc-booking-section__body {
+  padding: 0 24px 22px;
+}
+
+.cc-booking-section.is-collapsed .cc-booking-section__body {
+  display: none;
+}
+
+/* 달력 */
+.cc-calendar-picker {
+  width: 100%;
+}
+
+.cc-calendar-nav {
+  display: grid;
+  grid-template-columns: 38px 1fr 38px;
+  align-items: center;
+  margin: 0 0 14px;
+}
+
+.cc-calendar-title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 950;
+  color: #111;
+  letter-spacing: .03em;
+}
+
+.cc-calendar-arrow {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  background: transparent;
+  color: #c8c8c8;
+  font-size: 36px;
+  line-height: 1;
+  font-weight: 300;
+}
+
+.cc-calendar-arrow:hover:not(:disabled) {
+  color: #4353ff;
+}
+
+.cc-calendar-arrow:disabled {
+  opacity: .35;
+  cursor: default;
+}
+
+.cc-calendar-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  height: 38px;
+  align-items: center;
+  border-radius: 999px;
+  background: #f5f5f7;
+  margin-bottom: 14px;
+}
+
+.cc-calendar-week span {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 850;
+  color: #555;
+}
+
+.cc-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  row-gap: 9px;
+}
+
+.cc-calendar-day {
+  width: 36px;
+  height: 36px;
+  margin: 0 auto;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #c8c8c8;
+  font-size: 16px;
+  font-weight: 950;
+  cursor: default;
+}
+
+.cc-calendar-day.is-empty {
+  visibility: hidden;
+}
+
+.cc-calendar-day.is-sunday {
+  color: #f2b2b2;
+}
+
+.cc-calendar-day.is-available {
+  color: #111;
+  cursor: pointer;
+}
+
+.cc-calendar-day.is-available:hover {
+  background: #eef0ff;
+  color: #4353ff;
+}
+
+.cc-calendar-day.is-selected {
+  background: #4353ff;
+  color: #fff;
+}
+
+.cc-calendar-day.is-selected.is-sunday {
+  color: #fff;
+}
+
+/* 회차 */
+.cc-session-card-list {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.cc-session-card {
+  width: 100%;
+  min-height: 54px;
+  border: 1.5px solid #4353ff;
+  border-radius: 8px;
+  background: #fff;
+  color: #4353ff;
+  text-align: left;
+  padding: 0 24px;
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.cc-session-card:hover {
+  background: #f4f6ff;
+}
+
+.cc-session-card.is-selected {
+  background: #4353ff;
+  color: #fff;
+}
+
+.cc-seat-remain {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #111;
+  font-weight: 750;
+  word-break: keep-all;
+}
+
+.cc-seat-remain b {
+  font-weight: 950;
+}
+
+.cc-seat-remain .is-zero {
+  color: #cfcfcf;
+}
+
+/* 버튼/가격 */
+.cc-booking-submit {
+  height: 64px;
+  margin-top: 24px;
+  border-radius: 12px;
+  font-size: 22px;
+  font-weight: 950;
+}
+
+.cc-price-box {
+  margin-top: 12px;
+  padding: 18px;
+  border-radius: 16px;
+  background: #faf7ff;
+}
+
+.cc-price-box strong {
+  display: block;
+  margin-bottom: 12px;
+  font-weight: 950;
+}
+
+.cc-price-box__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.cc-price-box__row b {
+  font-weight: 950;
+}
+
+@media (max-width: 1280px) {
+  .cc-detail-page {
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 32px;
+  }
+
+  .cc-detail-sidebar {
+    width: 380px;
+  }
+
+  .cc-detail-hero {
+    grid-template-columns: 300px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1080px) {
+  .cc-detail-page {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-detail-sidebar {
+    position: static;
+    width: 100%;
+    max-width: 420px;
+  }
+}
+
 @media (max-width: 900px) {
-  .cc-detail-hero { grid-template-columns: 1fr; }
-  .cc-poster-large { max-width: 340px; width: 100%; }
-  .cc-detail-title-row { gap: 12px; }
+  .cc-detail-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-poster-large {
+    max-width: 340px;
+    width: 100%;
+  }
+
+  .cc-detail-title-row {
+    gap: 12px;
+  }
 }
 
 @media (max-width: 600px) {
-  .cc-detail-title-row { flex-direction: column; }
-  .cc-detail-title { font-size: 24px; }
-  .cc-detail-tags { flex-wrap: wrap; margin-bottom: 22px; }
-  .cc-detail-banner { min-height: 250px; border-radius: 18px; }
-  .cc-detail-banner__content { padding: 34px 24px; }
-  .cc-detail-banner h2 { font-size: 24px; }
+  .cc-detail-title-row {
+    flex-direction: column;
+  }
+
+  .cc-detail-title {
+    font-size: 24px;
+  }
+
+  .cc-detail-tags {
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+
+  .cc-detail-banner {
+    min-height: 250px;
+    border-radius: 18px;
+  }
+
+  .cc-detail-banner__content {
+    padding: 34px 24px;
+  }
+
+  .cc-detail-banner h2 {
+    font-size: 24px;
+  }
+
+  .cc-quick-booking {
+    padding: 16px;
+  }
+
+  .cc-booking-section__head {
+    padding: 16px 18px;
+  }
+
+  .cc-booking-section__body {
+    padding: 0 18px 20px;
+  }
+
+  .cc-calendar-day {
+    width: 34px;
+    height: 34px;
+    font-size: 15px;
+  }
 }

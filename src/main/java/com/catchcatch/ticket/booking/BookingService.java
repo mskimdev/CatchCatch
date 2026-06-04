@@ -1,5 +1,13 @@
 package com.catchcatch.ticket.booking;
 
+import com.catchcatch.ticket.booking.dto.BookingRequest;
+import com.catchcatch.ticket.booking.dto.BookingResponse;
+import com.catchcatch.ticket.concert.Concert;
+import com.catchcatch.ticket.core.errors.BadRequestException;
+import com.catchcatch.ticket.seat.Seat;
+import com.catchcatch.ticket.seat.SeatRepository;
+import com.catchcatch.ticket.session.ConcertSession;
+import com.catchcatch.ticket.session.ConcertSessionRepository;
 import com.catchcatch.ticket.user.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -9,14 +17,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
 public class BookingService {
 
     private final BookingRepository bookingRepository;
+    private final SeatRepository seatRepository;
+    private final ConcertSessionRepository concertSessionRepository;
 
     /*
     ============================================================
@@ -47,7 +61,6 @@ public class BookingService {
     ============================================================
     */
 
-
     // 예매 생성
     @Transactional
     public BookingResponse.DetailDTO save(BookingRequest.SaveDTO requestDTO) {
@@ -73,8 +86,8 @@ public class BookingService {
 
         Booking booking = Booking.builder()
                 .user(user)
-                .concertSessionId(requestDTO.getConcertSessionId())
-                .seatId(requestDTO.getSeatId())
+                // .concertSessionId(requestDTO.getConcertSessionId())
+                // .seatId(requestDTO.getSeatId())
                 .bookingNumber(createBookingNumber())
                 .status("PENDING")
                 .expiresAt(Timestamp.valueOf(LocalDateTime.now().plusMinutes(10)))
@@ -83,6 +96,38 @@ public class BookingService {
         Booking savedBooking = bookingRepository.save(booking);
 
         return new BookingResponse.DetailDTO(savedBooking);
+    }
+
+    // 결제 완료 시 선택 좌석 전체 예매 저장
+    @Transactional
+    public List<BookingResponse.DetailDTO> saveAllConfirmed(
+            Integer concertSessionId,
+            String seatIds,
+            User sessionUser
+    ) {
+        List<Integer> seatIdList = parseSeatIds(seatIds);
+        List<Seat> selectedSeats = findSelectedSeats(seatIdList);
+
+        User user = entityManager.getReference(User.class, sessionUser.getId());
+
+        List<BookingResponse.DetailDTO> result = new ArrayList<>();
+
+        for (Seat seat : selectedSeats) {
+            Booking booking = Booking.builder()
+                    .user(user)
+                    //.concertSessionId(concertSessionId)
+                    //.seatId(seat.getId())
+                    .bookingNumber(createBookingNumber())
+                    .status("CONFIRMED")
+                    .expiresAt(null)
+                    .build();
+
+            Booking savedBooking = bookingRepository.save(booking);
+
+            result.add(new BookingResponse.DetailDTO(savedBooking));
+        }
+
+        return result;
     }
 
     // 예매 단건 조회
@@ -94,12 +139,45 @@ public class BookingService {
         return new BookingResponse.DetailDTO(booking);
     }
 
+    // 예매 완료 화면 정보 조회
+    @Transactional(readOnly = true)
+    public BookingResponse.CompleteDTO findCompleteById(Integer id, User sessionUser) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("예매 정보를 찾을 수 없습니다."));
+
+        Seat seat = seatRepository.findById(booking.getSeat().getId())
+                .orElseThrow(() -> new BadRequestException("좌석 정보를 찾을 수 없습니다."));
+
+        ConcertSession concertSession = concertSessionRepository.findById(booking.getConcertSession().getId())
+                .orElseThrow(() -> new BadRequestException("공연 회차 정보를 찾을 수 없습니다."));
+
+        Concert concert = concertSession.getConcert();
+
+        String concertTitle = concert.getTitle();
+
+        return new BookingResponse.CompleteDTO(
+                booking,
+                seat,
+                sessionUser,
+                concertTitle
+        );
+    }
+
     // 사용자별 예매 목록 조회
     @Transactional(readOnly = true)
     public List<BookingResponse.ListDTO> findByUserId(Integer userId) {
         return bookingRepository.findByUserId(userId).stream()
                 .map(BookingResponse.ListDTO::new)
                 .toList();
+    }
+
+    // 결제 화면 정보 조회
+    @Transactional(readOnly = true)
+    public BookingResponse.PaymentDTO getPaymentInfo(String seatIds, User sessionUser) {
+        List<Integer> seatIdList = parseSeatIds(seatIds);
+        List<Seat> selectedSeats = findSelectedSeats(seatIdList);
+
+        return new BookingResponse.PaymentDTO(seatIds, selectedSeats, sessionUser);
     }
 
     // 결제 완료 처리
@@ -144,8 +222,88 @@ public class BookingService {
         }
     }
 
+    // ============================================================
+    // 결제 화면 좌석 조회 관련 private 메서드
+    // ============================================================
+
+    // seatIds 문자열을 Integer 리스트로 변환
+    private List<Integer> parseSeatIds(String seatIds) {
+        if (seatIds == null || seatIds.isBlank()) {
+            throw new BadRequestException("좌석 정보가 없습니다.");
+        }
+
+        List<Integer> seatIdList = Arrays.stream(seatIds.split(","))
+                .map(String::trim)
+                .filter(id -> !id.isBlank())
+                .map(this::parseSeatId)
+                .toList();
+
+        validateSeatIdList(seatIdList);
+
+        return seatIdList;
+    }
+
+    // seatId 문자열 하나를 Integer로 변환
+    private Integer parseSeatId(String seatId) {
+        try {
+            return Integer.parseInt(seatId);
+        } catch (NumberFormatException e) {
+            throw new BadRequestException("좌석 정보가 올바르지 않습니다.");
+        }
+    }
+
+    // 좌석 ID 목록 기본 검증
+    private void validateSeatIdList(List<Integer> seatIdList) {
+        if (seatIdList == null || seatIdList.isEmpty()) {
+            throw new BadRequestException("좌석 정보가 없습니다.");
+        }
+
+        if (seatIdList.size() > 4) {
+            throw new BadRequestException("좌석은 최대 4석까지 선택할 수 있습니다.");
+        }
+
+        long distinctCount = seatIdList.stream()
+                .distinct()
+                .count();
+
+        if (distinctCount != seatIdList.size()) {
+            throw new BadRequestException("중복된 좌석이 포함되어 있습니다.");
+        }
+    }
+
+    // 선택한 좌석 ID 목록으로 Seat 조회 후, 요청 순서대로 정렬
+    private List<Seat> findSelectedSeats(List<Integer> seatIdList) {
+        List<Seat> foundSeats = seatRepository.findAllById(seatIdList);
+
+        if (foundSeats.size() != seatIdList.size()) {
+            throw new BadRequestException("존재하지 않는 좌석이 포함되어 있습니다.");
+        }
+
+        Map<Integer, Seat> seatMap = foundSeats.stream()
+                .collect(Collectors.toMap(Seat::getId, seat -> seat));
+
+        List<Seat> orderedSeats = new ArrayList<>();
+
+        for (Integer seatId : seatIdList) {
+            Seat seat = seatMap.get(seatId);
+
+            if (seat == null) {
+                throw new BadRequestException("존재하지 않는 좌석이 포함되어 있습니다.");
+            }
+
+            orderedSeats.add(seat);
+        }
+
+        return orderedSeats;
+    }
+
     // 예매 번호 생성
     private String createBookingNumber() {
         return "BOOK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
+
+
+
+
+
 }

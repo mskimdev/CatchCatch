@@ -20,11 +20,33 @@ public class UserRequest {
             if (email == null || email.isBlank()) {
                 throw new BadRequestException("이메일을 입력해주세요.");
             }
+            if(!email.contains("@")){
+                throw new BadRequestException("이메일 형식이 올바르지 않습니다.");
+            }
             if (password == null || password.length() < 8) {
                 throw new BadRequestException("비밀번호는 8자 이상이어야 합니다.");
             }
             if (!password.equals(passwordConfirm)) {
                 throw new BadRequestException("비밀번호가 일치하지 않습니다.");
+            }
+        }
+    }
+
+    @Data
+    public static class SocialJoinDTO{
+        private String email;
+        private String username;
+        private String phone;
+
+        public void validate() {
+            if (username == null || username.isBlank()) {
+                throw new BadRequestException("아이디를 입력해주세요.");
+            }
+            if (email == null || email.isBlank()) {
+                throw new BadRequestException("이메일을 입력해주세요.");
+            }
+            if(!email.contains("@")){
+                throw new BadRequestException("이메일 형식이 올바르지 않습니다.");
             }
         }
     }
@@ -37,18 +59,35 @@ public class UserRequest {
         private String newPassword;
         private String newPasswordConfirm;
 
-        public void validate() {
+        public void validate(boolean isLocal) {
             if (username == null || username.isBlank()) {
                 throw new BadRequestException("아이디를 입력해주세요.");
             }
-            if (currentPassword == null || currentPassword.isBlank()) {
-                throw new BadRequestException("현재 비밀번호를 입력해주세요.");
+            if (isLocal) {
+                if (currentPassword == null || currentPassword.isBlank()) {
+                    throw new BadRequestException("현재 비밀번호를 입력해주세요.");
+                }
+                if (newPassword != null && !newPassword.isBlank() && newPassword.length() < 8) {
+                    throw new BadRequestException("새 비밀번호는 8자 이상이어야 합니다.");
+                }
+                if (newPassword != null && !newPassword.isBlank() && !newPassword.equals(newPasswordConfirm)) {
+                    throw new BadRequestException("새 비밀번호가 일치하지 않습니다.");
+                }
             }
-            if (newPassword != null && !newPassword.isBlank() && newPassword.length() < 8) {
-                throw new BadRequestException("새 비밀번호는 8자 이상이어야 합니다.");
+        }
+    }
+
+    @Data
+    public static class EmailCheckDTO {
+        private String email; // 이메일 주소
+        private String code; // 인증번호(번호 확인시 사용(
+
+        public void validate() {
+            if(email == null || email.trim().isEmpty()) {
+                throw new BadRequestException("이메일을 입력해주세요");
             }
-            if (newPassword != null && !newPassword.isBlank() && !newPassword.equals(newPasswordConfirm)) {
-                throw new BadRequestException("새 비밀번호가 일치하지 않습니다.");
+            if(!email.contains("@")) {
+                throw new BadRequestException("올바른 이메일 형식이 아닙니다");
             }
         }
     }
