@@ -1,6 +1,6 @@
 {{> layout/header}}
 
-<link rel="stylesheet" href="/css/customercenter-faq.css">
+<link rel="stylesheet" href="/css/customercenter-faq.css?v=2">
 
 <div class="customer-center-container">
 
@@ -8,6 +8,7 @@
 
     <div class="customer-layout">
 
+        <!-- 왼쪽 사이드 메뉴 -->
         <aside class="side-menu">
             <a href="/customercenter/faqs" class="side-menu-item active">FAQ</a>
             <a href="/customercenter/inquiries/save" class="side-menu-item">1:1 문의하기</a>
@@ -15,33 +16,41 @@
             <a href="/customercenter/notices" class="side-menu-item">공지사항</a>
         </aside>
 
+        <!-- 오른쪽 FAQ 영역 -->
         <main class="faq-content">
 
             <div class="content-header">
                 <h2>FAQ</h2>
             </div>
 
+            <!-- 검색 영역 -->
             <form class="faq-search-box" action="/customercenter/faqs" method="get">
                 <select name="category">
                     <option value="">전체</option>
-                    <option value="TICKET">예매/취소</option>
-                    <option value="PAYMENT">결제</option>
                     <option value="MEMBER">회원</option>
-                    <option value="ETC">기타</option>
+                    <option value="BOOKING">예매</option>
+                    <option value="PAYMENT">결제</option>
+                    <option value="CANCEL_REFUND">취소/환불</option>
+                    <option value="EVENT">이벤트/혜택</option>
+                    <option value="SERVICE">서비스/기타</option>
                 </select>
 
                 <input type="text" name="keyword" placeholder="궁금한 점을 검색해 보세요" value="{{keyword}}">
                 <button type="submit">검색</button>
             </form>
 
+            <!-- 카테고리 탭 -->
             <div class="faq-category-tabs">
-                <a href="/customercenter/faqs" class="tab">전체</a>
-                <a href="/customercenter/faqs?category=TICKET" class="tab">예매/취소</a>
-                <a href="/customercenter/faqs?category=PAYMENT" class="tab active">결제</a>
+                <a href="/customercenter/faqs" class="tab active">전체</a>
                 <a href="/customercenter/faqs?category=MEMBER" class="tab">회원</a>
-                <a href="/customercenter/faqs?category=ETC" class="tab">기타</a>
+                <a href="/customercenter/faqs?category=BOOKING" class="tab">예매</a>
+                <a href="/customercenter/faqs?category=PAYMENT" class="tab">결제</a>
+                <a href="/customercenter/faqs?category=CANCEL_REFUND" class="tab">취소/환불</a>
+                <a href="/customercenter/faqs?category=EVENT" class="tab">이벤트/혜택</a>
+                <a href="/customercenter/faqs?category=SERVICE" class="tab">서비스/기타</a>
             </div>
 
+            <!-- FAQ 테이블 -->
             <table class="faq-table">
                 <thead>
                 <tr>
@@ -67,6 +76,14 @@
                 {{/faqs}}
                 </tbody>
             </table>
+
+            <div class="pagination">
+                <a href="#">≪</a>
+                <a href="#">‹</a>
+                <a href="#" class="active">1</a>
+                <a href="#">›</a>
+                <a href="#">≫</a>
+            </div>
 
         </main>
 
