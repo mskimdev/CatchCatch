@@ -1,26 +1,104 @@
 /* booking-complete.css — 예매 완료 페이지 전용 */
 
-.cc-complete-wrap { max-width: 760px; margin: 0 auto; text-align: center; }
+.cc-complete-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+}
 
-.cc-complete-icon { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, var(--cc-primary), var(--cc-primary-dark)); color: #fff; font-size: 32px; font-weight: 950; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 16px 32px rgba(76,29,149,.24); }
-.cc-complete-title { margin: 0 0 10px; font-size: 28px; letter-spacing: 0; }
-.cc-complete-sub { margin: 0 0 32px; color: var(--cc-muted); font-weight: 700; }
+.cc-complete-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--cc-primary), var(--cc-primary-dark));
+  color: #fff;
+  font-size: 32px;
+  font-weight: 950;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  box-shadow: 0 16px 32px rgba(76, 29, 149, .24);
+}
 
-.cc-complete-ticket { display: grid; grid-template-columns: 160px 1fr; overflow: hidden; text-align: left; }
-.cc-complete-ticket__left { background: #0f1224; }
-.cc-complete-ticket__left img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 3/4; display: block; }
-.cc-complete-ticket__right { padding: 28px; }
-.cc-complete-ticket__number { font-size: 13px; color: var(--cc-muted); font-weight: 800; margin-bottom: 10px; }
-.cc-complete-ticket__number strong { color: var(--cc-primary-dark); }
-.cc-complete-ticket__right h3 { margin: 0 0 4px; font-size: 20px; line-height: 1.3; }
+.cc-complete-title {
+  margin: 0 0 10px;
+  font-size: 28px;
+  letter-spacing: 0;
+}
 
-.cc-complete-actions { display: flex; justify-content: center; gap: 12px; margin-top: 28px; }
+.cc-complete-sub {
+  margin: 0 0 32px;
+  color: var(--cc-muted);
+  font-weight: 700;
+}
 
-/* 예매 정보 */
-.cc-complete-ticket .cc-info-list { margin-top: 16px; }
+.cc-complete-ticket {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  overflow: hidden;
+  text-align: left;
+}
+
+.cc-complete-ticket__left {
+  background: #0f1224;
+}
+
+.cc-complete-ticket__left img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  aspect-ratio: 3 / 4;
+  display: block;
+}
+
+.cc-complete-ticket__right {
+  padding: 28px;
+}
+
+.cc-complete-ticket__number {
+  font-size: 13px;
+  color: var(--cc-muted);
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.cc-complete-ticket__number strong {
+  color: var(--cc-primary-dark);
+}
+
+.cc-complete-ticket__right h3 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+.cc-complete-ticket .cc-info-list {
+  margin-top: 16px;
+}
+
+.cc-complete-price {
+  color: var(--cc-primary-dark);
+}
+
+.cc-complete-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 28px;
+}
 
 @media (max-width: 600px) {
-  .cc-complete-ticket { grid-template-columns: 1fr; }
-  .cc-complete-ticket__left img { aspect-ratio: 16/7; }
-  .cc-complete-actions { flex-direction: column; align-items: stretch; }
+  .cc-complete-ticket {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-complete-ticket__left img {
+    aspect-ratio: 16 / 7;
+  }
+
+  .cc-complete-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
