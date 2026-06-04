@@ -1,13 +1,12 @@
-package com.catchcatch.ticket.concert;
+package com.catchcatch.ticket.concert.core;
 
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.venue.Venue;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.CreationTimestamp;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Table;
+import lombok.*;
+import org.hibernate.annotations.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -17,9 +16,15 @@ import java.util.List;
 
 @Entity
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter // 💡 @Data 대신 @Getter와 @Setter를 사용하여 무한 루프(StackOverflow) 방지
 @Setter
 @Table(name = "concert_tb")
+@Builder
+// 삭제 요청 시 물리적 삭제 대신 is_deleted를 true로 업데이트
+@SQLDelete(sql = "UPDATE concert_tb SET is_deleted = true WHERE id = ?")
+// 조회 시 항상 is_deleted가 false인 것만 가져오도록 강제 (Hibernate 6.3+)
+@SQLRestriction("is_deleted = false")
 public class Concert {
 
     @Id
@@ -48,6 +53,9 @@ public class Concert {
 
     @Column(name = "ticket_open_date")
     private LocalDateTime ticketOpenDate; // 티켓 예매 오픈 일시
+
+    @Column(nullable = false)
+    private boolean isDeleted = false;
 
     // ==========================================
     // 💡 화면(detail.mustache) 구성을 위해 추가된 상세 필드들

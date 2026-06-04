@@ -1,5 +1,8 @@
-package com.catchcatch.ticket.concert;
+package com.catchcatch.ticket.concert.controller;
 
+import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.concert.dto.ConcertResponse;
+import com.catchcatch.ticket.concert.service.ConcertService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;

@@ -1,6 +1,5 @@
 package com.catchcatch.ticket.session;
 
-import com.catchcatch.ticket.concert.Concert;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

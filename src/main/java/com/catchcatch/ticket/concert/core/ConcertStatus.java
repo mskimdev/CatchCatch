@@ -1,4 +1,4 @@
-package com.catchcatch.ticket.concert;
+package com.catchcatch.ticket.concert.core;
 
 public enum ConcertStatus {
     COMING_SOON,

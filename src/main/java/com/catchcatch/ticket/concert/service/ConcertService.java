@@ -1,5 +1,9 @@
-package com.catchcatch.ticket.concert;
+package com.catchcatch.ticket.concert.service;
 
+import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.concert.repository.ConcertRepository;
+import com.catchcatch.ticket.concert.dto.ConcertResponse;
+import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.seat.SeatRepository;
 import lombok.RequiredArgsConstructor;
