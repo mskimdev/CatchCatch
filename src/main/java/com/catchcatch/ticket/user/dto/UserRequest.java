@@ -76,4 +76,19 @@ public class UserRequest {
             }
         }
     }
+
+    @Data
+    public static class EmailCheckDTO {
+        private String email; // 이메일 주소
+        private String code; // 인증번호(번호 확인시 사용(
+
+        public void validate() {
+            if(email == null || email.trim().isEmpty()) {
+                throw new BadRequestException("이메일을 입력해주세요");
+            }
+            if(!email.contains("@")) {
+                throw new BadRequestException("올바른 이메일 형식이 아닙니다");
+            }
+        }
+    }
 }
