@@ -11,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +45,9 @@ public class Concert {
 
     @CreationTimestamp
     private Timestamp createdAt;
+
+    @Column(name = "ticket_open_date")
+    private LocalDateTime ticketOpenDate; // 티켓 예매 오픈 일시
 
     // ==========================================
     // 💡 화면(detail.mustache) 구성을 위해 추가된 상세 필드들

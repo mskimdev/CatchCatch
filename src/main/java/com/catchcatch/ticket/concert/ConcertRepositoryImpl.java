@@ -58,6 +58,20 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
                 .build();
     }
 
+    @Override
+    public List<Concert> findOpenSoonConcerts(String genre) {
+        return queryFactory
+                .selectFrom(concert)
+                .where(
+                        // 상태가 OPEN_SOON인 것만 필터링( Enu, 이름 확인 필수!)
+                        concert.concertStatus.eq(ConcertStatus.COMING_SOON),
+                        genreEq(genre)
+                )
+                .orderBy(concert.ticketOpenDate.asc())
+                .limit(10)
+                .fetch();
+    }
+
     // =========================================================
     // 💡 헬퍼 메서드: 상태별 카운트 쿼리
     // =========================================================
@@ -97,9 +111,12 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
 
     // 3. 장르 (genre)
     private BooleanExpression genreEq(String genre) {
-        if (!StringUtils.hasText(genre) || "all".equalsIgnoreCase(genre)) return null;
-
-        return concert.genre.eq(genre); // 💡 쌍따옴표 없이 자바 코드로 깔끔하게 매핑!
+        // 💡 넘어온 값이 아예 없거나(null/빈칸), "all"일 경우에는 장르 조건을 무시
+        if (!StringUtils.hasText(genre) || "all".equals(genre)) {
+            return null;
+        }
+        // "concert", "musical" 등 특정 장르가 넘어왔을 때만 해당 장르를 필터링
+        return concert.genre.eq(genre);
     }
 
     // 4. 지역 (region)
