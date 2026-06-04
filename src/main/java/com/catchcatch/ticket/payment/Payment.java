@@ -47,6 +47,7 @@ public class Payment {
     private User user;
 
     // 포트원 결제 고유 번호
+    @Column(name = "pg_tx_id")
     private String pgTxId;
 
     // 가맹점 주문 번호 (UNIQUE)

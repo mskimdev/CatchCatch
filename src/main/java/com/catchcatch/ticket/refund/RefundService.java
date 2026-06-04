@@ -33,20 +33,20 @@ public class RefundService {
         }
 
         Integer cancelFee = calculateRefundFee(payment);
-        Integer refundPrice = payment.getAmount() - cancelFee;
+        Integer amount = payment.getAmount() - cancelFee;
 
-        if(refundPrice < 0) {
-            refundPrice = 0;
+        if(amount < 0) {
+            amount = 0;
         }
 
-        String refundReason = reqDTO.getReason();
+        String reason = reqDTO.getReason();
 
         Refund refund = Refund
                 .builder()
                 .payment(payment)
-                .refundPrice(refundPrice)
+                .amount(amount)
                 .cancelFee(cancelFee)
-                .refundReason(refundReason)
+                .reason(reason)
                 .build();
 
         Refund savedRefund = refundRepository.save(refund);

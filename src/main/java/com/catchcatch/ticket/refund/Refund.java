@@ -16,8 +16,7 @@ import java.time.LocalDateTime;
 @Table(
         name = "refund_tb",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_refund_payment", columnNames = "payment_id"),
-                @UniqueConstraint(name = "uk_refund_booking", columnNames = "booking_id")
+                @UniqueConstraint(name = "uk_refund_payment", columnNames = "payment_id")
         }
 )
 @Entity
@@ -35,7 +34,7 @@ public class Refund {
 
     // 실제 환불 금액 원
     @Column(nullable = false)
-    private Integer refundPrice;
+    private Integer amount;
 
     // 취소 수수료 원
     @ColumnDefault("0")
@@ -44,7 +43,7 @@ public class Refund {
 
     // 환불 사유
     @Column(length = 255)
-    private String refundReason;
+    private String reason;
 
     // 환불 처리 일시
     @CreationTimestamp
@@ -52,10 +51,10 @@ public class Refund {
     private LocalDateTime refundedAt;
 
     @Builder
-    public Refund(Payment payment, Integer refundPrice, Integer cancelFee, String refundReason) {
+    public Refund(Payment payment, Integer amount, Integer cancelFee, String reason) {
         this.payment = payment;
-        this.refundPrice = refundPrice;
+        this.amount = amount;
         this.cancelFee = cancelFee == null ? 0 : cancelFee;
-        this.refundReason = refundReason;
+        this.reason = reason;
     }
 }
