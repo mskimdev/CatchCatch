@@ -203,7 +203,7 @@ public class PaymentService {
 
 
         // 10. Seat 상태 변경: HELD -> SOLD
-        Seat seat = seatRepository.findById(booking.getSeatId())
+        Seat seat = seatRepository.findById(booking.getSeat().getId())
                 .orElseThrow(() -> new NotFoundException("좌석 정보를 찾을 수 없습니다."));
 
         seat.sell();
@@ -246,7 +246,7 @@ public class PaymentService {
      * Booking 1개 당 Seat 1개
      */
     private Integer calculatePaymentAmount(Booking booking) {
-        Seat seat = seatRepository.findById(booking.getSeatId())
+        Seat seat = seatRepository.findById(booking.getSeat().getId())
                 .orElseThrow(() -> new NotFoundException("좌석 정보를 찾을 수 없습니다."));
 
         return seat.getPrice();

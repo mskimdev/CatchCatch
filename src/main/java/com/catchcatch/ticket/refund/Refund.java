@@ -39,7 +39,6 @@ public class Refund {
 
     // 취소 수수료 원
     @ColumnDefault("0")
-    @Column(name = "fee", nullable = false)
     private Integer cancelFee = 0;
 
     // 환불 사유
