@@ -24,18 +24,18 @@
 
             <div class="cc-payment-concert">
                 <img class="cc-payment-poster"
-                     src="{{#posterUrl}}{{posterUrl}}{{/posterUrl}}{{^posterUrl}}/images/sample/poster-legend-seoul.svg{{/posterUrl}}"
+                     src="{{#payment.posterUrl}}{{payment.posterUrl}}{{/payment.posterUrl}}{{^payment.posterUrl}}/images/sample/poster-legend-seoul.svg{{/payment.posterUrl}}"
                      alt="공연 포스터">
 
                 <div class="cc-payment-concert__info">
                     <p class="cc-payment-concert__title">
-                        {{#concertTitle}}{{concertTitle}}{{/concertTitle}}{{^concertTitle}}2026 무명전설 전국투어 콘서트 - 서울{{/concertTitle}}
+                        {{#payment.concertTitle}}{{payment.concertTitle}}{{/payment.concertTitle}}{{^payment.concertTitle}}2026 무명전설 전국투어 콘서트 - 서울{{/payment.concertTitle}}
                     </p>
                     <p class="cc-payment-concert__line">
-                        📅 {{#sessionText}}{{sessionText}}{{/sessionText}}{{^sessionText}}2026.06.27 (토) 18:00{{/sessionText}}
+                        📅 {{#payment.sessionText}}{{payment.sessionText}}{{/payment.sessionText}}{{^payment.sessionText}}2026.06.27 (토) 18:00{{/payment.sessionText}}
                     </p>
                     <p class="cc-payment-concert__line">
-                        📍 {{#venueText}}{{venueText}}{{/venueText}}{{^venueText}}서울 · 올림픽공원 올림픽홀{{/venueText}}
+                        📍 {{#payment.venueText}}{{payment.venueText}}{{/payment.venueText}}{{^payment.venueText}}서울 · 올림픽공원 올림픽홀{{/payment.venueText}}
                     </p>
                 </div>
             </div>
@@ -49,15 +49,15 @@
                 </tr>
                 </thead>
                 <tbody>
-                {{#selectedSeats}}
+                {{#payment.selectedSeats}}
                     <tr>
                         <td>{{seatNumber}}</td>
                         <td><i class="cc-dot cc-dot--{{gradeClass}}"></i>{{grade}}</td>
                         <td>{{priceText}}</td>
                     </tr>
-                {{/selectedSeats}}
+                {{/payment.selectedSeats}}
 
-                {{^selectedSeats}}
+                {{^payment.selectedSeats}}
                     <tr>
                         <td>나구역 12열 15번</td>
                         <td><i class="cc-dot cc-dot--vip"></i>VIP</td>
@@ -68,7 +68,7 @@
                         <td><i class="cc-dot cc-dot--vip"></i>VIP</td>
                         <td>154,000원</td>
                     </tr>
-                {{/selectedSeats}}
+                {{/payment.selectedSeats}}
                 </tbody>
             </table>
         </div>
@@ -79,17 +79,17 @@
             <div class="cc-info-list">
                 <div class="cc-info-row">
                     <span class="cc-info-row__label">이름</span>
-                    <span>{{#userName}}{{userName}}{{/userName}}{{^userName}}홍길동{{/userName}}</span>
+                    <span>{{#payment.userName}}{{payment.userName}}{{/payment.userName}}{{^payment.userName}}홍길동{{/payment.userName}}</span>
                 </div>
 
                 <div class="cc-info-row">
                     <span class="cc-info-row__label">연락처</span>
-                    <span>{{#userPhone}}{{userPhone}}{{/userPhone}}{{^userPhone}}010-1234-5678{{/userPhone}}</span>
+                    <span>{{#payment.userPhone}}{{payment.userPhone}}{{/payment.userPhone}}{{^payment.userPhone}}010-1234-5678{{/payment.userPhone}}</span>
                 </div>
 
                 <div class="cc-info-row">
                     <span class="cc-info-row__label">이메일</span>
-                    <span>{{#userEmail}}{{userEmail}}{{/userEmail}}{{^userEmail}}user@example.com{{/userEmail}}</span>
+                    <span>{{#payment.userEmail}}{{payment.userEmail}}{{/payment.userEmail}}{{^payment.userEmail}}user@example.com{{/payment.userEmail}}</span>
                 </div>
             </div>
         </div>
@@ -102,9 +102,9 @@
                     <input type="hidden" name="{{parameterName}}" value="{{token}}">
                 {{/_csrf}}
 
-                <input type="hidden" name="bookingId" value="{{bookingId}}">
-                <input type="hidden" name="merchantUid" value="{{merchantUid}}">
-                <input type="hidden" name="amount" value="{{#totalPrice}}{{totalPrice}}{{/totalPrice}}{{^totalPrice}}308000{{/totalPrice}}">
+                <input type="hidden" name="bookingId" value="{{payment.bookingId}}">
+                <input type="hidden" name="merchantUid" value="{{payment.merchantUid}}">
+                <input type="hidden" name="amount" value="{{#payment.totalPrice}}{{payment.totalPrice}}{{/payment.totalPrice}}{{^payment.totalPrice}}308000{{/payment.totalPrice}}">
 
                 <div class="cc-pay-methods">
                     <label class="cc-pay-method is-active">
@@ -161,18 +161,18 @@
 
             <div class="cc-price-box__row">
                 <span>티켓 금액</span>
-                <b>{{#ticketPriceText}}{{ticketPriceText}}{{/ticketPriceText}}{{^ticketPriceText}}308,000원{{/ticketPriceText}}</b>
+                <b>{{#payment.ticketPriceText}}{{payment.ticketPriceText}}{{/payment.ticketPriceText}}{{^payment.ticketPriceText}}308,000원{{/payment.ticketPriceText}}</b>
             </div>
 
             <div class="cc-price-box__row">
                 <span>예매 수수료</span>
-                <b>{{#feeText}}{{feeText}}{{/feeText}}{{^feeText}}0원{{/feeText}}</b>
+                <b>{{#payment.feeText}}{{payment.feeText}}{{/payment.feeText}}{{^payment.feeText}}0원{{/payment.feeText}}</b>
             </div>
 
             <div class="cc-payment-total">
                 <span>최종 결제 금액</span>
                 <strong class="cc-total__price">
-                    {{#totalPriceText}}{{totalPriceText}}{{/totalPriceText}}{{^totalPriceText}}308,000원{{/totalPriceText}}
+                    {{#payment.totalPriceText}}{{payment.totalPriceText}}{{/payment.totalPriceText}}{{^payment.totalPriceText}}308,000원{{/payment.totalPriceText}}
                 </strong>
             </div>
 
@@ -181,7 +181,7 @@
             </button>
 
             <a class="cc-btn cc-btn--outline cc-btn--full cc-payment-prev"
-               href="/booking/seat?concertId={{#concertId}}{{concertId}}{{/concertId}}{{^concertId}}1{{/concertId}}">
+               href="/booking/seat?concertId={{#payment.concertId}}{{payment.concertId}}{{/payment.concertId}}{{^payment.concertId}}1{{/payment.concertId}}">
             이전 단계
             </a>
         </div>

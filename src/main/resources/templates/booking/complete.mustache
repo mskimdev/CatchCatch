@@ -24,53 +24,61 @@
 
     <div class="cc-card cc-complete-ticket">
         <div class="cc-complete-ticket__left">
-            <img src="{{#posterUrl}}{{posterUrl}}{{/posterUrl}}{{^posterUrl}}/images/sample/poster-legend-seoul.svg{{/posterUrl}}"
+            <img src="{{#booking.posterUrl}}{{booking.posterUrl}}{{/booking.posterUrl}}{{^booking.posterUrl}}/images/sample/poster-legend-seoul.svg{{/booking.posterUrl}}"
                  alt="공연 포스터">
         </div>
 
         <div class="cc-complete-ticket__right">
             <div class="cc-complete-ticket__number">
                 예매번호
-                <strong>{{#bookingNumber}}{{bookingNumber}}{{/bookingNumber}}{{^bookingNumber}}CC2026-000001{{/bookingNumber}}</strong>
+                <strong>
+                    {{#booking.bookingNumber}}{{booking.bookingNumber}}{{/booking.bookingNumber}}{{^booking.bookingNumber}}CC2026-000001{{/booking.bookingNumber}}
+                </strong>
             </div>
 
             <h3>
-                {{#concertTitle}}{{concertTitle}}{{/concertTitle}}{{^concertTitle}}2026 무명전설 전국투어 콘서트 - 서울{{/concertTitle}}
+                {{#booking.concertTitle}}{{booking.concertTitle}}{{/booking.concertTitle}}{{^booking.concertTitle}}2026 무명전설 전국투어 콘서트 - 서울{{/booking.concertTitle}}
             </h3>
 
             <div class="cc-info-list">
                 <div class="cc-info-row">
                     <span class="cc-info-row__label">📅 공연일시</span>
-                    <span>{{#sessionText}}{{sessionText}}{{/sessionText}}{{^sessionText}}2026.06.27 (토) 18:00{{/sessionText}}</span>
+                    <span>
+                        {{#booking.sessionText}}{{booking.sessionText}}{{/booking.sessionText}}{{^booking.sessionText}}2026.06.27 (토) 18:00{{/booking.sessionText}}
+                    </span>
                 </div>
 
                 <div class="cc-info-row">
                     <span class="cc-info-row__label">📍 공연장소</span>
-                    <span>{{#venueText}}{{venueText}}{{/venueText}}{{^venueText}}서울 · 올림픽공원 올림픽홀{{/venueText}}</span>
+                    <span>
+                        {{#booking.venueText}}{{booking.venueText}}{{/booking.venueText}}{{^booking.venueText}}서울 · 올림픽공원 올림픽홀{{/booking.venueText}}
+                    </span>
                 </div>
 
                 <div class="cc-info-row">
                     <span class="cc-info-row__label">💺 좌석</span>
                     <span>
-                        {{#selectedSeats}}
+                        {{#booking.selectedSeats}}
                             {{seatNumber}} ({{grade}})
-                        {{/selectedSeats}}
-                        {{^selectedSeats}}
-                            나구역 12열 15번 (VIP), 나구역 12열 16번 (VIP)
-                        {{/selectedSeats}}
+                        {{/booking.selectedSeats}}
+                        {{^booking.selectedSeats}}
+                            {{#booking.seatName}}{{booking.seatName}}{{/booking.seatName}}{{^booking.seatName}}나구역 12열 15번 (VIP), 나구역 12열 16번 (VIP){{/booking.seatName}}
+                        {{/booking.selectedSeats}}
                     </span>
                 </div>
 
                 <div class="cc-info-row">
                     <span class="cc-info-row__label">💳 결제금액</span>
                     <strong class="cc-complete-price">
-                        {{#totalPriceText}}{{totalPriceText}}{{/totalPriceText}}{{^totalPriceText}}308,000원{{/totalPriceText}}
+                        {{#booking.totalPriceText}}{{booking.totalPriceText}}{{/booking.totalPriceText}}{{^booking.totalPriceText}}308,000원{{/booking.totalPriceText}}
                     </strong>
                 </div>
 
                 <div class="cc-info-row">
                     <span class="cc-info-row__label">🕒 예매일시</span>
-                    <span>{{#createdAt}}{{createdAt}}{{/createdAt}}{{^createdAt}}2026.05.29 14:32{{/createdAt}}</span>
+                    <span>
+                        {{#booking.createdAt}}{{booking.createdAt}}{{/booking.createdAt}}{{^booking.createdAt}}2026.05.29 14:32{{/booking.createdAt}}
+                    </span>
                 </div>
             </div>
         </div>
