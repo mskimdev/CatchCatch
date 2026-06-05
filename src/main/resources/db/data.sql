@@ -477,3 +477,15 @@ UPDATE seat_tb SET status = 'SOLD' WHERE id = 9;
 
 ALTER TABLE booking_tb ALTER COLUMN id RESTART WITH 10;
 ALTER TABLE payment_tb ALTER COLUMN id RESTART WITH 8;
+
+
+-- =====================================================
+--  concert_like_tb (ssar 관심 공연)
+-- =====================================================
+INSERT INTO concert_like_tb
+(user_id, concert_id, created_at)
+VALUES
+    (6, 1,  DATEADD('DAY', -5, NOW())),
+    (6, 22, DATEADD('DAY', -4, NOW())),
+    (6, 24, DATEADD('DAY', -3, NOW())),
+    (6, 25, DATEADD('DAY', -1, NOW()));

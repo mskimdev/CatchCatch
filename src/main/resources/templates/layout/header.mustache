@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{#pageTitle}}{{pageTitle}} | {{/pageTitle}}CatchCatch</title>
     <link rel="stylesheet" href="/css/common.css">
+    {{#_csrf}}<meta name="csrf-token" content="{{token}}" data-param="{{parameterName}}">{{/_csrf}}
 </head>
 <body class="cc-page {{#sessionUser}}cc-login-page{{/sessionUser}}">
 <header class="cc-header">

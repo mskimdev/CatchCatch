@@ -398,6 +398,8 @@ img { max-width: 100%; display: block; }
   transition: background .18s ease, color .18s ease, transform .18s ease;
 }
 .cc-heart:hover { background: var(--cc-primary-softer); color: var(--cc-primary); transform: translateY(-1px); }
+.cc-heart.is-liked { color: var(--cc-primary); }
+.cc-heart.is-liked svg { fill: var(--cc-primary); }
 
 .cc-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: -1px; }
 .cc-dot--vip { background: #7c3aed; }

@@ -3,6 +3,9 @@ package com.catchcatch.ticket.user;
 import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.booking.BookingRepository;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
+import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.concertlike.ConcertLike;
+import com.catchcatch.ticket.concertlike.ConcertLikeRepository;
 import com.catchcatch.ticket.core.errors.BadRequestException;
 import com.catchcatch.ticket.oauth.OAuthClientFactory;
 import com.catchcatch.ticket.oauth.OAuthUserInfo;
@@ -30,6 +33,7 @@ public class UserService {
     private final OAuthClientFactory oAuthClientFactory;
 
     private final BookingRepository bookingRepository;
+    private final ConcertLikeRepository concertLikeRepository;
 
     @Value("${catchcatch-key}")
     private String catchcatchKey;
@@ -133,6 +137,14 @@ public class UserService {
                         .email(userInfo.getEmail())
                         .build()
                 );
+    }
+
+    @Transactional(readOnly = true)
+    public List<Concert> findLikedConcertsByUser(Integer userId) {
+        return concertLikeRepository.findAllWithConcertByUserId(userId)
+                .stream()
+                .map(ConcertLike::getConcert)
+                .toList();
     }
 
     @Transactional(readOnly = true)
