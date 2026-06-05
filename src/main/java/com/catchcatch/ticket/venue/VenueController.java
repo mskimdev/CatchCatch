@@ -32,21 +32,21 @@ public class VenueController {
         model.addAttribute("searchLabel", "공연장");
         model.addAttribute("searchPlaceholder", "공연장명을 검색해보세요");
 
-        return "admin/venue-save";
+        return "admin/venue/venue-save";
     }
 
     // 관리자 공연장 등록 처리
     @PostMapping("/admin/venues/save")
     public String venueSaveProc(VenueRequest.SaveDTO dto) {
         venueService.save(dto);
-        return "redirect:/admin/venues";
+        return "redirect:/admin/venue/venues";
     }
 
     // 관리자 공연장 삭제 처리
     @PostMapping("/admin/venues/{id}/delete")
     public String venueDelete(@PathVariable Integer id) {
         venueService.deleteById(id);
-        return "redirect:/admin/venues";
+        return "redirect:/admin/venue/venues";
     }
 
     // 관리자 공연장 목록 페이지 + 검색
@@ -76,6 +76,6 @@ public class VenueController {
         model.addAttribute("venues", venues);
         model.addAttribute("venueCount", venues.size());
 
-        return "admin/venue-list";
+        return "admin/venue/venue-list";
     }
 }
