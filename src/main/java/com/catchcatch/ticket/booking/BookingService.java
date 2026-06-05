@@ -98,8 +98,8 @@ public class BookingService {
     @Transactional(readOnly = true)
     public BookingResponse.CompleteDTO findCompleteById(Integer id, User sessionUser) {
         Booking booking = findBooking(id);
-        Seat seat = findSeat(booking.getSeatId());
-        Concert concert = findConcertBySessionId(booking.getConcertSessionId());
+        Seat seat = booking.getSeat();
+        Concert concert = booking.getConcertSession().getConcert();
 
         return new BookingResponse.CompleteDTO(
                 booking,
@@ -196,10 +196,13 @@ public class BookingService {
     }
 
     private Booking createConfirmedBooking(Integer concertSessionId, Seat seat, User user) {
+        ConcertSession concertSession = concertSessionRepository.findById(concertSessionId)
+                .orElseThrow(() -> new BadRequestException("공연 회차 정보를 찾을 수 없습니다."));
+
         return Booking.builder()
                 .user(user)
-                .concertSessionId(concertSessionId)
-                .seatId(seat.getId())
+                .concertSession(concertSession)
+                .seat(seat)
                 .bookingNumber(createBookingNumber())
                 .status("CONFIRMED")
                 .expiresAt(null)
