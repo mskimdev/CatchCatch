@@ -43,4 +43,20 @@ public class AdminConcertController {
         return ResponseEntity.ok().body(id + "번 공연이 성공적으로 삭제(Soft Delete) 되었습니다.");
     }
 
+    /**
+     * 관리자용 공연 정보 수정 API
+     * PUT /api/admin/concerts/{id}
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateConcert(
+            @PathVariable Integer id,
+            @Valid @RequestBody AdminConcertRequestDTO.UpdateRequest requestDTO) {
+
+        // 1. Service의 수정 로직 호출
+        adminConcertService.updateConcert(id, requestDTO);
+
+        // 2. 성공 메시지 반환 (200 OK)
+        return ResponseEntity.ok().body(id + "번 공연 정보가 성공적으로 수정되었습니다.");
+    }
+
 } // end of class

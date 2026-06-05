@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -14,6 +16,9 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @Entity
 @Table(name = "concert_session_tb")
+// concert삭제 관련 쿼리
+@SQLDelete(sql = "UPDATE concert_session_tb SET is_deleted = true WHERE id = ?")
+@SQLRestriction("is_deleted = false")
 public class ConcertSession {
 
     @Id
@@ -32,5 +37,8 @@ public class ConcertSession {
 
     @CreationTimestamp
     private Timestamp createdAt;
+
+    @Column(nullable = false)
+    private boolean isDeleted = false;
 
 }
