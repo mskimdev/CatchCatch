@@ -259,7 +259,7 @@
 
                         <h2>
                             {{#concert.title}}{{concert.title}}{{/concert.title}}
-                            {{^concert.title}}2026 무명전설 전국 투어 콘서트 - 서울{{/concert.title}}
+                            {{^concert.title}}테스트 콘서트{{/concert.title}}
                         </h2>
 
                         <p class="cc-booking-summary__line">
@@ -315,20 +315,25 @@
                     <aside class="cc-zone-overview">
                         <div class="cc-zone-overview__head">
                             <strong>전체 좌석도</strong>
-                            <span>구역을 선택하세요</span>
+                            <span>좌석 등급을 선택하세요</span>
                         </div>
 
                         <div class="cc-zone-overview__image-box">
                             <img src="/images/sample/seat.jpg" alt="전체 좌석도" class="cc-zone-overview__image">
                         </div>
 
-                        <div class="cc-zone-tabs" aria-label="구역 선택">
-                            <button type="button" class="cc-zone-tab" data-zone="가">가구역</button>
-                            <button type="button" class="cc-zone-tab is-active" data-zone="나">나구역</button>
-                            <button type="button" class="cc-zone-tab" data-zone="다">다구역</button>
-                            <button type="button" class="cc-zone-tab" data-zone="라">라구역</button>
-                            <button type="button" class="cc-zone-tab" data-zone="마">마구역</button>
-                            <button type="button" class="cc-zone-tab" data-zone="바">바구역</button>
+                        <div class="cc-zone-tabs" aria-label="좌석 등급 선택">
+                            {{#seat.gradeTabs}}
+                                <button type="button"
+                                        class="cc-zone-tab {{#active}}is-active{{/active}}"
+                                        data-grade="{{grade}}">
+                                    {{gradeName}}
+                                </button>
+                            {{/seat.gradeTabs}}
+
+                            {{^seat.gradeTabs}}
+                                <button type="button" class="cc-zone-tab is-active" data-grade="">좌석 없음</button>
+                            {{/seat.gradeTabs}}
                         </div>
 
                         <div class="cc-zone-legend">
@@ -338,12 +343,12 @@
                         </div>
                     </aside>
 
-                    <!-- 오른쪽: 선택 구역 확대 -->
+                    <!-- 오른쪽: 선택 등급 좌석 -->
                     <section class="cc-zone-detail">
                         <div class="cc-zone-detail__top">
                             <div>
-                                <h3 id="zoneTitle">1층 나구역</h3>
-                                <p id="zoneSubText">선택한 구역의 좌석만 확대해서 표시합니다.</p>
+                                <h3 id="zoneTitle">좌석 등급</h3>
+                                <p id="zoneSubText">DB에 등록된 좌석을 표시합니다.</p>
                             </div>
                             <div class="cc-zone-stage">STAGE</div>
                         </div>
@@ -352,7 +357,7 @@
                             좌석 번호를 클릭하면 오른쪽 선택 좌석에 추가됩니다. 최대 4석까지 선택할 수 있습니다.
                         </div>
 
-                        <div id="zoneSeatGrid" class="cc-zone-seat-grid" aria-label="구역 좌석 선택"></div>
+                        <div id="zoneSeatGrid" class="cc-zone-seat-grid" aria-label="좌석 선택"></div>
 
                         <div class="cc-zone-bottom">
                             <button type="button" class="cc-small-btn" id="resetZoneBtn">좌석 다시 선택</button>
@@ -395,7 +400,10 @@
                         {{/_csrf}}
 
                         <input type="hidden" name="concertId"
-                               value="{{#concert.id}}{{concert.id}}{{/concert.id}}{{^concert.id}}1{{/concert.id}}">
+                               value="{{#concert.id}}{{concert.id}}{{/concert.id}}{{^concert.id}}{{concertId}}{{/concert.id}}">
+
+                        <input type="hidden" name="sessionId"
+                               value="{{#sessionId}}{{sessionId}}{{/sessionId}}{{^sessionId}}1{{/sessionId}}">
 
                         <input type="hidden" name="seatIds" id="selectedSeatIds">
 
@@ -403,14 +411,16 @@
                     </form>
 
                     <a class="cc-btn cc-btn--outline cc-btn--full cc-prev-link"
-                       href="/concerts/{{#concert.id}}{{concert.id}}{{/concert.id}}{{^concert.id}}1{{/concert.id}}">
+                       href="/concerts/{{#concert.id}}{{concert.id}}{{/concert.id}}{{^concert.id}}{{concertId}}{{/concert.id}}">
                         이전 단계
                     </a>
                 </div>
 
-                <div class="cc-card cc-notice-card"> \
-                    git<li>좌석 보관 시간이 초과되면 선택 좌석이 자동으로 해제됩니다.</li>
-                    <li>무통장 입금 선택 시 예매 당일 23:59까지 입금해야 예매가 완료됩니다.</li>
+                <div class="cc-card cc-notice-card">
+                    <h3>유의사항</h3>
+                    <ul>
+                        <li>좌석 보관 시간이 초과되면 선택 좌석이 자동으로 해제됩니다.</li>
+                        <li>무통장 입금 선택 시 예매 당일 23:59까지 입금해야 예매가 완료됩니다.</li>
                     </ul>
                 </div>
             </aside>
@@ -419,6 +429,9 @@
     </div>
 </main>
 
+<script>
+    window.CATCHCATCH_SEATS = {{{seat.seatsJson}}};
+</script>
 <script src="/js/booking-seat.js"></script>
 </body>
 </html>

@@ -30,13 +30,13 @@ public class QPayment extends EntityPathBase<Payment> {
 
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
 
-    public final StringPath impUid = createString("impUid");
-
-    public final StringPath merchant_uid = createString("merchant_uid");
-
     public final StringPath method = createString("method");
 
     public final DateTimePath<java.sql.Timestamp> paidAt = createDateTime("paidAt", java.sql.Timestamp.class);
+
+    public final StringPath paymentId = createString("paymentId");
+
+    public final StringPath pgTxId = createString("pgTxId");
 
     public final EnumPath<PaymentStatus> status = createEnum("status", PaymentStatus.class);
 

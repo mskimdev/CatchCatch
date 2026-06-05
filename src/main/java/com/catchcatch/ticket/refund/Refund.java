@@ -33,18 +33,17 @@ public class Refund {
     private Payment payment;
 
     // 실제 환불 금액 원
-    @Column(name = "amount", nullable = false)
-    private Integer refundPrice;
+    @Column(nullable = false)
+    private Integer amount;
 
 
     // 취소 수수료 원
     @ColumnDefault("0")
-    @Column(name = "fee", nullable = false)
     private Integer cancelFee = 0;
 
     // 환불 사유
-    @Column(name = "reason", length = 255)
-    private String refundReason;
+    @Column(length = 255)
+    private String reason;
 
     // 환불 처리 일시
     @CreationTimestamp
@@ -52,10 +51,10 @@ public class Refund {
     private LocalDateTime refundedAt;
 
     @Builder
-    public Refund(Payment payment, Integer refundPrice, Integer cancelFee, String refundReason) {
+    public Refund(Payment payment, Integer amount, Integer cancelFee, String reason) {
         this.payment = payment;
-        this.refundPrice = refundPrice;
+        this.amount = amount;
         this.cancelFee = cancelFee == null ? 0 : cancelFee;
-        this.refundReason = refundReason;
+        this.reason = reason;
     }
 }

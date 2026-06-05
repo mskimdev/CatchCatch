@@ -1,5 +1,6 @@
-package com.catchcatch.ticket.core.errors;
+package com.catchcatch.ticket.core.handler;
 
+import com.catchcatch.ticket.core.errors.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;

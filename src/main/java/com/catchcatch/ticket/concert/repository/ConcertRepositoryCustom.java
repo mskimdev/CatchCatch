@@ -1,4 +1,7 @@
-package com.catchcatch.ticket.concert;
+package com.catchcatch.ticket.concert.repository;
+
+import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.concert.dto.ConcertResponse;
 
 import java.util.List;
 

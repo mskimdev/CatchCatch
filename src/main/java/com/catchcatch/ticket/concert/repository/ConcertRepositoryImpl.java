@@ -1,5 +1,8 @@
-package com.catchcatch.ticket.concert;
+package com.catchcatch.ticket.concert.repository;
 
+import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.concert.dto.ConcertResponse;
+import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +11,7 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.catchcatch.ticket.concert.QConcert.concert;
+import static com.catchcatch.ticket.concert.core.QConcert.concert;
 import static com.catchcatch.ticket.venue.QVenue.venue;
 
 @RequiredArgsConstructor
