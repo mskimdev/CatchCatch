@@ -23,13 +23,13 @@ public class QFaq extends EntityPathBase<Faq> {
 
     public final EnumPath<FaqCategory> category = createEnum("category", FaqCategory.class);
 
+    public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
+
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
 
     public final BooleanPath isVisible = createBoolean("isVisible");
 
     public final StringPath question = createString("question");
-
-    public final NumberPath<Integer> sortOrder = createNumber("sortOrder", Integer.class);
 
     public QFaq(String variable) {
         super(Faq.class, forVariable(variable));

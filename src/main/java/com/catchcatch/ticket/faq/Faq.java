@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -32,24 +35,25 @@ public class Faq {
     @Column(nullable = false)
     private Boolean isVisible;
 
-    // 정렬 순서
-    @Column(nullable = false)
-    private Integer sortOrder;
+    // 등록일
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+
 
     @Builder
-    public Faq(FaqCategory category, String question, String answer, Boolean isVisible, Integer sortOrder) {
+    public Faq(FaqCategory category, String question, String answer, Boolean isVisible) {
         this.category = category;
         this.question = question;
         this.answer = answer;
         this.isVisible = isVisible;
-        this.sortOrder = sortOrder;
     }
 
-    public void update(FaqCategory category, String question, String answer, Boolean isVisible, Integer sortOrder) {
+    public void update(FaqCategory category, String question, String answer, Boolean isVisible) {
         this.category = category;
         this.question = question;
         this.answer = answer;
         this.isVisible = isVisible;
-        this.sortOrder = sortOrder;
     }
 }
