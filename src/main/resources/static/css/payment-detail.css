@@ -1,0 +1,241 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #f7f4ff;
+    color: #262238;
+    font-family: Arial, "Noto Sans KR", sans-serif;
+    font-size: 14px;
+}
+
+.popup-wrap {
+    width: 100%;
+    min-height: 100vh;
+    padding: 22px;
+}
+
+.popup-card {
+    background: #fff;
+    border: 1px solid #ded8ea;
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(58, 38, 102, 0.12);
+    overflow: hidden;
+}
+
+.popup-header {
+    padding: 22px 24px;
+    background: linear-gradient(135deg, #6d28d9, #9333ea);
+    color: #fff;
+}
+
+.popup-header .small {
+    font-size: 13px;
+    opacity: 0.85;
+    margin-bottom: 6px;
+}
+
+.popup-header h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.popup-header p {
+    margin: 8px 0 0;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.summary-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.summary-title strong {
+    font-size: 17px;
+    color: #2f2a3f;
+}
+
+.payment-summary-main {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.payment-summary-main div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 12px;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid #eee8f6;
+}
+
+.summary-label {
+    color: #6d647c;
+    font-size: 13px;
+}
+
+.payment-summary-main strong {
+    color: #2f2a3f;
+    font-size: 14px;
+    text-align: right;
+    word-break: break-all;
+}
+
+/* 상태 뱃지 */
+.status-badge {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.status-paid {
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+.status-ready {
+    background: #fff7ed;
+    color: #ea580c;
+}
+
+.status-cancelled {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+/* 섹션 */
+.section {
+    margin: 20px 22px 0;
+}
+
+.section h2 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    color: #2f2a3f;
+    border-left: 4px solid #7c3aed;
+    padding-left: 8px;
+}
+
+/* 상세 테이블 */
+.detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-top: 2px solid #3d315f;
+    background: #fff;
+}
+
+.detail-table th,
+.detail-table td {
+    border-bottom: 1px solid #eee8f6;
+    padding: 12px 14px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.detail-table th {
+    width: 150px;
+    background: #fbfaff;
+    color: #4a425f;
+    font-weight: 800;
+}
+
+.detail-table td {
+    color: #3b344d;
+}
+
+/* 금액 박스 */
+.price-box {
+    margin: 20px 22px 0;
+    border-radius: 10px;
+    background: #2d2343;
+    color: #fff;
+    padding: 18px 20px;
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.price-label {
+    color: #d9d2e8;
+}
+
+.price-value {
+    font-weight: 800;
+    font-size: 19px;
+}
+
+/* 안내 */
+.notice {
+    margin: 18px 22px 0;
+    padding: 14px 16px;
+    border-radius: 8px;
+    background: #fff7ed;
+    color: #7c4a03;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* 버튼 */
+.button-area {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 24px 22px;
+}
+
+.btn {
+    min-width: 112px;
+    height: 40px;
+    border: 0;
+    border-radius: 7px;
+    font-weight: 800;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background: #7c3aed;
+    color: #fff;
+}
+
+.btn-outline {
+    background: #fff;
+    color: #4c425f;
+    border: 1px solid #d8d0e9;
+}
+
+.btn-danger {
+    background: #fff;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+@media print {
+    body {
+        background: #fff;
+    }
+
+    .button-area {
+        display: none;
+    }
+
+    .popup-wrap {
+        padding: 0;
+    }
+
+    .popup-card {
+        box-shadow: none;
+        border: 0;
+    }
+}

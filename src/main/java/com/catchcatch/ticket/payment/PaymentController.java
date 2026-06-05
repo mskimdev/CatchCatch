@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -51,10 +52,12 @@ public class PaymentController {
         User sessionUser = (User) session.getAttribute("sessionUser");
 
         if (sessionUser == null) {
-            return "redirect:/login-form";
+            return "redirect:/login";
         }
 
-        model.addAttribute("payments", paymentService.getPaymentList(sessionUser.getId()));
+        List<PaymentResponse.ListDTO> payments = paymentService.getPaymentList(sessionUser.getId());
+        model.addAttribute("payments", payments);
+        model.addAttribute("paymentCount", payments.size());
 
         return "payment/payment-list";
     }
