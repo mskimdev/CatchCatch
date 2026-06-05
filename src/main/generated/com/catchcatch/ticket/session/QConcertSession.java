@@ -28,6 +28,8 @@ public class QConcertSession extends EntityPathBase<ConcertSession> {
 
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
 
+    public final BooleanPath isDeleted = createBoolean("isDeleted");
+
     public final DatePath<java.time.LocalDate> sessionDate = createDate("sessionDate", java.time.LocalDate.class);
 
     public final TimePath<java.time.LocalTime> sessionTime = createTime("sessionTime", java.time.LocalTime.class);
