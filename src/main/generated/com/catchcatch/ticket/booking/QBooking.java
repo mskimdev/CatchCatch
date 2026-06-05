@@ -26,7 +26,7 @@ public class QBooking extends EntityPathBase<Booking> {
 
     public final DateTimePath<java.sql.Timestamp> canceledAt = createDateTime("canceledAt", java.sql.Timestamp.class);
 
-    public final NumberPath<Integer> concertSessionId = createNumber("concertSessionId", Integer.class);
+    public final com.catchcatch.ticket.session.QConcertSession concertSession;
 
     public final DateTimePath<java.sql.Timestamp> createdAt = createDateTime("createdAt", java.sql.Timestamp.class);
 
@@ -34,7 +34,7 @@ public class QBooking extends EntityPathBase<Booking> {
 
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
 
-    public final NumberPath<Integer> seatId = createNumber("seatId", Integer.class);
+    public final com.catchcatch.ticket.seat.QSeat seat;
 
     public final StringPath status = createString("status");
 
@@ -58,6 +58,8 @@ public class QBooking extends EntityPathBase<Booking> {
 
     public QBooking(Class<? extends Booking> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
+        this.concertSession = inits.isInitialized("concertSession") ? new com.catchcatch.ticket.session.QConcertSession(forProperty("concertSession"), inits.get("concertSession")) : null;
+        this.seat = inits.isInitialized("seat") ? new com.catchcatch.ticket.seat.QSeat(forProperty("seat"), inits.get("seat")) : null;
         this.user = inits.isInitialized("user") ? new com.catchcatch.ticket.user.QUser(forProperty("user")) : null;
     }
 

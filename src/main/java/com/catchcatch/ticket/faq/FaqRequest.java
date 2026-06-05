@@ -19,7 +19,6 @@ public class FaqRequest {
                     .question(question)
                     .answer(answer)
                     .isVisible(isVisible != null && isVisible)
-                    .sortOrder(sortOrder == null ? 0 : sortOrder)
                     .build();
         }
 
