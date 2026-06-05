@@ -41,13 +41,13 @@
 
             <!-- 카테고리 탭 -->
             <div class="faq-category-tabs">
-                <a href="/customercenter/faqs" class="tab active">전체</a>
-                <a href="/customercenter/faqs?category=MEMBER" class="tab">회원</a>
-                <a href="/customercenter/faqs?category=BOOKING" class="tab">예매</a>
-                <a href="/customercenter/faqs?category=PAYMENT" class="tab">결제</a>
-                <a href="/customercenter/faqs?category=CANCEL_REFUND" class="tab">취소/환불</a>
-                <a href="/customercenter/faqs?category=EVENT" class="tab">이벤트/혜택</a>
-                <a href="/customercenter/faqs?category=SERVICE" class="tab">서비스/기타</a>
+                <a href="/customercenter/faqs" class="tab {{#isAll}}active{{/isAll}}">전체</a>
+                <a href="/customercenter/faqs?category=MEMBER" class="tab {{#isMember}}active{{/isMember}}">회원</a>
+                <a href="/customercenter/faqs?category=BOOKING" class="tab {{#isBooking}}active{{/isBooking}}">예매</a>
+                <a href="/customercenter/faqs?category=PAYMENT" class="tab {{#isPayment}}active{{/isPayment}}">결제</a>
+                <a href="/customercenter/faqs?category=CANCEL_REFUND" class="tab {{#isCancelRefund}}active{{/isCancelRefund}}">취소/환불</a>
+                <a href="/customercenter/faqs?category=EVENT" class="tab {{#isEvent}}active{{/isEvent}}">이벤트/혜택</a>
+                <a href="/customercenter/faqs?category=SERVICE" class="tab {{#isService}}active{{/isService}}">서비스/기타</a>
             </div>
 
             <!-- FAQ 테이블 -->
@@ -63,9 +63,9 @@
                 <tbody>
                 {{#faqs}}
                     <tr>
-                        <td>{{category}}</td>
+                        <td>{{category.label}}</td>
                         <td class="faq-question">{{question}}</td>
-                        <td>{{createdAt}}</td>
+                        <td>{{formattedCreatedAt}}</td>
                     </tr>
                 {{/faqs}}
 

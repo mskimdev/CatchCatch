@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @Entity
 @Getter
@@ -38,7 +38,7 @@ public class Faq {
     // 등록일
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Timestamp createdAt;
 
 
 
@@ -55,5 +55,13 @@ public class Faq {
         this.question = question;
         this.answer = answer;
         this.isVisible = isVisible;
+    }
+
+    public String getFormattedCreatedAt() {
+        if (createdAt == null) {
+            return "";
+        }
+
+        return new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(createdAt);
     }
 }

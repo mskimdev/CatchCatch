@@ -23,7 +23,7 @@ public class QFaq extends EntityPathBase<Faq> {
 
     public final EnumPath<FaqCategory> category = createEnum("category", FaqCategory.class);
 
-    public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
+    public final DateTimePath<java.sql.Timestamp> createdAt = createDateTime("createdAt", java.sql.Timestamp.class);
 
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
 
