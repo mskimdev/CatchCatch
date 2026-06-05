@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -14,8 +15,10 @@ public class FaqController {
     private final FaqService faqService;
 
     @GetMapping("/customercenter/faqs")
-    public String faqList(String keyword, Model model) {
-        List<Faq> faqs = faqService.findVisibleFaqs();
+    public String faqList(@RequestParam(required = false) String keyword,
+                          Model model) {
+
+        List<Faq> faqs = faqService.findVisibleFaqs(keyword);
 
         model.addAttribute("pageTitle", "고객센터");
         model.addAttribute("keyword", keyword == null ? "" : keyword);

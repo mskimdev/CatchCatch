@@ -15,21 +15,23 @@ public class FaqService {
 
     private final FaqRepository faqRepository;
 
-    // 사용자 FAQ 목록 조회 - 노출 상태인 FAQ만
-    public List<Faq> findVisibleFaqs() {
-        return faqRepository.findByIsVisibleTrueOrderBySortOrderAscIdDesc();
+    // 사용자 FAQ 목록 조회 - 노출 상태인 FAQ만 + 검색
+    public List<Faq> findVisibleFaqs(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            return faqRepository.findByIsVisibleTrueOrderByIdDesc();
+        }
+
+        return faqRepository.searchVisibleByKeyword(keyword);
     }
 
     // 관리자 FAQ 목록 조회 + 검색
     public List<Faq> findAll(String keyword) {
         if (keyword == null || keyword.isBlank()) {
             return faqRepository.findAll(
-                    Sort.by(
-                            Sort.Order.asc("sortOrder"),
-                            Sort.Order.desc("id")
-                    )
+                    Sort.by(Sort.Order.desc("id"))
             );
         }
+
         return faqRepository.searchByKeyword(keyword);
     }
 
@@ -60,8 +62,7 @@ public class FaqService {
                 dto.getCategory(),
                 dto.getQuestion(),
                 dto.getAnswer(),
-                dto.getIsVisible() != null && dto.getIsVisible(),
-                dto.getSortOrder() == null ? 0 : dto.getSortOrder()
+                dto.getIsVisible() != null && dto.getIsVisible()
         );
     }
 
