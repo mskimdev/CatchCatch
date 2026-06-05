@@ -1,7 +1,9 @@
 package com.catchcatch.ticket.booking.dto;
 
 import com.catchcatch.ticket.booking.Booking;
+import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.seat.Seat;
+import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.user.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -142,6 +144,47 @@ public class BookingResponse {
 
             this.userId = sessionUser.getId();
             this.username = sessionUser.getUsername();
+        }
+    }
+
+    @Getter
+    public static class MyPageListDTO {
+        private Integer id;
+        private String bookingNumber;
+        private String status;
+        private Timestamp createdAt;
+        private Timestamp canceledAt;
+
+        private String concertTitle;
+        private String concertArtist;
+        private java.time.LocalDate sessionDate;
+        private java.time.LocalTime sessionTime;
+
+        private String seatNumber;
+        private String seatGrade;
+        private Integer price;
+        private String priceText;
+
+        public MyPageListDTO(Booking booking) {
+            this.id = booking.getId();
+            this.bookingNumber = booking.getBookingNumber();
+            this.status = booking.getStatus();
+            this.createdAt = booking.getCreatedAt();
+            this.canceledAt = booking.getCanceledAt();
+
+            ConcertSession session = booking.getConcertSession();
+            this.sessionDate = session.getSessionDate();
+            this.sessionTime = session.getSessionTime();
+
+            Concert concert = session.getConcert();
+            this.concertTitle = concert.getTitle();
+            this.concertArtist = concert.getArtist();
+
+            Seat seat = booking.getSeat();
+            this.seatNumber = seat.getSeatNumber();
+            this.seatGrade = seat.getGrade().name();
+            this.price = seat.getPrice();
+            this.priceText = formatPrice(seat.getPrice());
         }
     }
 
