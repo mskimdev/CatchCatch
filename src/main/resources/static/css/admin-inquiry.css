@@ -1,0 +1,28 @@
+.admin-inquiry-detail {
+    background-color: #fff;
+    border: 1px solid #eadfff;
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.admin-inquiry-detail__header {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid #eadfff;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.admin-inquiry-reply-form {
+    padding: 28px 32px;
+    background-color: #f9f5ff;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.admin-inquiry-reply-label {
+    font-size: 14px;
+    font-weight: 800;
+    color: #7b35ff;
+}

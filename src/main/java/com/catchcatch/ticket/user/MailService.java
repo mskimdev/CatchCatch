@@ -1,6 +1,8 @@
 package com.catchcatch.ticket.user;
 
 import com.catchcatch.ticket.core.util.MailUtil;
+import com.catchcatch.ticket.notification.EmailSender;
+import com.catchcatch.ticket.notification.NotificationMessage;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpSession;
@@ -19,30 +21,28 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 public class MailService {
 
-    private final JavaMailSender jms;
+    private final EmailSender emailSender;
     private final HttpSession session;
 
     public void sendCode(String email) {
 
         String code = MailUtil.generateRandomCode();
 
-        MimeMessage emailMessage = jms.createMimeMessage();
-
-        try{
+        try {
             ClassPathResource resource = new ClassPathResource("templates/mail/email-verify.html");
-            String html = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8)
+            String content = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8)
                     .replace("{{code}}", code);
 
-            MimeMessageHelper helper = new MimeMessageHelper(emailMessage, true, "UTF-8");
-            helper.setTo(email);
-            helper.setSubject("[CatchCatch] 회원가입 인증 번호 발송");
-            helper.setText(html, true);
-            jms.send(emailMessage);
+            emailSender.send(NotificationMessage.builder()
+                    .to(email)
+                    .subject("[CatchCatch] 회원가입 인증 번호 발송")
+                    .content(content)
+                    .html(true)
+                    .build());
 
             session.setAttribute("code_" + email, code);
-            log.info("[MAIL} 인증번호 발송 완료 : {}", code);
-
-        } catch(MessagingException | IOException e){
+            log.info("[MAIL] 인증번호 발송 완료 : {} ", code);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

@@ -35,9 +35,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         /* 인증 처리 인터셉트 필요한 url*/
                         "/users/**",
                         "/api/concerts/**",
-                        "customercenter/**"
+                        "/customercenter/**"
                 )
-                .excludePathPatterns("/api/concerts/liked-ids");
+                .excludePathPatterns(
+                        "/customercenter/faqs",
+                        "/customercenter/"
+                );
 
         registry.addInterceptor(adminInterceptor)
                 .addPathPatterns(
