@@ -152,11 +152,17 @@ public class BookingResponse {
         private Integer id;
         private String bookingNumber;
         private String status;
+        private String statusLabel;
+        private Boolean isPaid;
+        private Boolean isCanceled;
         private Timestamp createdAt;
         private Timestamp canceledAt;
 
         private String concertTitle;
         private String concertArtist;
+        private String posterUrl;
+        private String venueName;
+        private String sessionText;
         private java.time.LocalDate sessionDate;
         private java.time.LocalTime sessionTime;
 
@@ -169,22 +175,39 @@ public class BookingResponse {
             this.id = booking.getId();
             this.bookingNumber = booking.getBookingNumber();
             this.status = booking.getStatus();
+            this.isPaid = "PAID".equals(booking.getStatus());
+            this.isCanceled = "CANCELED".equals(booking.getStatus());
+            this.statusLabel = resolveStatusLabel(booking.getStatus());
             this.createdAt = booking.getCreatedAt();
             this.canceledAt = booking.getCanceledAt();
 
             ConcertSession session = booking.getConcertSession();
             this.sessionDate = session.getSessionDate();
             this.sessionTime = session.getSessionTime();
+            this.sessionText = session.getSessionDate() + " " + session.getSessionTime();
 
             Concert concert = session.getConcert();
             this.concertTitle = concert.getTitle();
             this.concertArtist = concert.getArtist();
+            this.posterUrl = concert.getPosterUrl();
+            this.venueName = concert.getVenue() != null ? concert.getVenue().getName() : "";
 
             Seat seat = booking.getSeat();
             this.seatNumber = seat.getSeatNumber();
             this.seatGrade = seat.getGrade().name();
             this.price = seat.getPrice();
             this.priceText = formatPrice(seat.getPrice());
+        }
+
+        private static String resolveStatusLabel(String status) {
+            if (status == null) return "";
+            return switch (status) {
+                case "PAID" -> "예매 완료";
+                case "CANCELED" -> "취소";
+                case "PENDING" -> "결제 대기";
+                case "EXPIRED" -> "만료";
+                default -> status;
+            };
         }
     }
 
