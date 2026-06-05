@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.venue;
 
+import com.catchcatch.ticket.core.util.DateUtil;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
@@ -38,10 +39,7 @@ public class Venue {
     }
 
     public String getFormattedCreatedAt() {
-        if (createdAt == null) {
-            return "";
-        }
 
-        return new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(createdAt);
+        return DateUtil.formatDateTime(createdAt);
     }
 }

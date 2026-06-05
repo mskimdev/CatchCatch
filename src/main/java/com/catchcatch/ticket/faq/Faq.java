@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.faq;
 
+import com.catchcatch.ticket.core.util.DateUtil;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -58,10 +59,7 @@ public class Faq {
     }
 
     public String getFormattedCreatedAt() {
-        if (createdAt == null) {
-            return "";
-        }
 
-        return new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(createdAt);
+        return DateUtil.formatDateTime(createdAt);
     }
 }
