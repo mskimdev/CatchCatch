@@ -4,24 +4,22 @@ import com.catchcatch.ticket.concert.core.Concert;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public class AdminConcertRequestDTO {
+public class AdminConcertRequest {
 
     /**
      * 1. 공연 등록 요청 DTO (기존 AdminConcertRequestDTO)
      */
-    @Getter
+    @Data
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class CreateRequest {
+    public static class CreateRequestDTO {
         @NotBlank(message = "공연 제목은 필수입니다.")
         private String title;
 
@@ -48,6 +46,26 @@ public class AdminConcertRequestDTO {
 
         private LocalDate endDate;
 
+        private MultipartFile posterImage;
+
+        private String organizer;
+
+        private String detailTitle;
+
+        private String detailDescription1;
+
+        private String detailDescription2;
+
+        private String category;
+
+        private String ageLimit;
+
+        private String contact;
+
+        private String runtime;
+
+        private String detailBannerUrl;
+
     }
 
     /**
@@ -56,7 +74,7 @@ public class AdminConcertRequestDTO {
     @Getter
     @Builder
     @AllArgsConstructor
-    public static class ListResponse {
+    public static class ListResponseDTO {
         private Integer id;
         private String title;
         private String artist;
@@ -71,8 +89,8 @@ public class AdminConcertRequestDTO {
         private LocalDateTime ticketOpenDate;
         private String description;     //  상세 설명
 
-        public static ListResponse from(Concert concert) {
-            return ListResponse.builder()
+        public static ListResponseDTO from(Concert concert) {
+            return ListResponseDTO.builder()
                     .id(concert.getId())
                     .title(concert.getTitle())
                     .artist(concert.getArtist())
@@ -101,7 +119,7 @@ public class AdminConcertRequestDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class UpdateRequest {
+    public static class UpdateRequestDTO {
         @NotBlank(message = "공연 제목은 필수입니다.")
         private String title;
 
