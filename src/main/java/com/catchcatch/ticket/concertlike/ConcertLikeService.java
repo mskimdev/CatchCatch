@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 public class ConcertLikeService {
@@ -36,5 +38,9 @@ public class ConcertLikeService {
     @Transactional(readOnly = true)
     public boolean isLiked(Integer userId, Integer concertId) {
         return concertLikeRepository.existsByUserIdAndConcertId(userId, concertId);
+    }
+
+    public List<Integer> findLikedConcertIdsByUserId(User user) {
+        return concertLikeRepository.findLikedConcertIdsByUserId(user.getId());
     }
 }

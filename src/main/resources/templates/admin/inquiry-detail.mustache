@@ -1,0 +1,64 @@
+{{> layout/header-admin}}
+
+<link rel="stylesheet" href="/css/venue-list.css">
+<link rel="stylesheet" href="/css/customercenter-inquiry.css">
+<link rel="stylesheet" href="/css/admin-inquiry.css">
+
+<main class="cc-main admin-venue-page">
+    <div class="cc-container">
+
+        <section class="admin-venue-hero">
+            <div class="admin-venue-hero__content">
+                <div class="admin-venue-hero__badge">
+                    <span class="admin-venue-dot"></span>
+                    관리자 메뉴
+                </div>
+                <h1 class="admin-venue-title">문의 답변</h1>
+            </div>
+            <div class="admin-venue-hero__action">
+                <a class="admin-venue-create-btn" style="background:#888" href="/admin/inquiries">목록으로</a>
+            </div>
+        </section>
+
+        <section class="admin-venue-list-section">
+        {{#inquiry}}
+            <div class="admin-inquiry-detail">
+
+                <div class="admin-inquiry-detail__header">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span class="inquiry-category">{{categoryLabel}}</span>
+                        <span class="inquiry-status {{statusClass}}">{{statusLabel}}</span>
+                    </div>
+                    <h3 class="inquiry-detail__title">{{title}}</h3>
+                    <div style="display:flex;gap:20px;font-size:13px;color:#aaa;">
+                        <span>작성자: {{username}}</span>
+                        <span>{{createdAt}}</span>
+                    </div>
+                </div>
+
+                <div class="inquiry-detail__body">{{content}}</div>
+
+                <form class="admin-inquiry-reply-form" action="/admin/inquiries/{{id}}/reply" method="post">
+                    <div class="admin-inquiry-reply-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                             style="width:15px;height:15px;vertical-align:-2px;margin-right:6px">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        답변 작성
+                    </div>
+                    <textarea class="inquiry-form__textarea" name="reply"
+                              placeholder="답변 내용을 입력해 주세요"
+                              required>{{reply}}</textarea>
+                    <div style="display:flex;justify-content:flex-end;margin-top:12px;">
+                        <button class="inquiry-btn inquiry-btn--primary" type="submit">답변 등록</button>
+                    </div>
+                </form>
+
+            </div>
+        {{/inquiry}}
+        </section>
+
+    </div>
+</main>
+
+{{> layout/footer}}

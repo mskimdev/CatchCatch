@@ -20,6 +20,9 @@ repositories {
 
 dependencies {
 
+    // CoolSMS
+    implementation 'com.solapi:sdk:1.0.3'
+
     // QueryDSL 설정 (Spring Boot 3버전 기준)
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"

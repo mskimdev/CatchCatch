@@ -1,0 +1,91 @@
+{{> layout/header-admin}}
+
+<link rel="stylesheet" href="/css/venue-list.css">
+<link rel="stylesheet" href="/css/customercenter-inquiry.css">
+
+<main class="cc-main admin-venue-page">
+    <div class="cc-container">
+
+        <section class="admin-venue-hero">
+            <div class="admin-venue-hero__content">
+                <div class="admin-venue-hero__badge">
+                    <span class="admin-venue-dot"></span>
+                    관리자 메뉴
+                </div>
+                <h1 class="admin-venue-title">1:1 문의 관리</h1>
+                <p class="admin-venue-desc">사용자가 등록한 문의를 확인하고 답변을 등록합니다.</p>
+                <div class="admin-venue-meta">
+                    <div class="admin-venue-meta-card">
+                        <span class="admin-venue-meta-label">전체 문의</span>
+                        <strong>{{totalCount}}건</strong>
+                    </div>
+                    <div class="admin-venue-meta-card">
+                        <span class="admin-venue-meta-label">답변 대기</span>
+                        <strong>{{pendingCount}}건</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-venue-list-section">
+            <div class="admin-venue-list-head">
+                <div>
+                    <p class="admin-venue-section-label">Inquiry List</p>
+                    <h2>문의 목록</h2>
+                </div>
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <a class="admin-venue-refresh-link {{#filterAll}}is-active{{/filterAll}}" href="/admin/inquiries">전체</a>
+                    <a class="admin-venue-refresh-link {{#filterPending}}is-active{{/filterPending}}" href="/admin/inquiries?status=PENDING">답변대기</a>
+                    <a class="admin-venue-refresh-link {{#filterResolved}}is-active{{/filterResolved}}" href="/admin/inquiries?status=RESOLVED">답변완료</a>
+                </div>
+            </div>
+
+            <div class="admin-venue-table-card">
+                <div class="admin-venue-table-wrap">
+                    <table class="admin-venue-table">
+                        <thead>
+                        <tr>
+                            <th>번호</th>
+                            <th>유형</th>
+                            <th>제목</th>
+                            <th>작성자</th>
+                            <th>상태</th>
+                            <th>등록일</th>
+                            <th>관리</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#inquiries}}
+                        <tr>
+                            <td><span class="admin-venue-id">#{{id}}</span></td>
+                            <td><span class="inquiry-category">{{categoryLabel}}</span></td>
+                            <td style="text-align:left">{{title}}</td>
+                            <td>{{username}}</td>
+                            <td><span class="inquiry-status {{statusClass}}">{{statusLabel}}</span></td>
+                            <td><span class="admin-venue-date">{{createdAt}}</span></td>
+                            <td>
+                                <a class="admin-venue-delete-btn" style="text-decoration:none;padding:6px 14px;"
+                                   href="/admin/inquiries/{{id}}">답변하기</a>
+                            </td>
+                        </tr>
+                        {{/inquiries}}
+                        {{^inquiries}}
+                        <tr>
+                            <td colspan="7">
+                                <div class="admin-venue-empty">
+                                    <div class="admin-venue-empty-icon">⌕</div>
+                                    <h3>등록된 문의가 없습니다</h3>
+                                </div>
+                            </td>
+                        </tr>
+                        {{/inquiries}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</main>
+
+{{> layout/footer}}

@@ -196,6 +196,13 @@
         method: 'POST', body
       }).catch(() => null);
 
+      if (res && res.status === 401) {
+        const err = await res.json().catch(() => null);
+        alert(err?.message || '로그인 먼저 해주세요');
+        location.href = '/login';
+        return;
+      }
+
       const data = res && res.ok ? await res.json().catch(() => null) : null;
       if (!data || data.status !== 200) return;
 

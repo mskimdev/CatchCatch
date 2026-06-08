@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class ConcertLikeApiController {
 
     private final ConcertLikeService concertLikeService;
-    private final ConcertLikeRepository concertLikeRepository;
 
     @Operation(summary = "관심 공연 토글", description = "관심 공연을 등록하거나 취소합니다. 이미 등록된 경우 취소, 없으면 등록.")
     @PostMapping("/{concertId}/like")
@@ -31,15 +30,13 @@ public class ConcertLikeApiController {
             HttpSession session) {
 
         User user = (User) session.getAttribute(Define.SESSION_USER);
-        boolean liked = concertLikeService.toggle(user.getId(), concertId);
-        return Resp.ok(liked);
+        return Resp.ok(concertLikeService.toggle(user.getId(), concertId));
     }
 
     @Operation(summary = "관심 공연 ID 목록 조회", description = "로그인 유저가 관심 등록한 공연 ID 목록을 반환합니다.")
     @GetMapping("/liked-ids")
     public ResponseEntity<?> getLikedIds(HttpSession session) {
         User user = (User) session.getAttribute(Define.SESSION_USER);
-        if (user == null) return Resp.ok(java.util.List.of());
-        return Resp.ok(concertLikeRepository.findLikedConcertIdsByUserId(user.getId()));
+        return Resp.ok(concertLikeService.findLikedConcertIdsByUserId(user));
     }
 }
