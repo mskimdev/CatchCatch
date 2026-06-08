@@ -20,19 +20,6 @@ public class AdminController {
         return "admin/index";
     }
 
-    // --- 1. 공연 도메인 ---
-    @GetMapping("/concerts")
-    public String adminConcertList(Model model) {
-        model.addAttribute("pageTitle", "공연 목록 관리");
-        return "admin/concert/list";
-    }
-
-    @GetMapping("/concerts/create")
-    public String adminConcertCreateForm(Model model) {
-        model.addAttribute("pageTitle", "새 공연 등록");
-        return "admin/concert/create";
-    }
-
     // --- 3. 예매 관리 ---
     @GetMapping("/bookings")
     public String adminBookingList(Model model) {
