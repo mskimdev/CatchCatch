@@ -1,7 +1,6 @@
 package com.catchcatch.ticket.booking.dto;
 
 import com.catchcatch.ticket.booking.Booking;
-import com.catchcatch.ticket.concert.Concert;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.user.User;
@@ -63,6 +62,44 @@ public class BookingResponse {
             this.seatId = booking.getSeat().getId();
             this.status = booking.getStatus();
             this.createdAt = booking.getCreatedAt();
+        }
+    }
+
+    @Getter
+    public static class MyPageListDTO {
+        private Integer id;
+        private String bookingNumber;
+        private String status;
+        private Timestamp createdAt;
+        private Timestamp canceledAt;
+
+        private Integer concertSessionId;
+        private Integer seatId;
+
+        private String concertTitle;
+        private String concertPosterUrl;
+        private String venueName;
+        private String seatName;
+        private Integer price;
+        private String priceText;
+
+        public MyPageListDTO(Booking booking) {
+            this.id = booking.getId();
+            this.bookingNumber = booking.getBookingNumber();
+            this.status = booking.getStatus();
+            this.createdAt = booking.getCreatedAt();
+            this.canceledAt = booking.getCanceledAt();
+
+            this.concertSessionId = booking.getConcertSession().getId();
+            this.seatId = booking.getSeat().getId();
+
+            this.concertTitle = booking.getConcertSession().getConcert().getTitle();
+            this.concertPosterUrl = booking.getConcertSession().getConcert().getPosterUrl();
+            this.venueName = booking.getConcertSession().getConcert().getVenue().getName();
+
+            this.seatName = booking.getSeat().getSeatNumber();
+            this.price = booking.getSeat().getPrice();
+            this.priceText = formatPrice(booking.getSeat().getPrice());
         }
     }
 

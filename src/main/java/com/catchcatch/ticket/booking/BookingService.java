@@ -101,8 +101,8 @@ public class BookingService {
     @Transactional(readOnly = true)
     public BookingResponse.CompleteDTO findCompleteById(Integer id, User sessionUser) {
         Booking booking = findBooking(id);
-        Seat seat = findSeat(booking.getSeatId());
-        Concert concert = findConcertBySessionId(booking.getConcertSessionId());
+        Seat seat = booking.getSeat();
+        Concert concert = booking.getConcertSession().getConcert();
 
         return new BookingResponse.CompleteDTO(
                 booking,
@@ -174,12 +174,12 @@ public class BookingService {
 
         List<Seat> seats = seatRepository.findByConcertSession_IdOrderBySeatNumberAsc(sessionId);
 
-        Set<Integer> bookedSeatIds = bookingRepository.findByConcertSessionIdAndStatusIn(
+        Set<Integer> bookedSeatIds = bookingRepository.findByConcertSession_IdAndStatusIn(
                         sessionId,
                         List.of("PENDING", "CONFIRMED")
                 )
                 .stream()
-                .map(Booking::getSeatId)
+                .map(booking -> booking.getSeat().getId())
                 .collect(Collectors.toSet());
 
         return new BookingResponse.SeatFormDTO(seats, bookedSeatIds);
@@ -211,10 +211,13 @@ public class BookingService {
     }
 
     private Booking createConfirmedBooking(Integer concertSessionId, Seat seat, User user) {
+        ConcertSession concertSession = concertSessionRepository.findById(concertSessionId)
+                .orElseThrow(() -> new BadRequestException("공연 회차 정보를 찾을 수 없습니다."));
+
         return Booking.builder()
                 .user(user)
-                .concertSessionId(concertSessionId)
-                .seatId(seat.getId())
+                .concertSession(concertSession)
+                .seat(seat)
                 .bookingNumber(createBookingNumber())
                 .status("CONFIRMED")
                 .expiresAt(null)
@@ -279,7 +282,7 @@ public class BookingService {
 
     private void validateAlreadyBookedSeats(Integer concertSessionId, List<Integer> seatIdList) {
         List<Integer> alreadyBookedSeatIds = seatIdList.stream()
-                .filter(seatId -> bookingRepository.existsByConcertSessionIdAndSeatIdAndStatusIn(
+                .filter(seatId -> bookingRepository.existsByConcertSession_IdAndSeat_IdAndStatusIn(
                         concertSessionId,
                         seatId,
                         List.of("PENDING", "CONFIRMED")
@@ -292,7 +295,7 @@ public class BookingService {
     }
 
     private String createBookingNumber() {
-        return "BOOK-" + UUID.randomUUID()
+        return "BK-" + UUID.randomUUID()
                 .toString()
                 .substring(0, 8)
                 .toUpperCase();
