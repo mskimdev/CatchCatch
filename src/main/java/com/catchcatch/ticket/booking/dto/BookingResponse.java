@@ -12,6 +12,7 @@ import lombok.Getter;
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BookingResponse {
@@ -19,6 +20,7 @@ public class BookingResponse {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final String STATUS_AVAILABLE = "AVAILABLE";
+    private static final String STATUS_CONFIRMED = "CONFIRMED";
 
     @Getter
     public static class DetailDTO {
@@ -154,11 +156,17 @@ public class BookingResponse {
         private String seatsJson;
 
         public SeatFormDTO(List<Seat> seats) {
+            this(seats, Set.of());
+        }
+
+        public SeatFormDTO(List<Seat> seats, Set<Integer> bookedSeatIds) {
+            Set<Integer> safeBookedSeatIds = bookedSeatIds == null ? Set.of() : bookedSeatIds;
+
             this.seats = seats.stream()
                     .sorted(Comparator
                             .comparingInt((Seat seat) -> seatGradeOrder(seat.getGrade().name()))
                             .thenComparing(Seat::getSeatNumber))
-                    .map(SeatDTO::new)
+                    .map(seat -> new SeatDTO(seat, safeBookedSeatIds.contains(seat.getId())))
                     .toList();
 
             this.gradeTabs = this.seats.stream()
@@ -194,9 +202,13 @@ public class BookingResponse {
         private Boolean available;
 
         public SeatDTO(Seat seat) {
+            this(seat, false);
+        }
+
+        public SeatDTO(Seat seat, boolean alreadyBooked) {
             String seatNumber = seat.getSeatNumber();
             String grade = seat.getGrade().name();
-            String status = seat.getStatus().name();
+            String seatStatus = seat.getStatus().name();
 
             this.id = seat.getId();
             this.seatNumber = seatNumber;
@@ -210,8 +222,13 @@ public class BookingResponse {
             this.price = seat.getPrice();
             this.priceText = formatPrice(seat.getPrice());
 
-            this.status = status;
-            this.available = STATUS_AVAILABLE.equals(status);
+            if (alreadyBooked) {
+                this.status = STATUS_CONFIRMED;
+                this.available = false;
+            } else {
+                this.status = seatStatus;
+                this.available = STATUS_AVAILABLE.equals(seatStatus);
+            }
         }
     }
 

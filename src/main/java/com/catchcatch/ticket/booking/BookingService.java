@@ -17,11 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -75,7 +71,14 @@ public class BookingService {
             String seatIds,
             User sessionUser
     ) {
+        if (concertSessionId == null) {
+            throw new BadRequestException("공연 회차 정보가 없습니다.");
+        }
+
         List<Integer> seatIdList = parseSeatIds(seatIds);
+
+        validateAlreadyBookedSeats(concertSessionId, seatIdList);
+
         List<Seat> selectedSeats = findSelectedSeats(seatIdList);
         User user = getUserReference(sessionUser.getId());
 
@@ -165,9 +168,21 @@ public class BookingService {
     // 좌석 선택 화면 정보 조회
     @Transactional(readOnly = true)
     public BookingResponse.SeatFormDTO findSeatForm(Integer sessionId) {
+        if (sessionId == null) {
+            throw new BadRequestException("공연 회차 정보가 없습니다.");
+        }
+
         List<Seat> seats = seatRepository.findByConcertSession_IdOrderBySeatNumberAsc(sessionId);
 
-        return new BookingResponse.SeatFormDTO(seats);
+        Set<Integer> bookedSeatIds = bookingRepository.findByConcertSessionIdAndStatusIn(
+                        sessionId,
+                        List.of("PENDING", "CONFIRMED")
+                )
+                .stream()
+                .map(Booking::getSeatId)
+                .collect(Collectors.toSet());
+
+        return new BookingResponse.SeatFormDTO(seats, bookedSeatIds);
     }
 
     // ============================================================
@@ -260,6 +275,20 @@ public class BookingService {
                 .map(seatMap::get)
                 .sorted(Comparator.comparing(Seat::getSeatNumber))
                 .toList();
+    }
+
+    private void validateAlreadyBookedSeats(Integer concertSessionId, List<Integer> seatIdList) {
+        List<Integer> alreadyBookedSeatIds = seatIdList.stream()
+                .filter(seatId -> bookingRepository.existsByConcertSessionIdAndSeatIdAndStatusIn(
+                        concertSessionId,
+                        seatId,
+                        List.of("PENDING", "CONFIRMED")
+                ))
+                .toList();
+
+        if (!alreadyBookedSeatIds.isEmpty()) {
+            throw new BadRequestException("이미 예매된 좌석이 포함되어 있습니다.");
+        }
     }
 
     private String createBookingNumber() {

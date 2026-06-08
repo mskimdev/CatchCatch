@@ -21,7 +21,7 @@ html,
 body {
   margin: 0;
   padding: 0;
-  min-width: 0;
+  min-width: 1280px;
   background: var(--cc-bg);
   color: var(--cc-text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", Arial, sans-serif;
@@ -46,12 +46,13 @@ a {
 /* 팝업 기본 레이아웃 */
 .cc-main {
   min-height: 100vh;
+  min-width: 1280px;
   padding: 20px 24px 28px;
 }
 
 .cc-container {
   width: 100%;
-  max-width: 1240px;
+  max-width: 1480px;
   margin: 0 auto;
 }
 
@@ -207,6 +208,7 @@ a {
   border-radius: 50%;
   display: inline-block;
   flex: 0 0 auto;
+  margin-right: 5px;
 }
 
 .cc-dot--vip {
@@ -243,9 +245,18 @@ a {
   padding: 0 10px;
 }
 
+/* 빈 좌석 안내 */
+.cc-empty-seat {
+  text-align: center;
+  color: var(--cc-muted);
+  font-weight: 850;
+  padding: 40px 20px;
+}
+
+/* 전체 3단 레이아웃 */
 .cc-seat-layout {
   display: grid;
-  grid-template-columns: 230px minmax(640px, 1fr) 240px;
+  grid-template-columns: 230px minmax(720px, 1fr) 260px;
   gap: 16px;
   align-items: start;
 }
@@ -288,11 +299,18 @@ a {
   width: 100%;
   aspect-ratio: 3 / 4;
   object-fit: cover;
+  display: block;
 }
 
 .cc-booking-info {
   margin-top: 16px;
   padding: 18px;
+}
+
+.cc-booking-info h3 {
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 950;
 }
 
 .cc-mini-row {
@@ -314,7 +332,7 @@ a {
   overflow: hidden;
 }
 
-/* 새 좌석 선택 구조 */
+/* 좌석 선택 내부 2단 구조 */
 .cc-seat-redesign {
   display: grid;
   grid-template-columns: 230px minmax(0, 1fr);
@@ -555,10 +573,12 @@ a {
   color: #9a92aa;
   cursor: not-allowed;
   box-shadow: none;
+  opacity: .85;
 }
 
 .cc-real-seat.is-sold:hover {
   transform: none;
+  box-shadow: none;
 }
 
 .cc-real-seat--vip {
@@ -705,31 +725,37 @@ a {
   font-weight: 900;
 }
 
+/* 팝업창에서는 좁아져도 기존 3단 구조 유지 */
 @media (max-width: 1180px) {
   .cc-seat-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: 230px minmax(720px, 1fr) 260px;
   }
 
   .cc-seat-layout > aside {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    display: block;
   }
 
   .cc-seat-redesign {
-    grid-template-columns: 1fr;
+    grid-template-columns: 230px minmax(0, 1fr);
   }
 
   .cc-zone-overview__image-box {
-    height: 320px;
+    height: 250px;
   }
 }
 
+/* 아주 작은 화면에서도 기존 레이아웃 유지하고 가로 스크롤 */
 @media (max-width: 700px) {
+  html,
+  body,
+  .cc-main {
+    min-width: 1280px;
+  }
+
   .cc-seat-map-card {
-    min-height: auto;
+    min-height: 670px;
     padding: 16px;
-    overflow-x: auto;
+    overflow: hidden;
   }
 
   .cc-seat-layout > aside {
@@ -737,33 +763,26 @@ a {
   }
 
   .cc-zone-detail__top {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 220px;
   }
 
   .cc-zone-seat-grid {
-    align-items: flex-start;
+    align-items: center;
   }
 
   .cc-real-seat {
-    width: 24px;
-    height: 24px;
-    font-size: 11px;
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
   }
 
   .cc-stepper {
-    overflow-x: auto;
-    justify-content: flex-start;
+    overflow: visible;
+    justify-content: center;
   }
 
   .cc-step-line {
-    width: 28px;
-    flex: 0 0 28px;
-  }
-
-  .cc-selected-card,
-  .cc-notice-card,
-  .cc-booking-summary,
-  .cc-booking-info {
-    padding: 16px;
+    width: 46px;
+    flex: 0 0 auto;
   }
 }

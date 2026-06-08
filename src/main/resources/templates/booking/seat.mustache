@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- 예매창 전용 CSS -->
-    <link rel="stylesheet" href="/css/booking-seat.css">
+    <link rel="stylesheet" href="/css/booking-seat.css?v=20260608">
 </head>
 
 <body>
@@ -187,7 +187,11 @@
                         <input type="hidden" name="sessionId"
                                value="{{#sessionId}}{{sessionId}}{{/sessionId}}{{^sessionId}}1{{/sessionId}}">
 
-                        <input type="hidden" name="seatIds" id="selectedSeatIds">
+                        <!-- 화면 확인용 -->
+                        <input type="hidden" id="selectedSeatIds">
+
+                        <!-- 서버 전송용: JS가 name="seatIds" hidden input을 생성 -->
+                        <div id="selectedSeatInputs"></div>
 
                         <button class="cc-btn cc-btn--primary cc-btn--full" type="submit">다음 단계</button>
                     </form>
@@ -214,6 +218,6 @@
 <script>
     window.CATCHCATCH_SEATS = {{{seat.seatsJson}}};
 </script>
-<script src="/js/booking-seat.js"></script>
+<script src="/js/booking-seat.js?v=20260608"></script>
 </body>
 </html>
