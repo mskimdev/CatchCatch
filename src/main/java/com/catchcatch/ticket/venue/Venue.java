@@ -42,4 +42,10 @@ public class Venue {
 
         return DateUtil.formatDateTime(createdAt);
     }
+
+    public void update(String name, String address, Integer totalCapacity) {
+        this.name = name;
+        this.address = address;
+        this.totalCapacity = totalCapacity;
+    }
 }
