@@ -162,18 +162,36 @@ public class BookingController {
             return "redirect:/login";
         }
 
-        Integer bookingId = getSessionInteger(session, "bookingId");
+        List<Integer> bookingIds = getSessionIntegerList(session, "bookingIds");
 
-        if (bookingId == null) {
+        if (bookingIds == null || bookingIds.isEmpty()) {
             return "redirect:/";
         }
 
         BookingResponse.CompleteDTO booking =
-                bookingService.findCompleteById(bookingId, sessionUser);
+                bookingService.findCompleteByIds(bookingIds, sessionUser);
 
         model.addAttribute("booking", booking);
 
+        model.addAttribute("pageTitle", "예매 완료");
+        model.addAttribute("bookingTitle", "예매 완료");
+        model.addAttribute("bookingSubTitle", "예매가 정상적으로 완료되었습니다.");
+
         return "booking/complete";
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Integer> getSessionIntegerList(HttpSession session, String name) {
+        Object value = session.getAttribute(name);
+
+        if (value instanceof List<?> list) {
+            return list.stream()
+                    .filter(Integer.class::isInstance)
+                    .map(Integer.class::cast)
+                    .toList();
+        }
+
+        return null;
     }
 
     private User getSessionUser(HttpSession session) {

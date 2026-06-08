@@ -308,4 +308,36 @@ public class BookingService {
     private Timestamp now() {
         return Timestamp.valueOf(LocalDateTime.now());
     }
+
+    @Transactional(readOnly = true)
+    public BookingResponse.CompleteDTO findCompleteByIds(List<Integer> bookingIds, User sessionUser) {
+        if (bookingIds == null || bookingIds.isEmpty()) {
+            throw new BadRequestException("예매 정보가 없습니다.");
+        }
+
+        List<Booking> bookings = bookingRepository.findAllById(bookingIds);
+
+        if (bookings.size() != bookingIds.size()) {
+            throw new BadRequestException("예매 정보를 찾을 수 없습니다.");
+        }
+
+        bookings.forEach(booking -> {
+            if (!booking.getUser().getId().equals(sessionUser.getId())) {
+                throw new BadRequestException("예매 정보를 조회할 수 없습니다.");
+            }
+        });
+
+        List<Booking> sortedBookings = bookings.stream()
+                .sorted(Comparator.comparing(booking -> booking.getSeat().getSeatNumber()))
+                .toList();
+
+        Booking firstBooking = sortedBookings.get(0);
+        Concert concert = firstBooking.getConcertSession().getConcert();
+
+        return new BookingResponse.CompleteDTO(
+                sortedBookings,
+                sessionUser,
+                concert.getTitle()
+        );
+    }
 }
