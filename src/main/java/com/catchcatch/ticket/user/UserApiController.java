@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/email")
 public class UserApiController {
 
-    private final MailService ms;
+    private final UserApiService ms;
 
     @Operation(summary = "인증 코드 발송", description = "입력한 이메일로 6자리 인증 코드를 발송합니다. 유효 시간은 3분입니다.")
     @ApiResponses({

@@ -1,16 +1,12 @@
 package com.catchcatch.ticket.user;
 
 import com.catchcatch.ticket.core.util.MailUtil;
-import com.catchcatch.ticket.notification.EmailSender;
+import com.catchcatch.ticket.notification.sender.EmailSender;
 import com.catchcatch.ticket.notification.NotificationMessage;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -19,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MailService {
+public class UserApiService {
 
     private final EmailSender emailSender;
     private final HttpSession session;

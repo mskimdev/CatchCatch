@@ -2,9 +2,9 @@ package com.catchcatch.ticket.inquiry;
 
 import com.catchcatch.ticket.core.errors.NotFoundException;
 import com.catchcatch.ticket.inquiry.enums.InquiryStatus;
-import com.catchcatch.ticket.notification.EmailSender;
+import com.catchcatch.ticket.notification.sender.EmailSender;
 import com.catchcatch.ticket.notification.NotificationMessage;
-import com.catchcatch.ticket.notification.SmsSender;
+import com.catchcatch.ticket.notification.sender.SmsSender;
 import com.catchcatch.ticket.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
