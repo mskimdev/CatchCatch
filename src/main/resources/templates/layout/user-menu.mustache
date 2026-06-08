@@ -20,6 +20,9 @@
         <a href="/users/liked-concerts">관심 공연</a>
         <a href="/users/mypage">회원 정보 수정</a>
         <a href="/support">고객센터</a>
+        {{#isAdmin}}
+        <a class="cc-user-menu__admin" href="/admin">관리자 콘솔</a>
+        {{/isAdmin}}
         <a class="cc-user-menu__logout" href="/users/logout">로그아웃</a>
     </div>
 </div>

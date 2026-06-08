@@ -44,7 +44,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         registry.addInterceptor(adminInterceptor)
                 .addPathPatterns(
-                        /* 관리자 인터셉터 필요한 url */
+                        "/admin",
+                        "/admin/**"
                 );
     }
 
