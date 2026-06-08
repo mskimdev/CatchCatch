@@ -38,7 +38,7 @@ public class AdminConcertService {
         if (posterImage != null && !posterImage.isEmpty()){
             try {
                 // 파일 저장을 위한 절대 경로
-                String projectPath = System.getProperty("user.dir") + "/src/main/resources/static/uploads/";
+                String projectPath = System.getProperty("user.dir") + "/uploads/";
 
                 // 해당 폴더가 없으면 자동 생성
                 File uploadDir = new File(projectPath);
