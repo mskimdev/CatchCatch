@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.inquiry;
 
+import com.catchcatch.ticket.core.errors.ForbiddenException;
 import com.catchcatch.ticket.core.errors.NotFoundException;
 import com.catchcatch.ticket.inquiry.enums.InquiryStatus;
 import com.catchcatch.ticket.notification.sender.EmailSender;
@@ -44,6 +45,19 @@ public class InquiryService {
         return inquiryRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(InquiryResponse.ListDTO::new)
                 .toList();
+    }
+
+    public InquiryResponse.DetailDTO findById(Integer id, User sessionUser) {
+        Inquiry inquiry = inquiryRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("해당하는 문의 내역을 찾을 수 없습니다."));
+
+        if (!inquiry.isPublic()) {
+            if (sessionUser == null || !inquiry.getUser().getId().equals(sessionUser.getId())) {
+                throw new ForbiddenException("접근 권한이 없습니다.");
+            }
+        }
+
+        return new InquiryResponse.DetailDTO(inquiry);
     }
 
     // ── 어드민 ──────────────────────────────────────
