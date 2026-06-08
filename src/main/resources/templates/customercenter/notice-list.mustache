@@ -1,0 +1,64 @@
+{{> layout/header}}
+
+<link rel="stylesheet" href="/css/customercenter-faq.css">
+<link rel="stylesheet" href="/css/customercenter-notice.css">
+
+<div class="customer-center-container">
+
+    <h1 class="page-title">고객센터</h1>
+
+    <div class="customer-layout">
+
+        <aside class="side-menu">
+            <a href="/customercenter/faqs" class="side-menu-item">FAQ</a>
+            <a href="/customercenter/inquiries/save" class="side-menu-item">1:1 문의하기</a>
+            <a href="/customercenter/inquiries" class="side-menu-item">1:1 문의 내역</a>
+            <a href="/customercenter/notices" class="side-menu-item active">공지사항</a>
+        </aside>
+
+        <main class="notice-content">
+
+            <div class="content-header">
+                <h2>공지사항</h2>
+            </div>
+
+            <table class="notice-table">
+                <thead>
+                <tr>
+                    <th style="width: 60px">번호</th>
+                    <th>제목</th>
+                    <th style="width: 80px">조회수</th>
+                    <th style="width: 150px">등록일</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#notices}}
+                <tr class="notice-row{{#isPinned}} notice-row--pinned{{/isPinned}}" onclick="location.href='/customercenter/notices/{{id}}'">
+                    <td class="notice-num">
+                        {{#isPinned}}
+                        <svg viewBox="0 0 24 24" fill="currentColor" class="notice-pin-icon"><path d="M16 2a1 1 0 0 1 .707.293l5 5A1 1 0 0 1 21 9h-1v1a3 3 0 0 1-.88 2.121L17 14.243V20a1 1 0 0 1-1.553.833L12 18.202l-3.447 2.63A1 1 0 0 1 7 20v-5.757l-2.12-2.122A3 3 0 0 1 4 10V9H3a1 1 0 0 1-.707-1.707l5-5A1 1 0 0 1 8 2h8z"/></svg>
+                        {{/isPinned}}
+                        {{^isPinned}}{{num}}{{/isPinned}}
+                    </td>
+                    <td class="notice-title">
+                        {{#isPinned}}<span class="notice-badge">공지</span>{{/isPinned}}
+                        {{title}}
+                    </td>
+                    <td class="notice-view-count">{{viewCount}}</td>
+                    <td class="notice-date">{{createdAt}}</td>
+                </tr>
+                {{/notices}}
+                {{^notices}}
+                <tr>
+                    <td colspan="4" class="empty-message">등록된 공지사항이 없습니다.</td>
+                </tr>
+                {{/notices}}
+                </tbody>
+            </table>
+
+        </main>
+
+    </div>
+</div>
+
+{{> layout/footer}}
