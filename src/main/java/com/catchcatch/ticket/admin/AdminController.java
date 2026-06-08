@@ -6,6 +6,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
@@ -43,31 +47,45 @@ public class AdminController {
         return "admin/user/list";
     }
 
-    @GetMapping("/{category}")
-    public String getBoardList(@PathVariable String category, Model model) {
-        String pageTitle;
-        boolean isInquiry = false; // 기본값 false
+    @Controller
+    @RequestMapping("/admin/boards")
+    public class BoardAdminController {
 
-        // 카테고리에 따른 분기 처리
-        if (category.equals("inquiry")) {
-            pageTitle = "문의사항 관리";
-            isInquiry = true; // 이 값이 true여야 템플릿에서 '답변 상태' 컬럼이 보임
-        } else if (category.equals("faq")) {
-            pageTitle = "FAQ 관리";
-        } else if (category.equals("notice")) {
-            pageTitle = "공지사항 관리";
-        } else {
-            // 정의되지 않은 카테고리일 경우 예외 처리나 기본값 설정
-            pageTitle = "게시판 관리";
+        @GetMapping("/{category}")
+        public String getBoardList(@PathVariable String category, Model model) {
+            String pageTitle;
+            boolean isInquiry = false;
+            List<Map<String, Object>> posts = new ArrayList<>();
+
+            if (category.equals("inquiry")) {
+                // TODO: 추후 InquiryController로 로직 이관 시 여기를 삭제하거나 리다이렉트
+                pageTitle = "문의사항 관리";
+                isInquiry = true;
+                // posts = inquiryService.findAll();
+            } else if (category.equals("faq")) {
+                // TODO: 추후 FAQController로 로직 이관 시 여기를 삭제하거나 리다이렉트
+                pageTitle = "FAQ 관리";
+            } else if (category.equals("notice")) {
+                pageTitle = "공지사항 관리";
+                posts = getHardcodedNoticeList(); // 공지사항 하드코딩 데이터
+            } else {
+                pageTitle = "게시판 관리";
+            }
+
+            model.addAttribute("pageTitle", pageTitle);
+            model.addAttribute("category", category);
+            model.addAttribute("isInquiry", isInquiry);
+            model.addAttribute("posts", posts);
+
+            return "admin/board/list";
         }
 
-        model.addAttribute("pageTitle", pageTitle);
-        model.addAttribute("category", category); // URL 생성용 (예: /admin/boards/faq/create)
-        model.addAttribute("isInquiry", isInquiry); // 답변 상태 표시 여부 결정
-
-        // TODO: 여기서 category를 이용해 DB 데이터를 가져오세요.
-        // model.addAttribute("posts", boardService.findByCategory(category));
-
-        return "admin/board/list"; // 모든 게시판이 이 템플릿 하나를 공유
+        // 공지사항 하드코딩 메서드
+        private List<Map<String, Object>> getHardcodedNoticeList() {
+            List<Map<String, Object>> list = new ArrayList<>();
+            list.add(Map.of("id", 1, "title", "CatchCatch 서비스 오픈 안내", "createdAt", "2026-06-08"));
+            list.add(Map.of("id", 2, "title", "시스템 점검 안내 (매주 월요일)", "createdAt", "2026-06-01"));
+            return list;
+        }
     }
 }
