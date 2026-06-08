@@ -44,6 +44,7 @@
                                     <input type="text" name="category" class="form-control" required>
                                 </div>
                                 <div class="col-md-4 form-group">
+                                    <label>공연장</label>
                                     <select name="venueId" class="form-control" required>
                                     <option value="" selected disabled>공연장을 선택하세요</option>
                                     {{#venueList}}
@@ -115,7 +116,6 @@
                                 <div class="col-md-6 form-group">
                                     <label>공연 상태</label>
                                     <select name="concertStatus" class="form-control" required>
-                                        <option value="READY">준비중</option>
                                         <option value="OPEN">예매중</option>
                                         <option value="COMING_SOON">오픈예정</option>
                                     </select>
