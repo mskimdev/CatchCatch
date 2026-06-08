@@ -62,6 +62,13 @@ public class BookingController {
         return "booking/seat";
     }
 
+    /**
+     * 선택한 좌석 정보를 세션에 저장하고 결제 화면으로 이동
+     *
+     * @param req 선택한 좌석 ID 목록을 담은 요청 DTO
+     * @param session 선택 좌석 정보를 저장할 세션
+     * @return 결제 화면으로 이동하는 redirect 경로
+     */
     @PostMapping("/payment")
     public String startPayment(
             BookingRequest.PaymentStartDTO req,
@@ -91,6 +98,7 @@ public class BookingController {
             return "redirect:/login";
         }
 
+        // 좌석 1 ~ 4석 예매할 수 있으니
         String seatIds = (String) session.getAttribute("bookingSeatIds");
 
         if (seatIds == null || seatIds.isBlank()) {
@@ -105,6 +113,15 @@ public class BookingController {
         return "booking/payment";
     }
 
+    /**
+     * 결제 확정 처리
+     *
+     * 세션에 저장된 회차 ID와 선택 좌석 ID 목록을 기준으로
+     * 예매 정보를 DB에 저장한 뒤 예매 완료 화면으로 이동한다.
+     *
+     * @param session 로그인 사용자 정보, 선택 좌석 정보, 회차 정보를 담고 있는 세션
+     * @return 예매 완료 화면으로 이동하는 redirect 경로
+     */
     @PostMapping("/payment/confirm")
     public String paymentConfirm(HttpSession session) {
         User sessionUser = getSessionUser(session);

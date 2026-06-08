@@ -45,20 +45,20 @@ public class BookingRequest {
         public void validate() {
             validateRequiredText(seatIds, "좌석을 선택해주세요.");
 
-            String[] seatIdArray = Arrays.stream(seatIds.split(","))
-                    .map(String::trim)
-                    .filter(seatId -> !seatId.isBlank())
-                    .toArray(String[]::new);
-
-            if (seatIdArray.length == 0) {
-                throw new BadRequestException("좌석을 선택해주세요.");
-            }
+            // 선택한 좌석 ID 목록을 콤마 기준으로 분리
+            String[] seatIdArray = seatIds.split(",");
 
             if (seatIdArray.length > MAX_SEAT_COUNT) {
                 throw new BadRequestException("좌석은 최대 4석까지 선택할 수 있습니다.");
             }
 
             for (String seatId : seatIdArray) {
+                seatId = seatId.trim();
+
+                if (seatId.isBlank()) {
+                    throw new BadRequestException("좌석 정보가 올바르지 않습니다.");
+                }
+
                 validateSeatId(seatId);
             }
         }
