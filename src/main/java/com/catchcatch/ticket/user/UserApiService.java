@@ -1,13 +1,19 @@
 package com.catchcatch.ticket.user;
 
+import com.catchcatch.ticket.core.errors.BadRequestException;
+import com.catchcatch.ticket.core.errors.NotFoundException;
 import com.catchcatch.ticket.core.util.MailUtil;
+import com.catchcatch.ticket.core.util.ProfileImageUtil;
 import com.catchcatch.ticket.notification.sender.EmailSender;
 import com.catchcatch.ticket.notification.NotificationMessage;
+import com.catchcatch.ticket.user.dto.UserRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -19,11 +25,11 @@ public class UserApiService {
 
     private final EmailSender emailSender;
     private final HttpSession session;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public void sendCode(String email) {
-
         String code = MailUtil.generateRandomCode();
-
         try {
             ClassPathResource resource = new ClassPathResource("templates/mail/email-verify.html");
             String content = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8)
@@ -45,13 +51,41 @@ public class UserApiService {
 
     public boolean verifyCode(String email, String code) {
         String savedCode = (String) session.getAttribute("code_" + email);
-
         if (savedCode != null && savedCode.equals(code)) {
             session.removeAttribute("code_" + email);
             session.setAttribute("verified_email", email);
             return true;
-        } else {
-            return false;
         }
+        return false;
+    }
+
+    @Transactional
+    public User update(UserRequest.ProfileUpdateDTO reqDTO, Integer userId) {
+        User findUser = userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundException("회원을 찾을 수 없습니다.")
+        );
+
+        if (reqDTO.currentPassword() != null && !reqDTO.currentPassword().isBlank()) {
+            if (!passwordEncoder.matches(reqDTO.currentPassword(), findUser.getPassword())) {
+                throw new BadRequestException("현재 비밀번호가 올바르지 않습니다.");
+            }
+            if (reqDTO.newPassword() != null && !reqDTO.newPassword().isBlank()) {
+                findUser.setPassword(passwordEncoder.encode(reqDTO.newPassword()));
+            }
+        }
+
+        if (!findUser.getUsername().equals(reqDTO.username()) && userRepository.existsByUsername(reqDTO.username())) {
+            throw new BadRequestException("이미 사용 중인 아이디입니다.");
+        }
+
+        String profileImgUrl = ProfileImageUtil.saveFromBase64(reqDTO.profileImage());
+        if (profileImgUrl != null) {
+            findUser.setProfileImage(profileImgUrl);
+        }
+
+        findUser.setUsername(reqDTO.username());
+        findUser.setPhone(reqDTO.phone());
+
+        return findUser;
     }
 }

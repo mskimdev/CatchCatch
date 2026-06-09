@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.user;
 
+import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.Resp;
 import com.catchcatch.ticket.user.dto.UserRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -7,17 +8,16 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Email 인증", description = "회원가입 이메일 인증 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/email")
+@RequestMapping("/api")
 public class UserApiController {
 
     private final UserApiService userApiService;
@@ -27,7 +27,7 @@ public class UserApiController {
             @ApiResponse(responseCode = "200", description = "발송 성공"),
             @ApiResponse(responseCode = "400", description = "이메일 형식 오류")
     })
-    @PostMapping("/send-code")
+    @PostMapping("/email/send-code")
     public ResponseEntity<?> sendCode(
             @Parameter(description = "인증 코드를 받을 이메일 주소") UserRequest.EmailCheckDTO req) {
         req.validate();
@@ -40,7 +40,7 @@ public class UserApiController {
             @ApiResponse(responseCode = "200", description = "인증 성공"),
             @ApiResponse(responseCode = "400", description = "코드 불일치 또는 만료")
     })
-    @PostMapping("/verify-code")
+    @PostMapping("/email/verify-code")
     public ResponseEntity<?> verifyCode(
             @Parameter(description = "인증 대상 이메일 및 코드") UserRequest.EmailCheckDTO req) {
         req.validate();
@@ -54,5 +54,18 @@ public class UserApiController {
         } else {
             return Resp.fail(HttpStatus.BAD_REQUEST, "인증번호가 일치하지 않습니다.");
         }
+    }
+
+    @PutMapping("/users/mypage")
+    public ResponseEntity<?> updateProfile(
+            @RequestBody UserRequest.ProfileUpdateDTO reqDTO,
+            @SessionAttribute("sessionUser") User sessionUser,
+            HttpSession session) {
+        if (reqDTO.currentPassword() != null && !reqDTO.currentPassword().isBlank())
+            reqDTO.isLocalValidate();
+
+        User updatedUser = userApiService.update(reqDTO, sessionUser.getId());
+        session.setAttribute(Define.SESSION_USER, updatedUser);
+        return Resp.ok("회원 정보가 저장되었습니다.");
     }
 }

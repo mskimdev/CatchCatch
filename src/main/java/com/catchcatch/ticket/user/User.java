@@ -14,6 +14,7 @@ package com.catchcatch.ticket.user;
  */
 
 
+import com.catchcatch.ticket.user.dto.UserRequest;
 import com.catchcatch.ticket.user.enums.OAuthProvider;
 import com.catchcatch.ticket.user.enums.Role;
 import jakarta.persistence.*;
@@ -89,4 +90,6 @@ public class User {
         this.oauthId = oauthId;
         this.role = role;
     }
+
+
 }
