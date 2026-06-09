@@ -1,4 +1,4 @@
-{{> layout/header-booking}}
+{{> layout/header}}
 
 <div class="cc-stepper" aria-label="예매 진행 단계">
     <div class="cc-step is-done">
@@ -32,52 +32,71 @@
             <div class="cc-complete-ticket__number">
                 예매번호
                 <strong>
-                    {{#booking.bookingNumber}}{{booking.bookingNumber}}{{/booking.bookingNumber}}{{^booking.bookingNumber}}CC2026-000001{{/booking.bookingNumber}}
+                    {{#booking.bookingNumber}}{{booking.bookingNumber}}{{/booking.bookingNumber}}{{^booking.bookingNumber}}
+                    CC2026-000001{{/booking.bookingNumber}}
                 </strong>
             </div>
 
             <h3>
-                {{#booking.concertTitle}}{{booking.concertTitle}}{{/booking.concertTitle}}{{^booking.concertTitle}}2026 무명전설 전국투어 콘서트 - 서울{{/booking.concertTitle}}
+                {{#booking.concertTitle}}{{booking.concertTitle}}{{/booking.concertTitle}}{{^booking.concertTitle}}
+                2026 무명전설 전국투어 콘서트 - 서울{{/booking.concertTitle}}
             </h3>
 
             <div class="cc-info-list">
                 <div class="cc-info-row">
                     <span class="cc-info-row__label">📅 공연일시</span>
                     <span>
-                        {{#booking.sessionText}}{{booking.sessionText}}{{/booking.sessionText}}{{^booking.sessionText}}2026.06.27 (토) 18:00{{/booking.sessionText}}
+                        {{#booking.sessionText}}{{booking.sessionText}}{{/booking.sessionText}}{{^booking.sessionText}}
+                        2026.06.27 (토) 18:00{{/booking.sessionText}}
                     </span>
                 </div>
 
                 <div class="cc-info-row">
                     <span class="cc-info-row__label">📍 공연장소</span>
                     <span>
-                        {{#booking.venueText}}{{booking.venueText}}{{/booking.venueText}}{{^booking.venueText}}서울 · 올림픽공원 올림픽홀{{/booking.venueText}}
+                        {{#booking.venueText}}{{booking.venueText}}{{/booking.venueText}}{{^booking.venueText}}
+                        서울 · 올림픽공원 올림픽홀{{/booking.venueText}}
                     </span>
                 </div>
 
-                <div class="cc-info-row">
+                <div class="cc-info-row cc-info-row--seats">
                     <span class="cc-info-row__label">💺 좌석</span>
-                    <span>
-                        {{#booking.selectedSeats}}
-                            {{seatNumber}} ({{grade}})
-                        {{/booking.selectedSeats}}
-                        {{^booking.selectedSeats}}
-                            {{#booking.seatName}}{{booking.seatName}}{{/booking.seatName}}{{^booking.seatName}}나구역 12열 15번 (VIP), 나구역 12열 16번 (VIP){{/booking.seatName}}
-                        {{/booking.selectedSeats}}
-                    </span>
+
+                    <div class="cc-complete-seat-box">
+                        <div class="cc-complete-seat-count">
+                            총 {{bookingCount}}석
+                        </div>
+
+                        <div class="cc-complete-seat-scroll">
+                            {{#payment.selectedSeats}}
+                                <div class="cc-complete-seat-item">
+                                    <span class="cc-complete-seat-name">{{seatNumber}}</span>
+                                    <span class="cc-complete-seat-grade">{{grade}}</span>
+                                    <span class="cc-complete-seat-price">{{priceText}}</span>
+                                </div>
+                            {{/payment.selectedSeats}}
+
+                            {{^payment.selectedSeats}}
+                                <div class="cc-complete-seat-empty">
+                                    좌석 정보가 없습니다.
+                                </div>
+                            {{/payment.selectedSeats}}
+                        </div>
+                    </div>
                 </div>
 
                 <div class="cc-info-row">
                     <span class="cc-info-row__label">💳 결제금액</span>
                     <strong class="cc-complete-price">
-                        {{#booking.totalPriceText}}{{booking.totalPriceText}}{{/booking.totalPriceText}}{{^booking.totalPriceText}}308,000원{{/booking.totalPriceText}}
+                        {{#payment.totalPriceText}}{{payment.totalPriceText}}{{/payment.totalPriceText}}{{^payment.totalPriceText}}{{booking.totalPriceText}}{{/payment.totalPriceText}}
                     </strong>
                 </div>
 
                 <div class="cc-info-row">
                     <span class="cc-info-row__label">🕒 예매일시</span>
                     <span>
-                        {{#booking.createdAt}}{{booking.createdAt}}{{/booking.createdAt}}{{^booking.createdAt}}2026.05.29 14:32{{/booking.createdAt}}
+                        {{#booking.createdAt}}{{booking.createdAt}}{{/booking.createdAt}}{{^booking.createdAt}}
+                        2026.05.29 14:32{{/booking.createdAt}}
                     </span>
                 </div>
             </div>
@@ -95,4 +114,4 @@
     </div>
 </section>
 
-{{> layout/footer-booking}}
+{{> layout/footer}}

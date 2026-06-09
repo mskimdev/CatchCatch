@@ -35,7 +35,7 @@ public class WaitingQueue {
     @Column(name = "queue_number", nullable = false)
     private Integer queueNumber;
 
-    // 대기열 상태 - WAITING, READY, ENTERED, EXPIRED, CANCELED
+    // 대기열 상태 - WAITING, READY, ENTERED, EXPIRED, CANCELLED
     @Builder.Default
     @Column(name = "status", nullable = false)
     private String status = "WAITING";

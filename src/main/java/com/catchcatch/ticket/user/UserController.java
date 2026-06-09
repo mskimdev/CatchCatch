@@ -237,7 +237,7 @@ public class UserController {
         model.addAttribute("navBookings", true);
         model.addAttribute("statusAll",      status == null);
         model.addAttribute("statusPaid",     "PAID".equals(status));
-        model.addAttribute("statusCanceled", "CANCELED".equals(status));
+        model.addAttribute("statusCanceled", "CANCELLED".equals(status));
         return "user/bookings";
     }
 
