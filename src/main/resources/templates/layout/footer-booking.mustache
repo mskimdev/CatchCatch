@@ -16,8 +16,6 @@
 </div>
 </main>
 
-<script src="/js/booking-seat.js"></script>
-
 <script>
     function closeBookingWindow() {
         if (window.opener && !window.opener.closed) {
@@ -41,43 +39,6 @@
 
         location.href = "/mypage/bookings";
     }
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const agreeAll = document.querySelector("#payAgreeAll");
-        const agreeItems = Array.from(document.querySelectorAll(".pay-agree-item"));
-
-        if (agreeAll && agreeItems.length > 0) {
-            agreeAll.addEventListener("change", function () {
-                agreeItems.forEach(function (item) {
-                    item.checked = agreeAll.checked;
-                });
-            });
-
-            agreeItems.forEach(function (item) {
-                item.addEventListener("change", function () {
-                    agreeAll.checked = agreeItems.every(function (checkbox) {
-                        return checkbox.checked;
-                    });
-                });
-            });
-        }
-
-        document.querySelectorAll(".cc-pay-method").forEach(function (label) {
-            label.addEventListener("click", function () {
-                document.querySelectorAll(".cc-pay-method").forEach(function (item) {
-                    item.classList.remove("is-active");
-                });
-
-                label.classList.add("is-active");
-
-                const radio = label.querySelector('input[type="radio"]');
-
-                if (radio) {
-                    radio.checked = true;
-                }
-            });
-        });
-    });
 </script>
 </body>
 </html>
