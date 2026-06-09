@@ -22,17 +22,17 @@ public class QRefund extends EntityPathBase<Refund> {
 
     public static final QRefund refund = new QRefund("refund");
 
+    public final NumberPath<Integer> amount = createNumber("amount", Integer.class);
+
     public final NumberPath<Integer> cancelFee = createNumber("cancelFee", Integer.class);
 
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
 
     public final com.catchcatch.ticket.payment.QPayment payment;
 
+    public final StringPath reason = createString("reason");
+
     public final DateTimePath<java.time.LocalDateTime> refundedAt = createDateTime("refundedAt", java.time.LocalDateTime.class);
-
-    public final NumberPath<Integer> refundPrice = createNumber("refundPrice", Integer.class);
-
-    public final StringPath refundReason = createString("refundReason");
 
     public QRefund(String variable) {
         this(Refund.class, forVariable(variable), INITS);
