@@ -3,10 +3,10 @@ package com.catchcatch.ticket.payment;
 import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.booking.BookingRepository;
 import com.catchcatch.ticket.booking.Status;
+import com.catchcatch.ticket.booking.bookingSeat.BookingSeat;
 import com.catchcatch.ticket.core.errors.BadRequestException;
 import com.catchcatch.ticket.core.errors.NotFoundException;
 import com.catchcatch.ticket.seat.Seat;
-import com.catchcatch.ticket.seat.SeatRepository;
 import com.catchcatch.ticket.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,6 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
-    private final SeatRepository seatRepository;
 
     @Value("${portone.store-id}")
     private String storeId;
@@ -49,33 +48,38 @@ public class PaymentService {
                 .toList();
     }
 
-
     /**
      * 결제 상세내역 조회
      */
     public PaymentResponse.DetailDTO getPaymentDetail(Integer paymentId, Integer userId) {
-        Payment payment = paymentRepository.findDetailByIdAndUserId(paymentId, userId).orElseThrow(
-                () -> new NotFoundException("결제 내역을 찾을 수 없습니다."));
+        Payment payment = paymentRepository.findDetailByIdAndUserId(paymentId, userId)
+                .orElseThrow(() -> new NotFoundException("결제 내역을 찾을 수 없습니다."));
 
         return new PaymentResponse.DetailDTO(payment);
     }
 
     /**
      * 결제 준비
-     * <p>
+     *
      * 1. 예매 정보 조회
      * 2. 본인 예매인지 확인
-     * 3. 중복 결제 방지
-     * 4. 서버에서 결제 금액 계산
-     * 5. merchantUid 생성
-     * 6. Payment READY 저장
+     * 3. 예매 상태 확인
+     * 4. 중복 결제 방지
+     * 5. 결제 금액 계산
+     * 6. paymentId 생성
+     * 7. Payment READY 저장
      */
+    @Transactional
     public PaymentResponse.PrepareDTO preparePayment(Integer userId, PaymentRequest.PrepareDTO reqDTO) {
+        if (userId == null) {
+            throw new BadRequestException("사용자 정보가 없습니다.");
+        }
+
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("사용자를 찾을 수 없습니다.");
         }
 
-        if (reqDTO.getBookingId() == null) {
+        if (reqDTO == null || reqDTO.getBookingId() == null) {
             throw new BadRequestException("예매 ID는 필수입니다.");
         }
 
@@ -90,7 +94,7 @@ public class PaymentService {
             throw new BadRequestException("본인의 예매 건만 결제할 수 있습니다.");
         }
 
-        if (!"PENDING".equals(booking.getStatus())) {
+        if (booking.getStatus() != Status.PENDING) {
             throw new BadRequestException("결제 가능한 예매 상태가 아닙니다.");
         }
 
@@ -108,27 +112,31 @@ public class PaymentService {
 
         Payment payment = Payment.builder()
                 .booking(booking)
-                .user(booking.getUser())
                 .paymentId(paymentId)
-                .pgTxId(null)
                 .amount(amount)
                 .method(reqDTO.getMethod())
-                .status(PaymentStatus.READY)
                 .build();
 
         Payment savedPayment = paymentRepository.save(payment);
 
-        return new PaymentResponse.PrepareDTO(savedPayment.getPaymentId(), amount, storeId, channelKey);
+        return new PaymentResponse.PrepareDTO(
+                savedPayment.getPaymentId(),
+                savedPayment.getAmount(),
+                storeId,
+                channelKey
+        );
     }
 
     /**
      * 결제 완료 검증 및 예매 확정 처리
-     * <p>
-     * 기존 포인트 충전 프로젝트와 다른 점:
-     * - user.point 충전 X
-     * - Payment 상태 READY -> PAID
-     * - Booking 상태 PENDING -> PAID
-     * - Seat 상태 HELD -> SOLD
+     *
+     * 1. Payment READY 조회
+     * 2. 포트원 단건 조회
+     * 3. 결제 상태 검증
+     * 4. 결제 금액 검증
+     * 5. Payment READY -> PAID
+     * 6. Booking PENDING -> PAID
+     * 7. BookingSeat에 연결된 모든 Seat HELD -> SOLD
      */
     @Transactional
     public PaymentResponse.CompleteDTO completePayment(
@@ -139,16 +147,15 @@ public class PaymentService {
             throw new BadRequestException("사용자 정보가 없습니다.");
         }
 
-        if (reqDTO == null || reqDTO.getPaymentId() == null) {
+        if (reqDTO == null || reqDTO.getPaymentId() == null || reqDTO.getPaymentId().isBlank()) {
             throw new BadRequestException("결제 ID는 필수입니다.");
         }
 
         reqDTO.validate();
 
-        Payment payment = paymentRepository.findByPaymentIdAndUserId(reqDTO.getPaymentId(), userId).orElseThrow(
-                () -> new NotFoundException("결제 내역을 찾을 수 없습니다."));
+        Payment payment = paymentRepository.findByPaymentIdAndUserId(reqDTO.getPaymentId(), userId)
+                .orElseThrow(() -> new NotFoundException("결제 내역을 찾을 수 없습니다."));
 
-        // 2. 중복 완료 처리 방지
         if (payment.getStatus() == PaymentStatus.PAID) {
             throw new BadRequestException("이미 결제 완료된 내역입니다.");
         }
@@ -157,26 +164,20 @@ public class PaymentService {
             throw new BadRequestException("결제 대기 상태가 아닙니다.");
         }
 
-        // paymentId 위변조 검증
         if (!payment.getPaymentId().equals(reqDTO.getPaymentId())) {
             throw new BadRequestException("주문 번호가 일치하지 않습니다.");
         }
 
-        // 4. 포트원 서버에 단건 결제 조회
         PaymentResponse.PortOnePayment portOnePayment = getPortOnePayment(reqDTO.getPaymentId());
 
-        // 5. 포트원 결제 상태 검증
         if (portOnePayment.getStatus() == null || !"PAID".equals(portOnePayment.getStatus())) {
             throw new BadRequestException("결제가 완료되지 않았습니다. status=" + portOnePayment.getStatus());
         }
 
-        // 6. 포트원 주문번호 검증
         if (portOnePayment.getId() == null ||
                 !payment.getPaymentId().equals(portOnePayment.getId())) {
             throw new BadRequestException("포트원 주문 번호가 일치하지 않습니다.");
         }
-
-        // 7. 결제 금액 검증
 
         if (portOnePayment.getAmount() == null || portOnePayment.getAmount().getTotal() == null) {
             throw new BadRequestException("결제 금액 정보를 확인할 수 없습니다.");
@@ -188,44 +189,44 @@ public class PaymentService {
             throw new BadRequestException("결제 금액이 일치하지 않습니다.");
         }
 
-        // 8. Payment 상태 변경: READY -> PAID
-        payment.setStatus(PaymentStatus.PAID);
-
-        // 9. Booking 상태 변경: PENDING -> PAID
         Booking booking = payment.getBooking();
 
         if (booking == null) {
             throw new BadRequestException("결제와 연결된 예매 내역이 없습니다.");
         }
 
-        if (!"PENDING".equals(booking.getStatus())) {
+        if (booking.getStatus() != Status.PENDING) {
             throw new BadRequestException("결제 가능한 예매 상태가 아닙니다.");
         }
 
+        if (booking.getBookingSeats() == null || booking.getBookingSeats().isEmpty()) {
+            throw new BadRequestException("예매 좌석 정보가 없습니다.");
+        }
 
-        // 10. Seat 상태 변경: HELD -> SOLD
-        Seat seat = seatRepository.findById(booking.getSeat().getId())
-                .orElseThrow(() -> new NotFoundException("좌석 정보를 찾을 수 없습니다."));
+        for (BookingSeat bookingSeat : booking.getBookingSeats()) {
+            Seat seat = bookingSeat.getSeat();
 
-        seat.sell();
-        // TODO - booking 에 도메인 메서드(completePayment) 추가예정
-        booking.setStatus(Status.PAID);
-        payment.setPgTxId(portOnePayment.getPgTxId());
+            if (seat == null) {
+                throw new BadRequestException("좌석 정보를 찾을 수 없습니다.");
+            }
+
+            seat.sell();
+        }
+
+        payment.complete(portOnePayment.getPgTxId());
+        booking.completePayment();
 
         return new PaymentResponse.CompleteDTO(payment);
     }
 
     private PaymentResponse.PortOnePayment getPortOnePayment(String paymentId) {
         RestTemplate restTemplate = new RestTemplate();
-        // 헤더 + 바디 조합 --> exchange() 메서드 호출 HTTP 요청 및 응답
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "PortOne " + apiSecret);
 
-        // GET 요청이라서 바디가 없음. 즉, 헤더만 담아서 HTTP 요청 메세지 구축
-        HttpEntity request = new HttpEntity(headers);
+        HttpEntity<Void> request = new HttpEntity<>(headers);
 
-        // HTTP 요청 후 응답
         ResponseEntity<PaymentResponse.PortOnePayment> response = restTemplate.exchange(
                 "https://api.portone.io/payments/" + paymentId,
                 HttpMethod.GET,
@@ -244,13 +245,19 @@ public class PaymentService {
 
     /**
      * 결제 가격
-     * Booking 1개 당 Seat 1개
+     *
+     * Booking 1개 안에 BookingSeat 여러 개가 들어가는 구조.
+     * 따라서 BookingSeat.price 합계가 결제 금액.
      */
     private Integer calculatePaymentAmount(Booking booking) {
-        Seat seat = seatRepository.findById(booking.getSeat().getId())
-                .orElseThrow(() -> new NotFoundException("좌석 정보를 찾을 수 없습니다."));
+        if (booking.getBookingSeats() == null || booking.getBookingSeats().isEmpty()) {
+            throw new BadRequestException("예매 좌석 정보가 없습니다.");
+        }
 
-        return seat.getPrice();
+        return booking.getBookingSeats()
+                .stream()
+                .mapToInt(bookingSeat -> bookingSeat.getPrice() == null ? 0 : bookingSeat.getPrice())
+                .sum();
     }
 
     /**
@@ -260,5 +267,4 @@ public class PaymentService {
         return "catchcatch_" + bookingId + "_" + System.currentTimeMillis() + "_" +
                 UUID.randomUUID().toString().substring(0, 8);
     }
-
 }

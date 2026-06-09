@@ -1,4 +1,4 @@
-package com.catchcatch.ticket.booking.bookingDetail;
+package com.catchcatch.ticket.booking.bookingSeat;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 

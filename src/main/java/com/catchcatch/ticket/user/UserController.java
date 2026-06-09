@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.user;
 
 import com.catchcatch.ticket.booking.BookingService;
+import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
 import com.catchcatch.ticket.core.errors.UnauthorizedException;
 import com.catchcatch.ticket.core.util.Define;
@@ -191,7 +192,7 @@ public class UserController {
             @ApiResponse(responseCode = "302", description = "미로그인 - 로그인 페이지로 리다이렉트")
     })
     @GetMapping("/users/bookings")
-    public String bookings(@RequestParam(required = false) String status, HttpSession session, Model model) {
+    public String bookings(@RequestParam(required = false) Status status, HttpSession session, Model model) {
         User user = getSessionUser(session);
         if (user == null) return "redirect:/login";
         addSidebarAttributes(model, user);

@@ -2,6 +2,7 @@ package com.catchcatch.ticket.user;
 
 import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.booking.BookingRepository;
+import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.concertlike.ConcertLike;
@@ -148,7 +149,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<BookingResponse.MyPageListDTO> findBookingsByUser(Integer userId, String status) {
+    public List<BookingResponse.MyPageListDTO> findBookingsByUser(Integer userId, Status status) {
         List<Booking> bookings = status == null
                 ? bookingRepository.findAllWithDetailsByUserId(userId)
                 : bookingRepository.findAllWithDetailsByUserIdAndStatus(userId, status);
