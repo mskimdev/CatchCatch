@@ -1,3 +1,4 @@
+// venueController.java
 package com.catchcatch.ticket.venue;
 
 import lombok.RequiredArgsConstructor;
@@ -17,9 +18,6 @@ public class VenueController {
     // 관리자 공연장 등록 페이지
     @GetMapping("/admin/venues/save")
     public String venueSaveForm(Model model) {
-        model.addAttribute("pageTitle", "공연장 등록");
-        model.addAttribute("pageCss", "/css/venue-save.css");
-
         model.addAttribute("activeVenue", true);
 
         // 검색어 기본값
@@ -31,6 +29,14 @@ public class VenueController {
         model.addAttribute("searchPlaceholder", "공연장명을 검색해보세요");
 
         return "admin/venue/venue-save";
+    }
+
+    //관리자 공연장 수정 페이지
+    @GetMapping("/admin/venues/{id}/edit")
+    public String venueEditForm(@PathVariable Integer id, Model model) {
+
+
+        return "admin/venue/venue-edit";
     }
 
     // 관리자 공연장 등록 처리

@@ -12,12 +12,12 @@ INSERT INTO user_tb
 (username, password, email, phone, profile_image, oauth_provider, role, created_at, is_deleted)
 VALUES
     ('admin',
-     '$2a$10$pJgHFhQeqpkfNKJBLISTlO8Aq3DXdEq7SlAAnNdFpSInGKaOhGKAq',
+     '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK',
      'admin@catchcatch.com',
      '010-0000-0000',
      NULL,
      'LOCAL',
-     'USER',
+     'ADMIN',
      NOW(),
      false),
 

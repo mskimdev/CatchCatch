@@ -1,3 +1,4 @@
+//venue-list.mustache
 {{> admin/layout/header}}
 
 <body id="page-top">
@@ -63,22 +64,20 @@
                                         </td>
                                         <td class="align-middle">{{formattedCreatedAt}}</td>
                                         <td class="align-middle text-center">
-                                        <td class="align-middle text-center">
-                                        <button type="button"
-                                                class="btn btn-warning btn-sm btn-edit"
-                                                data-id="{{id}}"
-                                                data-name="{{name}}"
-                                                data-address="{{address}}"
-                                                data-capacity="{{totalCapacity}}">
-                                            수정
-                                        </button>
+                                            <button type="button"
+                                                    class="btn btn-warning btn-sm btn-edit"
+                                                    data-id="{{id}}"
+                                                    data-name="{{name}}"
+                                                    data-address="{{address}}"
+                                                    data-capacity="{{totalCapacity}}">
+                                                수정
+                                            </button>
 
                                             <button type="button"
                                                     class="btn btn-danger btn-sm btn-delete"
                                                     data-id="{{id}}">
                                                 삭제
                                             </button>
-                                        </td>
                                         </td>
                                     </tr>
                                 {{/venues}}
