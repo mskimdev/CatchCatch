@@ -1,3 +1,4 @@
+//venue-list.mustache
 {{> admin/layout/header}}
 
 <body id="page-top">
@@ -63,10 +64,20 @@
                                         </td>
                                         <td class="align-middle">{{formattedCreatedAt}}</td>
                                         <td class="align-middle text-center">
-                                            <form action="/admin/venues/{{id}}/delete" method="post" onsubmit="return confirm('이 공연장을 삭제하시겠습니까?');">
-                                                {{#_csrf}}<input type="hidden" name="{{parameterName}}" value="{{token}}">{{/_csrf}}
-                                                <button class="btn btn-danger btn-sm" type="submit">삭제</button>
-                                            </form>
+                                            <button type="button"
+                                                    class="btn btn-warning btn-sm btn-edit"
+                                                    data-id="{{id}}"
+                                                    data-name="{{name}}"
+                                                    data-address="{{address}}"
+                                                    data-capacity="{{totalCapacity}}">
+                                                수정
+                                            </button>
+
+                                            <button type="button"
+                                                    class="btn btn-danger btn-sm btn-delete"
+                                                    data-id="{{id}}">
+                                                삭제
+                                            </button>
                                         </td>
                                     </tr>
                                 {{/venues}}
@@ -75,7 +86,9 @@
                                         <td colspan="6" class="text-center py-5">
                                             <div class="text-gray-500">
                                                 <i class="fas fa-search fa-2x mb-3"></i>
-                                                <h3>{{#isSearch}}검색 결과가 없습니다.{{/isSearch}}{{^isSearch}}등록된 공연장이 없습니다.{{/isSearch}}</h3>
+                                                <h3>{{#isSearch}}
+                                                    검색 결과가 없습니다.{{/isSearch}}{{^isSearch}}
+                                                    등록된 공연장이 없습니다.{{/isSearch}}</h3>
                                             </div>
                                         </td>
                                     </tr>
@@ -85,10 +98,11 @@
                         </div>
                     </div>
                 </section>
+            </main>
         </div>
-        </main>
     </div>
     {{> admin/layout/footer}}
+    <script src="/admin/js/venue.js"></script>
 </div>
 </div>
 </body>
