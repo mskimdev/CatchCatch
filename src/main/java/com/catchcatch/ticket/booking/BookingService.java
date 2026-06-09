@@ -53,7 +53,7 @@ public class BookingService {
         Booking booking = Booking.builder()
                 .user(user)
                 .bookingNumber(createBookingNumber())
-                .status("PENDING")
+                .status(Status.PENDING)
                 .expiresAt(createExpiresAt())
                 .build();
 
@@ -136,7 +136,7 @@ public class BookingService {
             throw new BadRequestException("결제 가능한 상태가 아닙니다.");
         }
 
-        booking.setStatus("PAID");
+        booking.setStatus(Status.PAID);
 
         return new BookingResponse.DetailDTO(booking);
     }
@@ -146,11 +146,11 @@ public class BookingService {
     public void cancel(Integer id) {
         Booking booking = findBooking(id);
 
-        if ("CANCELED".equals(booking.getStatus())) {
+        if ("CANCELLED".equals(booking.getStatus())) {
             throw new BadRequestException("이미 취소된 예매입니다.");
         }
 
-        booking.setStatus("CANCELED");
+        booking.setStatus(Status.CANCELLED);
         booking.setCanceledAt(now());
     }
 
@@ -160,7 +160,7 @@ public class BookingService {
         List<Booking> expiredBookings =
                 bookingRepository.findByStatusAndExpiresAtBefore("PENDING", now());
 
-        expiredBookings.forEach(booking -> booking.setStatus("EXPIRED"));
+        expiredBookings.forEach(booking -> booking.setStatus(Status.EXPIRED));
     }
 
     // 좌석 선택 화면 정보 조회
@@ -172,7 +172,7 @@ public class BookingService {
 
         List<Seat> seats = seatRepository.findByConcertSession_IdOrderBySeatNumberAsc(sessionId);
 
-        Set<Integer> bookedSeatIds = bookingRepository.findByConcertSession_IdAndStatusIn(
+        Set<Integer> bookedSeatIds = bookingRepository.findByConcertSessionIdAndStatusIn(
                         sessionId,
                         List.of("PENDING", "CONFIRMED")
                 )
@@ -217,7 +217,7 @@ public class BookingService {
                 .concertSession(concertSession)
                 .seat(seat)
                 .bookingNumber(createBookingNumber())
-                .status("CONFIRMED")
+                .status(Status.CONFIRMED)
                 .expiresAt(null)
                 .build();
     }
@@ -280,7 +280,7 @@ public class BookingService {
 
     private void validateAlreadyBookedSeats(Integer concertSessionId, List<Integer> seatIdList) {
         List<Integer> alreadyBookedSeatIds = seatIdList.stream()
-                .filter(seatId -> bookingRepository.existsByConcertSession_IdAndSeat_IdAndStatusIn(
+                .filter(seatId -> bookingRepository.existsByConcertSessionIdAndSeatIdAndStatusIn(
                         concertSessionId,
                         seatId,
                         List.of("PENDING", "CONFIRMED")

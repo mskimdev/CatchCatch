@@ -16,12 +16,12 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     List<Booking> findByStatusAndExpiresAtBefore(String status, Timestamp now);
 
-    List<Booking> findByConcertSession_IdAndStatusIn(
+    List<Booking> findByConcertSessionIdAndStatusIn(
             Integer concertSessionId,
             List<String> statuses
     );
 
-    boolean existsByConcertSession_IdAndSeat_IdAndStatusIn(
+    boolean existsByConcertSessionIdAndSeatIdAndStatusIn(
             Integer concertSessionId,
             Integer seatId,
             List<String> statuses

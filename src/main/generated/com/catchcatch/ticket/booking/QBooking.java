@@ -36,7 +36,7 @@ public class QBooking extends EntityPathBase<Booking> {
 
     public final com.catchcatch.ticket.seat.QSeat seat;
 
-    public final StringPath status = createString("status");
+    public final EnumPath<Status> status = createEnum("status", Status.class);
 
     public final com.catchcatch.ticket.user.QUser user;
 

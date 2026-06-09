@@ -2,6 +2,7 @@ package com.catchcatch.ticket.payment;
 
 import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.booking.BookingRepository;
+import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.core.errors.BadRequestException;
 import com.catchcatch.ticket.core.errors.NotFoundException;
 import com.catchcatch.ticket.seat.Seat;
@@ -208,7 +209,7 @@ public class PaymentService {
 
         seat.sell();
         // TODO - booking 에 도메인 메서드(completePayment) 추가예정
-        booking.setStatus("PAID");
+        booking.setStatus(Status.PAID);
         payment.setPgTxId(portOnePayment.getPgTxId());
 
         return new PaymentResponse.CompleteDTO(payment);

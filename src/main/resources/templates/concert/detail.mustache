@@ -90,7 +90,6 @@
                     <form class="bookingStartForm"
                           action="/booking/start"
                           method="post"
-                          target="bookingPopup">
 
                         <input type="hidden" name="concertId" value="{{id}}">
 
@@ -283,7 +282,6 @@
                     <form class="bookingStartForm"
                           action="/booking/start"
                           method="post"
-                          target="bookingPopup">
 
                         <input type="hidden" name="concertId" value="1">
 
@@ -386,7 +384,7 @@
         initCalendarPicker();
         initSessionPicker();
         initBookingSectionToggle();
-        initBookingPopupSubmit();
+        initBookingStartSubmit();
     });
 
     function initBookingSectionToggle() {
@@ -683,34 +681,28 @@
         return "";
     }
 
-    function initBookingPopupSubmit() {
-        const bookingForms = document.querySelectorAll(".bookingStartForm");
+    function initBookingStartSubmit() {
+    const bookingForms = document.querySelectorAll(".bookingStartForm");
 
-        bookingForms.forEach(function (form) {
-            form.addEventListener("submit", function (event) {
-                const dateSelect = form.querySelector(".bookingDateSelect");
-                const sessionSelect = form.querySelector(".bookingSessionSelect");
+    bookingForms.forEach(function (form) {
+        form.addEventListener("submit", function (event) {
+            const dateSelect = form.querySelector(".bookingDateSelect");
+            const sessionSelect = form.querySelector(".bookingSessionSelect");
 
-                if (!dateSelect || !dateSelect.value) {
-                    event.preventDefault();
-                    alert("관람일을 선택해주세요.");
-                    return;
-                }
+            if (!dateSelect || !dateSelect.value) {
+                event.preventDefault();
+                alert("관람일을 선택해주세요.");
+                return;
+            }
 
-                if (!sessionSelect || !sessionSelect.value) {
-                    event.preventDefault();
-                    alert("회차를 선택해주세요.");
-                    return;
-                }
-
-                window.open(
-                    "",
-                    "bookingPopup",
-                    "width=1240,height=860,left=120,top=40,resizable=yes,scrollbars=yes"
-                );
-            });
+            if (!sessionSelect || !sessionSelect.value) {
+                event.preventDefault();
+                alert("회차를 선택해주세요.");
+                return;
+            }
         });
-    }
+    });
+}
 </script>
 
 {{> layout/footer}}

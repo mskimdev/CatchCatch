@@ -332,7 +332,7 @@ VALUES
 -- ssar 아이유 S-02 취소
 (9, 6, 1, 17,
  'BK-20260604-0009',
- 'CANCELED',
+ 'CANCELLED',
  DATEADD('HOUR', -5, NOW()),
  NULL,
  DATEADD('HOUR', -4, NOW()));

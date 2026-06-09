@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.booking.dto;
 
 import com.catchcatch.ticket.booking.Booking;
+import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.user.User;
@@ -28,7 +29,7 @@ public class BookingResponse {
         private Integer concertSessionId;
         private Integer seatId;
         private String bookingNumber;
-        private String status;
+        private Status status;
         private Timestamp expiresAt;
         private Timestamp createdAt;
         private Timestamp canceledAt;
@@ -52,7 +53,7 @@ public class BookingResponse {
         private String bookingNumber;
         private Integer concertSessionId;
         private Integer seatId;
-        private String status;
+        private Status status;
         private Timestamp createdAt;
 
         public ListDTO(Booking booking) {
@@ -69,13 +70,11 @@ public class BookingResponse {
     public static class MyPageListDTO {
         private Integer id;
         private String bookingNumber;
-        private String status;
+        private Status status;
         private Timestamp createdAt;
         private Timestamp canceledAt;
-
         private Integer concertSessionId;
         private Integer seatId;
-
         private String concertTitle;
         private String concertPosterUrl;
         private String venueName;
@@ -107,19 +106,15 @@ public class BookingResponse {
     public static class PaymentDTO {
         private Integer bookingId;
         private String merchantUid;
-
         private String seatIds;
         private Integer seatCount;
-
         private String concertTitle;
         private String seatName;
         private Integer price;
-
         private Integer totalPrice;
         private String totalPriceText;
         private String ticketPriceText;
         private String feeText;
-
         private Integer userId;
         private String username;
 
@@ -157,14 +152,12 @@ public class BookingResponse {
         private String bookingNumber;
         private Integer concertSessionId;
         private Integer seatId;
-        private String status;
+        private Status status;
         private Timestamp createdAt;
-
         private String concertTitle;
         private String seatName;
         private Integer price;
         private String totalPriceText;
-
         private Integer userId;
         private String username;
 
@@ -175,12 +168,10 @@ public class BookingResponse {
             this.seatId = booking.getSeat().getId();
             this.status = booking.getStatus();
             this.createdAt = booking.getCreatedAt();
-
             this.concertTitle = concertTitle;
             this.seatName = seat.getSeatNumber();
             this.price = seat.getPrice();
             this.totalPriceText = formatPrice(seat.getPrice());
-
             this.userId = sessionUser.getId();
             this.username = sessionUser.getUsername();
         }
