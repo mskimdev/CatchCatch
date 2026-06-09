@@ -67,7 +67,7 @@ VALUES
      '010-1234-5678',
      NULL,
      'LOCAL',
-     'USER',
+     'ADMIN',
      NOW(),
      false);
 
