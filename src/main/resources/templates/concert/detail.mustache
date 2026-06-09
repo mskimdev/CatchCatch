@@ -89,8 +89,7 @@
 
                     <form class="bookingStartForm"
                           action="/booking/start"
-                          method="post"
-                          target="bookingPopup">
+                          method="post">
 
                         <input type="hidden" name="concertId" value="{{id}}">
 
@@ -187,8 +186,361 @@
                 </div>
             </aside>
         {{/concert}}
+
+        {{^concert}}
+            <div class="cc-detail-content">
+                <section class="cc-detail-hero">
+                    <article class="cc-detail-info">
+                        <div class="cc-detail-category">공연 정보</div>
+
+                        <div class="cc-detail-title-row">
+                            <h1 class="cc-detail-title">공연 정보를 찾을 수 없습니다.</h1>
+                        </div>
+
+                        <div class="cc-info-list">
+                            <div class="cc-info-row">
+                                <span class="cc-info-row__label">안내</span>
+                                <span>요청한 공연이 존재하지 않거나 삭제된 공연입니다.</span>
+                            </div>
+                        </div>
+                    </article>
+                </section>
+            </div>
+        {{/concert}}
     </div>
 </main>
 
-<script src="/js/concert/detail.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        initCalendarPicker();
+        initSessionPicker();
+        initBookingSectionToggle();
+        initBookingStartSubmit();
+    });
+
+    function initBookingSectionToggle() {
+        document.querySelectorAll("[data-section-toggle]").forEach(function (toggleButton) {
+            toggleButton.addEventListener("click", function () {
+                const section = toggleButton.closest("[data-booking-section]");
+                if (!section) return;
+
+                section.classList.toggle("is-collapsed");
+            });
+        });
+    }
+
+    function initCalendarPicker() {
+        const calendarPickers = document.querySelectorAll(".cc-calendar-picker");
+
+        calendarPickers.forEach(function (picker) {
+            const selectId = picker.dataset.calendarFor;
+            const dateSelect = document.getElementById(selectId);
+            const title = picker.querySelector(".cc-calendar-title");
+            const grid = picker.querySelector(".cc-calendar-grid");
+            const form = picker.closest("form");
+            const dateSummary = form ? form.querySelector("[data-selected-date-summary]") : null;
+
+            if (!dateSelect || !title || !grid) return;
+
+            const availableDates = Array.from(dateSelect.options)
+                .filter(function (option) {
+                    return option.value;
+                })
+                .map(function (option) {
+                    return {
+                        value: option.value,
+                        label: option.textContent.trim()
+                    };
+                });
+
+            if (availableDates.length === 0) return;
+
+            const availableMap = {};
+            availableDates.forEach(function (date) {
+                availableMap[date.value] = date.label;
+            });
+
+            const minDate = new Date(availableDates[0].value + "T00:00:00");
+            const maxDate = new Date(availableDates[availableDates.length - 1].value + "T00:00:00");
+
+            if (!dateSelect.value) {
+                dateSelect.value = availableDates[0].value;
+            }
+
+            let viewDate = new Date(dateSelect.value + "T00:00:00");
+
+            function isSameMonth(dateA, dateB) {
+                return dateA.getFullYear() === dateB.getFullYear()
+                    && dateA.getMonth() === dateB.getMonth();
+            }
+
+            function updateDateSummary() {
+                if (!dateSummary) return;
+
+                const selectedLabel = availableMap[dateSelect.value] || "";
+                dateSummary.textContent = selectedLabel;
+            }
+
+            function updateArrowState() {
+                const prevButton = picker.querySelector("[data-calendar-prev]");
+                const nextButton = picker.querySelector("[data-calendar-next]");
+
+                if (prevButton) {
+                    prevButton.disabled = isSameMonth(viewDate, minDate);
+                }
+
+                if (nextButton) {
+                    nextButton.disabled = isSameMonth(viewDate, maxDate);
+                }
+            }
+
+            function renderCalendar() {
+                const year = viewDate.getFullYear();
+                const month = viewDate.getMonth();
+
+                title.textContent = year + ". " + String(month + 1).padStart(2, "0");
+
+                const firstDay = new Date(year, month, 1).getDay();
+                const lastDate = new Date(year, month + 1, 0).getDate();
+
+                grid.innerHTML = "";
+
+                for (let i = 0; i < firstDay; i++) {
+                    const empty = document.createElement("button");
+                    empty.type = "button";
+                    empty.className = "cc-calendar-day is-empty";
+                    empty.tabIndex = -1;
+                    grid.appendChild(empty);
+                }
+
+                for (let day = 1; day <= lastDate; day++) {
+                    const value = year + "-"
+                        + String(month + 1).padStart(2, "0") + "-"
+                        + String(day).padStart(2, "0");
+
+                    const button = document.createElement("button");
+
+                    button.type = "button";
+                    button.className = "cc-calendar-day";
+                    button.textContent = day;
+
+                    if (new Date(year, month, day).getDay() === 0) {
+                        button.classList.add("is-sunday");
+                    }
+
+                    if (availableMap[value]) {
+                        button.classList.add("is-available");
+
+                        button.addEventListener("click", function () {
+                            dateSelect.value = value;
+                            viewDate = new Date(value + "T00:00:00");
+
+                            renderCalendar();
+                            updateDateSummary();
+                            filterSessionsByDate(form, value);
+
+                            dateSelect.dispatchEvent(new Event("change", { bubbles: true }));
+                        });
+                    }
+
+                    if (dateSelect.value === value) {
+                        button.classList.add("is-selected");
+                    }
+
+                    grid.appendChild(button);
+                }
+
+                updateArrowState();
+                updateDateSummary();
+            }
+
+            const prevButton = picker.querySelector("[data-calendar-prev]");
+            const nextButton = picker.querySelector("[data-calendar-next]");
+
+            if (prevButton) {
+                prevButton.addEventListener("click", function () {
+                    if (prevButton.disabled) return;
+
+                    viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
+                    renderCalendar();
+                });
+            }
+
+            if (nextButton) {
+                nextButton.addEventListener("click", function () {
+                    if (nextButton.disabled) return;
+
+                    viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
+                    renderCalendar();
+                });
+            }
+
+            renderCalendar();
+            filterSessionsByDate(form, dateSelect.value);
+        });
+    }
+
+    function initSessionPicker() {
+        const sessionLists = document.querySelectorAll(".cc-session-card-list");
+
+        sessionLists.forEach(function (list) {
+            const selectId = list.dataset.sessionPickerFor;
+            const sessionSelect = document.getElementById(selectId);
+            const form = list.closest("form");
+            const sessionSummary = form ? form.querySelector("[data-selected-session-summary]") : null;
+
+            if (!sessionSelect) return;
+
+            const buttons = list.querySelectorAll(".cc-session-card");
+
+            buttons.forEach(function (button) {
+                const option = Array.from(sessionSelect.options).find(function (item) {
+                    return item.value === button.dataset.sessionValue;
+                });
+
+                if (option && !button.dataset.sessionDate) {
+                    const foundDate = extractDateFromText(option.textContent);
+                    if (foundDate) {
+                        button.dataset.sessionDate = foundDate;
+                    }
+                }
+
+                button.addEventListener("click", function () {
+                    const selectedValue = button.dataset.sessionValue;
+
+                    sessionSelect.value = selectedValue;
+
+                    buttons.forEach(function (item) {
+                        item.classList.remove("is-selected");
+                    });
+
+                    button.classList.add("is-selected");
+                    updateSessionSummary(sessionSelect, sessionSummary);
+
+                    sessionSelect.dispatchEvent(new Event("change", { bubbles: true }));
+                });
+            });
+
+            const firstVisibleButton = Array.from(buttons).find(function (button) {
+                return !button.hidden;
+            }) || buttons[0];
+
+            if (!sessionSelect.value && firstVisibleButton) {
+                firstVisibleButton.click();
+            } else {
+                updateSessionSummary(sessionSelect, sessionSummary);
+            }
+        });
+    }
+
+    function updateSessionSummary(sessionSelect, sessionSummary) {
+        if (!sessionSelect || !sessionSummary) return;
+
+        const selectedOption = Array.from(sessionSelect.options).find(function (option) {
+            return option.value === sessionSelect.value;
+        });
+
+        sessionSummary.textContent = selectedOption ? selectedOption.textContent.trim() : "";
+    }
+
+    function filterSessionsByDate(form, selectedDate) {
+        if (!form || !selectedDate) return;
+
+        const sessionSelect = form.querySelector(".bookingSessionSelect");
+        const sessionList = form.querySelector(".cc-session-card-list");
+        const sessionSummary = form.querySelector("[data-selected-session-summary]");
+
+        if (!sessionSelect || !sessionList) return;
+
+        const buttons = Array.from(sessionList.querySelectorAll(".cc-session-card"));
+        let firstVisibleButton = null;
+
+        buttons.forEach(function (button) {
+            if (!button.dataset.sessionDate) {
+                const option = Array.from(sessionSelect.options).find(function (item) {
+                    return item.value === button.dataset.sessionValue;
+                });
+
+                if (option) {
+                    const foundDate = extractDateFromText(option.textContent);
+                    if (foundDate) {
+                        button.dataset.sessionDate = foundDate;
+                    }
+                }
+            }
+
+            const shouldShow = !button.dataset.sessionDate || button.dataset.sessionDate === selectedDate;
+
+            button.hidden = !shouldShow;
+
+            if (shouldShow && !firstVisibleButton) {
+                firstVisibleButton = button;
+            }
+        });
+
+        const currentButton = buttons.find(function (button) {
+            return button.dataset.sessionValue === sessionSelect.value && !button.hidden;
+        });
+
+        if (currentButton) {
+            buttons.forEach(function (button) {
+                button.classList.remove("is-selected");
+            });
+
+            currentButton.classList.add("is-selected");
+            updateSessionSummary(sessionSelect, sessionSummary);
+            return;
+        }
+
+        if (firstVisibleButton) {
+            firstVisibleButton.click();
+        } else {
+            sessionSelect.value = "";
+
+            if (sessionSummary) {
+                sessionSummary.textContent = "";
+            }
+        }
+    }
+
+    function extractDateFromText(text) {
+        if (!text) return "";
+
+        const dotMatch = text.match(/(\d{4})\.(\d{2})\.(\d{2})/);
+        if (dotMatch) {
+            return dotMatch[1] + "-" + dotMatch[2] + "-" + dotMatch[3];
+        }
+
+        const dashMatch = text.match(/(\d{4})-(\d{2})-(\d{2})/);
+        if (dashMatch) {
+            return dashMatch[1] + "-" + dashMatch[2] + "-" + dashMatch[3];
+        }
+
+        return "";
+    }
+
+    function initBookingStartSubmit() {
+        const bookingForms = document.querySelectorAll(".bookingStartForm");
+
+        bookingForms.forEach(function (form) {
+            form.addEventListener("submit", function (event) {
+                const dateSelect = form.querySelector(".bookingDateSelect");
+                const sessionSelect = form.querySelector(".bookingSessionSelect");
+
+                if (!dateSelect || !dateSelect.value) {
+                    event.preventDefault();
+                    alert("관람일을 선택해주세요.");
+                    return;
+                }
+
+                if (!sessionSelect || !sessionSelect.value) {
+                    event.preventDefault();
+                    alert("회차를 선택해주세요.");
+                }
+            });
+        });
+    }
+</script>
+
 {{> layout/footer}}
+

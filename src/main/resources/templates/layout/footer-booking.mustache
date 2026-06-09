@@ -1,44 +1,11 @@
 <footer class="cc-booking-footer">
-    <div class="cc-booking-footer__links">
-        <a href="/support" target="_blank">문의사항</a>
-        <a href="/terms" target="_blank">이용약관</a>
-        <a href="/privacy" target="_blank">개인정보처리방침</a>
-        <a href="/refund" target="_blank">취소 및 환불</a>
-    </div>
-    <div>
+    <div class="cc-booking-footer__inner">
         <span>CatchCatch 예매 서비스</span>
-        <span> · 고객센터 1588-2026</span>
-        <span> · 평일 10:00 - 18:00</span>
+        <span>고객센터 1588-2026</span>
+        <span>평일 10:00 - 18:00</span>
     </div>
-    <div>© CatchCatch. All rights reserved.</div>
 </footer>
 
-</div>
-</main>
-
-<script>
-    function closeBookingWindow() {
-        if (window.opener && !window.opener.closed) {
-            window.close();
-            return;
-        }
-
-        const goConcerts = confirm("이 창은 브라우저에서 직접 열린 페이지라 자동으로 닫을 수 없습니다.\n콘서트 목록으로 이동할까요?");
-
-        if (goConcerts) {
-            location.href = "/concerts";
-        }
-    }
-
-    function openMyBookingAndClose() {
-        if (window.opener && !window.opener.closed) {
-            window.opener.location.href = "/mypage/bookings";
-            window.close();
-            return;
-        }
-
-        location.href = "/mypage/bookings";
-    }
-</script>
+<script src="/js/catchcatch-ui.js"></script>
 </body>
 </html>

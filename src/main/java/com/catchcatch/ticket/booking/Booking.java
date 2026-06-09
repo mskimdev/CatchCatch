@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.booking;
 
+import com.catchcatch.ticket.booking.bookingDetail.BookingDetail;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.user.User;
@@ -29,6 +30,11 @@ public class Booking {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    // 예매 묶음 ID (booking_detail_tb.id 참조)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_detail_id", nullable = false)
+    private BookingDetail bookingDetail;
+
     @ManyToOne
     @JoinColumn(name = "concert_session_id", nullable = false)
     private ConcertSession concertSession;
@@ -42,10 +48,11 @@ public class Booking {
     @Column(name = "booking_number", nullable = false, unique = true)
     private String bookingNumber;
 
-    // 예매 상태 - PENDING, PAID, CANCELED, EXPIRED
+    // 예매 상태
     @Builder.Default
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private String status = "PENDING";
+    private Status status = Status.PENDING;
 
     // 결제 전 좌석 임시 선점 만료 시간
     @Column(name = "expires_at")
@@ -59,6 +66,4 @@ public class Booking {
     // 예매 취소 시간
     @Column(name = "canceled_at")
     private Timestamp canceledAt;
-
-
 }

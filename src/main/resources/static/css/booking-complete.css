@@ -102,3 +102,129 @@
     align-items: stretch;
   }
 }
+
+.cc-info-row--seats {
+    align-items: start;
+}
+
+.cc-complete-seat-box {
+    min-width: 0;
+    width: 100%;
+}
+
+.cc-complete-seat-count {
+    margin-bottom: 6px;
+    color: var(--cc-primary-dark);
+    font-size: 13px;
+    font-weight: 950;
+}
+
+.cc-complete-seat-scroll {
+    max-height: 72px;
+    overflow-y: auto;
+    display: grid;
+    gap: 5px;
+    padding-right: 4px;
+}
+
+.cc-complete-seat-item {
+    min-height: 28px;
+    padding: 5px 8px;
+    border-radius: 8px;
+    background: #f8f5ff;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.cc-complete-seat-name {
+    font-weight: 850;
+    color: var(--cc-text);
+}
+
+.cc-complete-seat-grade {
+    color: var(--cc-primary-dark);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.cc-complete-seat-price {
+    color: var(--cc-subtext);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.cc-complete-seat-empty {
+    color: var(--cc-muted);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+/* 완료 화면 좌석 목록 스크롤 */
+.cc-info-row--seats {
+  align-items: start;
+}
+
+.cc-complete-seat-box {
+  width: 100%;
+  min-width: 0;
+}
+
+.cc-complete-seat-count {
+  margin-bottom: 6px;
+  color: var(--cc-primary-dark);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.cc-complete-seat-scroll {
+  max-height: 72px;
+  overflow-y: auto;
+  display: grid;
+  gap: 5px;
+  padding-right: 4px;
+}
+
+.cc-complete-seat-item {
+  min-height: 28px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: #f8f5ff;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.cc-complete-seat-name {
+  min-width: 0;
+  color: var(--cc-text);
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cc-complete-seat-grade {
+  color: var(--cc-primary-dark);
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.cc-complete-seat-price {
+  color: var(--cc-subtext);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.cc-complete-seat-empty {
+  color: var(--cc-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
