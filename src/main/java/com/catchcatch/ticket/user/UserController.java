@@ -33,8 +33,6 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final ProfileImageUtil profileImageStorage;
-
     private final BookingService bookingService;
 
     @Value("${oauth.kakao.client-id}")
@@ -122,11 +120,11 @@ public class UserController {
         String profileImageUrl = null;
         try {
             req.validate();
-            profileImageUrl = profileImageStorage.save(profileImage);
+            profileImageUrl = ProfileImageUtil.save(profileImage);
             userService.socialJoin(req, profileImageUrl, session);
             return "redirect:/login";
         } catch (Exception e) {
-            profileImageStorage.delete(profileImageUrl);
+            ProfileImageUtil.delete(profileImageUrl);
             model.addAttribute("errorMessage", e.getMessage());
             return "user/social-join";
         } finally {
@@ -154,11 +152,11 @@ public class UserController {
         String profileImageUrl = null;
         try {
             req.validate();
-            profileImageUrl = profileImageStorage.save(profileImage);
+            profileImageUrl = ProfileImageUtil.save(profileImage);
             userService.join(req, profileImageUrl);
             return "redirect:/login";
         } catch (Exception e) {
-            profileImageStorage.delete(profileImageUrl);
+            ProfileImageUtil.delete(profileImageUrl);
             model.addAttribute("errorMessage", e.getMessage());
             return "user/join";
         }
@@ -186,39 +184,6 @@ public class UserController {
         return "user/mypage";
     }
 
-    @Operation(summary = "마이페이지 프로필 수정", description = "사용자 이름, 전화번호, 프로필 이미지, 비밀번호를 수정합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "수정 성공"),
-            @ApiResponse(responseCode = "302", description = "미로그인 - 로그인 페이지로 리다이렉트")
-    })
-    @PostMapping("/users/mypage")
-    public String updateProfile(
-            UserRequest.ProfileUpdateDTO req,
-            @Parameter(description = "새 프로필 이미지 파일") MultipartFile profileImage,
-            HttpSession session, Model model) {
-        User user = getSessionUser(session);
-        if (user == null) return "redirect:/login";
-        String newProfileImageUrl = null;
-        try {
-            req.validate(user.getOauthProvider() == com.catchcatch.ticket.user.enums.OAuthProvider.LOCAL);
-            newProfileImageUrl = profileImageStorage.save(profileImage);
-            String previousProfileImageUrl = user.getProfileImage();
-            User updatedUser = userService.updateProfile(user.getId(), req, newProfileImageUrl);
-            if (newProfileImageUrl != null) {
-                profileImageStorage.delete(previousProfileImageUrl);
-            }
-            session.setAttribute(Define.SESSION_USER, updatedUser);
-            addProfileAttributes(model, updatedUser);
-            model.addAttribute("successMessage", "회원 정보가 저장되었습니다.");
-            return "user/mypage";
-        } catch (Exception e) {
-            profileImageStorage.delete(newProfileImageUrl);
-            addProfileAttributes(model, user);
-            model.addAttribute("errorMessage", e.getMessage());
-            return "user/mypage";
-        }
-
-    }
 
     @Operation(summary = "예매 내역 조회", description = "로그인한 사용자의 예매 내역 페이지를 반환합니다.")
     @ApiResponses({

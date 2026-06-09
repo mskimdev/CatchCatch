@@ -1,12 +1,13 @@
 package com.catchcatch.ticket.faq;
 
+import com.catchcatch.ticket.core.util.DateUtil;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @Entity
 @Getter
@@ -38,7 +39,7 @@ public class Faq {
     // 등록일
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Timestamp createdAt;
 
 
 
@@ -55,5 +56,10 @@ public class Faq {
         this.question = question;
         this.answer = answer;
         this.isVisible = isVisible;
+    }
+
+    public String getFormattedCreatedAt() {
+
+        return DateUtil.formatDateTime(createdAt);
     }
 }

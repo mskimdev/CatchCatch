@@ -1,12 +1,11 @@
+// venueController.java
 package com.catchcatch.ticket.venue;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -19,9 +18,6 @@ public class VenueController {
     // 관리자 공연장 등록 페이지
     @GetMapping("/admin/venues/save")
     public String venueSaveForm(Model model) {
-        model.addAttribute("pageTitle", "공연장 등록");
-        model.addAttribute("pageCss", "/css/venue-save.css");
-
         model.addAttribute("activeVenue", true);
 
         // 검색어 기본값
@@ -32,21 +28,38 @@ public class VenueController {
         model.addAttribute("searchLabel", "공연장");
         model.addAttribute("searchPlaceholder", "공연장명을 검색해보세요");
 
-        return "admin/venue-save";
+        return "admin/venue/venue-save";
+    }
+
+    //관리자 공연장 수정 페이지
+    @GetMapping("/admin/venues/{id}/edit")
+    public String venueEditForm(@PathVariable Integer id, Model model) {
+
+
+        return "admin/venue/venue-edit";
     }
 
     // 관리자 공연장 등록 처리
     @PostMapping("/admin/venues/save")
     public String venueSaveProc(VenueRequest.SaveDTO dto) {
         venueService.save(dto);
-        return "redirect:/admin/venues";
+        return "redirect:/admin/venue/venues";
     }
 
     // 관리자 공연장 삭제 처리
-    @PostMapping("/admin/venues/{id}/delete")
-    public String venueDelete(@PathVariable Integer id) {
+    @DeleteMapping("/admin/venues/{id}")
+    @ResponseBody
+    public ResponseEntity<?> delete(@PathVariable Integer id) {
         venueService.deleteById(id);
-        return "redirect:/admin/venues";
+        return ResponseEntity.ok().build();
+    }
+    // 관리자 공연장 수정 처리
+    @PutMapping("/admin/venues/{id}")
+    @ResponseBody
+    public ResponseEntity<?> update(@PathVariable Integer id,
+                                    @RequestBody VenueRequest.UpdateDTO request) {
+        venueService.update(id, request);
+        return ResponseEntity.ok().build();
     }
 
     // 관리자 공연장 목록 페이지 + 검색
@@ -76,6 +89,6 @@ public class VenueController {
         model.addAttribute("venues", venues);
         model.addAttribute("venueCount", venues.size());
 
-        return "admin/venue-list";
+        return "admin/venue/venue-list";
     }
 }

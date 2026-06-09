@@ -21,8 +21,8 @@ public interface ConcertRepository extends JpaRepository<Concert, Integer>, Conc
 
     // 2. [상세 페이지용] 공연 정보 + 공연장(Venue) + 회차(Sessions) 모두 한 번에 조회
     @Query("SELECT DISTINCT c FROM Concert c " +
-            "JOIN FETCH c.venue " +
-            "JOIN FETCH c.sessions " +
+            "LEFT JOIN FETCH c.venue " +
+            "LEFT JOIN FETCH c.sessions " +
             "WHERE c.id = :id")
     Optional<Concert> findByIdWithDetails(@Param("id") Integer id);
 

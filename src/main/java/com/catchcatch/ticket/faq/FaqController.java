@@ -15,15 +15,24 @@ public class FaqController {
     private final FaqService faqService;
 
     @GetMapping("/customercenter/faqs")
-    public String faqList(@RequestParam(required = false) String keyword,
+    public String faqList(@RequestParam(required = false) FaqCategory category,
+                          @RequestParam(required = false) String keyword,
                           Model model) {
 
-        List<Faq> faqs = faqService.findVisibleFaqs(keyword);
+        List<Faq> faqs = faqService.findVisibleFaqs(category, keyword);
 
         model.addAttribute("pageTitle", "고객센터");
         model.addAttribute("keyword", keyword == null ? "" : keyword);
         model.addAttribute("faqs", faqs);
-        model.addAttribute("categories", FaqCategory.values());
+
+        // 탭 active 처리용
+        model.addAttribute("isAll", category == null);
+        model.addAttribute("isMember", category == FaqCategory.MEMBER);
+        model.addAttribute("isBooking", category == FaqCategory.BOOKING);
+        model.addAttribute("isPayment", category == FaqCategory.PAYMENT);
+        model.addAttribute("isCancelRefund", category == FaqCategory.CANCEL_REFUND);
+        model.addAttribute("isEvent", category == FaqCategory.EVENT);
+        model.addAttribute("isService", category == FaqCategory.SERVICE);
 
         return "customercenter/faq";
     }

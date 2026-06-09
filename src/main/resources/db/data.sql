@@ -12,12 +12,12 @@ INSERT INTO user_tb
 (username, password, email, phone, profile_image, oauth_provider, role, created_at, is_deleted)
 VALUES
     ('admin',
-     '$2a$10$pJgHFhQeqpkfNKJBLISTlO8Aq3DXdEq7SlAAnNdFpSInGKaOhGKAq',
+     '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK',
      'admin@catchcatch.com',
      '010-0000-0000',
      NULL,
      'LOCAL',
-     'USER',
+     'ADMIN',
      NOW(),
      false),
 
@@ -156,26 +156,17 @@ VALUES
 --  4. concert_session_tb
 -- =====================================================
 INSERT INTO concert_session_tb
-(id, concert_id, session_date, session_time, created_at)
+(id, concert_id, session_date, session_time, created_at, is_deleted)
 VALUES
--- 아이유
-(1, 1, '2025-08-01', '18:00:00', NOW()),
-(2, 1, '2025-08-02', '18:00:00', NOW()),
-
--- BTS
-(3, 2, '2025-09-05', '19:00:00', NOW()),
-(4, 2, '2025-09-06', '19:00:00', NOW()),
-(5, 2, '2025-09-07', '17:00:00', NOW()),
-
--- 임영웅
-(6, 3, '2025-10-10', '18:00:00', NOW()),
-(7, 3, '2025-10-11', '18:00:00', NOW()),
-
--- 부산 재즈
-(8, 4, '2025-07-20', '17:00:00', NOW()),
-
--- 세븐틴
-(9, 5, '2025-06-01', '18:00:00', NOW());
+    (1, 1, '2025-08-01', '18:00:00', NOW(), false),
+    (2, 1, '2025-08-02', '18:00:00', NOW(), false),
+    (3, 2, '2025-09-05', '19:00:00', NOW(), false),
+    (4, 2, '2025-09-06', '19:00:00', NOW(), false),
+    (5, 2, '2025-09-07', '17:00:00', NOW(), false),
+    (6, 3, '2025-10-10', '18:00:00', NOW(), false),
+    (7, 3, '2025-10-11', '18:00:00', NOW(), false),
+    (8, 4, '2025-07-20', '17:00:00', NOW(), false),
+    (9, 5, '2025-06-01', '18:00:00', NOW(), false);
 
 
 -- =====================================================
@@ -259,14 +250,93 @@ VALUES
 
 
 -- =====================================================
---  7. booking_tb
+--  7. booking_detail_tb
+--  예매 묶음 / 결제 전 예매 단위
+-- =====================================================
+INSERT INTO booking_detail_tb
+(id, user_id, booking_detail_number, total_amount, status, created_at, expires_at, paid_at, canceled_at)
+VALUES
+-- user1 아이유 VIP-01 + VIP-02 묶음
+(1, 2,
+ 'BD-20250528-0001',
+ 330000,
+ 'CONFIRMED',
+ DATEADD('HOUR', -1, NOW()),
+ NULL,
+ NULL,
+ NULL),
+
+-- user2 아이유 VIP-03 결제 대기
+(2, 3,
+ 'BD-20250528-0002',
+ 165000,
+ 'PENDING',
+ NOW(),
+ DATEADD('MINUTE', 5, NOW()),
+ NULL,
+ NULL),
+
+-- user2 아이유 R-01 예매 완료
+(3, 3,
+ 'BD-20250528-0003',
+ 132000,
+ 'CONFIRMED',
+ DATEADD('HOUR', -2, NOW()),
+ NULL,
+ NULL,
+ NULL),
+
+-- user3 아이유 S-01 예매 취소
+(4, 4,
+ 'BD-20250528-0004',
+ 110000,
+ 'CANCELLED',
+ DATEADD('HOUR', -3, NOW()),
+ NULL,
+ NULL,
+ DATEADD('HOUR', -2, NOW())),
+
+-- user1 BTS VIP-01 예매 완료
+(5, 2,
+ 'BD-20250528-0005',
+ 198000,
+ 'CONFIRMED',
+ DATEADD('MINUTE', -30, NOW()),
+ NULL,
+ NULL,
+ NULL),
+
+-- ssar 아이유 VIP-04 + R-04 묶음
+(6, 6,
+ 'BD-20260604-0006',
+ 297000,
+ 'PAID',
+ DATEADD('HOUR', -3, NOW()),
+ NULL,
+ DATEADD('HOUR', -3, NOW()),
+ NULL),
+
+-- ssar 아이유 S-02 취소
+(7, 6,
+ 'BD-20260604-0007',
+ 110000,
+ 'CANCELLED',
+ DATEADD('HOUR', -5, NOW()),
+ NULL,
+ NULL,
+ DATEADD('HOUR', -4, NOW()));
+
+
+-- =====================================================
+--  8. booking_tb
 --  현재 Booking Entity 컬럼 기준
+--  booking_detail_id 추가
 -- =====================================================
 INSERT INTO booking_tb
-(id, user_id, concert_session_id, seat_id, booking_number, status, created_at, expires_at, canceled_at)
+(id, booking_detail_id, user_id, concert_session_id, seat_id, booking_number, status, created_at, expires_at, canceled_at)
 VALUES
 -- user1 아이유 VIP-01 예매 완료
-(1, 2, 1, 1,
+(1, 1, 2, 1, 1,
  'BK-20250528-0001',
  'CONFIRMED',
  DATEADD('HOUR', -1, NOW()),
@@ -274,7 +344,7 @@ VALUES
  NULL),
 
 -- user1 아이유 VIP-02 예매 완료
-(2, 2, 1, 2,
+(2, 1, 2, 1, 2,
  'BK-20250528-0002',
  'CONFIRMED',
  DATEADD('HOUR', -1, NOW()),
@@ -282,7 +352,7 @@ VALUES
  NULL),
 
 -- user2 아이유 VIP-03 결제 대기
-(3, 3, 1, 3,
+(3, 2, 3, 1, 3,
  'BK-20250528-0003',
  'PENDING',
  NOW(),
@@ -290,7 +360,7 @@ VALUES
  NULL),
 
 -- user2 아이유 R-01 예매 완료
-(4, 3, 1, 6,
+(4, 3, 3, 1, 6,
  'BK-20250528-0004',
  'CONFIRMED',
  DATEADD('HOUR', -2, NOW()),
@@ -298,7 +368,7 @@ VALUES
  NULL),
 
 -- user3 아이유 S-01 예매 취소
-(5, 4, 1, 16,
+(5, 4, 4, 1, 16,
  'BK-20250528-0005',
  'CANCELLED',
  DATEADD('HOUR', -3, NOW()),
@@ -306,7 +376,7 @@ VALUES
  DATEADD('HOUR', -2, NOW())),
 
 -- user1 BTS VIP-01 예매 완료
-(6, 2, 3, 36,
+(6, 5, 2, 3, 36,
  'BK-20250528-0006',
  'CONFIRMED',
  DATEADD('MINUTE', -30, NOW()),
@@ -314,7 +384,7 @@ VALUES
  NULL),
 
 -- ssar 아이유 VIP-04 예매 완료
-(7, 6, 1, 4,
+(7, 6, 6, 1, 4,
  'BK-20260604-0007',
  'PAID',
  DATEADD('HOUR', -3, NOW()),
@@ -322,7 +392,7 @@ VALUES
  NULL),
 
 -- ssar 아이유 R-04 예매 완료
-(8, 6, 1, 9,
+(8, 6, 6, 1, 9,
  'BK-20260604-0008',
  'PAID',
  DATEADD('HOUR', -3, NOW()),
@@ -330,9 +400,9 @@ VALUES
  NULL),
 
 -- ssar 아이유 S-02 취소
-(9, 6, 1, 17,
+(9, 7, 6, 1, 17,
  'BK-20260604-0009',
- 'CANCELED',
+ 'CANCELLED',
  DATEADD('HOUR', -5, NOW()),
  NULL,
  DATEADD('HOUR', -4, NOW()));
@@ -477,15 +547,3 @@ UPDATE seat_tb SET status = 'SOLD' WHERE id = 9;
 
 ALTER TABLE booking_tb ALTER COLUMN id RESTART WITH 10;
 ALTER TABLE payment_tb ALTER COLUMN id RESTART WITH 8;
-
-
--- =====================================================
---  concert_like_tb (ssar 관심 공연)
--- =====================================================
-INSERT INTO concert_like_tb
-(user_id, concert_id, created_at)
-VALUES
-    (6, 1,  DATEADD('DAY', -5, NOW())),
-    (6, 22, DATEADD('DAY', -4, NOW())),
-    (6, 24, DATEADD('DAY', -3, NOW())),
-    (6, 25, DATEADD('DAY', -1, NOW()));

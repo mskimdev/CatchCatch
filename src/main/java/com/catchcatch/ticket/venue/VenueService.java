@@ -38,6 +38,16 @@ public class VenueService {
     }
 
     @Transactional
+    public void update(Integer id, VenueRequest.UpdateDTO dto) {
+        dto.validate();
+
+        Venue venue = venueRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공연장입니다."));
+
+        venue.update(dto.getName(), dto.getAddress(), dto.getTotalCapacity());
+    }
+
+    @Transactional
     public void deleteById(Integer id) {
         venueRepository.deleteById(id);
     }

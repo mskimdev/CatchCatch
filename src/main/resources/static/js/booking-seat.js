@@ -1,12 +1,16 @@
-// booking-seat.js — DB 좌석 출력 버전
+// booking-seat.js — DB 좌석 + 예매 상태 반영 버전
 document.addEventListener("DOMContentLoaded", () => {
   const MAX_SELECT_COUNT = 4;
 
-  const dbSeats = Array.isArray(window.CATCHCATCH_SEATS)
+  const rawSeats = Array.isArray(window.CATCHCATCH_SEATS)
     ? window.CATCHCATCH_SEATS
     : [];
 
-  const gradeButtons = Array.from(document.querySelectorAll(".cc-zone-tab"));
+  const dbSeats = rawSeats.map(normalizeSeat);
+
+  const gradeTabsBox = document.querySelector(".cc-zone-tabs");
+  let gradeButtons = Array.from(document.querySelectorAll(".cc-zone-tab"));
+
   const zoneTitle = document.querySelector("#zoneTitle");
   const zoneSubText = document.querySelector("#zoneSubText");
   const zoneSeatGrid = document.querySelector("#zoneSeatGrid");
@@ -18,12 +22,88 @@ document.addEventListener("DOMContentLoaded", () => {
   const totalPriceEl = document.querySelector(".cc-total__price");
   const paymentForm = document.querySelector(".cc-payment-form");
   const timerEl = document.querySelector("[data-countdown]");
+
   const selectedSeatIdsInput = document.querySelector("#selectedSeatIds");
+  const selectedSeatInputs = document.querySelector("#selectedSeatInputs");
 
   let selectedSeats = [];
 
   const gradeOrder = ["VIP", "R", "S", "A", "B"];
   let currentGrade = getFirstGrade();
+
+  function normalizeSeat(seat) {
+    const id = seat.id ?? seat.seatId;
+    const grade = String(seat.grade ?? seat.gradeCode ?? "").toUpperCase();
+
+    const rowName =
+      seat.rowName ??
+      seat.row ??
+      seat.seatRow ??
+      grade ??
+      "좌석";
+
+    const seatNo =
+      seat.seatNo ??
+      seat.seatNumberOnly ??
+      seat.number ??
+      seat.no ??
+      "";
+
+    const seatNumber =
+      seat.seatNumber ??
+      seat.name ??
+      `${rowName}-${seatNo}`;
+
+    const price = Number(seat.price ?? seat.seatPrice ?? 0);
+
+    const status = String(seat.status ?? "").toUpperCase();
+    const bookingStatus = String(seat.bookingStatus ?? seat.booking_status ?? "").toUpperCase();
+
+    const available = isSeatAvailable(seat, status, bookingStatus);
+
+    return {
+      id,
+      grade,
+      gradeName: seat.gradeName ?? getGradeName(grade),
+      rowName,
+      seatNo,
+      seatNumber,
+      price,
+      status,
+      bookingStatus,
+      available
+    };
+  }
+
+  function isSeatAvailable(seat, status, bookingStatus) {
+    if (seat.available === false) return false;
+    if (seat.isAvailable === false) return false;
+
+    if (seat.sold === true) return false;
+    if (seat.reserved === true) return false;
+    if (seat.booked === true) return false;
+    if (seat.disabled === true) return false;
+
+    if (status === "CONFIRMED") return false;
+    if (status === "PENDING") return false;
+    if (status === "SOLD") return false;
+    if (status === "RESERVED") return false;
+    if (status === "UNAVAILABLE") return false;
+    if (status === "BOOKED") return false;
+
+    if (bookingStatus === "CONFIRMED") return false;
+    if (bookingStatus === "PENDING") return false;
+    if (bookingStatus === "SOLD") return false;
+    if (bookingStatus === "RESERVED") return false;
+    if (bookingStatus === "UNAVAILABLE") return false;
+    if (bookingStatus === "BOOKED") return false;
+
+    return true;
+  }
+
+  function isSoldSeat(seatData) {
+    return seatData.available === false;
+  }
 
   function getFirstGrade() {
     for (const grade of gradeOrder) {
@@ -35,13 +115,61 @@ document.addEventListener("DOMContentLoaded", () => {
     return dbSeats.length > 0 ? dbSeats[0].grade : null;
   }
 
+  function getUsedGrades() {
+    const set = new Set();
+
+    dbSeats.forEach((seat) => {
+      if (seat.grade) {
+        set.add(seat.grade);
+      }
+    });
+
+    return gradeOrder.filter((grade) => set.has(grade));
+  }
+
+  function rebuildGradeTabsIfNeeded() {
+    if (!gradeTabsBox) return;
+
+    const usedGrades = getUsedGrades();
+
+    if (usedGrades.length === 0) {
+      gradeTabsBox.innerHTML = `<button type="button" class="cc-zone-tab is-active" data-grade="">좌석 없음</button>`;
+      gradeButtons = Array.from(document.querySelectorAll(".cc-zone-tab"));
+      return;
+    }
+
+    const hasRealButton = gradeButtons.some((button) => button.dataset.grade);
+
+    if (hasRealButton) {
+      return;
+    }
+
+    gradeTabsBox.innerHTML = "";
+
+    usedGrades.forEach((grade, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `cc-zone-tab ${index === 0 ? "is-active" : ""}`;
+      button.dataset.grade = grade;
+      button.textContent = getGradeName(grade);
+      gradeTabsBox.appendChild(button);
+    });
+
+    gradeButtons = Array.from(document.querySelectorAll(".cc-zone-tab"));
+  }
+
   function formatPrice(price) {
     return Number(price || 0).toLocaleString("ko-KR") + "원";
   }
 
   function getGradeName(grade) {
-    if (!grade) return "";
-    return grade + "석";
+    if (!grade) return "좌석";
+
+    if (grade === "VIP") {
+      return "VIP석";
+    }
+
+    return `${grade}석`;
   }
 
   function getGradeClass(grade) {
@@ -57,7 +185,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return dbSeats
       .filter((seat) => seat.grade === grade)
       .sort((a, b) => {
-        const rowCompare = String(a.rowName || "").localeCompare(String(b.rowName || ""));
+        const rowCompare = String(a.rowName || "").localeCompare(String(b.rowName || ""), "ko-KR", {
+          numeric: true
+        });
 
         if (rowCompare !== 0) {
           return rowCompare;
@@ -82,7 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderGrade(grade) {
-    if (!grade || !zoneSeatGrid) return;
+    if (!zoneSeatGrid) return;
 
     currentGrade = grade;
 
@@ -94,7 +224,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (zoneSubText) {
-      zoneSubText.textContent = `DB에 등록된 ${getGradeName(grade)} 좌석을 표시합니다.`;
+      const totalCount = seats.length;
+      const availableCount = seats.filter((seat) => seat.available).length;
+      zoneSubText.textContent = `총 ${totalCount}석 / 예매 가능 ${availableCount}석`;
     }
 
     gradeButtons.forEach((button) => {
@@ -102,6 +234,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     zoneSeatGrid.innerHTML = "";
+
+    if (!grade || seats.length === 0) {
+      zoneSeatGrid.innerHTML = `
+        <div class="cc-empty-seat">
+          <div class="cc-selected-seat__name">등록된 좌석이 없습니다.</div>
+          <div class="cc-selected-seat__price">DB에 해당 등급 좌석이 없습니다.</div>
+        </div>
+      `;
+      return;
+    }
 
     Object.keys(groupedSeats).forEach((rowName) => {
       const row = document.createElement("div");
@@ -124,15 +266,18 @@ document.addEventListener("DOMContentLoaded", () => {
         seat.dataset.gradeName = seatData.gradeName || getGradeName(seatData.grade);
         seat.dataset.price = String(seatData.price || 0);
         seat.dataset.status = seatData.status || "";
+        seat.dataset.bookingStatus = seatData.bookingStatus || "";
 
         seat.setAttribute(
           "aria-label",
           `${seatData.seatNumber} ${seat.dataset.gradeName} ${formatPrice(seatData.price)}`
         );
 
-        if (!seatData.available) {
+        if (isSoldSeat(seatData)) {
           seat.classList.add("is-sold");
           seat.disabled = true;
+          seat.setAttribute("aria-disabled", "true");
+          seat.title = "이미 예매된 좌석입니다.";
         }
 
         if (getSelectedSeatById(seatData.id)) {
@@ -147,17 +292,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       zoneSeatGrid.appendChild(row);
     });
-
-    if (seats.length === 0) {
-      zoneSeatGrid.innerHTML = `
-        <div class="cc-selected-seat">
-          <div>
-            <div class="cc-selected-seat__name">등록된 좌석이 없습니다.</div>
-            <div class="cc-selected-seat__price">DB에 해당 등급 좌석이 없습니다.</div>
-          </div>
-        </div>
-      `;
-    }
   }
 
   function getSeatInfoFromButton(button) {
@@ -174,7 +308,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function toggleSeat(button) {
-    if (button.disabled || button.classList.contains("is-sold")) return;
+    if (button.disabled) return;
+    if (button.classList.contains("is-sold")) return;
+    if (button.getAttribute("aria-disabled") === "true") return;
 
     const seat = getSeatInfoFromButton(button);
     const alreadySelected = getSelectedSeatById(seat.id);
@@ -200,6 +336,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!hoverInfo) return;
 
     const seat = getSeatInfoFromButton(button);
+    const bookingStatus = button.dataset.bookingStatus;
+    const status = button.dataset.status;
+
+    if (button.classList.contains("is-sold")) {
+      hoverInfo.textContent = `${seat.seatNumber} / ${seat.gradeName} / 예매 불가 (${bookingStatus || status || "매진"})`;
+      return;
+    }
+
     hoverInfo.textContent = `${seat.seatNumber} / ${seat.gradeName} / ${formatPrice(seat.price)}`;
   }
 
@@ -225,7 +369,8 @@ document.addEventListener("DOMContentLoaded", () => {
         item.innerHTML = `
           <div>
             <div class="cc-selected-seat__name">
-              <i class="cc-dot cc-dot--${getGradeClass(seat.grade)}"></i>${seat.seatNumber}
+              <i class="cc-dot cc-dot--${getGradeClass(seat.grade)}"></i>
+              ${seat.seatNumber}
             </div>
             <div class="cc-selected-seat__price">${seat.gradeName} ${formatPrice(seat.price)}</div>
           </div>
@@ -247,13 +392,25 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderHiddenInputs() {
-    if (!paymentForm || !selectedSeatIdsInput) return;
+    const seatIds = selectedSeats.map((seat) => seat.id);
 
-    selectedSeatIdsInput.value = selectedSeats
-      .map((seat) => seat.id)
-      .join(",");
+    if (selectedSeatIdsInput) {
+      selectedSeatIdsInput.value = seatIds.join(",");
+    }
 
-    console.log("hidden seatIds =", selectedSeatIdsInput.value);
+    if (!selectedSeatInputs) return;
+
+    selectedSeatInputs.innerHTML = "";
+
+    seatIds.forEach((seatId) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = "seatIds";
+      input.value = seatId;
+      selectedSeatInputs.appendChild(input);
+    });
+
+    console.log("선택 좌석 seatIds =", seatIds);
   }
 
   function removeSelectedSeat(seatId) {
@@ -312,7 +469,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        if (!selectedSeatIdsInput || selectedSeatIdsInput.value.trim() === "") {
+        if (!selectedSeatInputs || selectedSeatInputs.querySelectorAll("input[name='seatIds']").length === 0) {
           event.preventDefault();
           alert("좌석 정보가 정상적으로 입력되지 않았습니다.");
           return;
@@ -350,12 +507,23 @@ document.addEventListener("DOMContentLoaded", () => {
     tick();
   }
 
+  rebuildGradeTabsIfNeeded();
   initEvents();
 
   if (currentGrade) {
     renderGrade(currentGrade);
+  } else if (zoneSeatGrid) {
+    zoneSeatGrid.innerHTML = `
+      <div class="cc-empty-seat">
+        <div class="cc-selected-seat__name">좌석 데이터가 없습니다.</div>
+        <div class="cc-selected-seat__price">서버에서 seat.seatsJson 값이 전달되지 않았습니다.</div>
+      </div>
+    `;
   }
 
   renderSelectedPanel();
   initCountdown();
+
+  console.log("window.CATCHCATCH_SEATS =", window.CATCHCATCH_SEATS);
+  console.log("normalized dbSeats =", dbSeats);
 });

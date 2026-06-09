@@ -66,23 +66,5 @@
     </div>
 </main>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const urlParams = new URLSearchParams(window.location.search);
-
-        const currentStatus = urlParams.get('status') || 'all';
-        const currentGenre = urlParams.get('genre') || 'all';
-        const currentRegion = urlParams.get('region') || 'all';
-
-        // 모든 is-active 초기화 (HTML에 하드코딩된 것 제거)
-        document.querySelectorAll('.cc-filter-item, .cc-chip').forEach(el => el.classList.remove('is-active'));
-
-        // 현재 URL 파라미터 값과 일치하는 a 태그를 찾아 is-active 클래스 추가
-        document.querySelectorAll(`.cc-filter-status[href*="status=${currentStatus}"]`).forEach(el => el.classList.add('is-active'));
-        document.querySelectorAll(`.cc-filter-genre[href*="genre=${currentGenre}"]`).forEach(el => el.classList.add('is-active'));
-        document.querySelectorAll(`.cc-filter-region[href*="region=${currentRegion}"]`).forEach(el => el.classList.add('is-active'));
-        document.querySelectorAll(`.cc-chip-status[href*="status=${currentStatus}"]`).forEach(el => el.classList.add('is-active'));
-    });
-</script>
-
+<script src="/js/concert/list.js"></script>
 {{> layout/footer}}

@@ -102,4 +102,28 @@ public class Concert {
         private String region;  // 지역 (all, seoul, incheon 등)
     }
 
+    @Builder(builderClassName = "ConcertUpdater", builderMethodName = "updater")
+    public void update(String title, String artist, String description, String posterUrl,
+                       String detailBannerUrl, String detailTitle, String detailDescription1,
+                       String detailDescription2, Venue venue, String genre, String ageLimit,
+                       String runtime, String organizer, String contact, ConcertStatus status,
+                       LocalDateTime ticketOpenDate) {
+        this.title = title;
+        this.artist = artist;
+        this.description = description;
+        this.posterUrl = posterUrl;
+        this.detailBannerUrl = detailBannerUrl;
+        this.detailTitle = detailTitle;
+        this.detailDescription1 = detailDescription1;
+        this.detailDescription2 = detailDescription2;
+        this.venue = venue; // 진짜 Venue 객체로 덮어씌움
+        this.genre = genre;
+        this.ageLimit = ageLimit;
+        this.runtime = runtime;
+        this.organizer = organizer;
+        this.contact = contact;
+        this.concertStatus = status; // 진짜 Enum 객체로 덮어씌움
+        this.ticketOpenDate = ticketOpenDate;
+    }
+
 } // end of class

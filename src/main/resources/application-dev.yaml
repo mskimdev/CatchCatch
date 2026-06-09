@@ -1,15 +1,11 @@
 server:
+  port: 8080
   servlet:
     session:
       tracking-modes: cookie
     encoding:
       charset: utf-8
       force: true
-  multipart:
-    enabled: true
-    max-file-size: 50MB
-    max-request-size: 100MB
-  port: 8080
 
 # log 설정
 logging:
@@ -72,3 +68,9 @@ spring:
         format_sql: true
         default_batch_fetch_size: 100
     defer-datasource-initialization: true
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 50MB
+      max-request-size: 100MB

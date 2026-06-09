@@ -102,20 +102,20 @@ public class UserService {
 
         // 로컬 가입 사용자만 비밀번호 검증
         if (user.getOauthProvider() == OAuthProvider.LOCAL) {
-            if (!passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
+            if (!passwordEncoder.matches(req.currentPassword(), user.getPassword())) {
                 throw new BadRequestException("현재 비밀번호가 올바르지 않습니다.");
             }
-            if (req.getNewPassword() != null && !req.getNewPassword().isBlank()) {
-                user.setPassword(passwordEncoder.encode(req.getNewPassword()));
+            if (req.newPassword() != null && !req.newPassword().isBlank()) {
+                user.setPassword(passwordEncoder.encode(req.newPassword()));
             }
         }
 
-        if (!user.getUsername().equals(req.getUsername()) && userRepository.existsByUsername(req.getUsername())) {
+        if (!user.getUsername().equals(req.username()) && userRepository.existsByUsername(req.username())) {
             throw new BadRequestException("이미 사용 중인 아이디입니다.");
         }
 
-        user.setUsername(req.getUsername());
-        user.setPhone(req.getPhone());
+        user.setUsername(req.username());
+        user.setPhone(req.phone());
         if (profileImageUrl != null) {
             user.setProfileImage(profileImageUrl);
         }

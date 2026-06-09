@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -45,16 +46,20 @@ public class PaymentController {
      * 예:
      * GET /payments
      */
-    @GetMapping("/payments")
+    @GetMapping("/users/payments")
     public String paymentList(Model model, HttpSession session) {
 
         User sessionUser = (User) session.getAttribute("sessionUser");
 
         if (sessionUser == null) {
-            return "redirect:/login-form";
+            return "redirect:/login";
         }
 
-        model.addAttribute("payments", paymentService.getPaymentList(sessionUser.getId()));
+        List<PaymentResponse.ListDTO> payments = paymentService.getPaymentList(sessionUser.getId());
+        model.addAttribute("payments", payments);
+        model.addAttribute("paymentCount", payments.size());
+        // 사이드바 결제 내역 활성화
+        model.addAttribute("navPayments", true);
 
         return "payment/payment-list";
     }
@@ -65,7 +70,7 @@ public class PaymentController {
      * 예:
      * GET /payments/1
      */
-    @GetMapping("/payments/{id}")
+    @GetMapping("/users/payments/{id}")
     public String paymentDetail(@PathVariable("id") Integer paymentId,
                                 Model model,
                                 HttpSession session) {
