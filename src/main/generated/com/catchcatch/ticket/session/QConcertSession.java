@@ -30,6 +30,8 @@ public class QConcertSession extends EntityPathBase<ConcertSession> {
 
     public final BooleanPath isDeleted = createBoolean("isDeleted");
 
+    public final StringPath round = createString("round");
+
     public final DatePath<java.time.LocalDate> sessionDate = createDate("sessionDate", java.time.LocalDate.class);
 
     public final TimePath<java.time.LocalTime> sessionTime = createTime("sessionTime", java.time.LocalTime.class);

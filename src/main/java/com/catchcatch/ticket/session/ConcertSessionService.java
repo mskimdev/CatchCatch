@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.session;
 
+import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.seat.SeatRepository;
 import com.catchcatch.ticket.seat.SeatStatus;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ public class ConcertSessionService {
 
     private final ConcertSessionRepository concertSessionRepository;
     private final SeatRepository seatRepository;
+    private final ConcertRepository concertRepository;
 
     /**
      * 콘서트 상세 화면 달력 활성화용 관람일 조회
@@ -93,4 +95,23 @@ public class ConcertSessionService {
         return session;
     }
 
+//    // 관리자 기능
+//
+//    // 다중 회차 등록
+//    @Transactional
+//    public void addSessions(Integer concertId, ConcertSessionRequest.MultiSessionCreateRequest request) {
+//        Concert concert = concertRepository.findById(concertId)
+//                .orElseThrow(() -> new IllegalArgumentException("공연 없음"));
+//
+//        // 2. 회차 등록 (여기서 쪼개기!)
+//        for (var sessionDto : request.getSessions()) {
+//            ConcertSession session = ConcertSession.builder()
+//                    .concert(concert)
+//                    .sessionDate(sessionDto.getSessionDate().toLocalDate()) // 날짜만
+//                    .sessionTime(sessionDto.getSessionDate().toLocalTime()) // 시간만
+//                    .round(sessionDto.getRound())
+//                    .build();
+//            concertSessionRepository.save(session);
+//        }
+//    }
 }

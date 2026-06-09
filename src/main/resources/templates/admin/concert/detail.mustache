@@ -1,0 +1,99 @@
+{{> admin/layout/header}}
+
+<body id="page-top">
+<div id="wrapper">
+    {{> admin/layout/sidebar}}
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            {{> admin/layout/topbar}}
+
+            <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">공연 상세 정보</h1>
+                    <div>
+                        <a href="/admin/concerts" class="btn btn-secondary btn-sm shadow-sm">목록으로</a>
+                        <a href="/admin/concerts/update/{{concert.id}}" class="btn btn-primary btn-sm shadow-sm">공연 정보 수정</a>
+                    </div>
+                </div>
+
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">공연 상세 정보</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                <img src="{{concert.posterUrl}}" class="img-fluid rounded border" alt="포스터">
+                            </div>
+                            <div class="col-md-9">
+                                <h4 class="font-weight-bold">{{concert.title}}</h4>
+                                <p class="text-muted">{{concert.artist}} | {{concert.genre}}</p>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>공연장:</strong> {{concert.venueName}}</p>
+                                        <p><strong>공연 상태:</strong> <span class="badge badge-success">{{concert.concertStatus}}</span></p>
+                                        <p><strong>관람 연령:</strong> {{concert.ageLimit}}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>공연 기간:</strong> {{concert.startDate}} ~ {{concert.endDate}}</p>
+                                        <p><strong>예매 오픈:</strong> {{concert.ticketOpenDate}}</p>
+                                        <p><strong>러닝타임:</strong> {{concert.runtime}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="mt-3">
+                            <h6 class="font-weight-bold text-gray-800">공연 설명</h6>
+                            <p>{{concert.description}}</p>
+                            <h6 class="font-weight-bold text-gray-800">상세 설명 1</h6>
+                            <p>{{concert.detailDescription1}}</p>
+                            <h6 class="font-weight-bold text-gray-800">상세 설명 2</h6>
+                            <p>{{concert.detailDescription2}}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-success">회차 관리</h6>
+                        <a href="/admin/concerts/{{concert.id}}/sessions/new" class="btn btn-outline-success btn-sm">+ 회차 추가</a>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>회차명</th>
+                                <th>날짜</th>
+                                <th>시간</th>
+                                <th>관리</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{#concert.sessionList}}
+                                <tr>
+                                    <td>{{round}}</td>
+                                    <td>{{sessionDate}}</td>
+                                    <td>{{sessionTime}}</td>
+                                    <td>
+                                        <button class="btn btn-warning btn-sm">수정</button>
+                                        <button class="btn btn-danger btn-sm">삭제</button>
+                                    </td>
+                                </tr>
+                            {{/concert.sessionList}}
+                            {{^concert.sessionList}}
+                                <tr>
+                                    <td colspan="4" class="text-center">등록된 회차가 없습니다.</td>
+                                </tr>
+                            {{/concert.sessionList}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{> admin/layout/footer}}
+    </div>
+</div>
+</body>

@@ -31,5 +31,4 @@ public class ConcertSessionController {
     ) {
         return concertSessionService.회차조회(concertId, date);
     }
-
 }

@@ -2,8 +2,7 @@ package com.catchcatch.ticket.session;
 
 import com.catchcatch.ticket.concert.core.Concert;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
@@ -13,7 +12,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Data
-@NoArgsConstructor
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "concert_session_tb")
 // concert삭제 관련 쿼리
@@ -40,5 +41,8 @@ public class ConcertSession {
 
     @Column(nullable = false)
     private boolean isDeleted = false;
+
+    @Column(length = 50)
+    private String round; // "1회차", "첫콘", "막콘" 등 유연하게 입력 가능하도록 String 사용
 
 }

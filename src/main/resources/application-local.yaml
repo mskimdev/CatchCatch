@@ -1,0 +1,76 @@
+server:
+  port: 8080
+  servlet:
+    session:
+      tracking-modes: cookie
+    encoding:
+      charset: utf-8
+      force: true
+
+# log 설정
+logging:
+  level:
+    root: INFO
+    com.tenco: DEBUG
+
+# mustache 설정
+spring:
+  mustache:
+    servlet:
+      expose-session-attributes: false
+      expose-request-attributes: true
+
+  # 이메일 발송 설정
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL_SENDER}
+    password: ${GOOGLE_APP_KEY}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+
+  #데이터베이스 연결 설정 (MySQL)
+  datasource:
+    #    driver-class-name: com.mysql.cj.jdbc.Driver
+    #    url: jdbc:mysql://localhost:3306/myblog?serverTimezone=Asia/Seoul
+    #    username:
+    #    password:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:test
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+
+  sql:
+    init:
+      mode: always  # 외부 DB(MySQL)에서도 실행되도록 설정
+      data-locations:
+        - classpath:db/data.sql
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+    defer-datasource-initialization: true
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 50MB
+      max-request-size: 100MB

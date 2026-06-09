@@ -9,6 +9,7 @@
             {{> admin/layout/topbar}}
 
             <div class="container-fluid">
+
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800">{{pageTitle}}</h1>
                     <a href="/admin/concerts/create" class="btn btn-sm btn-primary shadow-sm">
@@ -27,7 +28,7 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>공연명</th>
-                                    <th>관리</th>
+                                    <th>회차 정보</th> <th>관리</th>
                                 </tr>
                                 </thead>
 
@@ -35,7 +36,24 @@
                                 {{#concerts}}
                                     <tr>
                                         <td class="align-middle">{{id}}</td>
-                                        <td class="align-middle font-weight-bold">{{title}}</td>
+
+                                        <td class="align-middle font-weight-bold">
+                                            <a href="/admin/concerts/{{id}}">{{title}}</a>
+                                        </td>
+
+                                        <td class="align-middle">
+                                            <ul class="list-unstyled mb-0">
+                                                {{#sessionList}}
+                                                    <li class="badge badge-info mb-1 p-2">
+                                                        {{sessionDate}} {{sessionTime}} - {{round}}
+                                                    </li>
+                                                {{/sessionList}}
+                                                {{^sessionList}}
+                                                    <span class="text-muted small">등록된 회차 없음</span>
+                                                {{/sessionList}}
+                                            </ul>
+                                        </td>
+
                                         <td class="align-middle">
                                             <a href="/admin/concerts/{{id}}/delete"
                                                class="btn btn-danger btn-sm"
@@ -46,7 +64,7 @@
 
                                 {{^concerts}}
                                     <tr>
-                                        <td colspan="3" class="text-center py-4">등록된 공연이 없습니다.</td>
+                                        <td colspan="4" class="text-center py-4">등록된 공연이 없습니다.</td>
                                     </tr>
                                 {{/concerts}}
                                 </tbody>

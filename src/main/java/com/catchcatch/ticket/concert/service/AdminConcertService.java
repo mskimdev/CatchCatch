@@ -5,12 +5,16 @@ import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.core.errors.NotFoundException;
+import com.catchcatch.ticket.session.ConcertSession;
+import com.catchcatch.ticket.session.ConcertSessionRepository;
 import com.catchcatch.ticket.venue.Venue;
 import com.catchcatch.ticket.venue.VenueRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -19,12 +23,37 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.catchcatch.ticket.venue.QVenue.venue;
+
 @Service
 @RequiredArgsConstructor
 public class AdminConcertService {
 
     private final ConcertRepository concertRepository;
     private final VenueRepository venueRepository;
+    private final ConcertSessionRepository concertSessionRepository;
+
+    // 공연 목록
+    @Transactional(readOnly = true)
+    public List<AdminConcertRequest.ListResponseDTO> getAllConcerts() {
+        // 1. JOIN FETCH로 최적화된 데이터 조회
+        List<Concert> concerts = concertRepository.findAllWithSessionsAndVenue();
+
+        // 2. DTO로 변환
+        return concerts.stream()
+                .map(AdminConcertRequest.ListResponseDTO::from)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public AdminConcertRequest.DetailResponseDTO getDetail(Integer id) {
+        // 1. JOIN FETCH가 적용된 레포지토리 메서드 호출
+        Concert concert = concertRepository.findByIdWithDetails(id)
+                .orElseThrow(() -> new NotFoundException("해당 ID의 공연을 찾을 수 없습니다."));
+
+        // 2. DTO 변환 후 반환
+        return AdminConcertRequest.DetailResponseDTO.from(concert);
+    }
 
     // 공연 등록
     @Transactional
@@ -35,14 +64,14 @@ public class AdminConcertService {
         String dbFilePath = "";
 
         MultipartFile posterImage = dto.getPosterImage();
-        if (posterImage != null && !posterImage.isEmpty()){
+        if (posterImage != null && !posterImage.isEmpty()) {
             try {
                 // 파일 저장을 위한 절대 경로
                 String projectPath = System.getProperty("user.dir") + "/uploads/";
 
                 // 해당 폴더가 없으면 자동 생성
                 File uploadDir = new File(projectPath);
-                if (!uploadDir.exists()){
+                if (!uploadDir.exists()) {
                     uploadDir.mkdir();
                 }
 
@@ -51,51 +80,64 @@ public class AdminConcertService {
                 String fileName = uuid.toString() + "_" + posterImage.getOriginalFilename();
 
                 // 지정된 경로에 물리적인 파일 생성
-                File saveFile = new File(projectPath,fileName);
+                File saveFile = new File(projectPath, fileName);
                 posterImage.transferTo(saveFile);
 
-                dbFilePath = "/uploads" + fileName;
+                // 💡 꿀팁 수정: "/uploads" 뒤에 슬래시(/)가 빠지면 "/uploads파일명.png"로 저장되므로 슬래시 추가!
+                dbFilePath = "/uploads/" + fileName;
 
-            } catch (IOException e){
+            } catch (IOException e) {
                 e.printStackTrace();
                 throw new RuntimeException("이미지 파일 저장 중 오류 발생");
             }
         }
 
+        // 2. 부모 엔티티(Concert) 조립 및 최초 save
         Concert concert = Concert.builder()
                 .title(dto.getTitle())
                 .artist(dto.getArtist())
                 .genre(dto.getGenre())
-                .ticketOpenDate(dto.getTicketOpenDate())
-                .posterUrl(dbFilePath)
+                .category(dto.getCategory())
                 .venue(venue)
-                .concertStatus(ConcertStatus.valueOf(dto.getConcertStatus()))
-                .description(dto.getDescription())
+                .ticketOpenDate(dto.getTicketOpenDate())
                 .startDate(dto.getStartDate())
                 .endDate(dto.getEndDate())
+                .runtime(dto.getRuntime())
+                .ageLimit(dto.getAgeLimit())
                 .organizer(dto.getOrganizer())
+                .contact(dto.getContact())
                 .detailTitle(dto.getDetailTitle())
+                .description(dto.getDescription())
                 .detailDescription1(dto.getDetailDescription1())
                 .detailDescription2(dto.getDetailDescription2())
-                .category(dto.getCategory())
-                .ageLimit(dto.getAgeLimit())
-                .contact(dto.getContact())
-                .runtime(dto.getRuntime())
-                .detailBannerUrl(dbFilePath)
+                .posterUrl(dbFilePath)
+                .concertStatus(ConcertStatus.valueOf(dto.getConcertStatus()))
                 .build();
 
+        // 영속성 컨텍스트에 저장되면서 concert 객체 내부 파라미터에 id가 자동으로 꽂힙니다.
         Concert savedConcert = concertRepository.save(concert);
-        return concertRepository.save(concert).getId();
-    }
 
-    // 공연 삭제
-    @Transactional(readOnly = true)
-    public List<AdminConcertRequest.ListResponseDTO> getAllConcertsForAdmin() {
-        List<Concert> concerts = concertRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
+        // 3. 자식 엔티티(회차 리스트) 연쇄 저장
+        if (dto.getSessions() != null && !dto.getSessions().isEmpty()) {
+            for (AdminConcertRequest.SessionCreateRequest sessionDto : dto.getSessions()) {
 
-        return concerts.stream()
-                .map(AdminConcertRequest.ListResponseDTO::from) //
-                .collect(Collectors.toList());
+                // 사용자가 화면에서 회차 일시를 입력하지 않고 행만 추가한 경우 방어 코드
+                if (sessionDto.getSessionDate() == null) continue;
+
+                // LocalDateTime에서 날짜와 시간을 동적으로 추출하여 분리 저장
+                ConcertSession session = ConcertSession.builder()
+                        .concert(savedConcert) // 💡 영속화된 부모 객체를 주입 (FK 제약조건 충돌 방지)
+                        .sessionDate(sessionDto.getSessionDate().toLocalDate()) // 날짜 분리
+                        .sessionTime(sessionDto.getSessionDate().toLocalTime()) // 시간 분리
+                        .round(sessionDto.getRound()) // 엔티티에 필드가 있다면 세팅
+                        .build();
+
+                concertSessionRepository.save(session);
+            }
+        }
+
+        // 💡 해결: 맨 마지막에 생성된 콘서트의 ID를 반환합니다!
+        return savedConcert.getId();
     }
 
     /**
@@ -127,26 +169,32 @@ public class AdminConcertService {
         Venue newVenue = venueRepository.findById(dto.getVenueId())
                 .orElseThrow(() -> new NotFoundException("해당 ID의 공연장을 찾을 수 없습니다."));
 
-        // 3. 💡 엔티티 전용 빌더(updater)를 호출하여 데이터 수정 (Dirty Checking 발생)
-        concert.updater()
-                .title(dto.getTitle())
-                .artist(dto.getArtist())
-                .description(dto.getDescription())
-                .posterUrl(dto.getPosterUrl())
-                .detailBannerUrl(dto.getDetailBannerUrl())
-                .detailTitle(dto.getDetailTitle())
-                .detailDescription1(dto.getDetailDescription1())
-                .detailDescription2(dto.getDetailDescription2())
-                .venue(newVenue) // 새롭게 조회한 연관관계 엔티티
-                .genre(dto.getGenre())
-                .ageLimit(dto.getAgeLimit())
-                .runtime(dto.getRuntime())
-                .organizer(dto.getOrganizer())
-                .contact(dto.getContact())
-                .status(ConcertStatus.valueOf(dto.getConcertStatus())) // String -> Enum 변환
-                .ticketOpenDate(dto.getTicketOpenDate())
-                .build();
+        // 3. 이미지 처리 (새로 파일을 올렸다면 기존 파일 삭제 후 새 경로 저장, 아니면 기존 URL 유지)
+        String newPosterUrl = concert.getPosterUrl();
+        try {
+            if (dto.getPosterImage() != null && !dto.getPosterImage().isEmpty()) {
+                newPosterUrl = uploadFile(dto.getPosterImage());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("파일 업로드 오류");
+        }
+
+        // 4. 더티 체킹 적용 (엔티티 내부 값 변경)
+        concert.update(dto, newVenue, newPosterUrl);
     }
 
+    private String uploadFile(MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) return null;
 
+        String projectPath = System.getProperty("user.dir") + "/uploads/";
+        File uploadDir = new File(projectPath);
+        if (!uploadDir.exists()) uploadDir.mkdir();
+
+        UUID uuid = UUID.randomUUID();
+        String fileName = uuid.toString() + "_" + file.getOriginalFilename();
+        File saveFile = new File(projectPath, fileName);
+        file.transferTo(saveFile);
+
+        return "/uploads/" + fileName;
+    }
 } // end of class

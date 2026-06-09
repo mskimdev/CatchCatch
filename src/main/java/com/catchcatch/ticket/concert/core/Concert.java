@@ -1,6 +1,8 @@
 package com.catchcatch.ticket.concert.core;
 
+import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
 import com.catchcatch.ticket.session.ConcertSession;
+import com.catchcatch.ticket.venue.QVenue;
 import com.catchcatch.ticket.venue.Venue;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
@@ -103,27 +105,25 @@ public class Concert {
     }
 
     @Builder(builderClassName = "ConcertUpdater", builderMethodName = "updater")
-    public void update(String title, String artist, String description, String posterUrl,
-                       String detailBannerUrl, String detailTitle, String detailDescription1,
-                       String detailDescription2, Venue venue, String genre, String ageLimit,
-                       String runtime, String organizer, String contact, ConcertStatus status,
-                       LocalDateTime ticketOpenDate) {
-        this.title = title;
-        this.artist = artist;
-        this.description = description;
-        this.posterUrl = posterUrl;
-        this.detailBannerUrl = detailBannerUrl;
-        this.detailTitle = detailTitle;
-        this.detailDescription1 = detailDescription1;
-        this.detailDescription2 = detailDescription2;
-        this.venue = venue; // 진짜 Venue 객체로 덮어씌움
-        this.genre = genre;
-        this.ageLimit = ageLimit;
-        this.runtime = runtime;
-        this.organizer = organizer;
-        this.contact = contact;
-        this.concertStatus = status; // 진짜 Enum 객체로 덮어씌움
-        this.ticketOpenDate = ticketOpenDate;
+    public void update(AdminConcertRequest.UpdateRequestDTO dto, Venue venue, String posterUrl) {
+        this.title = dto.getTitle();
+        this.artist = dto.getArtist();
+        this.description = dto.getDescription();
+        this.posterUrl = posterUrl; // 이미지 경로는 서비스에서 결정 후 전달
+        this.detailTitle = dto.getDetailTitle();
+        this.detailDescription1 = dto.getDetailDescription1();
+        this.detailDescription2 = dto.getDetailDescription2();
+        this.venue = venue; // 연관관계 엔티티 변경
+        this.genre = dto.getGenre();
+        this.ageLimit = dto.getAgeLimit();
+        this.runtime = dto.getRuntime();
+        this.organizer = dto.getOrganizer();
+        this.contact = dto.getContact();
+        this.concertStatus = ConcertStatus.valueOf(dto.getConcertStatus());
+        this.ticketOpenDate = dto.getTicketOpenDate();
+        this.startDate = dto.getStartDate();
+        this.endDate = dto.getEndDate();
+        this.category = dto.getCategory();
     }
 
 } // end of class
