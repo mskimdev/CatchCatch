@@ -1,6 +1,8 @@
-package com.catchcatch.ticket.notification;
+package com.catchcatch.ticket.notification.sender;
 
 
+import com.catchcatch.ticket.notification.NotificationMessage;
+import com.catchcatch.ticket.notification.NotificationSender;
 import com.solapi.sdk.SolapiClient;
 import com.solapi.sdk.message.model.Message;
 import com.solapi.sdk.message.service.DefaultMessageService;
@@ -11,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class SmsSender implements NotificationSender{
+public class SmsSender implements NotificationSender {
 
     @Value("${sol.key}")
     private String solKey;

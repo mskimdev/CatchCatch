@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
-public class InquiryAdminController {
+public class AdminInquiryController {
 
     private final InquiryService inquiryService;
 
-    @GetMapping("/admin/inquiries")
+    @GetMapping("/admin/boards/inquiry")
     public String inquiryList(@RequestParam(required = false) InquiryStatus status, Model model) {
         model.addAttribute("inquiries", inquiryService.findAllForAdmin(status));
         model.addAttribute("totalCount", inquiryService.findAllForAdmin(null).size());
@@ -23,20 +23,18 @@ public class InquiryAdminController {
         model.addAttribute("filterAll", status == null);
         model.addAttribute("filterPending", InquiryStatus.PENDING.equals(status));
         model.addAttribute("filterResolved", InquiryStatus.RESOLVED.equals(status));
-        model.addAttribute("activeInquiry", true);
-        return "admin/inquiry-list";
+        return "admin/board/inquiry/list";
     }
 
-    @GetMapping("/admin/inquiries/{id}")
+    @GetMapping("/admin/boards/inquiry/{id}")
     public String inquiryDetail(@PathVariable Integer id, Model model) {
         model.addAttribute("inquiry", inquiryService.findByIdForAdmin(id));
-        model.addAttribute("activeInquiry", true);
-        return "admin/inquiry-detail";
+        return "admin/board/inquiry/detail";
     }
 
-    @PostMapping("/admin/inquiries/{id}/reply")
+    @PostMapping("/admin/boards/inquiry/{id}/reply")
     public String reply(@PathVariable Integer id, @RequestParam String reply) {
         inquiryService.reply(id, reply);
-        return "redirect:/admin/inquiries/" + id;
+        return "redirect:/admin/boards/inquiry/" + id;
     }
 }

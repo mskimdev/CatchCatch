@@ -34,11 +34,13 @@
                 </thead>
                 <tbody>
                 {{#inquiries}}
-                <tr class="inquiry-row" onclick="location.href='/customercenter/inquiries/{{id}}'">
+                <tr class="inquiry-row{{^isPublic}} inquiry-row--private{{/isPublic}}"
+                    {{#isPublic}}onclick="location.href='/customercenter/inquiries/{{id}}'"{{/isPublic}}>
                     <td><span class="inquiry-category">{{categoryLabel}}</span></td>
                     <td class="inquiry-title">
                         {{^isPublic}}<svg class="inquiry-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>{{/isPublic}}
                         {{title}}
+                        {{^isPublic}}<span class="inquiry-private-badge">비공개</span>{{/isPublic}}
                     </td>
                     <td>
                         <span class="inquiry-status {{statusClass}}">{{statusLabel}}</span>

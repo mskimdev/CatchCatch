@@ -14,6 +14,7 @@ package com.catchcatch.ticket.user;
  */
 
 
+import com.catchcatch.ticket.user.dto.UserRequest;
 import com.catchcatch.ticket.user.enums.OAuthProvider;
 import com.catchcatch.ticket.user.enums.Role;
 import jakarta.persistence.*;
@@ -72,6 +73,10 @@ public class User {
     @ColumnDefault("false")
     private boolean isDeleted;
 
+    public boolean isAdmin() {
+        return Role.ADMIN.equals(this.role);
+    }
+
     @Builder
     public User(String username, String password, String email,
                 String phone, String profileImage,
@@ -85,4 +90,6 @@ public class User {
         this.oauthId = oauthId;
         this.role = role;
     }
+
+
 }

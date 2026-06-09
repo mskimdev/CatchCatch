@@ -151,12 +151,12 @@ VALUES
      '콘서트', 'concert', '2026-07-30', '2026-07-30', '2026-05-30 12:00:00', '만 15세 이상 관람가', '120분', '프라이빗커브', '1544-0000',
      '/images/sample/detail-banner.svg', '당신의 밤을 적실 몽환적인 멜로디', '독보적인 분위기의 라이브', '잠실을 수놓을 짙은 감성', NOW(), false);
 
--- TODO - api받을 시 삭제 예정
-ALTER TABLE concert_tb ALTER COLUMN id RESTART WITH 100;
+
 -- =====================================================
 --  4. concert_session_tb
 -- =====================================================
-INSERT INTO concert_session_tb (id, concert_id, session_date, session_time, created_at, is_deleted)
+INSERT INTO concert_session_tb
+(id, concert_id, session_date, session_time, created_at, is_deleted)
 VALUES
     (1, 1, '2025-08-01', '18:00:00', NOW(), false),
     (2, 1, '2025-08-02', '18:00:00', NOW(), false),
@@ -167,6 +167,7 @@ VALUES
     (7, 3, '2025-10-11', '18:00:00', NOW(), false),
     (8, 4, '2025-07-20', '17:00:00', NOW(), false),
     (9, 5, '2025-06-01', '18:00:00', NOW(), false);
+
 
 -- =====================================================
 --  5. seat_tb
@@ -249,14 +250,93 @@ VALUES
 
 
 -- =====================================================
---  7. booking_tb
+--  7. booking_detail_tb
+--  예매 묶음 / 결제 전 예매 단위
+-- =====================================================
+INSERT INTO booking_detail_tb
+(id, user_id, booking_detail_number, total_amount, status, created_at, expires_at, paid_at, canceled_at)
+VALUES
+-- user1 아이유 VIP-01 + VIP-02 묶음
+(1, 2,
+ 'BD-20250528-0001',
+ 330000,
+ 'CONFIRMED',
+ DATEADD('HOUR', -1, NOW()),
+ NULL,
+ NULL,
+ NULL),
+
+-- user2 아이유 VIP-03 결제 대기
+(2, 3,
+ 'BD-20250528-0002',
+ 165000,
+ 'PENDING',
+ NOW(),
+ DATEADD('MINUTE', 5, NOW()),
+ NULL,
+ NULL),
+
+-- user2 아이유 R-01 예매 완료
+(3, 3,
+ 'BD-20250528-0003',
+ 132000,
+ 'CONFIRMED',
+ DATEADD('HOUR', -2, NOW()),
+ NULL,
+ NULL,
+ NULL),
+
+-- user3 아이유 S-01 예매 취소
+(4, 4,
+ 'BD-20250528-0004',
+ 110000,
+ 'CANCELLED',
+ DATEADD('HOUR', -3, NOW()),
+ NULL,
+ NULL,
+ DATEADD('HOUR', -2, NOW())),
+
+-- user1 BTS VIP-01 예매 완료
+(5, 2,
+ 'BD-20250528-0005',
+ 198000,
+ 'CONFIRMED',
+ DATEADD('MINUTE', -30, NOW()),
+ NULL,
+ NULL,
+ NULL),
+
+-- ssar 아이유 VIP-04 + R-04 묶음
+(6, 6,
+ 'BD-20260604-0006',
+ 297000,
+ 'PAID',
+ DATEADD('HOUR', -3, NOW()),
+ NULL,
+ DATEADD('HOUR', -3, NOW()),
+ NULL),
+
+-- ssar 아이유 S-02 취소
+(7, 6,
+ 'BD-20260604-0007',
+ 110000,
+ 'CANCELLED',
+ DATEADD('HOUR', -5, NOW()),
+ NULL,
+ NULL,
+ DATEADD('HOUR', -4, NOW()));
+
+
+-- =====================================================
+--  8. booking_tb
 --  현재 Booking Entity 컬럼 기준
+--  booking_detail_id 추가
 -- =====================================================
 INSERT INTO booking_tb
-(id, user_id, concert_session_id, seat_id, booking_number, status, created_at, expires_at, canceled_at)
+(id, booking_detail_id, user_id, concert_session_id, seat_id, booking_number, status, created_at, expires_at, canceled_at)
 VALUES
 -- user1 아이유 VIP-01 예매 완료
-(1, 2, 1, 1,
+(1, 1, 2, 1, 1,
  'BK-20250528-0001',
  'CONFIRMED',
  DATEADD('HOUR', -1, NOW()),
@@ -264,7 +344,7 @@ VALUES
  NULL),
 
 -- user1 아이유 VIP-02 예매 완료
-(2, 2, 1, 2,
+(2, 1, 2, 1, 2,
  'BK-20250528-0002',
  'CONFIRMED',
  DATEADD('HOUR', -1, NOW()),
@@ -272,7 +352,7 @@ VALUES
  NULL),
 
 -- user2 아이유 VIP-03 결제 대기
-(3, 3, 1, 3,
+(3, 2, 3, 1, 3,
  'BK-20250528-0003',
  'PENDING',
  NOW(),
@@ -280,7 +360,7 @@ VALUES
  NULL),
 
 -- user2 아이유 R-01 예매 완료
-(4, 3, 1, 6,
+(4, 3, 3, 1, 6,
  'BK-20250528-0004',
  'CONFIRMED',
  DATEADD('HOUR', -2, NOW()),
@@ -288,7 +368,7 @@ VALUES
  NULL),
 
 -- user3 아이유 S-01 예매 취소
-(5, 4, 1, 16,
+(5, 4, 4, 1, 16,
  'BK-20250528-0005',
  'CANCELLED',
  DATEADD('HOUR', -3, NOW()),
@@ -296,7 +376,7 @@ VALUES
  DATEADD('HOUR', -2, NOW())),
 
 -- user1 BTS VIP-01 예매 완료
-(6, 2, 3, 36,
+(6, 5, 2, 3, 36,
  'BK-20250528-0006',
  'CONFIRMED',
  DATEADD('MINUTE', -30, NOW()),
@@ -304,7 +384,7 @@ VALUES
  NULL),
 
 -- ssar 아이유 VIP-04 예매 완료
-(7, 6, 1, 4,
+(7, 6, 6, 1, 4,
  'BK-20260604-0007',
  'PAID',
  DATEADD('HOUR', -3, NOW()),
@@ -312,7 +392,7 @@ VALUES
  NULL),
 
 -- ssar 아이유 R-04 예매 완료
-(8, 6, 1, 9,
+(8, 6, 6, 1, 9,
  'BK-20260604-0008',
  'PAID',
  DATEADD('HOUR', -3, NOW()),
@@ -320,9 +400,9 @@ VALUES
  NULL),
 
 -- ssar 아이유 S-02 취소
-(9, 6, 1, 17,
+(9, 7, 6, 1, 17,
  'BK-20260604-0009',
- 'CANCELED',
+ 'CANCELLED',
  DATEADD('HOUR', -5, NOW()),
  NULL,
  DATEADD('HOUR', -4, NOW()));
@@ -406,50 +486,6 @@ INSERT INTO refund_tb
 VALUES
     (1, 4, 99000, 11000, '개인 사정으로 인한 취소', DATEADD('HOUR', -2, NOW()));
 
--- =====================================================
---  10. faq_tb
--- =====================================================
-INSERT INTO faq_tb (category, question, answer, is_visible, created_at)
-VALUES
-    -- 회원
-    ('MEMBER', '회원가입은 어떻게 하나요?', '상단 회원가입 메뉴에서 아이디, 비밀번호, 이메일을 입력하면 가입할 수 있습니다.', true, CURRENT_TIMESTAMP),
-    ('MEMBER', '비밀번호를 잊어버렸어요.', '로그인 화면의 비밀번호 찾기 기능을 통해 가입한 이메일로 임시 비밀번호 또는 재설정 링크를 받을 수 있습니다.', true, CURRENT_TIMESTAMP),
-    ('MEMBER', '회원정보 수정은 어디서 하나요?', '로그인 후 마이페이지에서 이름, 이메일, 연락처 등의 회원정보를 수정할 수 있습니다.', true, CURRENT_TIMESTAMP),
-    ('MEMBER', '회원 탈퇴는 어떻게 하나요?', '마이페이지의 회원정보 관리 메뉴에서 탈퇴를 신청할 수 있습니다. 탈퇴 후 일부 정보는 관련 법령에 따라 일정 기간 보관될 수 있습니다.', true, CURRENT_TIMESTAMP),
-
-    -- 예매
-    ('BOOKING', '예매는 어떻게 하나요?', '공연 상세 페이지에서 원하는 회차와 좌석을 선택한 뒤 결제를 진행하면 예매가 완료됩니다.', true, CURRENT_TIMESTAMP),
-    ('BOOKING', '예매 내역은 어디서 확인하나요?', '로그인 후 마이페이지의 예매 내역 메뉴에서 예매한 공연 정보를 확인할 수 있습니다.', true, CURRENT_TIMESTAMP),
-    ('BOOKING', '좌석 선택 후 바로 결제해야 하나요?', '좌석 선택 후 일정 시간 내에 결제를 완료해야 합니다. 시간이 지나면 선택한 좌석이 자동으로 해제될 수 있습니다.', true, CURRENT_TIMESTAMP),
-    ('BOOKING', '비회원도 예매할 수 있나요?', '현재는 원활한 예매 내역 관리와 취소 처리를 위해 회원 예매만 지원합니다.', true, CURRENT_TIMESTAMP),
-
-    -- 결제
-    ('PAYMENT', '결제 수단은 무엇이 있나요?', '카드 결제, 카카오페이, 토스페이 등의 결제 수단을 지원할 예정입니다.', true, CURRENT_TIMESTAMP),
-    ('PAYMENT', '결제 중 오류가 발생했어요.', '일시적인 네트워크 문제일 수 있습니다. 결제 내역을 먼저 확인한 뒤, 결제가 완료되지 않았다면 다시 시도해 주세요.', true, CURRENT_TIMESTAMP),
-    ('PAYMENT', '결제 완료 후 영수증을 받을 수 있나요?', '결제 완료 후 마이페이지의 예매 내역에서 결제 정보를 확인할 수 있습니다.', true, CURRENT_TIMESTAMP),
-    ('PAYMENT', '결제 금액이 다르게 나왔어요.', '할인 적용 여부, 수수료, 쿠폰 사용 여부에 따라 최종 결제 금액이 달라질 수 있습니다.', true, CURRENT_TIMESTAMP),
-
-    -- 취소/환불
-    ('CANCEL_REFUND', '예매 취소는 어떻게 하나요?', '마이페이지의 예매 내역에서 취소할 수 있습니다. 단, 공연 시작 시간이 임박한 경우 취소가 제한될 수 있습니다.', true, CURRENT_TIMESTAMP),
-    ('CANCEL_REFUND', '환불은 얼마나 걸리나요?', '환불은 결제 수단과 카드사 정책에 따라 보통 3~7영업일 정도 소요될 수 있습니다.', true, CURRENT_TIMESTAMP),
-    ('CANCEL_REFUND', '부분 취소가 가능한가요?', '여러 장을 예매한 경우 일부 좌석만 취소할 수 있는지 여부는 공연 정책에 따라 달라질 수 있습니다.', true, CURRENT_TIMESTAMP),
-    ('CANCEL_REFUND', '공연 당일에도 취소할 수 있나요?', '공연 당일 취소 가능 여부는 공연별 취소 정책에 따라 다르며, 일부 공연은 당일 취소가 제한될 수 있습니다.', true, CURRENT_TIMESTAMP),
-
-    -- 이벤트/혜택
-    ('EVENT', '이벤트 혜택은 어디서 확인하나요?', '이벤트 페이지에서 진행 중인 할인 및 혜택 정보를 확인할 수 있습니다.', true, CURRENT_TIMESTAMP),
-    ('EVENT', '쿠폰은 어떻게 사용하나요?', '결제 단계에서 보유한 쿠폰을 선택하면 할인 금액이 적용됩니다.', true, CURRENT_TIMESTAMP),
-    ('EVENT', '이벤트 당첨 여부는 어디서 확인하나요?', '이벤트 당첨 결과는 이벤트 페이지 또는 마이페이지 알림 메뉴에서 확인할 수 있습니다.', true, CURRENT_TIMESTAMP),
-    ('EVENT', '할인 혜택은 중복 적용되나요?', '할인 혜택의 중복 적용 여부는 이벤트별 정책에 따라 다릅니다.', true, CURRENT_TIMESTAMP),
-
-    -- 서비스/기타
-    ('SERVICE', '고객센터 운영 시간은 어떻게 되나요?', '고객센터는 평일 오전 9시부터 오후 6시까지 운영됩니다.', true, CURRENT_TIMESTAMP),
-    ('SERVICE', '1:1 문의는 어디서 작성하나요?', '고객센터의 1:1 문의 메뉴에서 문의 내용을 작성할 수 있습니다.', true, CURRENT_TIMESTAMP),
-    ('SERVICE', '사이트 이용 중 오류가 발생했어요.', '오류 화면을 캡처한 뒤 고객센터로 문의해 주시면 확인 후 안내해 드리겠습니다.', true, CURRENT_TIMESTAMP),
-    ('SERVICE', '공지사항은 어디서 확인하나요?', '서비스 관련 공지사항은 고객센터 또는 메인 화면의 공지 영역에서 확인할 수 있습니다.', true, CURRENT_TIMESTAMP),
-
-    -- 숨김 처리 테스트용
-    ('SERVICE', '숨김 FAQ 테스트입니다.', '관리자 화면에서는 보이지만 사용자 화면에서는 보이지 않아야 하는 테스트 데이터입니다.', false, CURRENT_TIMESTAMP),
-    ('MEMBER', '비노출 회원 FAQ 테스트입니다.', 'is_visible 값이 false인 데이터가 사용자 FAQ 목록에서 제외되는지 확인하기 위한 데이터입니다.', false, CURRENT_TIMESTAMP);
 
 /*
 -- =====================================================
@@ -511,15 +547,3 @@ UPDATE seat_tb SET status = 'SOLD' WHERE id = 9;
 
 ALTER TABLE booking_tb ALTER COLUMN id RESTART WITH 10;
 ALTER TABLE payment_tb ALTER COLUMN id RESTART WITH 8;
-
-
--- =====================================================
---  concert_like_tb (ssar 관심 공연)
--- =====================================================
-INSERT INTO concert_like_tb
-(user_id, concert_id, created_at)
-VALUES
-    (6, 1,  DATEADD('DAY', -5, NOW())),
-    (6, 22, DATEADD('DAY', -4, NOW())),
-    (6, 24, DATEADD('DAY', -3, NOW())),
-    (6, 25, DATEADD('DAY', -1, NOW()));

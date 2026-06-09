@@ -179,7 +179,7 @@ public class PaymentResponse {
     // JSON 문자열에는 값이 있고, 자바 클래스 필드에는 선언이 없다면 그냥 무시해
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class PortOnePayment {
-        private String status; // READY, PAID, FAILED, CANCELED
+        private String status; // READY, PAID, FAILED, CANCELLED
         private String id; // 우리 서버에서 생성한 주문 번호
         private String pgTxId; // PG 거래 번호 (간혹 null 될 수 있음)
         private Amount amount;

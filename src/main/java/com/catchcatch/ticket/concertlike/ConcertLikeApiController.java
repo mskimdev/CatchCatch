@@ -37,6 +37,7 @@ public class ConcertLikeApiController {
     @GetMapping("/liked-ids")
     public ResponseEntity<?> getLikedIds(HttpSession session) {
         User user = (User) session.getAttribute(Define.SESSION_USER);
+        if (user == null) return Resp.ok(java.util.List.of());
         return Resp.ok(concertLikeService.findLikedConcertIdsByUserId(user));
     }
 }

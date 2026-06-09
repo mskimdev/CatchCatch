@@ -80,11 +80,10 @@
                 </div>
                 <div class="cc-profile-edit-layout">
                     <div class="cc-card cc-profile-edit-card">
-                        {{#successMessage}}
-                            <p class="cc-profile-alert cc-profile-alert--success">{{successMessage}}</p>{{/successMessage}}
-                        {{#errorMessage}}
-                            <p class="cc-profile-alert cc-profile-alert--error">{{errorMessage}}</p>{{/errorMessage}}
-                        <form action="/users/mypage" method="post" enctype="multipart/form-data">
+
+                        <p id="profileSuccess" class="cc-profile-alert cc-profile-alert--success">{{successMessage}}</p>
+                        <p id="profileError" class="cc-profile-alert cc-profile-alert--error">{{errorMessage}}</p>
+                        <form id="profileForm" enctype="multipart/form-data">
                             {{#_csrf}}<input type="hidden" name="{{parameterName}}" value="{{token}}">{{/_csrf}}
                             <div class="cc-profile-image-edit">
                                 <label class="cc-profile-image-edit__preview {{#profileImage}}has-image{{/profileImage}}"
@@ -235,5 +234,8 @@
         </section>
     </div>
 </main>
-
+<script>
+    window.MYPAGE_DATA = { isLocalUser: {{isLocalUser}} };
+</script>
+<script src="/js/user/mypage.js"></script>
 {{> layout/footer}}

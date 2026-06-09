@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
@@ -35,6 +36,13 @@ public class InquiryController {
         model.addAttribute("inquiries", inquiryService.findAll());
 
         return "customercenter/inquiry-list";
+    }
+
+    @GetMapping("/customercenter/inquiries/{id}")
+    public String inquiryDetail(@PathVariable Integer id, Model model, HttpSession session) {
+        User user = (User) session.getAttribute(Define.SESSION_USER);
+        model.addAttribute("inquiry", inquiryService.findById(id, user));
+        return "customercenter/inquiry-detail";
     }
     
 }

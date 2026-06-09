@@ -1,5 +1,7 @@
-package com.catchcatch.ticket.notification;
+package com.catchcatch.ticket.notification.sender;
 
+import com.catchcatch.ticket.notification.NotificationMessage;
+import com.catchcatch.ticket.notification.NotificationSender;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class EmailSender implements NotificationSender{
+public class EmailSender implements NotificationSender {
 
     private final JavaMailSender mailSender;
 

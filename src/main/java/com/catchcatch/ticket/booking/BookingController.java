@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 @Controller
 @RequestMapping("/booking")
@@ -21,6 +19,7 @@ public class BookingController {
 
     private final BookingService bookingService;
 
+    // 예매 정보 진입
     @PostMapping("/start")
     public String startBooking(
             BookingRequest.StartDTO req,
@@ -37,9 +36,37 @@ public class BookingController {
         session.setAttribute("bookingConcertId", req.getConcertId());
         session.setAttribute("bookingSessionId", req.getSessionId());
 
-        return "redirect:/booking/seat";
+        return "redirect:/booking/info";
     }
 
+    // 예매 정보
+    @GetMapping("/info")
+    public String infoForm(Model model, HttpSession session) {
+        User sessionUser = getSessionUser(session);
+
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+
+        Integer concertId = getSessionInteger(session, "bookingConcertId");
+        Integer sessionId = getSessionInteger(session, "bookingSessionId");
+
+        BookingResponse.SeatFormDTO seat = bookingService.findSeatForm(sessionId);
+
+        model.addAttribute("userId", sessionUser.getId());
+        model.addAttribute("username", sessionUser.getUsername());
+        model.addAttribute("concertId", concertId);
+        model.addAttribute("sessionId", sessionId);
+        model.addAttribute("seat", seat);
+
+        model.addAttribute("pageTitle", "예매 정보");
+        model.addAttribute("bookingTitle", "예매 정보");
+        model.addAttribute("bookingSubTitle", "공연 정보와 예매자 정보를 확인해주세요.");
+
+        return "booking/info";
+    }
+
+    // 좌석 선택
     @GetMapping("/seat")
     public String seatForm(Model model, HttpSession session) {
         User sessionUser = getSessionUser(session);
@@ -59,12 +86,18 @@ public class BookingController {
         model.addAttribute("sessionId", sessionId);
         model.addAttribute("seat", seat);
 
+        model.addAttribute("pageTitle", "좌석 선택");
+        model.addAttribute("bookingTitle", "좌석 선택");
+        model.addAttribute("bookingSubTitle", "좌석 선택 후 10분 이내에 결제를 진행해주세요.");
+
         return "booking/seat";
     }
 
+    // 좌석 선택 후 결제 화면으로 이동
+    // 여기까지만 Booking 담당
     @PostMapping("/payment")
     public String startPayment(
-            BookingRequest.PaymentStartDTO req,
+            BookingRequest.SeatSelectDTO req,
             HttpSession session
     ) {
         User sessionUser = getSessionUser(session);
@@ -75,88 +108,9 @@ public class BookingController {
 
         req.validate();
 
-        Integer concertId = getSessionInteger(session, "bookingConcertId");
-        Integer sessionId = getSessionInteger(session, "bookingSessionId");
-
         session.setAttribute("bookingSeatIds", req.getSeatIds());
 
         return "redirect:/booking/payment";
-    }
-
-    @GetMapping("/payment")
-    public String paymentForm(Model model, HttpSession session) {
-        User sessionUser = getSessionUser(session);
-
-        if (sessionUser == null) {
-            return "redirect:/login";
-        }
-
-        String seatIds = (String) session.getAttribute("bookingSeatIds");
-
-        if (seatIds == null || seatIds.isBlank()) {
-            return "redirect:/booking/seat";
-        }
-
-        BookingResponse.PaymentDTO paymentDTO =
-                bookingService.getPaymentInfo(seatIds, sessionUser);
-
-        model.addAttribute("payment", paymentDTO);
-
-        return "booking/payment";
-    }
-
-    @PostMapping("/payment/confirm")
-    public String paymentConfirm(HttpSession session) {
-        User sessionUser = getSessionUser(session);
-
-        if (sessionUser == null) {
-            return "redirect:/login";
-        }
-
-        Integer sessionId = getSessionInteger(session, "bookingSessionId");
-        String seatIds = (String) session.getAttribute("bookingSeatIds");
-
-        if (sessionId == null || seatIds == null || seatIds.isBlank()) {
-            return "redirect:/booking/seat";
-        }
-
-        List<BookingResponse.DetailDTO> bookings =
-                bookingService.saveAllConfirmed(sessionId, seatIds, sessionUser);
-
-        if (bookings.isEmpty()) {
-            return "redirect:/booking/seat";
-        }
-
-        List<Integer> bookingIds = bookings.stream()
-                .map(BookingResponse.DetailDTO::getId)
-                .toList();
-
-        session.setAttribute("bookingIds", bookingIds);
-        session.setAttribute("bookingId", bookingIds.get(0));
-
-        return "redirect:/booking/complete";
-    }
-
-    @GetMapping("/complete")
-    public String completeForm(Model model, HttpSession session) {
-        User sessionUser = getSessionUser(session);
-
-        if (sessionUser == null) {
-            return "redirect:/login";
-        }
-
-        Integer bookingId = getSessionInteger(session, "bookingId");
-
-        if (bookingId == null) {
-            return "redirect:/";
-        }
-
-        BookingResponse.CompleteDTO booking =
-                bookingService.findCompleteById(bookingId, sessionUser);
-
-        model.addAttribute("booking", booking);
-
-        return "booking/complete";
     }
 
     private User getSessionUser(HttpSession session) {
