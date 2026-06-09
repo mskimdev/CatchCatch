@@ -3,8 +3,6 @@ package com.catchcatch.ticket.booking.dto;
 import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.seat.Seat;
-import com.catchcatch.ticket.session.ConcertSession;
-import com.catchcatch.ticket.user.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
@@ -13,7 +11,6 @@ import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class BookingResponse {
 
@@ -99,81 +96,6 @@ public class BookingResponse {
             this.seatName = booking.getSeat().getSeatNumber();
             this.price = booking.getSeat().getPrice();
             this.priceText = formatPrice(booking.getSeat().getPrice());
-        }
-    }
-
-    @Getter
-    public static class PaymentDTO {
-        private Integer bookingId;
-        private String merchantUid;
-        private String seatIds;
-        private Integer seatCount;
-        private String concertTitle;
-        private String seatName;
-        private Integer price;
-        private Integer totalPrice;
-        private String totalPriceText;
-        private String ticketPriceText;
-        private String feeText;
-        private Integer userId;
-        private String username;
-
-        public PaymentDTO(String seatIds, List<Seat> seats, User sessionUser) {
-            int totalPrice = seats.stream()
-                    .mapToInt(Seat::getPrice)
-                    .sum();
-
-            this.bookingId = 0;
-            this.merchantUid = "ORDER-" + System.currentTimeMillis();
-
-            this.seatIds = seatIds;
-            this.seatCount = seats.size();
-
-            this.concertTitle = "테스트 콘서트";
-            this.seatName = seats.stream()
-                    .map(Seat::getSeatNumber)
-                    .collect(Collectors.joining(", "));
-
-            this.price = seats.isEmpty() ? 0 : seats.get(0).getPrice();
-
-            this.totalPrice = totalPrice;
-            this.totalPriceText = formatPrice(totalPrice);
-            this.ticketPriceText = formatPrice(totalPrice);
-            this.feeText = formatPrice(0);
-
-            this.userId = sessionUser.getId();
-            this.username = sessionUser.getUsername();
-        }
-    }
-
-    @Getter
-    public static class CompleteDTO {
-        private Integer bookingId;
-        private String bookingNumber;
-        private Integer concertSessionId;
-        private Integer seatId;
-        private Status status;
-        private Timestamp createdAt;
-        private String concertTitle;
-        private String seatName;
-        private Integer price;
-        private String totalPriceText;
-        private Integer userId;
-        private String username;
-
-        public CompleteDTO(Booking booking, Seat seat, User sessionUser, String concertTitle) {
-            this.bookingId = booking.getId();
-            this.bookingNumber = booking.getBookingNumber();
-            this.concertSessionId = booking.getConcertSession().getId();
-            this.seatId = booking.getSeat().getId();
-            this.status = booking.getStatus();
-            this.createdAt = booking.getCreatedAt();
-            this.concertTitle = concertTitle;
-            this.seatName = seat.getSeatNumber();
-            this.price = seat.getPrice();
-            this.totalPriceText = formatPrice(seat.getPrice());
-            this.userId = sessionUser.getId();
-            this.username = sessionUser.getUsername();
         }
     }
 

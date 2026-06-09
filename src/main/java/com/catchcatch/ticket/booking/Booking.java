@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.booking;
 
+import com.catchcatch.ticket.booking.bookingDetail.BookingDetail;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.user.User;

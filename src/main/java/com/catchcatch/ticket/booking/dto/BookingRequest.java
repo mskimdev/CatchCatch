@@ -35,9 +35,10 @@ public class BookingRequest {
         }
     }
 
+    // 좌석 선택 후 결제 담당 화면으로 넘기기 위한 DTO
     @Getter
     @Setter
-    public static class PaymentStartDTO {
+    public static class SeatSelectDTO {
         private String seatIds;
 
         public void validate() {
@@ -71,22 +72,6 @@ public class BookingRequest {
 
     @Getter
     @Setter
-    public static class PaymentConfirmDTO {
-        private Integer bookingId;
-        private String merchantUid;
-        private Integer amount;
-        private String method;
-
-        public void validate() {
-            validateRequired(bookingId, "예매 정보가 없습니다.");
-            validateRequiredText(merchantUid, "주문 번호가 없습니다.");
-            validatePositiveAmount(amount);
-            validateRequiredText(method, "결제 수단을 선택해주세요.");
-        }
-    }
-
-    @Getter
-    @Setter
     public static class UpdateStatusDTO {
         private Status status;
 
@@ -104,12 +89,6 @@ public class BookingRequest {
     private static void validateRequiredText(String value, String message) {
         if (value == null || value.isBlank()) {
             throw new BadRequestException(message);
-        }
-    }
-
-    private static void validatePositiveAmount(Integer amount) {
-        if (amount == null || amount <= 0) {
-            throw new BadRequestException("결제 금액이 올바르지 않습니다.");
         }
     }
 }

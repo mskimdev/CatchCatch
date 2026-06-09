@@ -1,4 +1,4 @@
-package com.catchcatch.ticket.booking;
+package com.catchcatch.ticket.booking.bookingDetail;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 
@@ -16,7 +16,7 @@ import com.querydsl.core.types.dsl.PathInits;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QBookingDetail extends EntityPathBase<BookingDetail> {
 
-    private static final long serialVersionUID = 1320492692L;
+    private static final long serialVersionUID = 170669104L;
 
     private static final PathInits INITS = PathInits.DIRECT2;
 
@@ -34,7 +34,7 @@ public class QBookingDetail extends EntityPathBase<BookingDetail> {
 
     public final DateTimePath<java.sql.Timestamp> paidAt = createDateTime("paidAt", java.sql.Timestamp.class);
 
-    public final EnumPath<Status> status = createEnum("status", Status.class);
+    public final EnumPath<com.catchcatch.ticket.booking.Status> status = createEnum("status", com.catchcatch.ticket.booking.Status.class);
 
     public final NumberPath<Integer> totalAmount = createNumber("totalAmount", Integer.class);
 

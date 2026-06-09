@@ -22,7 +22,7 @@ public class QBooking extends EntityPathBase<Booking> {
 
     public static final QBooking booking = new QBooking("booking");
 
-    public final QBookingDetail bookingDetail;
+    public final com.catchcatch.ticket.booking.bookingDetail.QBookingDetail bookingDetail;
 
     public final StringPath bookingNumber = createString("bookingNumber");
 
@@ -60,7 +60,7 @@ public class QBooking extends EntityPathBase<Booking> {
 
     public QBooking(Class<? extends Booking> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.bookingDetail = inits.isInitialized("bookingDetail") ? new QBookingDetail(forProperty("bookingDetail"), inits.get("bookingDetail")) : null;
+        this.bookingDetail = inits.isInitialized("bookingDetail") ? new com.catchcatch.ticket.booking.bookingDetail.QBookingDetail(forProperty("bookingDetail"), inits.get("bookingDetail")) : null;
         this.concertSession = inits.isInitialized("concertSession") ? new com.catchcatch.ticket.session.QConcertSession(forProperty("concertSession"), inits.get("concertSession")) : null;
         this.seat = inits.isInitialized("seat") ? new com.catchcatch.ticket.seat.QSeat(forProperty("seat"), inits.get("seat")) : null;
         this.user = inits.isInitialized("user") ? new com.catchcatch.ticket.user.QUser(forProperty("user")) : null;

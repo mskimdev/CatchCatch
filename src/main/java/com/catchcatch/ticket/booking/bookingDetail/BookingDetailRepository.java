@@ -1,4 +1,4 @@
-package com.catchcatch.ticket.booking;
+package com.catchcatch.ticket.booking.bookingDetail;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

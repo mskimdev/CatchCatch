@@ -1,5 +1,6 @@
-package com.catchcatch.ticket.booking;
+package com.catchcatch.ticket.booking.bookingDetail;
 
+import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.user.User;
 import jakarta.persistence.*;
 import lombok.*;
