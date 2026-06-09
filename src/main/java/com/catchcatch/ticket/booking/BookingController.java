@@ -108,9 +108,13 @@ public class BookingController {
 
         req.validate();
 
-        session.setAttribute("bookingSeatIds", req.getSeatIds());
+        BookingResponse.DetailDTO booking = bookingService.save(new BookingRequest.SaveDTO(
+                sessionUser.getId(),
+                req.getSessionId(),
+                req.getSeatIdList()
+        ));
 
-        return "redirect:/booking/payment";
+        return "redirect:/booking/payment?bookingId=" + booking.getId();
     }
 
     private User getSessionUser(HttpSession session) {

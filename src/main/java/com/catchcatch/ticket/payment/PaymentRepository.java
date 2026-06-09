@@ -26,6 +26,13 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
             """)
     List<Payment> findListByUserId(@Param("userId") Integer userId);
 
+    /**
+     * 예매 ID로 결제 조회
+     * Payment 1 : 1 Booking 구조에서
+     * 이미 결제 준비된 Payment가 있는지 확인할 때 사용
+     */
+    Optional<Payment> findByBooking_Id(Integer bookingId);
+
 
     /**
      * 예매 번호로 결제 내역 조회
