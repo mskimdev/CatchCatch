@@ -59,16 +59,13 @@ public class BookingController {
         model.addAttribute("sessionId", sessionId);
         model.addAttribute("seat", seat);
 
+        model.addAttribute("pageTitle", "좌석 선택");
+        model.addAttribute("bookingTitle", "좌석 선택");
+        model.addAttribute("bookingSubTitle", "좌석 선택 후 10분 이내에 결제를 진행해주세요.");
+
         return "booking/seat";
     }
 
-    /**
-     * 선택한 좌석 정보를 세션에 저장하고 결제 화면으로 이동
-     *
-     * @param req 선택한 좌석 ID 목록을 담은 요청 DTO
-     * @param session 선택 좌석 정보를 저장할 세션
-     * @return 결제 화면으로 이동하는 redirect 경로
-     */
     @PostMapping("/payment")
     public String startPayment(
             BookingRequest.PaymentStartDTO req,
@@ -81,9 +78,6 @@ public class BookingController {
         }
 
         req.validate();
-
-        Integer concertId = getSessionInteger(session, "bookingConcertId");
-        Integer sessionId = getSessionInteger(session, "bookingSessionId");
 
         session.setAttribute("bookingSeatIds", req.getSeatIds());
 
@@ -98,7 +92,6 @@ public class BookingController {
             return "redirect:/login";
         }
 
-        // 좌석 1 ~ 4석 예매할 수 있으니
         String seatIds = (String) session.getAttribute("bookingSeatIds");
 
         if (seatIds == null || seatIds.isBlank()) {
@@ -110,18 +103,13 @@ public class BookingController {
 
         model.addAttribute("payment", paymentDTO);
 
+        model.addAttribute("pageTitle", "결제");
+        model.addAttribute("bookingTitle", "결제");
+        model.addAttribute("bookingSubTitle", "예매 정보를 확인해주세요.");
+
         return "booking/payment";
     }
 
-    /**
-     * 결제 확정 처리
-     *
-     * 세션에 저장된 회차 ID와 선택 좌석 ID 목록을 기준으로
-     * 예매 정보를 DB에 저장한 뒤 예매 완료 화면으로 이동한다.
-     *
-     * @param session 로그인 사용자 정보, 선택 좌석 정보, 회차 정보를 담고 있는 세션
-     * @return 예매 완료 화면으로 이동하는 redirect 경로
-     */
     @PostMapping("/payment/confirm")
     public String paymentConfirm(HttpSession session) {
         User sessionUser = getSessionUser(session);
@@ -162,36 +150,40 @@ public class BookingController {
             return "redirect:/login";
         }
 
+        // 결제 완료 시 저장해둔 예매 ID 목록
         List<Integer> bookingIds = getSessionIntegerList(session, "bookingIds");
 
         if (bookingIds == null || bookingIds.isEmpty()) {
             return "redirect:/";
         }
 
+        // 완료 화면의 대표 예매 정보는 첫 번째 예매 기준으로 표시
+        Integer bookingId = bookingIds.get(0);
+
         BookingResponse.CompleteDTO booking =
-                bookingService.findCompleteByIds(bookingIds, sessionUser);
+                bookingService.findCompleteById(bookingId, sessionUser);
+
+        // 좌석 목록은 기존 결제 화면에서 쓰던 seatIds 기반 PaymentDTO 재사용
+        String seatIds = (String) session.getAttribute("bookingSeatIds");
+
+        if (seatIds == null || seatIds.isBlank()) {
+            return "redirect:/";
+        }
+
+        BookingResponse.PaymentDTO payment =
+                bookingService.getPaymentInfo(seatIds, sessionUser);
 
         model.addAttribute("booking", booking);
+        model.addAttribute("payment", payment);
+
+        // 화면에서 총 n석 표시용
+        model.addAttribute("bookingCount", bookingIds.size());
 
         model.addAttribute("pageTitle", "예매 완료");
         model.addAttribute("bookingTitle", "예매 완료");
         model.addAttribute("bookingSubTitle", "예매가 정상적으로 완료되었습니다.");
 
         return "booking/complete";
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<Integer> getSessionIntegerList(HttpSession session, String name) {
-        Object value = session.getAttribute(name);
-
-        if (value instanceof List<?> list) {
-            return list.stream()
-                    .filter(Integer.class::isInstance)
-                    .map(Integer.class::cast)
-                    .toList();
-        }
-
-        return null;
     }
 
     private User getSessionUser(HttpSession session) {
@@ -203,6 +195,19 @@ public class BookingController {
 
         if (value instanceof Integer integerValue) {
             return integerValue;
+        }
+
+        return null;
+    }
+
+    private List<Integer> getSessionIntegerList(HttpSession session, String name) {
+        Object value = session.getAttribute(name);
+
+        if (value instanceof List<?> list) {
+            return list.stream()
+                    .filter(Integer.class::isInstance)
+                    .map(Integer.class::cast)
+                    .toList();
         }
 
         return null;

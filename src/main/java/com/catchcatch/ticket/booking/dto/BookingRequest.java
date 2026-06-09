@@ -5,8 +5,6 @@ import com.catchcatch.ticket.core.errors.BadRequestException;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Arrays;
-
 public class BookingRequest {
 
     private static final int MAX_SEAT_COUNT = 4;
@@ -45,7 +43,6 @@ public class BookingRequest {
         public void validate() {
             validateRequiredText(seatIds, "좌석을 선택해주세요.");
 
-            // 선택한 좌석 ID 목록을 콤마 기준으로 분리
             String[] seatIdArray = seatIds.split(",");
 
             if (seatIdArray.length > MAX_SEAT_COUNT) {
