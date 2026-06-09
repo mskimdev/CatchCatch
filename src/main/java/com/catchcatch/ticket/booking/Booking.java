@@ -42,10 +42,11 @@ public class Booking {
     @Column(name = "booking_number", nullable = false, unique = true)
     private String bookingNumber;
 
-    // 예매 상태 - PENDING, PAID, CANCELED, EXPIRED
+    // 예매 상태
     @Builder.Default
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private String status = "PENDING";
+    private Status status = Status.PENDING;
 
     // 결제 전 좌석 임시 선점 만료 시간
     @Column(name = "expires_at")
