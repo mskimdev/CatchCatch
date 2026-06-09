@@ -1,24 +1,20 @@
 package com.catchcatch.ticket.booking;
 
-import com.catchcatch.ticket.seat.Seat;
-import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.user.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
 
-@Data
-@Entity
-@Table(name = "booking_tb")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Booking {
+@Entity
+@Table(name = "booking_detail_tb")
+public class BookingDetail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,25 +25,15 @@ public class Booking {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // 예매 묶음 ID (booking_detail_tb.id 참조)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_detail_id", nullable = false)
-    private BookingDetail bookingDetail;
+    // 예매 묶음 번호 - 결제/완료 조회용
+    @Column(name = "booking_detail_number", nullable = false, unique = true)
+    private String bookingDetailNumber;
 
-    @ManyToOne
-    @JoinColumn(name = "concert_session_id", nullable = false)
-    private ConcertSession concertSession;
+    // 총 결제 금액
+    @Column(name = "total_amount", nullable = false)
+    private Integer totalAmount;
 
-
-    @ManyToOne
-    @JoinColumn(name = "seat_id", nullable = false)
-    private Seat seat;
-
-    // 예매 번호 - 사용자 조회 및 티켓 확인용
-    @Column(name = "booking_number", nullable = false, unique = true)
-    private String bookingNumber;
-
-    // 예매 상태
+    // 예매 묶음 상태
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -57,10 +43,14 @@ public class Booking {
     @Column(name = "expires_at")
     private Timestamp expiresAt;
 
-    // 예매 생성 시간
+    // 예매 묶음 생성 시간
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Timestamp createdAt;
+
+    // 결제 완료 시간
+    @Column(name = "paid_at")
+    private Timestamp paidAt;
 
     // 예매 취소 시간
     @Column(name = "canceled_at")

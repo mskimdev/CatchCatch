@@ -11,24 +11,20 @@ import com.querydsl.core.types.dsl.PathInits;
 
 
 /**
- * QBooking is a Querydsl query type for Booking
+ * QBookingDetail is a Querydsl query type for BookingDetail
  */
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
-public class QBooking extends EntityPathBase<Booking> {
+public class QBookingDetail extends EntityPathBase<BookingDetail> {
 
-    private static final long serialVersionUID = 427896931L;
+    private static final long serialVersionUID = 1320492692L;
 
     private static final PathInits INITS = PathInits.DIRECT2;
 
-    public static final QBooking booking = new QBooking("booking");
+    public static final QBookingDetail bookingDetail = new QBookingDetail("bookingDetail");
 
-    public final QBookingDetail bookingDetail;
-
-    public final StringPath bookingNumber = createString("bookingNumber");
+    public final StringPath bookingDetailNumber = createString("bookingDetailNumber");
 
     public final DateTimePath<java.sql.Timestamp> canceledAt = createDateTime("canceledAt", java.sql.Timestamp.class);
-
-    public final com.catchcatch.ticket.session.QConcertSession concertSession;
 
     public final DateTimePath<java.sql.Timestamp> createdAt = createDateTime("createdAt", java.sql.Timestamp.class);
 
@@ -36,33 +32,32 @@ public class QBooking extends EntityPathBase<Booking> {
 
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
 
-    public final com.catchcatch.ticket.seat.QSeat seat;
+    public final DateTimePath<java.sql.Timestamp> paidAt = createDateTime("paidAt", java.sql.Timestamp.class);
 
     public final EnumPath<Status> status = createEnum("status", Status.class);
 
+    public final NumberPath<Integer> totalAmount = createNumber("totalAmount", Integer.class);
+
     public final com.catchcatch.ticket.user.QUser user;
 
-    public QBooking(String variable) {
-        this(Booking.class, forVariable(variable), INITS);
+    public QBookingDetail(String variable) {
+        this(BookingDetail.class, forVariable(variable), INITS);
     }
 
-    public QBooking(Path<? extends Booking> path) {
+    public QBookingDetail(Path<? extends BookingDetail> path) {
         this(path.getType(), path.getMetadata(), PathInits.getFor(path.getMetadata(), INITS));
     }
 
-    public QBooking(PathMetadata metadata) {
+    public QBookingDetail(PathMetadata metadata) {
         this(metadata, PathInits.getFor(metadata, INITS));
     }
 
-    public QBooking(PathMetadata metadata, PathInits inits) {
-        this(Booking.class, metadata, inits);
+    public QBookingDetail(PathMetadata metadata, PathInits inits) {
+        this(BookingDetail.class, metadata, inits);
     }
 
-    public QBooking(Class<? extends Booking> type, PathMetadata metadata, PathInits inits) {
+    public QBookingDetail(Class<? extends BookingDetail> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.bookingDetail = inits.isInitialized("bookingDetail") ? new QBookingDetail(forProperty("bookingDetail"), inits.get("bookingDetail")) : null;
-        this.concertSession = inits.isInitialized("concertSession") ? new com.catchcatch.ticket.session.QConcertSession(forProperty("concertSession"), inits.get("concertSession")) : null;
-        this.seat = inits.isInitialized("seat") ? new com.catchcatch.ticket.seat.QSeat(forProperty("seat"), inits.get("seat")) : null;
         this.user = inits.isInitialized("user") ? new com.catchcatch.ticket.user.QUser(forProperty("user")) : null;
     }
 

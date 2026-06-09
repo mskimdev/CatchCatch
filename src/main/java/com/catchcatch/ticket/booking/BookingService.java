@@ -31,6 +31,7 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final SeatRepository seatRepository;
     private final ConcertSessionRepository concertSessionRepository;
+    private final BookingDetailRepository bookingDetailRepository;
 
     /*
      * TODO:
@@ -62,7 +63,32 @@ public class BookingService {
         return new BookingResponse.DetailDTO(savedBooking);
     }
 
-    // 결제 완료 시 선택 좌석 전체 예매 저장
+//    // 결제 완료 시 선택 좌석 전체 예매 저장
+//    @Transactional
+//    public List<BookingResponse.DetailDTO> saveAllConfirmed(
+//            Integer concertSessionId,
+//            String seatIds,
+//            User sessionUser
+//    ) {
+//        if (concertSessionId == null) {
+//            throw new BadRequestException("공연 회차 정보가 없습니다.");
+//        }
+//
+//        List<Integer> seatIdList = parseSeatIds(seatIds);
+//
+//        validateAlreadyBookedSeats(concertSessionId, seatIdList);
+//
+//        List<Seat> selectedSeats = findSelectedSeats(seatIdList);
+//        User user = getUserReference(sessionUser.getId());
+//
+//        return selectedSeats.stream()
+//                .map(seat -> createConfirmedBooking(concertSessionId, seat, user))
+//                .map(bookingRepository::save)
+//                .map(BookingResponse.DetailDTO::new)
+//                .toList();
+//    }
+
+    // 좌석 선택 후 결제 전 예매 묶음 + 좌석별 예매 생성
     @Transactional
     public List<BookingResponse.DetailDTO> saveAllConfirmed(
             Integer concertSessionId,
@@ -80,11 +106,55 @@ public class BookingService {
         List<Seat> selectedSeats = findSelectedSeats(seatIdList);
         User user = getUserReference(sessionUser.getId());
 
+        Integer totalAmount = selectedSeats.stream()
+                .mapToInt(Seat::getPrice)
+                .sum();
+
+        Timestamp expiresAt = createExpiresAt();
+
+        BookingDetail bookingDetail = BookingDetail.builder()
+                .user(user)
+                .bookingDetailNumber(createBookingDetailNumber())
+                .totalAmount(totalAmount)
+                .status(Status.PENDING)
+                .expiresAt(expiresAt)
+                .build();
+
+        BookingDetail savedBookingDetail = bookingDetailRepository.save(bookingDetail);
+
         return selectedSeats.stream()
-                .map(seat -> createConfirmedBooking(concertSessionId, seat, user))
+                .map(seat -> createPendingBooking(concertSessionId, seat, user, savedBookingDetail, expiresAt))
                 .map(bookingRepository::save)
                 .map(BookingResponse.DetailDTO::new)
                 .toList();
+    }
+
+    private Booking createPendingBooking(
+            Integer concertSessionId,
+            Seat seat,
+            User user,
+            BookingDetail bookingDetail,
+            Timestamp expiresAt
+    ) {
+        ConcertSession concertSession = concertSessionRepository.findById(concertSessionId)
+                .orElseThrow(() -> new BadRequestException("공연 회차 정보를 찾을 수 없습니다."));
+
+        return Booking.builder()
+                .user(user)
+                .bookingDetail(bookingDetail)
+                .concertSession(concertSession)
+                .seat(seat)
+                .bookingNumber(createBookingNumber())
+                .status(Status.PENDING)
+                .expiresAt(expiresAt)
+                .build();
+    }
+
+    private String createBookingDetailNumber() {
+        return "BD-" + UUID.randomUUID()
+                .toString()
+                .substring(0, 8)
+                .toUpperCase();
     }
 
     // 예매 단건 조회
