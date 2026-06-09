@@ -76,33 +76,6 @@
         </section>
     </div>
 </main>
+<script>window.OPEN_SOON_DATA = { currentGenre: "{{currentGenre}}" };</script>
+<script src="/js/concert/open-soon.js"></script>
 {{> layout/footer}}
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const currentGenre = "{{currentGenre}}";
-        const buttons = document.querySelectorAll('#genre-filter button');
-        buttons.forEach(button => {
-            const targetGenre = button.getAttribute('data-genre');
-            if (targetGenre === currentGenre) {
-                button.classList.add('is-active');
-            } else {
-                button.classList.remove('is-active');
-            }
-            button.addEventListener('click', function() {
-                if (targetGenre === 'all') {
-                    location.href = '/concerts/open-soon';
-                } else {
-                    location.href = `/concerts/open-soon?genre=${targetGenre}`;
-                }
-            });
-        });
-
-        const posters = document.querySelectorAll('.concert-poster');
-        posters.forEach(function(img) {
-            img.addEventListener('error', function() {
-                this.src = '/images/sample/default-poster.svg';
-            }, { once: true });
-        });
-    });
-</script>
