@@ -1,0 +1,94 @@
+{{> layout/header}}
+
+<link rel="stylesheet" href="/css/customercenter-faq.css">
+<link rel="stylesheet" href="/css/customercenter-inquiry.css">
+
+<div class="customer-center-container">
+
+    <h1 class="page-title">고객센터</h1>
+
+    <div class="customer-layout">
+
+        <aside class="side-menu">
+            <a href="/customercenter/faqs" class="side-menu-item">FAQ</a>
+            <a href="/customercenter/inquiries/save" class="side-menu-item active">1:1 문의하기</a>
+            <a href="/customercenter/inquiries" class="side-menu-item">1:1 문의 내역</a>
+            <a href="/customercenter/notices" class="side-menu-item">공지사항</a>
+        </aside>
+
+        <main class="inquiry-content">
+
+            <div class="content-header">
+                <h2>1:1 문의하기</h2>
+                <p class="content-desc">문의 내용을 남겨주시면 영업일 기준 1~2일 내 답변 드립니다.</p>
+            </div>
+
+            <form class="inquiry-form" action="/customercenter/inquiries/save" method="post">
+
+                <div class="inquiry-form__row">
+                    <label class="inquiry-form__label" for="category">문의 유형 <span class="required">*</span></label>
+                    <select class="inquiry-form__select" id="category" name="category" required>
+                        <option value="">선택해 주세요</option>
+                        <option value="TICKET">예매/취소</option>
+                        <option value="PAYMENT">결제</option>
+                        <option value="USER">회원</option>
+                        <option value="ETC">기타</option>
+                    </select>
+                </div>
+
+                <div class="inquiry-form__row">
+                    <label class="inquiry-form__label" for="title">제목 <span class="required">*</span></label>
+                    <input class="inquiry-form__input" type="text" id="title" name="title"
+                           placeholder="문의 제목을 입력해 주세요" maxlength="100" required>
+                </div>
+
+                <div class="inquiry-form__row">
+                    <label class="inquiry-form__label" for="content">문의 내용 <span class="required">*</span></label>
+                    <textarea class="inquiry-form__textarea" id="content" name="content"
+                              placeholder="문의 내용을 자세히 입력해 주세요 (최대 2000자)" maxlength="2000" required></textarea>
+                    <span class="inquiry-form__counter"><span id="contentLength">0</span> / 2000</span>
+                </div>
+
+                <div class="inquiry-form__row">
+                    <label class="inquiry-form__label">공개 범위</label>
+                    <div class="inquiry-notify">
+                        <label class="inquiry-notify__item">
+                            <input type="checkbox" name="isPublic" value="true">
+                            <span>공개</span>
+                            <span class="inquiry-notify__desc">비공개가 기본값입니다. 체크 시 다른 사용자도 열람할 수 있습니다.</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="inquiry-form__row">
+                    <label class="inquiry-form__label">답변 수신 방법</label>
+                    <div class="inquiry-notify">
+                        <label class="inquiry-notify__item">
+                            <input type="checkbox" name="notifyEmail" value="true">
+                            <span>이메일로 답변받기</span>
+                        </label>
+                        <label class="inquiry-notify__item {{^hasPhone}}is-disabled{{/hasPhone}}">
+                            <input type="checkbox" name="notifySms" value="true" {{^hasPhone}}disabled{{/hasPhone}}>
+                            <span>문자로 답변받기</span>
+                            {{^hasPhone}}
+                                <span class="inquiry-notify__warn">전화번호를 입력하셔야 받을 수 있습니다</span>
+                                <a class="inquiry-notify__link" href="/users/mypage">전화번호 입력하러 가기</a>
+                            {{/hasPhone}}
+                        </label>
+                    </div>
+                </div>
+
+                <div class="inquiry-form__actions">
+                    <a class="inquiry-btn inquiry-btn--outline" href="/customercenter/inquiries">취소</a>
+                    <button class="inquiry-btn inquiry-btn--primary" type="submit">문의 등록</button>
+                </div>
+
+            </form>
+
+        </main>
+
+    </div>
+</div>
+
+<script src="/js/customercenter/inquiry-save.js"></script>
+{{> layout/footer}}

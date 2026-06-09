@@ -1,0 +1,125 @@
+{{> admin/layout/header}}
+
+<body id="page-top">
+<div id="wrapper">
+    {{> admin/layout/sidebar}}
+
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            {{> admin/layout/topbar}}
+
+            <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">대시보드</h1>
+                </div>
+
+                <div class="row">
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-primary shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">실시간 대기열(명)</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">1,245</div>
+                                    </div>
+                                    <div class="col-auto"><i class="fas fa-users fa-2x text-gray-300"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-success shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">오늘 예매 완료(건)</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">8,421</div>
+                                    </div>
+                                    <div class="col-auto"><i class="fas fa-ticket-alt fa-2x text-gray-300"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-info shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">오픈 예정 콘서트(개)</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">3</div>
+                                    </div>
+                                    <div class="col-auto"><i class="fas fa-calendar-alt fa-2x text-gray-300"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-warning shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">시스템 에러(최근 1시간)</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">0</div>
+                                    </div>
+                                    <div class="col-auto"><i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xl-8 col-lg-7">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">실시간 트래픽 및 대기열 모니터링</h6></div>
+                            <div class="card-body"><div class="chart-area"><canvas id="myAreaChart"></canvas></div></div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-lg-5">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">공연 예매율 현황</h6></div>
+                            <div class="card-body">
+                                <h4 class="small font-weight-bold">아이유 콘서트 <span class="float-right">95%</span></h4>
+                                <div class="progress mb-4"><div class="progress-bar bg-danger" style="width: 95%"></div></div>
+                                <h4 class="small font-weight-bold">싸이 흠뻑쇼 <span class="float-right">70%</span></h4>
+                                <div class="progress mb-4"><div class="progress-bar bg-warning" style="width: 70%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">최근 시스템/운영 로그</h6></div>
+                            <div class="card-body">
+                                <ul class="list-group">
+                                    <li class="list-group-item text-danger">[ERROR] 결제 Gateway 응답 지연 (16:20)</li>
+                                    <li class="list-group-item text-warning">[WARN] 대기열 임계치 초과 (16:15)</li>
+                                    <li class="list-group-item">[INFO] 관리자 '김철수' 공연 정보 수정 (16:00)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {{> admin/layout/footer}}
+
+        <script src="/admin/vendor/chart.js/Chart.min.js"></script>
+        <script>
+            // 차트 예시 코드 (SB Admin 2의 기본 차트 활용)
+            var ctx = document.getElementById("myAreaChart");
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["15:00", "15:15", "15:30", "15:45", "16:00", "16:15"],
+                    datasets: [{ label: "대기열", data: [100, 300, 800, 1200, 1100, 1245] }]
+                }
+            });
+        </script>
+    </div>
+</div>
+</body>
+</html>

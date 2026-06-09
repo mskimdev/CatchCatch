@@ -1,0 +1,149 @@
+{{> layout/header}}
+<link rel="stylesheet" href="/css/user-mypage.css">
+<link rel="stylesheet" href="/css/payment-list.css">
+
+<main class="cc-main">
+    <div class="cc-container cc-mypage-layout">
+
+        {{> components/mypage-sidebar}}
+
+        <section class="cc-mypage-content">
+
+            <div class="cc-card cc-payment-filter-card">
+                <div class="cc-payment-filter-head">
+                    <div class="notice-text">
+                        <strong>{{sessionUser.username}}</strong>님의 결제 내역입니다.
+                        <span>총 <strong>{{paymentCount}}</strong>건의 결제 내역이 있습니다.</span>
+                    </div>
+
+                    <a class="cc-payment-filter-link" href="/users/payments">
+                        전체보기
+                    </a>
+                </div>
+
+                <form action="/users/payments" method="get" class="cc-payment-filter-form">
+                    <div class="cc-payment-period-row">
+                        <span class="cc-payment-filter-label">조회기간</span>
+
+                        <a class="cc-chip {{#isPeriod7}}is-active{{/isPeriod7}}"
+                           href="/users/payments?period=7&status={{status}}&keyword={{keyword}}">7일</a>
+
+                        <a class="cc-chip {{#isPeriod15}}is-active{{/isPeriod15}}"
+                           href="/users/payments?period=15&status={{status}}&keyword={{keyword}}">15일</a>
+
+                        <a class="cc-chip {{#isPeriod30}}is-active{{/isPeriod30}}"
+                           href="/users/payments?period=30&status={{status}}&keyword={{keyword}}">1개월</a>
+
+                        <a class="cc-chip {{#isPeriod90}}is-active{{/isPeriod90}}"
+                           href="/users/payments?period=90&status={{status}}&keyword={{keyword}}">3개월</a>
+
+                        <a class="cc-chip {{#isPeriod180}}is-active{{/isPeriod180}}"
+                           href="/users/payments?period=180&status={{status}}&keyword={{keyword}}">6개월</a>
+
+                        <a class="cc-chip {{#isPeriod365}}is-active{{/isPeriod365}}"
+                           href="/users/payments?period=365&status={{status}}&keyword={{keyword}}">1년</a>
+                    </div>
+
+                    <div class="cc-payment-search-row">
+                        <span class="cc-payment-filter-label">검색</span>
+
+                        <input
+                                type="text"
+                                name="keyword"
+                                class="cc-payment-input"
+                                placeholder="예매번호 또는 공연명"
+                                value="{{keyword}}">
+
+                        <input type="hidden" name="period" value="{{period}}">
+                        <input type="hidden" name="status" value="{{status}}">
+
+                        <button type="submit" class="cc-payment-search-btn">
+                            검색
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="cc-payment-status-row">
+                <span>결제상태별 조회</span>
+
+                <a class="cc-payment-status-link {{#statusAll}}is-active{{/statusAll}}"
+                   href="/users/payments?period={{period}}&keyword={{keyword}}&status=ALL">전체</a>
+
+                <a class="cc-payment-status-link {{#statusPaid}}is-active{{/statusPaid}}"
+                   href="/users/payments?period={{period}}&keyword={{keyword}}&status=PAID">결제완료</a>
+
+                <a class="cc-payment-status-link {{#statusReady}}is-active{{/statusReady}}"
+                   href="/users/payments?period={{period}}&keyword={{keyword}}&status=READY">결제대기</a>
+
+                <a class="cc-payment-status-link {{#statusCancelled}}is-active{{/statusCancelled}}"
+                   href="/users/payments?period={{period}}&keyword={{keyword}}&status=CANCELLED">취소</a>
+            </div>
+
+            <section class="cc-card cc-payment-list-card">
+                <table class="cc-payment-table">
+                    <thead>
+                    <tr>
+                        <th style="width: 140px;">결제일</th>
+                        <th style="width: 160px;">예매번호</th>
+                        <th>공연명</th>
+                        <th style="width: 130px;">결제금액</th>
+                        <th style="width: 110px;">현재상태</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {{#payments}}
+                        <tr onclick="openPaymentDetail('{{id}}')">
+                            <td>{{paidAtText}}</td>
+
+                            <td>{{bookingNumber}}</td>
+
+                            <td class="cc-payment-concert-title">
+                                {{concertTitle}}
+                            </td>
+
+                            <td>
+                                {{#amountText}}{{amountText}}{{/amountText}}
+                                {{^amountText}}{{amount}}원{{/amountText}}
+                            </td>
+
+                            <td>
+                                {{#isPaid}}
+                                    <span class="cc-payment-badge cc-payment-badge--paid">결제완료</span>
+                                {{/isPaid}}
+
+                                {{#isReady}}
+                                    <span class="cc-payment-badge cc-payment-badge--ready">결제대기</span>
+                                {{/isReady}}
+
+                                {{#isCancelled}}
+                                    <span class="cc-payment-badge cc-payment-badge--cancelled">취소</span>
+                                {{/isCancelled}}
+                            </td>
+                        </tr>
+                    {{/payments}}
+
+                    {{^payments}}
+                        <tr>
+                            <td colspan="5" class="cc-payment-empty">
+                                해당 결제 내역이 존재하지 않습니다.
+                            </td>
+                        </tr>
+                    {{/payments}}
+                    </tbody>
+                </table>
+            </section>
+
+            <div class="cc-card cc-payment-guide">
+                <strong>안내</strong>
+                <p>결제 상세내역은 목록의 결제 건을 클릭하면 작은 창으로 확인할 수 있습니다.</p>
+                <p>결제 취소 및 환불은 공연일, 예매 상태, 취소 시점에 따라 제한될 수 있습니다.</p>
+            </div>
+
+        </section>
+    </div>
+</main>
+
+<script src="/js/payment/payment-list.js"></script>
+{{> layout/footer}}

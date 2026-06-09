@@ -73,7 +73,7 @@ public class ConcertService {
     public ConcertResponse.DetailDTO getConcertDetail(Integer concertId) {
 
         // 1. 공연 및 회차 데이터 조회 (N+1 방지)
-        Concert concert = concertRepository.findByIdWithSessions(concertId)
+        Concert concert = concertRepository.findByIdWithDetails(concertId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공연입니다. ID: " + concertId));
 
         // 2. 화면 하단 '가격 정보'를 렌더링하기 위해, 첫 번째 회차의 좌석 데이터를 조회합니다.

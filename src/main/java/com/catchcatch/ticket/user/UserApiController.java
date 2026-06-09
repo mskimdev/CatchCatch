@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/email")
 public class UserApiController {
 
-    private final MailService ms;
+    private final UserApiService userApiService;
 
     @Operation(summary = "인증 코드 발송", description = "입력한 이메일로 6자리 인증 코드를 발송합니다. 유효 시간은 3분입니다.")
     @ApiResponses({
@@ -31,7 +31,7 @@ public class UserApiController {
     public ResponseEntity<?> sendCode(
             @Parameter(description = "인증 코드를 받을 이메일 주소") UserRequest.EmailCheckDTO req) {
         req.validate();
-        ms.sendCode(req.getEmail());
+        userApiService.sendCode(req.getEmail());
         return Resp.ok("인증번호 발송 성공");
     }
 
@@ -49,7 +49,7 @@ public class UserApiController {
             return Resp.fail(HttpStatus.BAD_REQUEST, "인증번호를 입력해주세요.");
         }
 
-        if (ms.verifyCode(req.getEmail(), req.getCode())) {
+        if (userApiService.verifyCode(req.getEmail(), req.getCode())) {
             return Resp.ok("인증되었습니다.");
         } else {
             return Resp.fail(HttpStatus.BAD_REQUEST, "인증번호가 일치하지 않습니다.");

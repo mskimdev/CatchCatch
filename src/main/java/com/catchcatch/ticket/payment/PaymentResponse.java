@@ -6,37 +6,139 @@ import lombok.Data;
 import lombok.Getter;
 
 import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
 
 public class PaymentResponse {
 
     @Data
     public static class DetailDTO {
         private String bookingNumber;
-        private String paymentId;
-        private Integer amount;
-        private String method;
-        private Timestamp paidAt;
 
+        // 결제 정보
+        private String paymentId;
+        private String pgTxId;
+        private String pgTxIdText;
+        private Integer amount;
+        private String amountText;
+        private String method;
+        private PaymentStatus status;
+        private String statusLabel;
+        private Timestamp createdAt;
+        private String createdAtText;
+        private Timestamp paidAt;
+        private String paidAtText;
+
+        // 예매 정보
+        private String concertTitle;
+        private String sessionDateText;
+        private String seatText;
 
         public DetailDTO(Payment payment) {
             this.bookingNumber = payment.getBooking().getBookingNumber();
+
             this.paymentId = payment.getPaymentId();
+            this.pgTxId = payment.getPgTxId();
+            this.pgTxIdText = payment.getPgTxId() == null || payment.getPgTxId().isBlank()
+                    ? "-"
+                    : payment.getPgTxId();
+
             this.amount = payment.getAmount();
+            this.amountText = formatAmount(payment.getAmount());
+
             this.method = payment.getMethod();
+            this.status = payment.getStatus();
+            this.statusLabel = toStatusLabel(payment.getStatus());
+
+            this.createdAt = payment.getCreatedAt();
+            this.createdAtText = formatTimestampSecond(payment.getCreatedAt());
+
             this.paidAt = payment.getPaidAt();
+            this.paidAtText = formatTimestampSecond(payment.getPaidAt());
+
+            this.concertTitle = payment.getBooking()
+                    .getConcertSession()
+                    .getConcert()
+                    .getTitle();
+
+            this.sessionDateText =
+                    payment.getBooking().getConcertSession().getSessionDate()
+                            + " "
+                            + payment.getBooking().getConcertSession().getSessionTime();
+
+            this.seatText = payment.getBooking().getSeat().getSeatNumber();
+        }
+
+        private String formatAmount(Integer amount) {
+            if (amount == null) {
+                return "0원";
+            }
+
+            return String.format("%,d원", amount);
+        }
+
+        private String formatTimestampSecond(Timestamp timestamp) {
+            if (timestamp == null) {
+                return "-";
+            }
+
+            return timestamp.toLocalDateTime()
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        }
+
+        private String toStatusLabel(PaymentStatus status) {
+            if (status == null) {
+                return "-";
+            }
+
+            return switch (status) {
+                case READY -> "결제대기";
+                case PAID -> "결제완료";
+                case CANCELLED -> "결제취소";
+                case FAILED -> "결제실패";
+            };
         }
     }
 
     @Data
     public static class ListDTO {
+        private Integer id;
         private String bookingNumber;
+        private String concertTitle;
         private Integer amount;
         private Timestamp paidAt;
+        private String paidAtText;
+        private PaymentStatus status;
+
+        private Boolean isPaid;
+        private Boolean isReady;
+        private Boolean isCancelled;
 
         public ListDTO(Payment payment) {
+            this.id = payment.getId();
             this.bookingNumber = payment.getBooking().getBookingNumber();
+
+            this.concertTitle = payment.getBooking()
+                    .getConcertSession()
+                    .getConcert()
+                    .getTitle();
+
             this.amount = payment.getAmount();
             this.paidAt = payment.getPaidAt();
+            this.paidAtText = formatPaidAtMinute(payment.getPaidAt());
+            this.status = payment.getStatus();
+
+            this.isPaid = payment.getStatus() == PaymentStatus.PAID;
+            this.isReady = payment.getStatus() == PaymentStatus.READY;
+            this.isCancelled = payment.getStatus() == PaymentStatus.CANCELLED;
+        }
+
+        private String formatPaidAtMinute(Timestamp paidAt) {
+            if (paidAt == null) {
+                return "결제 대기";
+            }
+
+            return paidAt.toLocalDateTime()
+                    .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         }
     }
 

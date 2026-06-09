@@ -1,0 +1,276 @@
+/* =====================================================
+   payment-list.css
+   - 마이페이지 결제 내역 화면 전용
+   - user-mypage.css 구조와 함께 사용
+   ===================================================== */
+
+/* 결제 내역 요약 + 검색 카드 */
+.cc-payment-filter-card {
+    padding: 18px 20px 16px;
+    margin-bottom: 8px;
+}
+
+.cc-payment-filter-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #eee8f6;
+    margin-bottom: 14px;
+}
+
+/* 사용자 결제 내역 안내 문구 */
+.notice-text {
+    color: #5f596e;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.notice-text strong {
+    color: #6d28d9;
+    font-weight: 800;
+}
+
+.notice-text span {
+    display: inline;
+    margin-top: 4px;
+    color: #756c88;
+    font-size: 13px;
+}
+
+.notice-text span strong {
+    color: #6d28d9;
+    font-weight: 800;
+}
+
+/* 전체보기 버튼 */
+.cc-payment-filter-link {
+    flex-shrink: 0;
+    color: #6d28d9;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+    padding: 7px 11px;
+    border-radius: 999px;
+    background: #f3edff;
+}
+
+.cc-payment-filter-link:hover {
+    background: #ede9fe;
+}
+
+/* 검색 폼 */
+.cc-payment-filter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cc-payment-period-row,
+.cc-payment-search-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.cc-payment-filter-label {
+    min-width: 68px;
+    color: #352e49;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.cc-payment-input {
+    width: 280px;
+    height: 36px;
+    border: 1px solid #ded8ea;
+    border-radius: 8px;
+    background: #fff;
+    color: #352e49;
+    padding: 0 10px;
+    font-size: 13px;
+}
+
+.cc-payment-input::placeholder {
+    color: #9b93aa;
+}
+
+.cc-payment-search-btn {
+    height: 36px;
+    border: 0;
+    border-radius: 8px;
+    padding: 0 18px;
+    background: #7c3aed;
+    color: #fff;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.cc-payment-search-btn:hover {
+    background: #6d28d9;
+}
+
+/* 결제상태별 조회 */
+.cc-payment-status-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 6px;
+    color: #6d647c;
+    font-size: 13px;
+}
+
+.cc-payment-status-row span {
+    font-weight: 800;
+    color: #352e49;
+    margin-right: 4px;
+}
+
+.cc-payment-status-link {
+    color: #6d647c;
+    text-decoration: none;
+    padding: 5px 9px;
+    border-radius: 999px;
+}
+
+.cc-payment-status-link:hover,
+.cc-payment-status-link.is-active {
+    background: #ede9fe;
+    color: #6d28d9;
+    font-weight: 800;
+}
+
+/* 결제 목록 테이블 */
+.cc-payment-list-card {
+    padding: 0;
+    overflow: hidden;
+    margin-top: 0;
+}
+
+.cc-payment-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+}
+
+.cc-payment-table th {
+    height: 44px;
+    border-bottom: 1px solid #e7e0f2;
+    background: #fbfaff;
+    color: #3a334d;
+    font-size: 13px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.cc-payment-table td {
+    padding: 15px 12px;
+    border-bottom: 1px solid #f0ebf7;
+    color: #514a62;
+    text-align: center;
+    font-size: 14px;
+}
+
+.cc-payment-table tbody tr {
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.cc-payment-table tbody tr:hover {
+    background: #f7f2ff;
+}
+
+.cc-payment-concert-title {
+    color: #2f2a3f;
+    font-weight: 800;
+    text-align: center;
+}
+
+/* 상태 뱃지 */
+.cc-payment-badge {
+    display: inline-block;
+    min-width: 68px;
+    padding: 6px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.cc-payment-badge--paid {
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+.cc-payment-badge--ready {
+    background: #fff7ed;
+    color: #ea580c;
+}
+
+.cc-payment-badge--cancelled {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+/* 결제 내역 없음 */
+.cc-payment-empty {
+    height: 96px;
+    color: #9ca3af;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* 안내 박스 */
+.cc-payment-guide {
+    margin-top: 18px;
+    padding: 16px 18px;
+    color: #6f667d;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.cc-payment-guide strong {
+    display: block;
+    margin-bottom: 6px;
+    color: #6d28d9;
+}
+
+.cc-payment-guide p {
+    margin: 0;
+}
+
+/* 모바일 대응 */
+@media (max-width: 900px) {
+    .cc-payment-filter-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .cc-payment-filter-link {
+        width: fit-content;
+    }
+
+    .cc-payment-search-row {
+        align-items: stretch;
+    }
+
+    .cc-payment-input,
+    .cc-payment-search-btn {
+        width: 100%;
+    }
+
+    .cc-payment-status-row {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .cc-payment-table {
+        min-width: 720px;
+    }
+
+    .cc-payment-list-card {
+        overflow-x: auto;
+    }
+}

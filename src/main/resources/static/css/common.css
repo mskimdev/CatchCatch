@@ -269,8 +269,31 @@ img { max-width: 100%; display: block; }
   background: var(--cc-primary-softer);
   color: var(--cc-primary-dark);
 }
-.cc-user-menu__panel .cc-user-menu__logout {
+.cc-user-menu__panel .cc-user-menu__admin {
+  color: var(--cc-primary);
+  font-weight: 700;
+  border-top: 1px solid var(--cc-line);
+  border-radius: 0;
+  padding-top: 8px;
   margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cc-user-menu__panel .cc-user-menu__admin::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cc-primary);
+}
+.cc-user-menu__panel .cc-user-menu__admin:hover {
+  background: var(--cc-primary-soft);
+  color: var(--cc-primary-dark);
+}
+.cc-user-menu__panel .cc-user-menu__logout {
+  margin-top: 4px;
   color: var(--cc-muted);
   border-top: 1px solid var(--cc-line);
   border-radius: 0;
@@ -398,6 +421,8 @@ img { max-width: 100%; display: block; }
   transition: background .18s ease, color .18s ease, transform .18s ease;
 }
 .cc-heart:hover { background: var(--cc-primary-softer); color: var(--cc-primary); transform: translateY(-1px); }
+.cc-heart.is-liked { color: var(--cc-primary); }
+.cc-heart.is-liked svg { fill: var(--cc-primary); }
 
 .cc-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: -1px; }
 .cc-dot--vip { background: #7c3aed; }

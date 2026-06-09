@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>CatchCatch | 결제 상세내역</title>
+    <link rel="stylesheet" href="/css/payment-detail.css">
+</head>
+<body>
+
+<div class="popup-wrap">
+    <div class="popup-card">
+
+        <header class="popup-header">
+            <div class="small">CatchCatch Payment Detail</div>
+            <h1>결제 상세내역</h1>
+            <p>결제번호, 예매번호, 공연 정보와 결제 상태를 확인할 수 있습니다.</p>
+        </header>
+
+        <!-- 결제 정보 -->
+        <section class="section">
+            <h2>결제 정보</h2>
+
+            <table class="detail-table">
+                <tbody>
+                <tr>
+                    <th>결제번호</th>
+                    <td>{{payment.paymentId}}</td>
+                </tr>
+
+                <tr>
+                    <th>PG 거래번호</th>
+                    <td>{{payment.pgTxIdText}}</td>
+                </tr>
+
+                <tr>
+                    <th>예매번호</th>
+                    <td>{{payment.bookingNumber}}</td>
+                </tr>
+
+                <tr>
+                    <th>결제수단</th>
+                    <td>{{payment.method}}</td>
+                </tr>
+
+                <tr>
+                    <th>결제상태</th>
+                    <td>{{payment.statusLabel}}</td>
+                </tr>
+
+                <tr>
+                    <th>결제요청일</th>
+                    <td>{{payment.createdAtText}}</td>
+                </tr>
+
+                <tr>
+                    <th>결제완료일</th>
+                    <td>{{payment.paidAtText}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 예매 정보 -->
+        <section class="section">
+            <h2>예매 정보</h2>
+
+            <table class="detail-table">
+                <tbody>
+                <tr>
+                    <th>공연명</th>
+                    <td>{{payment.concertTitle}}</td>
+                </tr>
+
+                <tr>
+                    <th>공연날짜</th>
+                    <td>{{payment.sessionDateText}}</td>
+                </tr>
+
+                <tr>
+                    <th>좌석</th>
+                    <td>{{payment.seatText}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 금액 정보 -->
+        <section class="price-box">
+            <div class="price-row">
+                <span class="price-label">최종 결제 금액</span>
+                <span class="price-value">{{payment.amountText}}</span>
+            </div>
+        </section>
+
+        <div class="notice">
+            결제 취소 및 환불은 공연일, 예매 상태, 취소 시점에 따라 제한될 수 있습니다.
+            자세한 내용은 취소/환불 안내를 확인해주세요.
+        </div>
+
+        <div class="button-area">
+            <button type="button" class="btn btn-outline" onclick="window.print()">인쇄</button>
+
+            {{#payment.canRefund}}
+                <button type="button"
+                        class="btn btn-danger"
+                        onclick="location.href='/refunds/new?paymentId={{payment.id}}'">
+                환불 신청
+                </button>
+            {{/payment.canRefund}}
+
+            <button type="button" class="btn btn-primary" onclick="window.close()">닫기</button>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

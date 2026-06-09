@@ -72,6 +72,10 @@ public class User {
     @ColumnDefault("false")
     private boolean isDeleted;
 
+    public boolean isAdmin() {
+        return Role.ADMIN.equals(this.role);
+    }
+
     @Builder
     public User(String username, String password, String email,
                 String phone, String profileImage,

@@ -43,7 +43,7 @@ public class PaymentService {
      * 결제 내역 조회
      */
     public List<PaymentResponse.ListDTO> getPaymentList(Integer userId) {
-        return paymentRepository.findByUserId(userId)
+        return paymentRepository.findListByUserId(userId)
                 .stream()
                 .map(PaymentResponse.ListDTO::new)
                 .toList();
@@ -54,7 +54,7 @@ public class PaymentService {
      * 결제 상세내역 조회
      */
     public PaymentResponse.DetailDTO getPaymentDetail(Integer paymentId, Integer userId) {
-        Payment payment = paymentRepository.findByIdAndUserId(paymentId, userId).orElseThrow(
+        Payment payment = paymentRepository.findDetailByIdAndUserId(paymentId, userId).orElseThrow(
                 () -> new NotFoundException("결제 내역을 찾을 수 없습니다."));
 
         return new PaymentResponse.DetailDTO(payment);
