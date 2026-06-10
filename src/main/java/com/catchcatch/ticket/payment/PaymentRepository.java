@@ -12,29 +12,42 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
     /**
      * 내 결제 내역 목록
      */
-//    @Query("SELECT p FROM Payment p WHERE p.user.id = :userId ORDER BY p.createdAt DESC")
-//    List<Payment> findByUserId(@Param("userId") Integer userId);
+    @Query("""
+            select distinct p
+            from Payment p
+            join fetch p.booking b
+            join fetch b.user u
+            join fetch b.concertSession cs
+            join fetch cs.concert c
+            left join fetch b.bookingSeats bs
+            left join fetch bs.seat s
+            where u.id = :userId
+            order by p.createdAt desc
+            """)
+    List<Payment> findListByUserId(@Param("userId") Integer userId);
 
     /**
-     * 내 결제 내역 목록
+     * 예매 ID로 결제 조회
+     * Payment 1 : 1 Booking 구조에서
+     * 이미 결제 준비된 Payment가 있는지 확인할 때 사용
      */
-    @Query("""
-        select p
-        from Payment p
-        join fetch p.booking b
-        join fetch b.concertSession cs
-        join fetch cs.concert c
-        join fetch p.user u
-        where u.id = :userId
-        order by p.createdAt desc
-        """)
-    List<Payment> findListByUserId(@Param("userId") Integer userId);
+    Optional<Payment> findByBooking_Id(Integer bookingId);
 
 
     /**
      * 예매 번호로 결제 내역 조회
      */
-    @Query("SELECT p FROM Payment p WHERE p.booking.bookingNumber = :bookingNumber")
+    @Query("""
+            select distinct p
+            from Payment p
+            join fetch p.booking b
+            join fetch b.user u
+            join fetch b.concertSession cs
+            join fetch cs.concert c
+            left join fetch b.bookingSeats bs
+            left join fetch bs.seat s
+            where b.bookingNumber = :bookingNumber
+            """)
     Optional<Payment> findByBookingNumber(@Param("bookingNumber") String bookingNumber);
 
 
@@ -42,16 +55,17 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
      * 결제 상세 내역
      */
     @Query("""
-        select p
-        from Payment p
-        join fetch p.user u
-        join fetch p.booking b
-        join fetch b.concertSession cs
-        join fetch cs.concert c
-        join fetch b.seat s
-        where p.id = :paymentId
-          and u.id = :userId
-        """)
+            select distinct p
+            from Payment p
+            join fetch p.booking b
+            join fetch b.user u
+            join fetch b.concertSession cs
+            join fetch cs.concert c
+            left join fetch b.bookingSeats bs
+            left join fetch bs.seat s
+            where p.id = :paymentId
+              and u.id = :userId
+            """)
     Optional<Payment> findDetailByIdAndUserId(
             @Param("paymentId") Integer paymentId,
             @Param("userId") Integer userId
@@ -59,34 +73,61 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
 
 
     /**
-     * 중복 결제 방지
+     * paymentId 중복 방지
      */
-    @Query("SELECT COUNT(p) > 0 FROM Payment p WHERE p.paymentId = :paymentId")
+    @Query("""
+            select case when count(p) > 0 then true else false end
+            from Payment p
+            where p.paymentId = :paymentId
+            """)
     boolean existsByPaymentId(@Param("paymentId") String paymentId);
 
-    @Query("SELECT p FROM Payment p WHERE p.paymentId = :paymentId")
+
+    /**
+     * paymentId 기준 결제 조회
+     */
+    @Query("""
+            select distinct p
+            from Payment p
+            join fetch p.booking b
+            join fetch b.user u
+            join fetch b.concertSession cs
+            join fetch cs.concert c
+            left join fetch b.bookingSeats bs
+            left join fetch bs.seat s
+            where p.paymentId = :paymentId
+            """)
     Optional<Payment> findByPaymentId(@Param("paymentId") String paymentId);
 
+
+    /**
+     * paymentId + userId 기준 결제 조회
+     */
     @Query("""
-        SELECT p
-        FROM Payment p
-        WHERE p.paymentId = :paymentId
-          AND p.user.id = :userId
-        """)
+            select distinct p
+            from Payment p
+            join fetch p.booking b
+            join fetch b.user u
+            join fetch b.concertSession cs
+            join fetch cs.concert c
+            left join fetch b.bookingSeats bs
+            left join fetch bs.seat s
+            where p.paymentId = :paymentId
+              and u.id = :userId
+            """)
     Optional<Payment> findByPaymentIdAndUserId(
             @Param("paymentId") String paymentId,
             @Param("userId") Integer userId
     );
 
+
     /**
-     * 중복 결제 방지
-     * 특정 예매 건에 대한 결제 데이터가 이미 존재하는지 확인
+     * 특정 예매 건에 결제가 이미 있는지 확인
      */
     @Query("""
-            SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END
-            FROM Payment p
-            WHERE p.booking.id = :bookingId
+            select case when count(p) > 0 then true else false end
+            from Payment p
+            where p.booking.id = :bookingId
             """)
     boolean existsByBookingId(@Param("bookingId") Integer bookingId);
-
 }

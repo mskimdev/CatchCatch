@@ -12,7 +12,8 @@
                     <h1 class="h3 mb-0 text-gray-800">공연 상세 정보</h1>
                     <div>
                         <a href="/admin/concerts" class="btn btn-secondary btn-sm shadow-sm">목록으로</a>
-                        <a href="/admin/concerts/update/{{concert.id}}" class="btn btn-primary btn-sm shadow-sm">공연 정보 수정</a>
+                        <a href="/admin/concerts/update/{{concert.id}}" class="btn btn-primary btn-sm shadow-sm">공연 정보
+                            수정</a>
                     </div>
                 </div>
 
@@ -32,7 +33,8 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <p><strong>공연장:</strong> {{concert.venueName}}</p>
-                                        <p><strong>공연 상태:</strong> <span class="badge badge-success">{{concert.concertStatus}}</span></p>
+                                        <p><strong>공연 상태:</strong> <span
+                                                class="badge badge-success">{{concert.concertStatus}}</span></p>
                                         <p><strong>관람 연령:</strong> {{concert.ageLimit}}</p>
                                     </div>
                                     <div class="col-md-6">
@@ -58,12 +60,16 @@
                 <div class="card shadow mb-4">
                     <div class="card-header py-3 d-flex justify-content-between align-items-center">
                         <h6 class="m-0 font-weight-bold text-success">회차 관리</h6>
-                        <a href="/admin/concerts/{{concert.id}}/sessions/new" class="btn btn-outline-success btn-sm">+ 회차 추가</a>
+                        <button type="button" class="btn btn-outline-success btn-sm" data-toggle="modal"
+                                data-target="#addSessionModal">
+                            + 회차 추가
+                        </button>
                     </div>
                     <div class="card-body">
-                        <table class="table table-bordered">
-                            <thead>
+                        <table class="table table-bordered table-hover">
+                            <thead class="thead-light">
                             <tr>
+                                <th>ID</th>
                                 <th>회차명</th>
                                 <th>날짜</th>
                                 <th>시간</th>
@@ -73,24 +79,120 @@
                             <tbody>
                             {{#concert.sessionList}}
                                 <tr>
+                                    <td>{{id}}</td>
                                     <td>{{round}}</td>
                                     <td>{{sessionDate}}</td>
                                     <td>{{sessionTime}}</td>
                                     <td>
-                                        <button class="btn btn-warning btn-sm">수정</button>
-                                        <button class="btn btn-danger btn-sm">삭제</button>
+                                        <button class="btn btn-warning btn-sm"
+                                                onclick="openEditModal('{{id}}', '{{round}}', '{{sessionDate}}', '{{sessionTime}}')">
+                                            수정
+                                        </button>
+                                        <a href="/admin/concerts/{{concert.id}}/sessions/{{id}}/delete"
+                                           class="btn btn-danger btn-sm"
+                                           onclick="return confirm('이 회차를 정말 삭제하시겠습니까? (소프트딜리트 처리)');">삭제</a>
                                     </td>
                                 </tr>
                             {{/concert.sessionList}}
                             {{^concert.sessionList}}
                                 <tr>
-                                    <td colspan="4" class="text-center">등록된 회차가 없습니다.</td>
+                                    <td colspan="5" class="text-center py-3">등록된 회차가 없습니다.</td>
                                 </tr>
                             {{/concert.sessionList}}
                             </tbody>
                         </table>
                     </div>
                 </div>
+
+                <div class="modal fade" id="addSessionModal" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title font-weight-bold">새 공연 회차 등록</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <form action="/admin/concerts/{{concert.id}}/sessions/add" method="POST">
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <label>회차명</label>
+                                        <input type="text" name="round" class="form-control" placeholder="예: 3회차"
+                                               required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>공연 날짜</label>
+                                        <input type="date" name="sessionDate" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>공연 시간</label>
+                                        <input type="time" name="sessionTime" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                                    <button type="submit" class="btn btn-success">회차 등록</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="editSessionModal" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title font-weight-bold">회차 정보 수정</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <form id="editSessionForm" method="POST">
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <label>회차명</label>
+                                        <input type="text" id="editRound" name="round" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>공연 날짜</label>
+                                        <input type="date" id="editSessionDate" name="sessionDate" class="form-control"
+                                               required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>공연 시간</label>
+                                        <input type="time" id="editSessionTime" name="sessionTime" class="form-control"
+                                               required>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                                    <button type="submit" class="btn btn-warning">수정 완료</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    function openEditModal(id, round, date, time) {
+                        // 1. 수정 폼의 action URL을 동적으로 주입 (공연 ID와 회차 ID 조합)
+                        const concertId = "{{concert.id}}";
+    document.getElementById('editSessionForm').action = `/admin/concerts/${concertId}/sessions/${id}/update`;
+
+    // 2. 모달 내부 input에 기존 데이터 세팅
+    document.getElementById('editRound').value = round;
+    document.getElementById('editSessionDate').value = date;
+
+    // 3. 시간 데이터 포맷 조정 (HH:mm:ss -> HH:mm)
+    if(time && time.length > 5) {
+        time = time.substring(0, 5);
+    }
+    document.getElementById('editSessionTime').value = time;
+
+    // 4. 부트스트랩 모달 강제 팝업
+    $('#editSessionModal').modal('show');
+}
+                </script>
             </div>
         </div>
         {{> admin/layout/footer}}

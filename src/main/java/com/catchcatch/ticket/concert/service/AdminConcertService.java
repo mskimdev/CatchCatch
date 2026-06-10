@@ -7,14 +7,12 @@ import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.core.errors.NotFoundException;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.session.ConcertSessionRepository;
+import com.catchcatch.ticket.session.ConcertSessionRequest;
 import com.catchcatch.ticket.venue.Venue;
 import com.catchcatch.ticket.venue.VenueRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -22,8 +20,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static com.catchcatch.ticket.venue.QVenue.venue;
 
 @Service
 @RequiredArgsConstructor
@@ -126,7 +122,7 @@ public class AdminConcertService {
 
                 // LocalDateTime에서 날짜와 시간을 동적으로 추출하여 분리 저장
                 ConcertSession session = ConcertSession.builder()
-                        .concert(savedConcert) // 💡 영속화된 부모 객체를 주입 (FK 제약조건 충돌 방지)
+                        .concert(savedConcert) //  영속화된 부모 객체를 주입 (FK 제약조건 충돌 방지)
                         .sessionDate(sessionDto.getSessionDate().toLocalDate()) // 날짜 분리
                         .sessionTime(sessionDto.getSessionDate().toLocalTime()) // 시간 분리
                         .round(sessionDto.getRound()) // 엔티티에 필드가 있다면 세팅
@@ -196,5 +192,46 @@ public class AdminConcertService {
         file.transferTo(saveFile);
 
         return "/uploads/" + fileName;
+    }
+
+    /*
+        회차 관련 기능
+     */
+
+    // 1. 회차 추가
+    @Transactional
+    public void addSession(Integer concertId, ConcertSessionRequest.SaveDTO dto) {
+        Concert concert = concertRepository.findById(concertId)
+                .orElseThrow(() -> new NotFoundException("해당 공연이 존재하지 않습니다."));
+
+        ConcertSession concertSession = ConcertSession.builder()
+                .concert(concert)
+                .round(dto.getRound())
+                .sessionDate(dto.toLocalDate())
+                .sessionTime(dto.toLocalTime())
+                .build();
+
+        concertSessionRepository.save(concertSession);
+    }
+
+    // 2. 회차 수정 (Dirty Checking 활용)
+    @Transactional
+    public void updateSession(Integer sessionId, ConcertSessionRequest.SaveDTO dto) {
+        ConcertSession session = concertSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new NotFoundException("해당 회차 정보를 찾을 수 없습니다."));
+
+        // 영속화된 엔티티의 필드 변경 -> 더티 체킹으로 자동 UPDATE
+        session.updateSession(dto.getRound(), dto.toLocalDate(), dto.toLocalTime());
+    }
+
+    // 3. 회차 삭제 (Soft Delete 엔티티 어노테이션 연동)
+    @Transactional
+    public void deleteSession(Integer sessionId) {
+        ConcertSession session = concertSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new NotFoundException("해당 회차 정보를 찾을 수 없습니다."));
+
+        // 엔티티에 @SQLDelete(sql = "UPDATE concert_session_tb SET is_deleted = true WHERE id = ?") 가 적용되어 있다면
+        // 아래 호출 시 자동으로 소프트 딜리트가 수행됩니다.
+        concertSessionRepository.delete(session);
     }
 } // end of class

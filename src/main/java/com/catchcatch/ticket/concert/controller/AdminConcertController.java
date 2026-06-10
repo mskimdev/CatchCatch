@@ -2,9 +2,9 @@ package com.catchcatch.ticket.concert.controller;
 
 import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
 import com.catchcatch.ticket.concert.service.AdminConcertService;
+import com.catchcatch.ticket.session.ConcertSessionRequest;
 import com.catchcatch.ticket.venue.Venue;
 import com.catchcatch.ticket.venue.VenueRepository;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -99,5 +99,30 @@ public class AdminConcertController {
         return "redirect:/admin/concerts/" + id;
     }
 
+    // 관리자 공연 상세화면 회차 기능 구현
+// 1. 회차 추가 기능 요청
+    @PostMapping("/{concertId}/sessions/add")
+    public String addSession(@PathVariable Integer concertId,
+                             @ModelAttribute ConcertSessionRequest.SaveDTO dto) {
+        adminConcertService.addSession(concertId, dto);
+        return "redirect:/admin/concerts/" + concertId; // 처리 후 상세보기 페이지로 리다이렉트
+    }
+
+    // 2. 회차 수정 기능 요청
+    @PostMapping("/{concertId}/sessions/{sessionId}/update")
+    public String updateSession(@PathVariable Integer concertId,
+                                @PathVariable Integer sessionId,
+                                @ModelAttribute ConcertSessionRequest.SaveDTO dto) {
+        adminConcertService.updateSession(sessionId, dto);
+        return "redirect:/admin/concerts/" + concertId;
+    }
+
+    // 3. 회차 삭제 기능 요청 (전통 MVC 방식 링크 바인딩을 위해 GET 활용)
+    @GetMapping("/{concertId}/sessions/{sessionId}/delete")
+    public String deleteSession(@PathVariable Integer concertId,
+                                @PathVariable Integer sessionId) {
+        adminConcertService.deleteSession(sessionId);
+        return "redirect:/admin/concerts/" + concertId;
+    }
 
 }

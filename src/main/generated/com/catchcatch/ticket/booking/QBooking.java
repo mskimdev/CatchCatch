@@ -22,9 +22,9 @@ public class QBooking extends EntityPathBase<Booking> {
 
     public static final QBooking booking = new QBooking("booking");
 
-    public final com.catchcatch.ticket.booking.bookingDetail.QBookingDetail bookingDetail;
-
     public final StringPath bookingNumber = createString("bookingNumber");
+
+    public final ListPath<com.catchcatch.ticket.booking.bookingSeat.BookingSeat, com.catchcatch.ticket.booking.bookingSeat.QBookingSeat> bookingSeats = this.<com.catchcatch.ticket.booking.bookingSeat.BookingSeat, com.catchcatch.ticket.booking.bookingSeat.QBookingSeat>createList("bookingSeats", com.catchcatch.ticket.booking.bookingSeat.BookingSeat.class, com.catchcatch.ticket.booking.bookingSeat.QBookingSeat.class, PathInits.DIRECT2);
 
     public final DateTimePath<java.sql.Timestamp> canceledAt = createDateTime("canceledAt", java.sql.Timestamp.class);
 
@@ -36,9 +36,11 @@ public class QBooking extends EntityPathBase<Booking> {
 
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
 
-    public final com.catchcatch.ticket.seat.QSeat seat;
+    public final DateTimePath<java.sql.Timestamp> paidAt = createDateTime("paidAt", java.sql.Timestamp.class);
 
     public final EnumPath<Status> status = createEnum("status", Status.class);
+
+    public final NumberPath<Integer> totalAmount = createNumber("totalAmount", Integer.class);
 
     public final com.catchcatch.ticket.user.QUser user;
 
@@ -60,9 +62,7 @@ public class QBooking extends EntityPathBase<Booking> {
 
     public QBooking(Class<? extends Booking> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.bookingDetail = inits.isInitialized("bookingDetail") ? new com.catchcatch.ticket.booking.bookingDetail.QBookingDetail(forProperty("bookingDetail"), inits.get("bookingDetail")) : null;
         this.concertSession = inits.isInitialized("concertSession") ? new com.catchcatch.ticket.session.QConcertSession(forProperty("concertSession"), inits.get("concertSession")) : null;
-        this.seat = inits.isInitialized("seat") ? new com.catchcatch.ticket.seat.QSeat(forProperty("seat"), inits.get("seat")) : null;
         this.user = inits.isInitialized("user") ? new com.catchcatch.ticket.user.QUser(forProperty("user")) : null;
     }
 
