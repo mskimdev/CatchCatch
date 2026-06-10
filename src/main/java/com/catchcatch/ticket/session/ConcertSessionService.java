@@ -95,23 +95,4 @@ public class ConcertSessionService {
         return session;
     }
 
-//    // 관리자 기능
-//
-//    // 다중 회차 등록
-//    @Transactional
-//    public void addSessions(Integer concertId, ConcertSessionRequest.MultiSessionCreateRequest request) {
-//        Concert concert = concertRepository.findById(concertId)
-//                .orElseThrow(() -> new IllegalArgumentException("공연 없음"));
-//
-//        // 2. 회차 등록 (여기서 쪼개기!)
-//        for (var sessionDto : request.getSessions()) {
-//            ConcertSession session = ConcertSession.builder()
-//                    .concert(concert)
-//                    .sessionDate(sessionDto.getSessionDate().toLocalDate()) // 날짜만
-//                    .sessionTime(sessionDto.getSessionDate().toLocalTime()) // 시간만
-//                    .round(sessionDto.getRound())
-//                    .build();
-//            concertSessionRepository.save(session);
-//        }
-//    }
 }
