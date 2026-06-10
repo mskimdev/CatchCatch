@@ -228,3 +228,48 @@
   font-size: 13px;
   font-weight: 800;
 }
+
+.cc-complete-seat-box {
+    width: 100%;
+}
+
+.cc-complete-seat-count {
+    margin-bottom: 8px;
+    font-weight: 700;
+    color: #5f35d5;
+}
+
+.cc-complete-seat-scroll {
+    max-height: 132px;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+.cc-complete-seat-item {
+    display: grid;
+    grid-template-columns: 1fr 70px 90px;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.cc-complete-seat-item:last-child {
+    border-bottom: 0;
+}
+
+.cc-complete-seat-name {
+    font-weight: 700;
+    color: #222;
+}
+
+.cc-complete-seat-grade {
+    font-weight: 700;
+    color: #6d35d8;
+}
+
+.cc-complete-seat-price {
+    text-align: right;
+    font-weight: 700;
+    color: #333;
+}

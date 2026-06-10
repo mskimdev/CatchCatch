@@ -9,16 +9,16 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Integer> {
-
-    /**
-     * 예매 번호로 예매 조회
-     */
-    Optional<Booking> findByBookingNumber(String bookingNumber);
-
-    /**
-     * 사용자 기준 예매 목록 조회
-     */
-    List<Booking> findByUser_Id(Integer userId);
+//
+//    /**
+//     * 예매 번호로 예매 조회
+//     */
+//    Optional<Booking> findByBookingNumber(String bookingNumber);
+//
+//    /**
+//     * 사용자 기준 예매 목록 조회
+//     */
+//    List<Booking> findByUser_Id(Integer userId);
 
     /**
      * 만료 대상 예매 조회
@@ -28,56 +28,57 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
      * expiresAt < now
      */
     List<Booking> findByStatusAndExpiresAtBefore(Status status, Timestamp now);
+//
+//    /**
+//     * 특정 회차 + 상태 기준 예매 목록 조회
+//     *
+//     * 기존 findByConcertSessionIdAndStatusIn 에서 수정.
+//     * Booking 엔티티 필드명이 concertSession 이므로 concertSession.id로 타고 들어가야 한다.
+//     */
+//    List<Booking> findByConcertSession_IdAndStatusIn(
+//            Integer concertSessionId,
+//            List<Status> statuses
+//    );
+//
+//    /**
+//     * 특정 회차의 이미 예매/점유된 좌석 ID 목록 조회
+//     *
+//     * Booking에 seat 필드가 없어졌으므로
+//     * Booking -> BookingSeat -> Seat 구조로 조회한다.
+//     */
+//    @Query("""
+//            select distinct s.id
+//            from Booking b
+//            join b.bookingSeats bs
+//            join bs.seat s
+//            where b.concertSession.id = :concertSessionId
+//              and b.status in :statuses
+//            """)
+//    List<Integer> findBookedSeatIdsByConcertSessionIdAndStatusIn(
+//            @Param("concertSessionId") Integer concertSessionId,
+//            @Param("statuses") List<Status> statuses
+//    );
 
-    /**
-     * 특정 회차 + 상태 기준 예매 목록 조회
-     *
-     * 기존 findByConcertSessionIdAndStatusIn 에서 수정.
-     * Booking 엔티티 필드명이 concertSession 이므로 concertSession.id로 타고 들어가야 한다.
-     */
-    List<Booking> findByConcertSession_IdAndStatusIn(
-            Integer concertSessionId,
-            List<Status> statuses
-    );
-
-    /**
-     * 특정 회차의 이미 예매/점유된 좌석 ID 목록 조회
-     *
-     * Booking에 seat 필드가 없어졌으므로
-     * Booking -> BookingSeat -> Seat 구조로 조회한다.
-     */
-    @Query("""
-            select distinct s.id
-            from Booking b
-            join b.bookingSeats bs
-            join bs.seat s
-            where b.concertSession.id = :concertSessionId
-              and b.status in :statuses
-            """)
-    List<Integer> findBookedSeatIdsByConcertSessionIdAndStatusIn(
-            @Param("concertSessionId") Integer concertSessionId,
-            @Param("statuses") List<Status> statuses
-    );
-
-    /**
-     * 특정 회차의 특정 좌석이 이미 예매/점유 상태인지 확인
-     *
-     * 기존 existsByConcertSessionIdAndSeatIdAndStatusIn 대체.
-     */
-    @Query("""
-            select case when count(bs) > 0 then true else false end
-            from Booking b
-            join b.bookingSeats bs
-            join bs.seat s
-            where b.concertSession.id = :concertSessionId
-              and s.id = :seatId
-              and b.status in :statuses
-            """)
-    boolean existsByConcertSessionIdAndSeatIdAndStatusIn(
-            @Param("concertSessionId") Integer concertSessionId,
-            @Param("seatId") Integer seatId,
-            @Param("statuses") List<Status> statuses
-    );
+//
+//    /**
+//     * 특정 회차의 특정 좌석이 이미 예매/점유 상태인지 확인
+//     *
+//     * 기존 existsByConcertSessionIdAndSeatIdAndStatusIn 대체.
+//     */
+//    @Query("""
+//            select case when count(bs) > 0 then true else false end
+//            from Booking b
+//            join b.bookingSeats bs
+//            join bs.seat s
+//            where b.concertSession.id = :concertSessionId
+//              and s.id = :seatId
+//              and b.status in :statuses
+//            """)
+//    boolean existsByConcertSessionIdAndSeatIdAndStatusIn(
+//            @Param("concertSessionId") Integer concertSessionId,
+//            @Param("seatId") Integer seatId,
+//            @Param("statuses") List<Status> statuses
+//    );
 
     /**
      * 마이페이지 예매 목록 조회
@@ -141,24 +142,44 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             @Param("bookingId") Integer bookingId,
             @Param("userId") Integer userId
     );
+//
+//    /**
+//     * 예매 상세 조회용
+//     */
+//    @Query("""
+//            select distinct b
+//            from Booking b
+//            join fetch b.user u
+//            join fetch b.concertSession cs
+//            join fetch cs.concert c
+//            left join fetch c.venue v
+//            left join fetch b.bookingSeats bs
+//            left join fetch bs.seat s
+//            where b.id = :bookingId
+//              and u.id = :userId
+//            """)
+//    Optional<Booking> findDetailByIdAndUserId(
+//            @Param("bookingId") Integer bookingId,
+//            @Param("userId") Integer userId
+//    );
 
     /**
-     * 예매 상세 조회용
+     * 예매 완료 화면 상세 조회용
+     *
+     * Booking -> ConcertSession -> Concert -> Venue
+     * Booking -> BookingSeat -> Seat
+     * 정보를 한 번에 가져온다.
      */
     @Query("""
-            select distinct b
-            from Booking b
-            join fetch b.user u
-            join fetch b.concertSession cs
-            join fetch cs.concert c
-            left join fetch c.venue v
-            left join fetch b.bookingSeats bs
-            left join fetch bs.seat s
-            where b.id = :bookingId
-              and u.id = :userId
-            """)
-    Optional<Booking> findDetailByIdAndUserId(
-            @Param("bookingId") Integer bookingId,
-            @Param("userId") Integer userId
-    );
+        select distinct b
+        from Booking b
+        join fetch b.user u
+        join fetch b.concertSession cs
+        join fetch cs.concert c
+        left join fetch c.venue v
+        left join fetch b.bookingSeats bs
+        left join fetch bs.seat s
+        where b.id = :bookingId
+        """)
+    Optional<Booking> findDetailById(@Param("bookingId") Integer bookingId);
 }

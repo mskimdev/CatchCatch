@@ -3,9 +3,12 @@ package com.catchcatch.ticket.booking.dto;
 import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.booking.bookingSeat.BookingSeat;
+import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.seat.Seat;
+import com.catchcatch.ticket.session.ConcertSession;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.sql.Timestamp;
@@ -25,6 +28,58 @@ public class BookingResponse {
      * 실제 SeatStatus.SOLD와 이름이 다르더라도 프론트 표시용으로 쓸 수 있음.
      */
     private static final String STATUS_CONFIRMED = "CONFIRMED";
+
+    /**
+     * 예매 정보 화면용 DTO
+     */
+    @Getter
+    @Builder
+    public static class InfoDTO {
+        private Integer id;
+        private String title;
+        private String posterUrl;
+        private String category;
+        private String genre;
+
+        private Integer sessionId;
+        private String sessionText;
+        private String venueName;
+
+        private String ageLimit;
+        private String runtime;
+        private String organizer;
+        private String contact;
+
+        // 좌석 가격
+        private List<PriceDTO> prices;
+
+        public static InfoDTO from(Concert concert, ConcertSession concertSession, List<Seat> seats) {
+            return InfoDTO.builder()
+                    .id(concert.getId())
+                    .title(concert.getTitle())
+                    .posterUrl(concert.getPosterUrl())
+                    .category(concert.getCategory())
+                    .genre(concert.getGenre())
+                    .sessionId(concertSession.getId())
+                    .sessionText(concertSession.getSessionDate() + " " + concertSession.getSessionTime())
+                    .venueName(concert.getVenue().getName())
+                    .ageLimit(concert.getAgeLimit())
+                    .runtime(concert.getRuntime())
+                    .organizer(concert.getOrganizer())
+                    .contact(concert.getContact())
+                    .prices(toPriceDTOs(seats))
+                    .build();
+        }
+    }
+
+    // seat에 있는 좌석 가격
+    @Getter
+    @Builder
+    public static class PriceDTO {
+        private String gradeName;
+        private String gradeClass;
+        private String priceText;
+    }
 
     @Getter
     public static class DetailDTO {
@@ -162,7 +217,7 @@ public class BookingResponse {
     /**
      * 결제 화면 DTO
      *
-     * booking/payment.mustache 또는 payment/payment-form.mustache에서
+     * booking/payment-form.mustache 또는 payment/payment-form.mustache에서
      * {{payment.bookingId}}, {{payment.selectedSeats}}, {{payment.totalPriceText}}
      * 형태로 사용하기 위한 DTO.
      */
@@ -360,6 +415,10 @@ public class BookingResponse {
         }
     }
 
+    // ===========================================
+    // private
+    // ===========================================
+
     private static List<BookingSeat> safeBookingSeats(Booking booking) {
         if (booking.getBookingSeats() == null) {
             return List.of();
@@ -452,6 +511,102 @@ public class BookingResponse {
             return objectMapper.writeValueAsString(value);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("JSON 변환 중 오류가 발생했습니다.", e);
+        }
+    }
+
+    // 좌석 가격
+    private static List<PriceDTO> toPriceDTOs(List<Seat> seats) {
+        if (seats == null || seats.isEmpty()) {
+            return List.of();
+        }
+
+        return seats.stream()
+                .collect(Collectors.toMap(
+                        seat -> seat.getGrade().name(),
+                        Seat::getPrice,
+                        (oldPrice, newPrice) -> oldPrice
+                ))
+                .entrySet()
+                .stream()
+                .sorted(Comparator.comparingInt(entry -> seatGradeOrder(entry.getKey())))
+                .map(entry -> PriceDTO.builder()
+                        .gradeName(formatGradeName(entry.getKey()))
+                        .gradeClass(entry.getKey().toLowerCase())
+                        .priceText(formatPrice(entry.getValue()))
+                        .build())
+                .toList();
+    }
+
+    /**
+     * 예매 완료 화면 DTO
+     *
+     * booking/complete.mustache에서
+     * {{complete.bookingNumber}}, {{complete.concertTitle}},
+     * {{complete.selectedSeats}}, {{complete.totalPriceText}}
+     * 형태로 사용한다.
+     */
+    @Getter
+    public static class CompleteDTO {
+        private Integer bookingId;
+        private String bookingNumber;
+        private Status status;
+
+        private Integer concertId;
+        private Integer concertSessionId;
+
+        private String concertTitle;
+        private String posterUrl;
+        private String sessionText;
+        private String venueText;
+
+        private List<BookingSeatDTO> selectedSeats;
+        private Integer seatCount;
+        private String seatName;
+
+        private Integer totalPrice;
+        private String totalPriceText;
+
+        private Integer userId;
+        private String username;
+
+        private Timestamp createdAt;
+        private Timestamp expiresAt;
+
+        public CompleteDTO(Booking booking) {
+            List<BookingSeat> bookingSeats = safeBookingSeats(booking);
+
+            this.bookingId = booking.getId();
+            this.bookingNumber = booking.getBookingNumber();
+            this.status = booking.getStatus();
+
+            this.concertId = booking.getConcertSession().getConcert().getId();
+            this.concertSessionId = booking.getConcertSession().getId();
+
+            this.concertTitle = booking.getConcertSession().getConcert().getTitle();
+            this.posterUrl = booking.getConcertSession().getConcert().getPosterUrl();
+
+            this.sessionText = booking.getConcertSession().getSessionDate()
+                    + " "
+                    + booking.getConcertSession().getSessionTime();
+
+            this.venueText = booking.getConcertSession().getConcert().getVenue().getName();
+
+            this.selectedSeats = bookingSeats.stream()
+                    .sorted(Comparator.comparing(bookingSeat -> bookingSeat.getSeat().getSeatNumber()))
+                    .map(BookingSeatDTO::new)
+                    .toList();
+
+            this.seatCount = bookingSeats.size();
+            this.seatName = formatSeatName(bookingSeats);
+
+            this.totalPrice = calculateTotalPrice(bookingSeats);
+            this.totalPriceText = formatPrice(this.totalPrice);
+
+            this.userId = booking.getUser().getId();
+            this.username = booking.getUser().getUsername();
+
+            this.createdAt = booking.getCreatedAt();
+            this.expiresAt = booking.getExpiresAt();
         }
     }
 }

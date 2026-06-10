@@ -469,7 +469,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        if (!selectedSeatInputs || selectedSeatInputs.querySelectorAll("input[name='seatIds']").length === 0) {
+        if (!selectedSeatIdsInput || selectedSeatIdsInput.value.trim() === "") {
           event.preventDefault();
           alert("좌석 정보가 정상적으로 입력되지 않았습니다.");
           return;
