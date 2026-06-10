@@ -12,12 +12,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import static com.catchcatch.ticket.core.util.BookingStepUtil.setBookingStep;
+import static com.catchcatch.ticket.seat.QSeat.seat;
+
 @RequiredArgsConstructor
 @Controller
 @RequestMapping("/booking")
 public class BookingController {
 
     private final BookingService bookingService;
+
 
     // 예매 정보 진입
     @PostMapping("/start")
@@ -33,6 +37,7 @@ public class BookingController {
 
         req.validate();
 
+        // 예매 단계 유지용 정보 저장
         session.setAttribute("bookingConcertId", req.getConcertId());
         session.setAttribute("bookingSessionId", req.getSessionId());
 
@@ -50,18 +55,19 @@ public class BookingController {
 
         Integer concertId = getSessionInteger(session, "bookingConcertId");
         Integer sessionId = getSessionInteger(session, "bookingSessionId");
-
-        BookingResponse.SeatFormDTO seat = bookingService.findSeatForm(sessionId);
+        BookingResponse.InfoDTO info = bookingService.findBookingInfo(concertId, sessionId);
 
         model.addAttribute("userId", sessionUser.getId());
         model.addAttribute("username", sessionUser.getUsername());
         model.addAttribute("concertId", concertId);
         model.addAttribute("sessionId", sessionId);
-        model.addAttribute("seat", seat);
-
+        model.addAttribute("concert", info); // info.mustache에서 {{#concert}} 로 사용
         model.addAttribute("pageTitle", "예매 정보");
         model.addAttribute("bookingTitle", "예매 정보");
         model.addAttribute("bookingSubTitle", "공연 정보와 예매자 정보를 확인해주세요.");
+
+        // 예매 프론트 header 변경
+        setBookingStep(model, 1);
 
         return "booking/info";
     }
@@ -90,6 +96,9 @@ public class BookingController {
         model.addAttribute("bookingTitle", "좌석 선택");
         model.addAttribute("bookingSubTitle", "좌석 선택 후 10분 이내에 결제를 진행해주세요.");
 
+        // 예매 프론트 header 변경
+        setBookingStep(model, 2);
+
         return "booking/seat";
     }
 
@@ -108,13 +117,14 @@ public class BookingController {
 
         req.validate();
 
+
         BookingResponse.DetailDTO booking = bookingService.save(new BookingRequest.SaveDTO(
                 sessionUser.getId(),
                 req.getSessionId(),
                 req.getSeatIdList()
         ));
 
-        return "redirect:/booking/payment?bookingId=" + booking.getId();
+        return "redirect:/booking/" + booking.getId() + "/payment";
     }
 
     private User getSessionUser(HttpSession session) {

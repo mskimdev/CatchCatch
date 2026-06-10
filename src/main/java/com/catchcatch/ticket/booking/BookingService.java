@@ -4,11 +4,13 @@ import com.catchcatch.ticket.booking.bookingSeat.BookingSeat;
 import com.catchcatch.ticket.booking.bookingSeat.BookingSeatRepository;
 import com.catchcatch.ticket.booking.dto.BookingRequest;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
+import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.core.errors.BadRequestException;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.seat.SeatRepository;
 import com.catchcatch.ticket.seat.SeatStatus;
 import com.catchcatch.ticket.session.ConcertSession;
+import com.catchcatch.ticket.session.ConcertSessionRepository;
 import com.catchcatch.ticket.user.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -32,6 +34,7 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final SeatRepository seatRepository;
     private final BookingSeatRepository bookingSeatRepository;
+    private final ConcertSessionRepository concertSessionRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -253,6 +256,39 @@ public class BookingService {
     }
 
     private Timestamp now() {
+
         return Timestamp.valueOf(LocalDateTime.now());
+    }
+
+    /**
+     * 예매 정보 화면에 필요한 공연/회차 정보를 조회한다.
+     *
+     * 세션에 저장된 concertId와 sessionId를 검증하고,
+     * 해당 회차가 선택한 공연에 속하는지 확인한 뒤 InfoDTO로 반환한다.
+     */
+    @Transactional(readOnly = true)
+    public BookingResponse.InfoDTO findBookingInfo(Integer concertId, Integer sessionId) {
+        if (concertId == null) {
+            throw new BadRequestException("공연 정보가 없습니다.");
+        }
+
+        if (sessionId == null) {
+            throw new BadRequestException("공연 회차 정보가 없습니다.");
+        }
+
+        ConcertSession concertSession = concertSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new BadRequestException("공연 회차 정보를 찾을 수 없습니다."));
+
+        Concert concert = concertSession.getConcert();
+
+        if (!concert.getId().equals(concertId)) {
+            throw new BadRequestException("공연 정보가 일치하지 않습니다.");
+        }
+
+        // 해당 공연 좌석
+        List<Seat> seats = seatRepository.findByConcertSession_IdOrderBySeatNumberAsc(sessionId);
+
+        // 조회한 공연 정보, 공연 회차 정보, 좌석 목록을 예매 정보 화면용 DTO로 변환
+        return BookingResponse.InfoDTO.from(concert, concertSession, seats);
     }
 }

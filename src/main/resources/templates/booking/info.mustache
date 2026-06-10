@@ -1,210 +1,152 @@
 {{> layout/header-booking}}
+<link rel="stylesheet" href="/css/booking-info.css">
 
-<main class="cc-main">
-    <div class="cc-container">
-        <div class="cc-stepper" aria-label="예매 진행 단계">
-            <div class="cc-step is-active"><span class="cc-step__num">1</span>예매정보</div>
-            <span class="cc-step-line"></span>
-            <div class="cc-step"><span class="cc-step__num">2</span>좌석선택</div>
-            <span class="cc-step-line"></span>
-            <div class="cc-step"><span class="cc-step__num">3</span>결제</div>
-            <span class="cc-step-line"></span>
-            <div class="cc-step"><span class="cc-step__num">4</span>완료</div>
-        </div>
+<main class="cc-main cc-info-page">
+    <div class="cc-info-container">
 
-        <section class="cc-info-layout">
+        {{#concert}}
+            <section class="cc-info-hero">
 
-            <!-- 왼쪽 공연 요약 -->
-            <aside class="cc-info-left">
-                <div class="cc-card cc-booking-summary">
-                    <div class="cc-booking-summary__dark">
-                        <span class="cc-badge cc-badge--fill">단독판매</span>
+                <aside class="cc-info-poster-card">
+                    {{#category}}
+                        <span class="cc-badge cc-badge--fill">{{category}}</span>
+                    {{/category}}
 
-                        <h2>
-                            {{#concert.title}}{{concert.title}}{{/concert.title}}
-                            {{^concert.title}}테스트 콘서트{{/concert.title}}
-                        </h2>
+                    <div class="cc-info-poster">
+                        <img src="{{posterUrl}}" alt="{{title}} 포스터">
+                    </div>
+                </aside>
 
-                        <p class="cc-booking-summary__line">
-                            📅
-                            {{#sessionText}}{{sessionText}}{{/sessionText}}
-                            {{^sessionText}}2026.06.27 (토) 18:00{{/sessionText}}
+                <section class="cc-info-panel">
+
+                    <div class="cc-info-head">
+                        <p class="cc-info-label">예매 정보 확인</p>
+
+                        <h1>{{title}}</h1>
+
+                        <div class="cc-info-tags">
+                            {{#category}}
+                                <span class="cc-mini-badge">{{category}}</span>
+                            {{/category}}
+
+                            {{#genre}}
+                                <span class="cc-mini-badge is-muted">{{genre}}</span>
+                            {{/genre}}
+                        </div>
+
+                        <p class="cc-info-sub">
+                            선택한 공연과 관람 회차를 확인한 뒤 좌석을 선택해주세요.
                         </p>
+                    </div>
 
-                        <p class="cc-booking-summary__line">
-                            📍
-                            {{#venueText}}{{venueText}}{{/venueText}}
-                            {{^venueText}}서울 · 올림픽공원 올림픽홀{{/venueText}}
-                        </p>
+                    <div class="cc-info-summary">
+                        <div class="cc-info-summary-item is-wide">
+                            <span>관람일시</span>
+                            <strong>{{sessionText}}</strong>
+                        </div>
 
-                        <div class="cc-booking-summary__poster">
-                            <img
-                                    src="{{#concert.posterUrl}}{{concert.posterUrl}}{{/concert.posterUrl}}{{^concert.posterUrl}}/images/sample/poster-legend-seoul.svg{{/concert.posterUrl}}"
-                                    alt="공연 포스터">
+                        <div class="cc-info-summary-item is-wide">
+                            <span>공연장</span>
+                            <strong>{{venueName}}</strong>
+                        </div>
+
+                        <div class="cc-info-summary-item">
+                            <span>관람등급</span>
+                            <strong>{{ageLimit}}</strong>
+                        </div>
+
+                        <div class="cc-info-summary-item">
+                            <span>관람시간</span>
+                            <strong>{{runtime}}</strong>
+                        </div>
+
+                        <div class="cc-info-summary-item">
+                            <span>매수제한</span>
+                            <strong>회차당 1인 4매</strong>
+                        </div>
+
+                        {{#organizer}}
+                            <div class="cc-info-summary-item">
+                                <span>주최/주관</span>
+                                <strong>{{organizer}}</strong>
+                            </div>
+                        {{/organizer}}
+
+                        {{#contact}}
+                            <div class="cc-info-summary-item">
+                                <span>문의</span>
+                                <strong>{{contact}}</strong>
+                            </div>
+                        {{/contact}}
+                    </div>
+
+                    <div class="cc-info-price-box">
+                        <div class="cc-info-price-head">
+                            <h2>좌석 등급별 가격</h2>
+                            <span>다음 단계에서 좌석 선택</span>
+                        </div>
+
+                        <div class="cc-info-price-list">
+                            {{#prices}}
+                                <div class="cc-info-price-chip">
+                                    <span>
+                                        <i class="cc-dot cc-dot--{{gradeClass}}"></i>{{gradeName}}
+                                    </span>
+                                    <strong>{{priceText}}</strong>
+                                </div>
+                            {{/prices}}
+
+                            {{^prices}}
+                                <p class="cc-info-empty">등록된 좌석 가격 정보가 없습니다.</p>
+                            {{/prices}}
                         </div>
                     </div>
-                </div>
-            </aside>
 
-            <!-- 중앙 예매 정보 확인 -->
-            <section class="cc-card cc-info-main">
-                <div class="cc-info-main__head">
-                    <div>
-                        <h2>예매 정보 확인</h2>
-                        <p>선택한 공연과 관람 회차를 확인한 뒤 좌석을 선택해주세요.</p>
-                    </div>
-                </div>
+                    <div class="cc-info-bottom">
+                        <p>좌석 선택 후 10분 이내에 결제를 완료해야 합니다.</p>
 
-                <div class="cc-info-section">
-                    <h3>공연 정보</h3>
+                        <div class="cc-info-actions">
+                            <a class="cc-info-back" href="/concerts/{{id}}">
+                                이전
+                            </a>
 
-                    <div class="cc-info-grid">
-                        <div class="cc-info-item">
-                            <b>공연명</b>
-                            <span>
-                        {{#concert.title}}{{concert.title}}{{/concert.title}}
-                                {{^concert.title}}테스트 콘서트{{/concert.title}}
-                    </span>
-                        </div>
+                            <form action="/booking/seat" method="get">
+                                <input type="hidden" name="concertId" value="{{id}}">
+                                <input type="hidden" name="sessionId" value="{{sessionId}}">
 
-                        <div class="cc-info-item">
-                            <b>공연장</b>
-                            <span>
-                        {{#venueName}}{{venueName}}{{/venueName}}
-                                {{^venueName}}올림픽공원 올림픽홀{{/venueName}}
-                    </span>
-                        </div>
-
-                        <div class="cc-info-item">
-                            <b>관람등급</b>
-                            <span>
-                        {{#concert.ageLimit}}{{concert.ageLimit}}{{/concert.ageLimit}}
-                                {{^concert.ageLimit}}만 7세 이상{{/concert.ageLimit}}
-                    </span>
-                        </div>
-
-                        <div class="cc-info-item">
-                            <b>관람시간</b>
-                            <span>
-                        {{#concert.runtime}}{{concert.runtime}}{{/concert.runtime}}
-                                {{^concert.runtime}}120분{{/concert.runtime}}
-                    </span>
+                                <button class="cc-info-next" type="submit">
+                                    좌석 선택하기
+                                </button>
+                            </form>
                         </div>
                     </div>
+
+                </section>
+
+            </section>
+        {{/concert}}
+
+        {{^concert}}
+            <section class="cc-info-panel">
+                <div class="cc-info-head">
+                    <p class="cc-info-label">예매 정보 확인</p>
+                    <h1>공연 정보를 찾을 수 없습니다.</h1>
+                    <p class="cc-info-sub">요청한 공연이 존재하지 않거나 삭제된 공연입니다.</p>
                 </div>
 
-                <div class="cc-info-section">
-                    <h3>선택 회차</h3>
+                <div class="cc-info-bottom">
+                    <p>공연 상세 페이지로 돌아가 다시 예매를 진행해주세요.</p>
 
-                    <div class="cc-selected-session-box">
-                        <div>
-                            <strong>
-                                {{#sessionText}}{{sessionText}}{{/sessionText}}
-                                {{^sessionText}}2026.06.27 (토) 18:00{{/sessionText}}
-                            </strong>
-                            <p>해당 회차의 좌석을 다음 단계에서 선택합니다.</p>
-                        </div>
-
-                        <span class="cc-session-badge">선택 완료</span>
-                    </div>
-                </div>
-
-                <div class="cc-info-section">
-                    <h3>좌석 등급별 가격</h3>
-
-                    <div class="cc-price-list cc-price-list--booking">
-                        {{#prices}}
-                            <div class="cc-price-row">
-                        <span>
-                            <i class="cc-dot cc-dot--{{gradeClass}}"></i>{{gradeName}}
-                        </span>
-                                <strong>{{priceText}}</strong>
-                            </div>
-                        {{/prices}}
-
-                        {{^prices}}
-                            <div class="cc-price-row">
-                                <span><i class="cc-dot cc-dot--vip"></i>VIP석</span>
-                                <strong>165,000원</strong>
-                            </div>
-                            <div class="cc-price-row">
-                                <span><i class="cc-dot cc-dot--r"></i>R석</span>
-                                <strong>132,000원</strong>
-                            </div>
-                            <div class="cc-price-row">
-                                <span><i class="cc-dot cc-dot--s"></i>S석</span>
-                                <strong>110,000원</strong>
-                            </div>
-                            <div class="cc-price-row">
-                                <span><i class="cc-dot cc-dot--a"></i>A석</span>
-                                <strong>88,000원</strong>
-                            </div>
-                            <div class="cc-price-row">
-                                <span><i class="cc-dot cc-dot--b"></i>B석</span>
-                                <strong>66,000원</strong>
-                            </div>
-                        {{/prices}}
+                    <div class="cc-info-actions">
+                        <a class="cc-info-back" href="/concerts">
+                            공연 목록으로
+                        </a>
                     </div>
                 </div>
             </section>
+        {{/concert}}
 
-            <!-- 오른쪽 진행 카드 -->
-            <aside class="cc-info-right">
-                <div class="cc-card cc-info-confirm-card">
-                    <h3>예매 진행</h3>
-
-                    <div class="cc-mini-row">
-                        <b>선택 공연</b>
-                        <span>
-                    {{#concert.title}}{{concert.title}}{{/concert.title}}
-                            {{^concert.title}}테스트 콘서트{{/concert.title}}
-                </span>
-                    </div>
-
-                    <div class="cc-mini-row">
-                        <b>관람일시</b>
-                        <span>
-                    {{#sessionText}}{{sessionText}}{{/sessionText}}
-                            {{^sessionText}}2026.06.27 (토) 18:00{{/sessionText}}
-                </span>
-                    </div>
-
-                    <div class="cc-mini-row">
-                        <b>매수제한</b>
-                        <span>회차당 1인 4매</span>
-                    </div>
-
-                    <div class="cc-info-divider"></div>
-
-                    <form action="/booking/seat" method="get">
-                        <input type="hidden" name="concertId"
-                               value="{{#concert.id}}{{concert.id}}{{/concert.id}}{{^concert.id}}{{concertId}}{{/concert.id}}">
-
-                        <input type="hidden" name="sessionId"
-                               value="{{#sessionId}}{{sessionId}}{{/sessionId}}{{^sessionId}}1{{/sessionId}}">
-
-                        <button class="cc-btn cc-btn--primary cc-btn--full" type="submit">
-                            좌석 선택하기
-                        </button>
-                    </form>
-
-                    <a class="cc-btn cc-btn--outline cc-btn--full cc-prev-link"
-                       href="/concerts/{{#concert.id}}{{concert.id}}{{/concert.id}}{{^concert.id}}{{concertId}}{{/concert.id}}">
-                        이전 단계
-                    </a>
-                </div>
-
-                <div class="cc-card cc-notice-card">
-                    <h3>유의사항</h3>
-                    <ul>
-                        <li>좌석은 다음 단계에서 선택할 수 있습니다.</li>
-                        <li>좌석은 최대 4석까지 선택할 수 있습니다.</li>
-                        <li>좌석 선택 후 10분 이내에 결제를 진행해야 합니다.</li>
-                        <li>무통장 입금 선택 시 예매 당일 23:59까지 입금해야 예매가 완료됩니다.</li>
-                    </ul>
-                </div>
-            </aside>
-
-        </section>
+    </div>
 </main>
+
 {{> layout/footer}}

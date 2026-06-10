@@ -1,17 +1,8 @@
 {{> layout/header-booking}}
+<link rel="stylesheet" href="/css/bking-seat.css">
 
 <main class="cc-main">
     <div class="cc-container">
-
-        <div class="cc-stepper" aria-label="예매 진행 단계">
-            <div class="cc-step is-done"><span class="cc-step__num">✓</span>예매정보</div>
-            <span class="cc-step-line"></span>
-            <div class="cc-step is-active"><span class="cc-step__num">2</span>좌석선택</div>
-            <span class="cc-step-line"></span>
-            <div class="cc-step"><span class="cc-step__num">3</span>결제</div>
-            <span class="cc-step-line"></span>
-            <div class="cc-step"><span class="cc-step__num">4</span>완료</div>
-        </div>
 
         <section class="cc-seat-layout">
 
@@ -52,22 +43,33 @@
                     <div class="cc-mini-row">
                         <b>관람일시</b>
                         <span>
-                    {{#sessionText}}{{sessionText}}{{/sessionText}}
+                            {{#sessionText}}{{sessionText}}{{/sessionText}}
                             {{^sessionText}}2026.06.27 (토) 18:00{{/sessionText}}
-                </span>
+                        </span>
                     </div>
 
                     <div class="cc-mini-row">
                         <b>관람장소</b>
                         <span>
-                    {{#venueName}}{{venueName}}{{/venueName}}
+                            {{#venueName}}{{venueName}}{{/venueName}}
                             {{^venueName}}올림픽공원 올림픽홀{{/venueName}}
-                </span>
+                        </span>
                     </div>
 
-                    <div class="cc-mini-row"><b>관람등급</b><span>만 7세 이상</span></div>
-                    <div class="cc-mini-row"><b>관람시간</b><span>120분</span></div>
-                    <div class="cc-mini-row"><b>매수제한</b><span>회차당 1인 4매</span></div>
+                    <div class="cc-mini-row">
+                        <b>관람등급</b>
+                        <span>만 7세 이상</span>
+                    </div>
+
+                    <div class="cc-mini-row">
+                        <b>관람시간</b>
+                        <span>120분</span>
+                    </div>
+
+                    <div class="cc-mini-row">
+                        <b>매수제한</b>
+                        <span>회차당 1인 4매</span>
+                    </div>
                 </div>
             </aside>
 
@@ -114,6 +116,7 @@
                                 <h3 id="zoneTitle">좌석 등급</h3>
                                 <p id="zoneSubText">DB에 등록된 좌석을 표시합니다.</p>
                             </div>
+
                             <div class="cc-zone-stage">STAGE</div>
                         </div>
 
@@ -158,33 +161,13 @@
                         <strong class="cc-total__price">0원</strong>
                     </div>
 
-                    <form action="/payment" method="post">
-                        <input type="hidden" name="seatIds" id="seatIds">
+                    <form action="/booking/payment" method="post" class="cc-payment-form">
+                        <input type="hidden" name="seatIds" id="selectedSeatIds">
                         <input type="hidden" name="sessionId" value="{{sessionId}}">
                         <input type="hidden" name="concertId" value="{{concertId}}">
 
                         <button type="submit">결제하기</button>
                     </form>
-
-                    <!--            <form action="/booking/payment" method="post" class="cc-payment-form">-->
-                        <!--                {{#_csrf}}-->
-                    <!--                    <input type="hidden" name="{{parameterName}}" value="{{token}}">-->
-                        <!--                {{/_csrf}}-->
-
-                    <!--                <input type="hidden" name="concertId"-->
-                    <!--                       value="{{#concert.id}}{{concert.id}}{{/concert.id}}{{^concert.id}}{{concertId}}{{/concert.id}}">-->
-
-                    <!--                <input type="hidden" name="sessionId"-->
-                    <!--                       value="{{#sessionId}}{{sessionId}}{{/sessionId}}{{^sessionId}}1{{/sessionId}}">-->
-
-                    <!--                &lt;!&ndash; 화면 확인용 &ndash;&gt;-->
-                    <!--                <input type="hidden" id="selectedSeatIds">-->
-
-                    <!--                &lt;!&ndash; 서버 전송용: JS가 name="seatIds" hidden input을 생성 &ndash;&gt;-->
-                    <!--                <div id="selectedSeatInputs"></div>-->
-
-                    <!--                <button class="cc-btn cc-btn--primary cc-btn--full" type="submit">다음 단계</button>-->
-                    <!--            </form>-->
 
                     <a class="cc-btn cc-btn--outline cc-btn--full cc-prev-link"
                        href="/concerts/{{#concert.id}}{{concert.id}}{{/concert.id}}{{^concert.id}}{{concertId}}{{/concert.id}}">
@@ -206,16 +189,19 @@
         <script>
             window.CATCHCATCH_SEATS = {{{seat.seatsJson}}};
 
-    function openMyBookingAndClose() {
-        if (window.opener && !window.opener.closed) {
-            window.opener.location.href = "/users/bookings";
-            window.close();
-        } else {
-            location.href = "/users/bookings";
-        }
-    }
+            function openMyBookingAndClose() {
+                if (window.opener && !window.opener.closed) {
+                    window.opener.location.href = "/users/bookings";
+                    window.close();
+                } else {
+                    location.href = "/users/bookings";
+                }
+            }
         </script>
 
         <script src="/js/booking-seat.js?v=20260608"></script>
+
+    </div>
 </main>
+
 {{> layout/footer}}
