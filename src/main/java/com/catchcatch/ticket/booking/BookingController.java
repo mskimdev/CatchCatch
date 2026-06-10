@@ -13,15 +13,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import static com.catchcatch.ticket.core.util.BookingStepUtil.setBookingStep;
-import static com.catchcatch.ticket.seat.QSeat.seat;
 
 @RequiredArgsConstructor
 @Controller
 @RequestMapping("/booking")
 public class BookingController {
 
+    // todo 추후 머스테치에 화면전환 시 이전으로 돌아가면 안되게 설정할 필요가 있음.
     private final BookingService bookingService;
-
 
     // 예매 정보 진입
     @PostMapping("/start")
@@ -55,6 +54,7 @@ public class BookingController {
 
         Integer concertId = getSessionInteger(session, "bookingConcertId");
         Integer sessionId = getSessionInteger(session, "bookingSessionId");
+
         BookingResponse.InfoDTO info = bookingService.findBookingInfo(concertId, sessionId);
 
         model.addAttribute("userId", sessionUser.getId());
@@ -62,6 +62,7 @@ public class BookingController {
         model.addAttribute("concertId", concertId);
         model.addAttribute("sessionId", sessionId);
         model.addAttribute("concert", info); // info.mustache에서 {{#concert}} 로 사용
+
         model.addAttribute("pageTitle", "예매 정보");
         model.addAttribute("bookingTitle", "예매 정보");
         model.addAttribute("bookingSubTitle", "공연 정보와 예매자 정보를 확인해주세요.");
@@ -94,7 +95,7 @@ public class BookingController {
 
         model.addAttribute("pageTitle", "좌석 선택");
         model.addAttribute("bookingTitle", "좌석 선택");
-        model.addAttribute("bookingSubTitle", "좌석 선택 후 10분 이내에 결제를 진행해주세요.");
+        model.addAttribute("bookingSubTitle", "좌석을 선택해주세요.");
 
         // 예매 프론트 header 변경
         setBookingStep(model, 2);
@@ -102,9 +103,8 @@ public class BookingController {
         return "booking/seat";
     }
 
-    // 좌석 선택 후 결제 화면으로 이동
-    // 여기까지만 Booking 담당
-    @PostMapping("/payment")
+    // 좌석 선택 후 예매 저장 -> 완료 화면으로 이동
+    @PostMapping("/complete")
     public String startPayment(
             BookingRequest.SeatSelectDTO req,
             HttpSession session
@@ -117,14 +117,43 @@ public class BookingController {
 
         req.validate();
 
-
         BookingResponse.DetailDTO booking = bookingService.save(new BookingRequest.SaveDTO(
                 sessionUser.getId(),
                 req.getSessionId(),
                 req.getSeatIdList()
         ));
 
-        return "redirect:/booking/" + booking.getId() + "/payment";
+        // 완료 화면에서 조회할 예매 ID 저장
+        session.setAttribute("bookingId", booking.getId());
+
+        return "redirect:/booking/complete";
+    }
+
+    // 예매 완료
+    @GetMapping("/complete")
+    public String completeForm(Model model, HttpSession session) {
+        User sessionUser = getSessionUser(session);
+
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+
+        Integer bookingId = getSessionInteger(session, "bookingId");
+
+        BookingResponse.CompleteDTO complete = bookingService.findCompleteById(bookingId);
+
+        model.addAttribute("userId", sessionUser.getId());
+        model.addAttribute("username", sessionUser.getUsername());
+
+        // complete.mustache에서 {{booking.xxx}} 로 사용
+        model.addAttribute("booking", complete);
+
+        model.addAttribute("pageTitle", "예매 완료");
+
+        // 완료 화면에서는 예매 단계 헤더 안 쓸 거면 이거 필요 없음
+        // setBookingStep(model, 3);
+
+        return "booking/complete";
     }
 
     private User getSessionUser(HttpSession session) {

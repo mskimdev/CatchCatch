@@ -935,3 +935,360 @@ a {
     flex: 0 0 auto;
   }
 }
+
+/* =========================
+   좌석선택 화면 넓은 버전
+========================= */
+.cc-seat-layout--wide {
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 20px;
+}
+
+.cc-seat-layout--wide > .cc-seat-map-card {
+  min-width: 0;
+}
+
+.cc-seat-redesign--wide {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+}
+
+.cc-zone-overview--large {
+  padding: 18px;
+}
+
+.cc-zone-overview__image-box--large {
+  position: relative;
+  height: 520px;
+  border-radius: 16px;
+}
+
+.cc-zone-overview__image-box--large .cc-zone-overview__image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.cc-zone-legend--row {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.cc-zone-detail {
+  min-height: 360px;
+}
+
+.cc-zone-seat-grid {
+  min-height: 230px;
+}
+
+.cc-seat-layout--wide > aside {
+  position: sticky;
+  top: 20px;
+}
+
+/* 좌석도 이미지 위 hover 레이어 */
+.cc-seat-image-hover-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.cc-seat-image-hover {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  transform: translate(-50%, -50%);
+  background: rgba(124, 58, 237, .12);
+  border: 1px solid rgba(124, 58, 237, .35);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.cc-seat-image-hover:hover {
+  background: rgba(124, 58, 237, .42);
+  border-color: #4c1d95;
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, .14);
+}
+
+.cc-seat-tooltip {
+  position: fixed;
+  z-index: 9999;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #151020;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.45;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -125%);
+  transition: opacity .1s ease;
+  white-space: nowrap;
+}
+
+.cc-seat-tooltip.is-show {
+  opacity: 1;
+}
+
+/* ================================
+   좌석 선택 화면 압축 레이아웃
+================================ */
+
+.cc-seat-container {
+    max-width: 1480px;
+}
+
+.cc-seat-layout--wide {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 18px;
+    align-items: start;
+}
+
+.cc-seat-map-card {
+    padding: 20px;
+}
+
+.cc-seat-redesign--wide {
+    display: grid;
+    grid-template-columns: 430px minmax(0, 1fr);
+    gap: 18px;
+    align-items: stretch;
+}
+
+/* 전체 좌석도 */
+.cc-zone-overview--large {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cc-zone-overview__head {
+    margin-bottom: 0;
+}
+
+.cc-zone-overview__head strong {
+    font-size: 20px;
+}
+
+.cc-zone-overview__head span {
+    font-size: 13px;
+}
+
+.cc-zone-overview__image-box--large {
+    height: 430px;
+    padding: 12px;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.cc-zone-overview__image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* 등급 탭 */
+.cc-zone-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 0;
+}
+
+.cc-zone-tab {
+    height: 42px;
+    border-radius: 12px;
+    font-size: 14px;
+}
+
+/* 범례 */
+.cc-zone-legend--row {
+    margin-top: 2px;
+    padding-top: 10px;
+    gap: 16px;
+    font-size: 13px;
+}
+
+/* 상세 좌석 */
+.cc-zone-detail {
+    padding: 22px;
+    min-height: 430px;
+}
+
+.cc-zone-detail__top {
+    margin-bottom: 12px;
+}
+
+.cc-zone-detail__top h3 {
+    margin: 0;
+    font-size: 26px;
+}
+
+.cc-zone-detail__top p {
+    margin-top: 6px;
+    font-size: 14px;
+}
+
+.cc-zone-stage {
+    width: 180px;
+    height: 46px;
+    border-radius: 16px;
+    font-size: 26px;
+}
+
+.cc-zone-guide {
+    display: none;
+}
+
+.cc-zone-seat-grid {
+    min-height: 250px;
+    padding: 18px;
+    border-radius: 16px;
+}
+
+/* 오른쪽 선택 카드 */
+.cc-seat-side {
+    position: sticky;
+    top: 92px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.cc-selected-card {
+    padding: 22px;
+}
+
+.cc-selected-card h3 {
+    margin-bottom: 18px;
+    font-size: 22px;
+}
+
+.cc-timer {
+    padding-bottom: 16px;
+    margin-bottom: 18px;
+}
+
+.cc-selected-card h4 {
+    display: none;
+}
+
+.cc-selected-list {
+    min-height: 120px;
+    margin-bottom: 18px;
+}
+
+.cc-selected-seat {
+    padding: 12px 0;
+}
+
+.cc-total {
+    padding-top: 18px;
+    margin-top: 10px;
+}
+
+.cc-total strong,
+.cc-total__price {
+    font-size: 28px;
+}
+
+/* 예매 완료 버튼 영역 */
+.cc-seat-actions {
+    display: grid;
+    grid-template-columns: 84px 1fr;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.cc-seat-actions form {
+    margin: 0;
+}
+
+.cc-seat-prev,
+.cc-seat-complete-btn {
+    width: 100%;
+    height: 52px;
+    border-radius: 15px;
+    font-size: 15px;
+    font-weight: 950;
+    letter-spacing: -0.04em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.cc-seat-prev {
+    border: 1px solid rgba(100, 64, 170, 0.20);
+    background: #ffffff;
+    color: #4d12a8;
+}
+
+.cc-seat-complete-btn {
+    border: 0;
+    color: #ffffff;
+    background: linear-gradient(135deg, #7b36f2 0%, #4c14a8 100%);
+    box-shadow: 0 12px 24px rgba(94, 38, 202, 0.22);
+}
+
+.cc-seat-complete-btn:hover,
+.cc-seat-prev:hover {
+    transform: translateY(-1px);
+}
+
+.cc-seat-complete-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* 유의사항 카드 압축 */
+.cc-notice-card {
+    padding: 22px;
+}
+
+.cc-notice-card h3 {
+    font-size: 22px;
+    margin-bottom: 14px;
+}
+
+.cc-notice-card li {
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+/* 반응형 */
+@media (max-width: 1200px) {
+    .cc-seat-layout--wide {
+        grid-template-columns: 1fr;
+    }
+
+    .cc-seat-side {
+        position: static;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .cc-seat-redesign--wide {
+        grid-template-columns: 1fr;
+    }
+
+    .cc-zone-overview__image-box--large {
+        height: 360px;
+    }
+
+    .cc-seat-side {
+        grid-template-columns: 1fr;
+    }
+}

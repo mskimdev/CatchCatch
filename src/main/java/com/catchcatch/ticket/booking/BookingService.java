@@ -291,4 +291,19 @@ public class BookingService {
         // 조회한 공연 정보, 공연 회차 정보, 좌석 목록을 예매 정보 화면용 DTO로 변환
         return BookingResponse.InfoDTO.from(concert, concertSession, seats);
     }
+
+    /**
+     * 예매 완료 화면 정보 조회
+     */
+    @Transactional(readOnly = true)
+    public BookingResponse.CompleteDTO findCompleteById(Integer bookingId) {
+        if (bookingId == null) {
+            throw new BadRequestException("예매 정보가 없습니다.");
+        }
+
+        Booking booking = bookingRepository.findDetailById(bookingId)
+                .orElseThrow(() -> new BadRequestException("예매 정보를 찾을 수 없습니다."));
+
+        return new BookingResponse.CompleteDTO(booking);
+    }
 }

@@ -5,43 +5,44 @@
     <title>{{#pageTitle}}{{pageTitle}} | {{/pageTitle}}CatchCatch</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- 공통 CSS -->
     <link rel="stylesheet" href="/css/common.css">
     <link rel="stylesheet" href="/css/catchcatch-purple.css">
-
-    <!-- 예매 플로우 헤더/스텝바 전용 CSS -->
     <link rel="stylesheet" href="/css/booking-header.css">
+    <link rel="stylesheet" href="/css/booking-info.css">
+    <link rel="stylesheet" href="/css/booking-seat.css">
+    <link rel="stylesheet" href="/css/booking-complete.css">
 </head>
 
 <body>
 
 <header class="cc-booking-header">
-    <div class="cc-stepper" aria-label="예매 진행 단계">
+    <div class="cc-booking-header__inner">
 
-        <div class="cc-step {{#stepInfo}}is-active{{/stepInfo}}{{#stepInfoDone}}is-done{{/stepInfoDone}}">
-            <span class="cc-step__num">{{#stepInfoDone}}✓{{/stepInfoDone}}{{^stepInfoDone}}1{{/stepInfoDone}}</span>
-            예매정보
-        </div>
+        <div class="cc-stepper" aria-label="예매 진행 단계">
 
-        <span class="cc-step-line"></span>
+            <div class="cc-step {{#stepInfo}}is-active{{/stepInfo}}{{#stepInfoDone}}is-done{{/stepInfoDone}}">
+                <span class="cc-step__num">
+                    {{#stepInfoDone}}✓{{/stepInfoDone}}{{^stepInfoDone}}1{{/stepInfoDone}}
+                </span>
+                <span class="cc-step__text">예매정보</span>
+            </div>
 
-        <div class="cc-step {{#stepSeat}}is-active{{/stepSeat}}{{#stepSeatDone}}is-done{{/stepSeatDone}}">
-            <span class="cc-step__num">{{#stepSeatDone}}✓{{/stepSeatDone}}{{^stepSeatDone}}2{{/stepSeatDone}}</span>
-            좌석선택
-        </div>
+            <span class="cc-step-line"></span>
 
-        <span class="cc-step-line"></span>
+            <div class="cc-step {{#stepSeat}}is-active{{/stepSeat}}{{#stepSeatDone}}is-done{{/stepSeatDone}}">
+                <span class="cc-step__num">
+                    {{#stepSeatDone}}✓{{/stepSeatDone}}{{^stepSeatDone}}2{{/stepSeatDone}}
+                </span>
+                <span class="cc-step__text">좌석선택</span>
+            </div>
 
-        <div class="cc-step {{#stepPayment}}is-active{{/stepPayment}}{{#stepPaymentDone}}is-done{{/stepPaymentDone}}">
-            <span class="cc-step__num">{{#stepPaymentDone}}✓{{/stepPaymentDone}}{{^stepPaymentDone}}3{{/stepPaymentDone}}</span>
-            결제
-        </div>
+            <span class="cc-step-line"></span>
 
-        <span class="cc-step-line"></span>
+            <div class="cc-step {{#stepComplete}}is-active{{/stepComplete}}">
+                <span class="cc-step__num">3</span>
+                <span class="cc-step__text">완료</span>
+            </div>
 
-        <div class="cc-step {{#stepComplete}}is-active{{/stepComplete}}">
-            <span class="cc-step__num">4</span>
-            완료
         </div>
 
     </div>

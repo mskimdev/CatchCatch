@@ -536,4 +536,77 @@ public class BookingResponse {
                         .build())
                 .toList();
     }
+
+    /**
+     * 예매 완료 화면 DTO
+     *
+     * booking/complete.mustache에서
+     * {{complete.bookingNumber}}, {{complete.concertTitle}},
+     * {{complete.selectedSeats}}, {{complete.totalPriceText}}
+     * 형태로 사용한다.
+     */
+    @Getter
+    public static class CompleteDTO {
+        private Integer bookingId;
+        private String bookingNumber;
+        private Status status;
+
+        private Integer concertId;
+        private Integer concertSessionId;
+
+        private String concertTitle;
+        private String posterUrl;
+        private String sessionText;
+        private String venueText;
+
+        private List<BookingSeatDTO> selectedSeats;
+        private Integer seatCount;
+        private String seatName;
+
+        private Integer totalPrice;
+        private String totalPriceText;
+
+        private Integer userId;
+        private String username;
+
+        private Timestamp createdAt;
+        private Timestamp expiresAt;
+
+        public CompleteDTO(Booking booking) {
+            List<BookingSeat> bookingSeats = safeBookingSeats(booking);
+
+            this.bookingId = booking.getId();
+            this.bookingNumber = booking.getBookingNumber();
+            this.status = booking.getStatus();
+
+            this.concertId = booking.getConcertSession().getConcert().getId();
+            this.concertSessionId = booking.getConcertSession().getId();
+
+            this.concertTitle = booking.getConcertSession().getConcert().getTitle();
+            this.posterUrl = booking.getConcertSession().getConcert().getPosterUrl();
+
+            this.sessionText = booking.getConcertSession().getSessionDate()
+                    + " "
+                    + booking.getConcertSession().getSessionTime();
+
+            this.venueText = booking.getConcertSession().getConcert().getVenue().getName();
+
+            this.selectedSeats = bookingSeats.stream()
+                    .sorted(Comparator.comparing(bookingSeat -> bookingSeat.getSeat().getSeatNumber()))
+                    .map(BookingSeatDTO::new)
+                    .toList();
+
+            this.seatCount = bookingSeats.size();
+            this.seatName = formatSeatName(bookingSeats);
+
+            this.totalPrice = calculateTotalPrice(bookingSeats);
+            this.totalPriceText = formatPrice(this.totalPrice);
+
+            this.userId = booking.getUser().getId();
+            this.username = booking.getUser().getUsername();
+
+            this.createdAt = booking.getCreatedAt();
+            this.expiresAt = booking.getExpiresAt();
+        }
+    }
 }

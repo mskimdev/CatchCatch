@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>{{#pageTitle}}{{pageTitle}} | {{/pageTitle}}CatchCatch</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/catchcatch-purple.css">
+    <link rel="stylesheet" href="/css/booking-complete.css">
+</head>
+
+<body>
+<main class="cc-main">
+    <div class="cc-container">
+
+        <section class="cc-complete-wrap">
+            <div class="cc-complete-icon">✓</div>
+
+            <h2 class="cc-complete-title">예매가 완료되었습니다!</h2>
+            <p class="cc-complete-sub">예매 확인서는 마이페이지에서 확인하실 수 있습니다.</p>
+
+            <div class="cc-card cc-complete-ticket">
+                <div class="cc-complete-ticket__left">
+                    <img src="{{booking.posterUrl}}" alt="공연 포스터">
+                </div>
+
+                <div class="cc-complete-ticket__right">
+                    <div class="cc-complete-ticket__number">
+                        예매번호
+                        <strong>{{booking.bookingNumber}}</strong>
+                    </div>
+
+                    <h3>{{booking.concertTitle}}</h3>
+
+                    <div class="cc-info-list">
+                        <div class="cc-info-row">
+                            <span class="cc-info-row__label">📅 공연일시</span>
+                            <span>{{booking.sessionText}}</span>
+                        </div>
+
+                        <div class="cc-info-row">
+                            <span class="cc-info-row__label">📍 공연장소</span>
+                            <span>{{booking.venueText}}</span>
+                        </div>
+
+                        <div class="cc-info-row cc-info-row--seats">
+                            <span class="cc-info-row__label">💺 좌석</span>
+
+                            <div class="cc-complete-seat-box">
+                                <div class="cc-complete-seat-count">
+                                    총 {{booking.seatCount}}석
+                                </div>
+
+                                <div class="cc-complete-seat-scroll">
+                                    {{#booking.selectedSeats}}
+                                        <div class="cc-complete-seat-item">
+                                            <span class="cc-complete-seat-name">{{seatNumber}}</span>
+                                            <span class="cc-complete-seat-grade">{{gradeName}}</span>
+                                            <span class="cc-complete-seat-price">{{priceText}}</span>
+                                        </div>
+                                    {{/booking.selectedSeats}}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cc-info-row">
+                            <span class="cc-info-row__label">💳 결제금액</span>
+                            <strong class="cc-complete-price">
+                                {{booking.totalPriceText}}
+                            </strong>
+                        </div>
+
+                        <div class="cc-info-row">
+                            <span class="cc-info-row__label">🕒 예매일시</span>
+                            <span>{{booking.createdAt}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cc-complete-actions">
+                <button type="button" class="cc-btn cc-btn--primary" onclick="location.href='/'">
+                    예매 종료
+                </button>
+
+                <button type="button" class="cc-btn cc-btn--outline" onclick="location.href='/users/bookings'">
+                    예매 내역 확인
+                </button>
+            </div>
+        </section>
+
+        <script>
+            history.pushState(null, '', location.href);
+
+            window.addEventListener('popstate', function () {
+                history.pushState(null, '', location.href);
+                location.replace('/users/bookings');
+            });
+        </script>
+
+{{> layout/footer}}

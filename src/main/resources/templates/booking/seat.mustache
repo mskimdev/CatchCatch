@@ -1,91 +1,27 @@
 {{> layout/header-booking}}
-<link rel="stylesheet" href="/css/bking-seat.css">
 
 <main class="cc-main">
-    <div class="cc-container">
+    <div class="cc-container cc-seat-container">
 
-        <section class="cc-seat-layout">
+        <section class="cc-seat-layout cc-seat-layout--wide">
 
-            <!-- 왼쪽 공연 요약 -->
-            <aside>
-                <div class="cc-card cc-booking-summary">
-                    <div class="cc-booking-summary__dark">
-                        <span class="cc-badge cc-badge--fill">단독판매</span>
-
-                        <h2>
-                            {{#concert.title}}{{concert.title}}{{/concert.title}}
-                            {{^concert.title}}테스트 콘서트{{/concert.title}}
-                        </h2>
-
-                        <p class="cc-booking-summary__line">
-                            📅
-                            {{#sessionText}}{{sessionText}}{{/sessionText}}
-                            {{^sessionText}}2026.06.27 (토) 18:00{{/sessionText}}
-                        </p>
-
-                        <p class="cc-booking-summary__line">
-                            📍
-                            {{#venueText}}{{venueText}}{{/venueText}}
-                            {{^venueText}}서울 · 올림픽공원 올림픽홀{{/venueText}}
-                        </p>
-
-                        <div class="cc-booking-summary__poster">
-                            <img
-                                    src="{{#concert.posterUrl}}{{concert.posterUrl}}{{/concert.posterUrl}}{{^concert.posterUrl}}/images/sample/poster-legend-seoul.svg{{/concert.posterUrl}}"
-                                    alt="공연 포스터">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="cc-card cc-booking-info">
-                    <h3>예매 정보</h3>
-
-                    <div class="cc-mini-row">
-                        <b>관람일시</b>
-                        <span>
-                            {{#sessionText}}{{sessionText}}{{/sessionText}}
-                            {{^sessionText}}2026.06.27 (토) 18:00{{/sessionText}}
-                        </span>
-                    </div>
-
-                    <div class="cc-mini-row">
-                        <b>관람장소</b>
-                        <span>
-                            {{#venueName}}{{venueName}}{{/venueName}}
-                            {{^venueName}}올림픽공원 올림픽홀{{/venueName}}
-                        </span>
-                    </div>
-
-                    <div class="cc-mini-row">
-                        <b>관람등급</b>
-                        <span>만 7세 이상</span>
-                    </div>
-
-                    <div class="cc-mini-row">
-                        <b>관람시간</b>
-                        <span>120분</span>
-                    </div>
-
-                    <div class="cc-mini-row">
-                        <b>매수제한</b>
-                        <span>회차당 1인 4매</span>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- 중앙 좌석 선택 -->
+            <!-- 좌석 선택 영역 -->
             <section class="cc-card cc-seat-map-card">
-                <div class="cc-seat-redesign">
+                <div class="cc-seat-redesign cc-seat-redesign--wide">
 
-                    <!-- 왼쪽: 전체 좌석도 -->
-                    <aside class="cc-zone-overview">
+                    <!-- 전체 좌석도 -->
+                    <section class="cc-zone-overview cc-zone-overview--large">
                         <div class="cc-zone-overview__head">
                             <strong>전체 좌석도</strong>
-                            <span>좌석 등급을 선택하세요</span>
+                            <span>등급을 선택하면 좌석이 표시됩니다.</span>
                         </div>
 
-                        <div class="cc-zone-overview__image-box">
-                            <img src="/images/sample/seat.jpg" alt="전체 좌석도" class="cc-zone-overview__image">
+                        <div class="cc-zone-overview__image-box cc-zone-overview__image-box--large">
+                            <img src="/images/sample/seat.jpg"
+                                 alt="전체 좌석도"
+                                 class="cc-zone-overview__image">
+
+                            <div id="seatImageHoverLayer" class="cc-seat-image-hover-layer"></div>
                         </div>
 
                         <div class="cc-zone-tabs" aria-label="좌석 등급 선택">
@@ -98,37 +34,55 @@
                             {{/seat.gradeTabs}}
 
                             {{^seat.gradeTabs}}
-                                <button type="button" class="cc-zone-tab is-active" data-grade="">좌석 없음</button>
+                                <button type="button"
+                                        class="cc-zone-tab is-active"
+                                        data-grade="">
+                                    좌석 없음
+                                </button>
                             {{/seat.gradeTabs}}
                         </div>
 
-                        <div class="cc-zone-legend">
-                            <div><i class="cc-seat-sample cc-seat-sample--available"></i>예매 가능</div>
-                            <div><i class="cc-seat-sample cc-seat-sample--selected"></i>선택 좌석</div>
-                            <div><i class="cc-seat-sample cc-seat-sample--sold"></i>매진</div>
+                        <div class="cc-zone-legend cc-zone-legend--row">
+                            <div>
+                                <i class="cc-seat-sample cc-seat-sample--available"></i>
+                                예매 가능
+                            </div>
+                            <div>
+                                <i class="cc-seat-sample cc-seat-sample--selected"></i>
+                                선택 좌석
+                            </div>
+                            <div>
+                                <i class="cc-seat-sample cc-seat-sample--sold"></i>
+                                매진
+                            </div>
                         </div>
-                    </aside>
+                    </section>
 
-                    <!-- 오른쪽: 선택 등급 좌석 -->
+                    <!-- 선택 등급 좌석 -->
                     <section class="cc-zone-detail">
                         <div class="cc-zone-detail__top">
                             <div>
                                 <h3 id="zoneTitle">좌석 등급</h3>
-                                <p id="zoneSubText">DB에 등록된 좌석을 표시합니다.</p>
+                                <p id="zoneSubText">좌석을 선택해주세요.</p>
                             </div>
 
                             <div class="cc-zone-stage">STAGE</div>
                         </div>
 
-                        <div class="cc-zone-guide">
-                            좌석 번호를 클릭하면 오른쪽 선택 좌석에 추가됩니다. 최대 4석까지 선택할 수 있습니다.
-                        </div>
-
-                        <div id="zoneSeatGrid" class="cc-zone-seat-grid" aria-label="좌석 선택"></div>
+                        <div id="zoneSeatGrid"
+                             class="cc-zone-seat-grid"
+                             aria-label="좌석 선택"></div>
 
                         <div class="cc-zone-bottom">
-                            <button type="button" class="cc-small-btn" id="resetZoneBtn">좌석 다시 선택</button>
-                            <span id="seatHoverInfo">좌석에 마우스를 올리면 좌석 정보가 표시됩니다.</span>
+                            <button type="button"
+                                    class="cc-small-btn"
+                                    id="resetZoneBtn">
+                                좌석 다시 선택
+                            </button>
+
+                            <span id="seatHoverInfo">
+                                최대 4석까지 선택할 수 있습니다.
+                            </span>
                         </div>
                     </section>
 
@@ -136,7 +90,8 @@
             </section>
 
             <!-- 오른쪽 선택 좌석 -->
-            <aside>
+            <aside class="cc-seat-side">
+
                 <div class="cc-card cc-selected-card">
                     <h3>선택 좌석</h3>
 
@@ -145,13 +100,15 @@
                         <b data-countdown="600">10:00</b>
                     </div>
 
-                    <h4>선택 내역</h4>
-
                     <div class="cc-selected-list">
                         <div class="cc-selected-seat">
                             <div>
-                                <div class="cc-selected-seat__name">선택된 좌석이 없습니다.</div>
-                                <div class="cc-selected-seat__price">좌석을 선택하면 여기에 표시됩니다.</div>
+                                <div class="cc-selected-seat__name">
+                                    선택된 좌석이 없습니다.
+                                </div>
+                                <div class="cc-selected-seat__price">
+                                    좌석을 선택하면 표시됩니다.
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -161,45 +118,52 @@
                         <strong class="cc-total__price">0원</strong>
                     </div>
 
-                    <form action="/booking/payment" method="post" class="cc-payment-form">
-                        <input type="hidden" name="seatIds" id="selectedSeatIds">
-                        <input type="hidden" name="sessionId" value="{{sessionId}}">
-                        <input type="hidden" name="concertId" value="{{concertId}}">
+                    <div class="cc-seat-actions">
+                        <a class="cc-seat-prev"
+                           href="/booking/info">
+                            이전
+                        </a>
 
-                        <button type="submit">결제하기</button>
-                    </form>
+                        <form action="/booking/complete"
+                              method="post"
+                              class="cc-complete-form">
+                            <input type="hidden"
+                                   name="seatIds"
+                                   id="selectedSeatIds">
 
-                    <a class="cc-btn cc-btn--outline cc-btn--full cc-prev-link"
-                       href="/concerts/{{#concert.id}}{{concert.id}}{{/concert.id}}{{^concert.id}}{{concertId}}{{/concert.id}}">
-                        이전 단계
-                    </a>
+                            <input type="hidden"
+                                   name="sessionId"
+                                   value="{{sessionId}}">
+
+                            <input type="hidden"
+                                   name="concertId"
+                                   value="{{concertId}}">
+
+                            <button type="submit"
+                                    class="cc-seat-complete-btn">
+                                예매 완료
+                            </button>
+                        </form>
+                    </div>
                 </div>
 
                 <div class="cc-card cc-notice-card">
                     <h3>유의사항</h3>
                     <ul>
-                        <li>좌석 보관 시간이 초과되면 선택 좌석이 자동으로 해제됩니다.</li>
-                        <li>무통장 입금 선택 시 예매 당일 23:59까지 입금해야 예매가 완료됩니다.</li>
+                        <li>보관 시간이 초과되면 선택 좌석이 해제됩니다.</li>
+                        <li>좌석은 최대 4석까지 선택할 수 있습니다.</li>
                     </ul>
                 </div>
+
             </aside>
 
         </section>
 
         <script>
             window.CATCHCATCH_SEATS = {{{seat.seatsJson}}};
-
-            function openMyBookingAndClose() {
-                if (window.opener && !window.opener.closed) {
-                    window.opener.location.href = "/users/bookings";
-                    window.close();
-                } else {
-                    location.href = "/users/bookings";
-                }
-            }
         </script>
 
-        <script src="/js/booking-seat.js?v=20260608"></script>
+        <script src="/js/booking-seat.js?v=20260610"></script>
 
     </div>
 </main>
