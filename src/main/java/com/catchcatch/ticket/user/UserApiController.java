@@ -59,7 +59,7 @@ public class UserApiController {
     @PutMapping("/users/mypage")
     public ResponseEntity<?> updateProfile(
             @RequestBody UserRequest.ProfileUpdateDTO reqDTO,
-            @SessionAttribute("sessionUser") User sessionUser,
+            @SessionAttribute(Define.SESSION_USER) User sessionUser,
             HttpSession session) {
         if (reqDTO.currentPassword() != null && !reqDTO.currentPassword().isBlank())
             reqDTO.isLocalValidate();
