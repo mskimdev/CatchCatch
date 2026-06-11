@@ -5,6 +5,7 @@ import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.core.errors.NotFoundException;
+import com.catchcatch.ticket.core.util.ProfileImageUtil;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.session.ConcertSessionRepository;
 import com.catchcatch.ticket.session.ConcertSessionRequest;
@@ -41,6 +42,7 @@ public class AdminConcertService {
                 .collect(Collectors.toList());
     }
 
+    // 공연 상세 정보
     @Transactional(readOnly = true)
     public AdminConcertRequest.DetailResponseDTO getDetail(Integer id) {
         // 1. JOIN FETCH가 적용된 레포지토리 메서드 호출
@@ -57,35 +59,11 @@ public class AdminConcertService {
         Venue venue = venueRepository.findById(dto.venueId())
                 .orElseThrow(() -> new NotFoundException("해당 ID의 공연장을 찾을 수 없습니다."));
 
-        String dbFilePath = "";
+        String dbFilePath = null;
 
-        MultipartFile posterImage = dto.posterImage();
-        if (posterImage != null && !posterImage.isEmpty()) {
-            try {
-                // 파일 저장을 위한 절대 경로
-                String projectPath = System.getProperty("user.dir") + "/uploads/";
 
-                // 해당 폴더가 없으면 자동 생성
-                File uploadDir = new File(projectPath);
-                if (!uploadDir.exists()) {
-                    uploadDir.mkdir();
-                }
-
-                // 파일명 중복 방지를 위한 고유 ID
-                UUID uuid = UUID.randomUUID();
-                String fileName = uuid.toString() + "_" + posterImage.getOriginalFilename();
-
-                // 지정된 경로에 물리적인 파일 생성
-                File saveFile = new File(projectPath, fileName);
-                posterImage.transferTo(saveFile);
-
-                // 💡 꿀팁 수정: "/uploads" 뒤에 슬래시(/)가 빠지면 "/uploads파일명.png"로 저장되므로 슬래시 추가!
-                dbFilePath = "/uploads/" + fileName;
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new RuntimeException("이미지 파일 저장 중 오류 발생");
-            }
+        if (dto.posterImage() != null && !dto.posterImage().isEmpty()) {
+            dbFilePath = ProfileImageUtil.save(dto.posterImage()); // saveFromBase64가 아닌 save 사용!
         }
 
         // 2. 부모 엔티티(Concert) 조립 및 최초 save
@@ -106,7 +84,7 @@ public class AdminConcertService {
                 .description(dto.description())
                 .detailDescription1(dto.detailDescription1())
                 .detailDescription2(dto.detailDescription2())
-                .posterUrl(dbFilePath)
+                .posterUrl(dbFilePath) // 위에서 받아온 파일 URL(또는 null)을 그대로 주입
                 .concertStatus(ConcertStatus.valueOf(dto.concertStatus()))
                 .build();
 
@@ -122,7 +100,7 @@ public class AdminConcertService {
 
                 // LocalDateTime에서 날짜와 시간을 동적으로 추출하여 분리 저장
                 ConcertSession session = ConcertSession.builder()
-                        .concert(savedConcert) //  영속화된 부모 객체를 주입 (FK 제약조건 충돌 방지)
+                        .concert(savedConcert) // 영속화된 부모 객체를 주입 (FK 제약조건 충돌 방지)
                         .sessionDate(sessionDto.sessionDate().toLocalDate()) // 날짜 분리
                         .sessionTime(sessionDto.sessionDate().toLocalTime()) // 시간 분리
                         .round(sessionDto.round()) // 엔티티에 필드가 있다면 세팅
@@ -132,7 +110,7 @@ public class AdminConcertService {
             }
         }
 
-        // 💡 해결: 맨 마지막에 생성된 콘서트의 ID를 반환합니다!
+        // 4. 맨 마지막에 생성된 콘서트의 ID를 반환합니다.
         return savedConcert.getId();
     }
 
@@ -165,18 +143,16 @@ public class AdminConcertService {
         Venue newVenue = venueRepository.findById(dto.venueId())
                 .orElseThrow(() -> new NotFoundException("해당 ID의 공연장을 찾을 수 없습니다."));
 
-        // 3. 이미지 처리 (새로 파일을 올렸다면 기존 파일 삭제 후 새 경로 저장, 아니면 기존 URL 유지)
-        String newPosterUrl = concert.getPosterUrl();
-        try {
-            if (dto.posterImage() != null && !dto.posterImage().isEmpty()) {
-                newPosterUrl = uploadFile(dto.posterImage());
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("파일 업로드 오류");
+        // 1. 기본적으로는 기존 포스터 URL을 유지하도록 세팅
+        String updatePosterUrl = dto.posterUrl();
+
+        // 2. 만약 프론트에서 새로운 이미지를 첨부해서 Base64로 보냈다면? 새로 저장하고 경로 교체!
+        if (dto.posterImageBase64() != null && !dto.posterImageBase64().isEmpty()) {
+            updatePosterUrl = ProfileImageUtil.saveFromBase64(dto.posterImageBase64());
         }
 
         // 4. 더티 체킹 적용 (엔티티 내부 값 변경)
-        concert.update(dto, newVenue, newPosterUrl);
+        concert.update(dto, newVenue, updatePosterUrl);
     }
 
     private String uploadFile(MultipartFile file) throws IOException {

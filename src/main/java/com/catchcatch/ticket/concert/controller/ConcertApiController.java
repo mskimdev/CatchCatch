@@ -2,7 +2,6 @@ package com.catchcatch.ticket.concert.controller;
 
 import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
 import com.catchcatch.ticket.concert.service.AdminConcertService;
-import com.catchcatch.ticket.concert.service.ConcertService;
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.Resp;
 import com.catchcatch.ticket.session.ConcertSessionRequest;
@@ -62,6 +61,10 @@ public class ConcertApiController {
         return Resp.ok("콘서트 삭제 성공");
     }
 
+
+    /*
+        회차 crud 기능
+     */
     @PostMapping("/{concertId}/sessions")
     public ResponseEntity<?> addSession(
             @PathVariable Integer concertId,

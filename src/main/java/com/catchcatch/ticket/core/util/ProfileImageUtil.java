@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public class ProfileImageUtil {
 
-    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
+    private static final long MAX_FILE_SIZE = 50 * 1024 * 1024;
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
     private static final Path profileDirectory = Path.of("uploads", "profiles").toAbsolutePath().normalize();
 
