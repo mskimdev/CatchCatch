@@ -1,5 +1,8 @@
 package com.catchcatch.ticket.venue;
 
+import com.catchcatch.ticket.concert.repository.ConcertRepository;
+import com.catchcatch.ticket.core.errors.BadRequestException;
+import com.catchcatch.ticket.core.errors.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -12,6 +15,7 @@ import java.util.List;
 public class VenueService {
 
     private final VenueRepository venueRepository;
+    private final ConcertRepository concertRepository;
 
     @Transactional
     public void save(VenueRequest.SaveDTO dto) {
@@ -49,6 +53,15 @@ public class VenueService {
 
     @Transactional
     public void deleteById(Integer id) {
-        venueRepository.deleteById(id);
+        Venue venue = venueRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("등록된 공연장이 없습니다."));
+
+        boolean isUsed = concertRepository.existsByVenueId(id);
+
+        if (isUsed) {
+            throw new BadRequestException("등록된 공연이 있는 공연장은 삭제할 수 없습니다.");
+        }
+
+        venueRepository.delete(venue);
     }
 }
