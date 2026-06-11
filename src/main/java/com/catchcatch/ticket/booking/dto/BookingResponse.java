@@ -186,6 +186,11 @@ public class BookingResponse {
         private Integer price;
         private String priceText;
 
+        private String statusLabel;
+        private Boolean isPending;
+        private Boolean isPaid;
+        private Boolean isCanceled;
+
         public MyPageListDTO(Booking booking) {
             List<BookingSeat> bookingSeats = safeBookingSeats(booking);
 
@@ -211,6 +216,12 @@ public class BookingResponse {
 
             this.price = calculateTotalPrice(bookingSeats);
             this.priceText = formatPrice(this.price);
+
+            this.statusLabel = toBookingStatusLabel(booking.getStatus());
+
+            this.isPending = booking.getStatus() == Status.PENDING;
+            this.isPaid = booking.getStatus() == Status.PAID;
+            this.isCanceled = booking.getStatus() == Status.CANCELED;
         }
     }
 
@@ -535,6 +546,19 @@ public class BookingResponse {
                         .priceText(formatPrice(entry.getValue()))
                         .build())
                 .toList();
+    }
+
+    private static String toBookingStatusLabel(Status status) {
+        if (status == null) {
+            return "-";
+        }
+
+        return switch (status) {
+            case PENDING -> "결제대기";
+            case PAID -> "예약확정";
+            case CANCELED -> "취소됨";
+            case EXPIRED -> "만료됨";
+        };
     }
 
     /**

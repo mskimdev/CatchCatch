@@ -189,6 +189,17 @@
         const paymentBtn = document.querySelector("#payment-btn");
         const agreeAll = document.querySelector("#payAgreeAll");
         const agreeItems = document.querySelectorAll(".pay-agree-item");
+        const payMethodLabels = document.querySelectorAll(".cc-pay-method");
+
+        payMethodLabels.forEach(label => {
+            label.addEventListener("click", function () {
+                payMethodLabels.forEach(item => {
+                    item.classList.remove("is-active");
+                });
+
+                label.classList.add("is-active");
+            });
+        });
 
         if (!paymentForm || !paymentBtn) {
             console.error("paymentForm 또는 payment-btn을 찾을 수 없습니다.");
