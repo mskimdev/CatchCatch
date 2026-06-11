@@ -106,24 +106,24 @@ public class Concert {
 
     @Builder(builderClassName = "ConcertUpdater", builderMethodName = "updater")
     public void update(AdminConcertRequest.UpdateRequestDTO dto, Venue venue, String posterUrl) {
-        this.title = dto.getTitle();
-        this.artist = dto.getArtist();
-        this.description = dto.getDescription();
+        this.title = dto.title();
+        this.artist = dto.artist();
+        this.description = dto.description();
         this.posterUrl = posterUrl; // 이미지 경로는 서비스에서 결정 후 전달
-        this.detailTitle = dto.getDetailTitle();
-        this.detailDescription1 = dto.getDetailDescription1();
-        this.detailDescription2 = dto.getDetailDescription2();
+        this.detailTitle = dto.detailTitle();
+        this.detailDescription1 = dto.detailDescription1();
+        this.detailDescription2 = dto.detailDescription2();
         this.venue = venue; // 연관관계 엔티티 변경
-        this.genre = dto.getGenre();
-        this.ageLimit = dto.getAgeLimit();
-        this.runtime = dto.getRuntime();
-        this.organizer = dto.getOrganizer();
-        this.contact = dto.getContact();
-        this.concertStatus = ConcertStatus.valueOf(dto.getConcertStatus());
-        this.ticketOpenDate = dto.getTicketOpenDate();
-        this.startDate = dto.getStartDate();
-        this.endDate = dto.getEndDate();
-        this.category = dto.getCategory();
+        this.genre = dto.genre();
+        this.ageLimit = dto.ageLimit();
+        this.runtime = dto.runtime();
+        this.organizer = dto.organizer();
+        this.contact = dto.contact();
+        this.concertStatus = ConcertStatus.valueOf(dto.concertStatus());
+        this.ticketOpenDate = dto.ticketOpenDate();
+        this.startDate = dto.startDate();
+        this.endDate = dto.endDate();
+        this.category = dto.category();
     }
 
 } // end of class

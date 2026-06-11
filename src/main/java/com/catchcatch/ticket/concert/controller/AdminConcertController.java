@@ -2,9 +2,11 @@ package com.catchcatch.ticket.concert.controller;
 
 import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
 import com.catchcatch.ticket.concert.service.AdminConcertService;
+import com.catchcatch.ticket.core.util.Resp;
 import com.catchcatch.ticket.venue.Venue;
 import com.catchcatch.ticket.venue.VenueRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -65,5 +67,15 @@ public class AdminConcertController {
         model.addAttribute("venueList", venueList);
 
         return "admin/concert/update";
+    }
+
+    // 6. 공연 삭제
+    // ✅ 수정 후 (REST API 정석)
+    @DeleteMapping("/{id}") // URI에서 delete 제거 (가이드라인 준수)
+    public ResponseEntity<?> deleteConcert(@PathVariable Integer id) {
+        adminConcertService.deleteConcert(id);
+
+        // 비동기 통신이므로 화면(redirect)이 아닌, 성공했다는 데이터(JSON)만 반환합니다.
+        return ResponseEntity.ok(Resp.ok("공연이 성공적으로 삭제되었습니다."));
     }
 }
