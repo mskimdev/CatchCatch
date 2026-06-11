@@ -221,9 +221,7 @@ public class PaymentResponse {
             this.userName = booking.getUser().getUsername();
             this.userEmail = booking.getUser().getEmail();
 
-            // User 엔티티에 phone 필드가 없다면 null로 둔다.
-            // mustache에서 {{^payment.userPhone}} 기본값 처리가 가능함.
-            this.userPhone = null;
+            this.userPhone = booking.getUser().getPhone();
         }
     }
 

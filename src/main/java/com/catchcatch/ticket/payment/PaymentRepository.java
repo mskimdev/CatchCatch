@@ -31,7 +31,12 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
      * Payment 1 : 1 Booking 구조에서
      * 이미 결제 준비된 Payment가 있는지 확인할 때 사용
      */
-    Optional<Payment> findByBooking_Id(Integer bookingId);
+    @Query("""
+        select p
+        from Payment p
+        where p.booking.id = :bookingId
+        """)
+    Optional<Payment> findByBookingId(@Param("bookingId") Integer bookingId);
 
 
     /**
