@@ -334,12 +334,14 @@ public class AdminConcertRequest {
         // 회차 정보를 담을 DTO
         @Builder
         public record SessionDTO(
+                Integer id,
                 LocalDate sessionDate,
                 LocalTime sessionTime,
                 String round
         ) {
             public static SessionDTO from(ConcertSession session) {
                 return SessionDTO.builder()
+                        .id(session.getId())
                         .sessionDate(session.getSessionDate())
                         .sessionTime(session.getSessionTime())
                         .round(session.getRound())
@@ -364,8 +366,7 @@ public class AdminConcertRequest {
                     .startDate(concert.getStartDate())
                     .endDate(concert.getEndDate())
                     // 💡 회차 리스트 변환 (Null 체크 포함)
-                    .sessionList(concert.getSessions() != null ?
-                            concert.getSessions().stream()
+                    .sessionList(concert.getSessions() != null ? concert.getSessions().stream()
                                     .map(SessionDTO::from)
                                     .collect(Collectors.toList())
                             : Collections.emptyList())
@@ -490,5 +491,36 @@ public class AdminConcertRequest {
 //                    .build();
 //        }
 //    }
+
+
+//    /**
+//     * 4. 관리자용 회차(Session) 등록 요청 DTO
+//     */
+//    @Builder
+//    public record SessionCreateDTO(
+//            @NotBlank(message = "회차명(예: 1회차)은 필수입니다.")
+//            String round,
+//
+//            @NotNull(message = "공연 날짜는 필수입니다.")
+//            LocalDate sessionDate,
+//
+//            @NotNull(message = "공연 시간은 필수입니다.")
+//            LocalTime sessionTime
+//    ) {}
+//
+//    /**
+//     * 5. 관리자용 회차(Session) 수정 요청 DTO
+//     */
+//    @Builder
+//    public record SessionUpdateDTO(
+//            @NotBlank(message = "회차명(예: 1회차)은 필수입니다.")
+//            String round,
+//
+//            @NotNull(message = "공연 날짜는 필수입니다.")
+//            LocalDate sessionDate,
+//
+//            @NotNull(message = "공연 시간은 필수입니다.")
+//            LocalTime sessionTime
+//    ) {}
 
 }
