@@ -2,6 +2,7 @@ package com.catchcatch.ticket.user;
 
 import com.catchcatch.ticket.core.errors.BadRequestException;
 import com.catchcatch.ticket.core.errors.NotFoundException;
+import com.catchcatch.ticket.core.util.HtmlUtil;
 import com.catchcatch.ticket.core.util.MailUtil;
 import com.catchcatch.ticket.core.util.ProfileImageUtil;
 import com.catchcatch.ticket.notification.sender.EmailSender;
@@ -10,7 +11,6 @@ import com.catchcatch.ticket.user.dto.UserRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,23 +30,20 @@ public class UserApiService {
 
     public void sendCode(String email) {
         String code = MailUtil.generateRandomCode();
-        try {
-            ClassPathResource resource = new ClassPathResource("templates/mail/email-verify.html");
-            String content = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8)
-                    .replace("{{code}}", code);
 
-            emailSender.send(NotificationMessage.builder()
-                    .to(email)
-                    .subject("[CatchCatch] 회원가입 인증 번호 발송")
-                    .content(content)
-                    .html(true)
-                    .build());
+        String content = HtmlUtil.loadWithPlaceholder(
+                "static/html/mail/email-verify.html", "{{code}}", code);
 
-            session.setAttribute("code_" + email, code);
-            log.info("[MAIL] 인증번호 발송 완료 : {} ", code);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        emailSender.send(NotificationMessage.builder()
+                .to(email)
+                .subject("[CatchCatch] 회원가입 인증 번호 발송")
+                .content(content)
+                .html(true)
+                .build());
+
+        session.setAttribute("code_" + email, code);
+        log.info("[MAIL] 인증번호 발송 완료 : {} ", code);
+
     }
 
     public boolean verifyCode(String email, String code) {

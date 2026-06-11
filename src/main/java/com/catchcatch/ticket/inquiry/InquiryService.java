@@ -2,17 +2,16 @@ package com.catchcatch.ticket.inquiry;
 
 import com.catchcatch.ticket.core.errors.ForbiddenException;
 import com.catchcatch.ticket.core.errors.NotFoundException;
+import com.catchcatch.ticket.core.util.HtmlUtil;
 import com.catchcatch.ticket.inquiry.enums.InquiryStatus;
 import com.catchcatch.ticket.notification.sender.EmailSender;
 import com.catchcatch.ticket.notification.NotificationMessage;
 import com.catchcatch.ticket.notification.sender.SmsSender;
 import com.catchcatch.ticket.user.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -106,22 +105,17 @@ public class InquiryService {
         }
 
         if (inquiry.isNotifyEmail()) {
-            try {
-                ClassPathResource resource = new ClassPathResource("templates/mail/inquiry-reply.html");
-                String content = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8)
-                        .replace("{{username}}", user.getUsername())
-                        .replace("{{title}}", inquiry.getTitle())
-                        .replace("{{reply}}", reply);
+            String content = HtmlUtil.load("static/html/mail/inquiry-reply.html")
+                    .replace("{{username}}", user.getUsername())
+                    .replace("{{title}}", inquiry.getTitle())
+                    .replace("{{reply}}", reply);
 
-                emailSender.send(NotificationMessage.builder()
-                        .to(user.getEmail())
-                        .subject("[CatchCatch] 1:1 문의 답변이 등록되었습니다")
-                        .content(content)
-                        .html(true)
-                        .build());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            emailSender.send(NotificationMessage.builder()
+                    .to(user.getEmail())
+                    .subject("[CatchCatch] 1:1 문의 답변이 등록되었습니다")
+                    .content(content)
+                    .html(true)
+                    .build());
         }
     }
 }
