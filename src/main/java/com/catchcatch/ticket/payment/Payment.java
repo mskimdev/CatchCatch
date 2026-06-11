@@ -113,4 +113,13 @@ public class Payment {
     public Integer getUserId() {
         return this.booking.getUser().getId();
     }
+
+    // 결제 수단 변경
+    public void changeMethod(String method) {
+        if (this.status != PaymentStatus.READY) {
+            throw new IllegalStateException("결제 대기 상태에서만 결제 수단을 변경할 수 있습니다.");
+        }
+
+        this.method = method;
+    }
 }
