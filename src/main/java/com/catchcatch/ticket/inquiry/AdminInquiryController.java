@@ -31,10 +31,4 @@ public class AdminInquiryController {
         model.addAttribute("inquiry", inquiryService.findByIdForAdmin(id));
         return "admin/board/inquiry/detail";
     }
-
-    @PostMapping("/admin/boards/inquiry/{id}/reply")
-    public String reply(@PathVariable Integer id, @RequestParam String reply) {
-        inquiryService.reply(id, reply);
-        return "redirect:/admin/boards/inquiry/" + id;
-    }
 }

@@ -20,12 +20,12 @@ public class PaymentController {
 
     /**
      * 결제 진행 화면
-     * <p>
+     *
      * 예:
-     * GET /bookings/1/payment
+     * GET /booking/payment?bookingId=1
      */
-    @GetMapping("/bookings/{bookingId}/payment")
-    public String paymentForm(@PathVariable("bookingId") Integer bookingId,
+    @GetMapping("/booking/payment")
+    public String paymentForm(@RequestParam("bookingId") Integer bookingId,
                               Model model,
                               HttpSession session) {
 
@@ -35,11 +35,13 @@ public class PaymentController {
             return "redirect:/login-form";
         }
 
-        model.addAttribute("bookingId", bookingId);
+        PaymentResponse.FormDTO payment =
+                paymentService.getPaymentForm(bookingId, sessionUser.getId());
+
+        model.addAttribute("payment", payment);
 
         return "payment/payment-form";
     }
-
     /**
      * 내 결제 내역 목록
      * <p>

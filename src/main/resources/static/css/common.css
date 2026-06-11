@@ -600,3 +600,63 @@ img { max-width: 100%; display: block; }
   .cc-footer { padding: 28px 0 34px; }
   .cc-footer__cols { grid-template-columns: 1fr; gap: 20px; }
 }
+
+/* ── SweetAlert2 공통 스타일 ──────────────────────── */
+.cc-swal-popup {
+  border-radius: 28px !important;
+  border: 1px solid var(--cc-line) !important;
+  box-shadow: var(--cc-shadow) !important;
+  padding: 40px 36px 36px !important;
+  font-family: inherit !important;
+}
+.cc-swal-title {
+  color: var(--cc-text) !important;
+  font-size: 18px !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.03em !important;
+}
+.cc-swal-text {
+  color: var(--cc-subtext) !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  margin-top: 8px !important;
+}
+.cc-swal-actions {
+  gap: 10px !important;
+  margin-top: 28px !important;
+}
+.cc-swal-confirm,
+.cc-swal-cancel {
+  height: 46px !important;
+  padding: 0 24px !important;
+  border-radius: 14px !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  border: none !important;
+  letter-spacing: -0.02em !important;
+  cursor: pointer !important;
+}
+.cc-swal-confirm {
+  color: #fff !important;
+  background: linear-gradient(135deg, var(--cc-primary), var(--cc-primary-dark)) !important;
+  box-shadow: 0 10px 20px rgba(76, 29, 149, 0.22) !important;
+}
+.cc-swal-confirm:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 14px 26px rgba(76, 29, 149, 0.28) !important;
+}
+.cc-swal-confirm--danger {
+  background: linear-gradient(135deg, #ef4444, #b91c1c) !important;
+  box-shadow: 0 10px 20px rgba(185, 28, 28, 0.22) !important;
+}
+.cc-swal-confirm--danger:hover {
+  box-shadow: 0 14px 26px rgba(185, 28, 28, 0.28) !important;
+}
+.cc-swal-cancel {
+  color: var(--cc-subtext) !important;
+  background: var(--cc-surface-soft) !important;
+  border: 1px solid var(--cc-line) !important;
+}
+.cc-swal-cancel:hover {
+  background: var(--cc-line) !important;
+}

@@ -1,92 +1,125 @@
 package com.catchcatch.ticket.payment;
 
 import com.catchcatch.ticket.booking.Booking;
-import com.catchcatch.ticket.user.User;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
 
-@Data
-@NoArgsConstructor
-@Table(name = "payment_tb")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(
+        name = "payment_tb",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_payment_booking", columnNames = "booking_id"),
+                @UniqueConstraint(name = "uk_payment_payment_id", columnNames = "payment_id")
+        }
+)
 @Entity
 public class Payment {
-
-
-//    컬럼명	타입	키	NOT NULL	기본값	설명
-//    id	INT (PK, AI)	PK	Y	AUTO_INCREMENT	결제 고유 ID
-//    booking_id	INT	FK(booking)	Y		예매 ID (booking_tb.id 참조)
-//    user_id	INT	FK(user)	Y		사용자 ID (user_tb.id 참조)
-//    imp_uid	VARCHAR(100)		Y		포트원 결제 고유 번호
-//    merchant_uid	VARCHAR(100)		Y		가맹점 주문 번호 (UNIQUE)
-//    amount	INT		Y		결제 금액 (원)
-//    method	VARCHAR(30)		Y		결제 수단 (card / kakaopay / tosspay)
-//    status	VARCHAR(20)		Y	READY	READY / PAID / CANCELLED
-//    paid_at	TIMESTAMP		N	NULL	결제 완료 일시
-//    created_at	TIMESTAMP		Y	CURRENT_TIMESTAMP	결제 요청 일시
-
 
     // 결제 고유 ID
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false)
     private Integer id;
 
-    // 예매 ID (booking_tb.id 참조)
-    @OneToOne(fetch = FetchType.LAZY) // CatchCatch 명세서상 1:1 관계 (성능을 위해 LAZY 권장)
-    @JoinColumn(name = "booking_id", nullable = false) // FK 컬럼명 지정 및 NOT NULL 설정
-    private Booking booking; // Integer 대신 연관된 Booking 엔티티 객체를 직접 참조
+    // 예매 ID
+    // Payment 1 : 1 Booking
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id", nullable = false)
+    private Booking booking;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    // 포트원 결제 고유 번호
-    @Column(name = "pg_tx_id")
-    private String pgTxId;
-
-    // 가맹점 주문 번호 (UNIQUE)
-    @Column(name = "payment_id", nullable = false,unique = true)
+    // 포트원 V2 paymentId
+    // 우리 서버에서 생성하는 결제 고유 번호
+    @Column(name = "payment_id", nullable = false, length = 100)
     private String paymentId;
 
-    // 결제 금액 (원)
+    // PG 거래 번호
+    // 결제 완료 후 포트원 조회 응답에서 저장
+    @Column(name = "pg_tx_id", length = 100)
+    private String pgTxId;
+
+    // 최종 결제 금액
     @Column(nullable = false)
     private Integer amount;
 
-    // 결제 수단 (card / kakaopay / tosspay)
-    @Column(nullable = false)
+    // 결제 수단
+    // card / kakaopay / tosspay / vbank 등
+    @Column(nullable = false, length = 30)
     private String method;
 
+    // 결제 상태
+    // READY / PAID / CANCELLED
     @Enumerated(EnumType.STRING)
     @ColumnDefault("'READY'")
-    @Column(nullable = false)
-    private PaymentStatus status;
+    @Column(nullable = false, length = 20)
+    private PaymentStatus status = PaymentStatus.READY;
 
     // 결제 완료 일시
-    @Column(nullable = true)
+    @Column(name = "paid_at")
     private Timestamp paidAt;
 
     // 결제 요청 일시
     @CreationTimestamp
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Timestamp createdAt;
 
     @Builder
-    public Payment(Integer id, Booking booking, User user, String pgTxId, String paymentId, Integer amount, String method, PaymentStatus status, Timestamp paidAt, Timestamp createdAt) {
-        this.id = id;
+    public Payment(
+            Booking booking,
+            String paymentId,
+            Integer amount,
+            String method
+    ) {
         this.booking = booking;
-        this.user = user;
         this.paymentId = paymentId;
-        this.pgTxId = pgTxId;
         this.amount = amount;
         this.method = method;
-        this.status = status;
-        this.paidAt = paidAt;
-        this.createdAt = createdAt;
+        this.status = PaymentStatus.READY;
+    }
+
+    /**
+     * 결제 완료 처리
+     */
+    public void complete(String pgTxId) {
+        if (this.status != PaymentStatus.READY) {
+            throw new IllegalStateException("결제 대기 상태가 아닙니다.");
+        }
+
+        this.pgTxId = pgTxId;
+        this.status = PaymentStatus.PAID;
+        this.paidAt = new Timestamp(System.currentTimeMillis());
+    }
+
+    /**
+     * 결제 취소 처리
+     */
+    public void cancel() {
+        if (this.status == PaymentStatus.CANCELLED) {
+            throw new IllegalStateException("이미 취소된 결제입니다.");
+        }
+
+        this.status = PaymentStatus.CANCELLED;
+    }
+
+    /**
+     * 화면/DTO에서 userId가 필요할 때 사용
+     */
+    public Integer getUserId() {
+        return this.booking.getUser().getId();
+    }
+
+    // 결제 수단 변경
+    public void changeMethod(String method) {
+        if (this.status != PaymentStatus.READY) {
+            throw new IllegalStateException("결제 대기 상태에서만 결제 수단을 변경할 수 있습니다.");
+        }
+
+        this.method = method;
     }
 }

@@ -1,0 +1,176 @@
+{{> admin/layout/header}}
+
+<script src="/js/core/api.js"></script>
+
+<body id="page-top">
+<div id="wrapper">
+    {{> admin/layout/sidebar}}
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            {{> admin/layout/topbar}}
+
+            <div class="container-fluid">
+                <h1 class="h3 mb-4 text-gray-800">공연 정보 수정</h1>
+
+                <form id="concertUpdateForm">
+
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">공연 상세 정보 수정</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label>공연 제목</label>
+                                    <input type="text" name="title" class="form-control" value="{{concert.title}}" required>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>아티스트</label>
+                                    <input type="text" name="artist" class="form-control" value="{{concert.artist}}" required>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 form-group">
+                                    <label>장르</label>
+                                    <input type="text" name="genre" class="form-control" value="{{concert.genre}}" required>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label>카테고리</label>
+                                    <input type="text" name="category" class="form-control" value="{{concert.category}}" required>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label>공연장 변경</label>
+                                    <select name="venueId" class="form-control" required>
+                                        {{#venueList}}
+                                            <option value="{{id}}" {{#selected}}selected{{/selected}}>{{name}}</option>
+                                        {{/venueList}}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 form-group">
+                                    <label>예매 오픈 일시</label>
+                                    <input type="datetime-local" name="ticketOpenDate" class="form-control" value="{{concert.ticketOpenDate}}" required>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label>공연 시작일</label>
+                                    <input type="date" name="startDate" class="form-control" value="{{concert.startDate}}" required>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label>공연 종료일</label>
+                                    <input type="date" name="endDate" class="form-control" value="{{concert.endDate}}" required>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label>러닝타임</label>
+                                    <input type="text" name="runtime" class="form-control" value="{{concert.runtime}}" placeholder="예: 150분">
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>관람 연령</label>
+                                    <input type="text" name="ageLimit" class="form-control" value="{{concert.ageLimit}}" placeholder="예: 만 7세 이상">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label>주최자</label>
+                                    <input type="text" name="organizer" class="form-control" value="{{concert.organizer}}">
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>문의처</label>
+                                    <input type="text" name="contact" class="form-control" value="{{concert.contact}}">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>공연 상세 제목</label>
+                                <input type="text" name="detailTitle" class="form-control" value="{{concert.detailTitle}}">
+                            </div>
+                            <div class="form-group">
+                                <label>공연 설명</label>
+                                <textarea name="description" class="form-control" rows="2">{{concert.description}}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>상세 설명 1</label>
+                                <textarea name="detailDescription1" class="form-control" rows="2">{{concert.detailDescription1}}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>상세 설명 2</label>
+                                <textarea name="detailDescription2" class="form-control" rows="2">{{concert.detailDescription2}}</textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label>포스터 이미지 (현재 JSON 구조에서는 처리 불가)</label>
+                                    <input type="file" name="posterImage" class="form-control" accept="image/*" disabled>
+                                    <small class="text-danger">※ 현재 텍스트 수정(REST API) 모드이므로 이미지 수정은 비활성화되었습니다.</small>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>공연 상태</label>
+                                    <select name="concertStatus" class="form-control" required>
+                                        <option value="OPEN" {{#isOpened}}selected{{/isOpened}}>예매중</option>
+                                        <option value="COMING_SOON" {{#isComingSoon}}selected{{/isComingSoon}}>오픈예정</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" id="btnUpdateConcert" class="btn btn-primary btn-block mb-5">수정 내용 저장하기</button>
+                </form>
+            </div>
+        </div>
+        {{> admin/layout/footer}}
+    </div>
+</div>
+
+<script>
+    document.querySelector("#btnUpdateConcert").addEventListener("click", async () => {
+        const form = document.querySelector("#concertUpdateForm");
+        const concertId = {{concert.id}};
+
+        // 1. 가이드라인 규칙: FormData 사용 금지 정책에 따라 순수 JSON 객체로 직접 필드 매핑
+        const reqDTO = {
+            title: form.title.value,
+            artist: form.artist.value,
+            genre: form.genre.value,
+            category: form.category.value,
+            venueId: parseInt(form.venueId.value), // Long/Integer 바인딩을 위해 숫자로 형변환
+            ticketOpenDate: form.ticketOpenDate.value,
+            startDate: form.startDate.value,
+            endDate: form.endDate.value,
+            runtime: form.runtime.value,
+            ageLimit: form.ageLimit.value,
+            organizer: form.organizer.value,
+            contact: form.contact.value,
+            detailTitle: form.detailTitle.value,
+            description: form.description.value,
+            detailDescription1: form.detailDescription1.value,
+            detailDescription2: form.detailDescription2.value,
+            concertStatus: form.concertStatus.value
+        };
+
+        try {
+            // 💡 핵심 수정 1: api.js의 실제 함수 형식인 apiPut() 사용
+            // 💡 핵심 수정 2: 기존의 엉뚱한 주소(/api/v1/concerts/...)를 ConcertApiController 명세와 맞춘 `/api/concert/${concertId}`로 교체!
+            let { res, data } = await apiPut(`/api/concert/${concertId}`, reqDTO);
+
+            // 💡 핵심 수정 3: { res, data } 반환 규격 및 Resp 공통 래퍼 판별 구조에 맞게 수정
+            if (res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
+                alert("공연 정보가 성공적으로 수정되었습니다.");
+                // 수정 완료 후 동기 뷰 컨트롤러(AdminConcertController)의 상세 보기 주소로 이동
+                location.href = `/admin/concerts/${concertId}`;
+            } else {
+                alert("수정 실패: " + (data && data.msg ? data.msg : "알 수 없는 오류"));
+            }
+        } catch (error) {
+            console.error("수정 요청 중 오류 발생:", error);
+            alert("서버와 통신 중 오류가 발생했습니다.");
+        }
+    });
+</script>
+</body>

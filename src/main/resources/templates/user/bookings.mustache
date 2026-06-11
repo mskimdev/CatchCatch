@@ -41,10 +41,15 @@
                     </div>
                     <div class="cc-booking-item__price">
                         <strong>{{priceText}}</strong>
-                        {{#isPaid}}
-                            <a class="cc-btn cc-btn--outline" style="height:38px;font-size:13px;margin-top:10px"
-                               href="/users/bookings/{{id}}/cancel">취소 신청</a>
-                        {{/isPaid}}
+
+                        {{#isPending}}
+                            <a class="cc-btn cc-btn--primary"
+                               style="height:38px;font-size:13px;margin-top:10px;display:inline-flex;align-items:center;justify-content:center;"
+                               href="/booking/payment?bookingId={{id}}">
+                            결제하기
+                            </a>
+                        {{/isPending}}
+
                     </div>
                 </div>
             {{/bookings}}

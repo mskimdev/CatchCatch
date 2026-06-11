@@ -48,7 +48,7 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
 
         // 3. DTO 변환
         List<ConcertResponse.ListDTO> dtoList = content.stream()
-                .map(ConcertResponse.ListDTO::new)
+                .map(ConcertResponse.ListDTO::from) // <-- 이 부분 변경
                 .collect(Collectors.toList());
 
         // 4. 최종 결과 반환

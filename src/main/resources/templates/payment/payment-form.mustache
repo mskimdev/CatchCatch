@@ -1,20 +1,6 @@
 {{> layout/header}}
 
-<div class="cc-stepper" aria-label="예매 진행 단계">
-    <div class="cc-step is-done">
-        <span class="cc-step__num">✓</span>좌석선택
-    </div>
-    <span class="cc-step-line"></span>
-
-    <div class="cc-step is-active">
-        <span class="cc-step__num">2</span>결제
-    </div>
-    <span class="cc-step-line"></span>
-
-    <div class="cc-step">
-        <span class="cc-step__num">3</span>완료
-    </div>
-</div>
+<link rel="stylesheet" href="/css/booking-payment.css">
 
 <section class="cc-payment-layout">
     <!-- 왼쪽: 예매 정보 요약 + 결제 수단 -->
@@ -97,14 +83,18 @@
         <div class="cc-card cc-payment-section">
             <h3>결제 수단</h3>
 
-            <form id="paymentForm" action="/booking/payment/confirm" method="post">
+            <form id="paymentForm">
                 {{#_csrf}}
                     <input type="hidden" name="{{parameterName}}" value="{{token}}">
+                    <input type="hidden" id="csrfHeaderName" value="{{headerName}}">
+                    <input type="hidden" id="csrfToken" value="{{token}}">
                 {{/_csrf}}
 
+
                 <input type="hidden" name="bookingId" value="{{payment.bookingId}}">
-                <input type="hidden" name="merchantUid" value="{{payment.merchantUid}}">
-                <input type="hidden" name="amount" value="{{#payment.totalPrice}}{{payment.totalPrice}}{{/payment.totalPrice}}{{^payment.totalPrice}}308000{{/payment.totalPrice}}">
+                <input type="hidden" name="customerName" value="{{payment.userName}}">
+                <input type="hidden" name="customerEmail" value="{{payment.userEmail}}">
+                <input type="hidden" name="customerPhone" value="{{payment.userPhone}}">
 
                 <div class="cc-pay-methods">
                     <label class="cc-pay-method is-active">
@@ -176,7 +166,7 @@
                 </strong>
             </div>
 
-            <button class="cc-btn cc-btn--primary cc-btn--full" type="submit" form="paymentForm">
+            <button class="cc-btn cc-btn--primary cc-btn--full" id="payment-btn" type="button">
                 결제하기
             </button>
 
@@ -196,6 +186,6 @@
         </div>
     </aside>
 </section>
-
-<script src="/js/booking/payment.js"></script>
+<script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
+<script src="/js/payment/payment.js"></script>
 {{> layout/footer}}

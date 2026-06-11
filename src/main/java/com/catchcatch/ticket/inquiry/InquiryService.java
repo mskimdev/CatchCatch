@@ -2,17 +2,16 @@ package com.catchcatch.ticket.inquiry;
 
 import com.catchcatch.ticket.core.errors.ForbiddenException;
 import com.catchcatch.ticket.core.errors.NotFoundException;
+import com.catchcatch.ticket.core.util.HtmlUtil;
 import com.catchcatch.ticket.inquiry.enums.InquiryStatus;
 import com.catchcatch.ticket.notification.sender.EmailSender;
 import com.catchcatch.ticket.notification.NotificationMessage;
 import com.catchcatch.ticket.notification.sender.SmsSender;
 import com.catchcatch.ticket.user.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -28,22 +27,12 @@ public class InquiryService {
 
     @Transactional
     public void save(InquiryRequest.SaveDTO req, User user) {
-        Inquiry inquiry = Inquiry.builder()
-                .title(req.getTitle())
-                .content(req.getContent())
-                .user(user)
-                .category(req.getCategory())
-                .isPublic(req.isPublic())
-                .notifyEmail(req.isNotifyEmail())
-                .notifySms(req.isNotifySms())
-                .build();
-
-        inquiryRepository.save(inquiry);
+        inquiryRepository.save(req.toEntity(user));
     }
 
     public List<InquiryResponse.ListDTO> findAll() {
         return inquiryRepository.findAllByOrderByCreatedAtDesc().stream()
-                .map(InquiryResponse.ListDTO::new)
+                .map(InquiryResponse.ListDTO::from)
                 .toList();
     }
 
@@ -57,7 +46,7 @@ public class InquiryService {
             }
         }
 
-        return new InquiryResponse.DetailDTO(inquiry);
+        return InquiryResponse.DetailDTO.from(inquiry);
     }
 
     // ── 어드민 ──────────────────────────────────────
@@ -68,22 +57,22 @@ public class InquiryService {
                 : inquiryRepository.findAllByStatusOrderByCreatedAtDesc(status);
 
         return inquiries.stream()
-                .map(InquiryResponse.AdminListDTO::new)
+                .map(InquiryResponse.AdminListDTO::from)
                 .toList();
     }
 
     public InquiryResponse.AdminDetailDTO findByIdForAdmin(Integer id) {
         Inquiry inquiry = inquiryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("문의를 찾을 수 없습니다."));
-        return new InquiryResponse.AdminDetailDTO(inquiry);
+        return InquiryResponse.AdminDetailDTO.from(inquiry);
     }
 
     @Transactional
-    public void reply(Integer id, String reply) {
+    public void reply(Integer id, InquiryRequest.ReplyDTO reqDTO) {
         Inquiry inquiry = inquiryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("문의를 찾을 수 없습니다."));
-        inquiry.setReply(reply);
-        sendNotification(inquiry, reply);
+        inquiry.setReply(reqDTO.reply());
+        sendNotification(inquiry, reqDTO.reply());
         inquiry.setStatus(InquiryStatus.RESOLVED);
     }
 
@@ -106,22 +95,17 @@ public class InquiryService {
         }
 
         if (inquiry.isNotifyEmail()) {
-            try {
-                ClassPathResource resource = new ClassPathResource("templates/mail/inquiry-reply.html");
-                String content = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8)
-                        .replace("{{username}}", user.getUsername())
-                        .replace("{{title}}", inquiry.getTitle())
-                        .replace("{{reply}}", reply);
+            String content = HtmlUtil.load("static/html/mail/inquiry-reply.html")
+                    .replace("{{username}}", user.getUsername())
+                    .replace("{{title}}", inquiry.getTitle())
+                    .replace("{{reply}}", reply);
 
-                emailSender.send(NotificationMessage.builder()
-                        .to(user.getEmail())
-                        .subject("[CatchCatch] 1:1 문의 답변이 등록되었습니다")
-                        .content(content)
-                        .html(true)
-                        .build());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            emailSender.send(NotificationMessage.builder()
+                    .to(user.getEmail())
+                    .subject("[CatchCatch] 1:1 문의 답변이 등록되었습니다")
+                    .content(content)
+                    .html(true)
+                    .build());
         }
     }
 }
