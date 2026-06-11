@@ -3,105 +3,113 @@ package com.catchcatch.ticket.inquiry;
 import com.catchcatch.ticket.core.util.DateUtil;
 import com.catchcatch.ticket.inquiry.enums.InquiryCategory;
 import com.catchcatch.ticket.inquiry.enums.InquiryStatus;
-import lombok.Getter;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public class InquiryResponse {
 
-    @Getter
-    public static class ListDTO{
-        private Integer id;
-        private String categoryLabel;
-        private String title;
-        private boolean isPublic;
-        private String statusLabel;
-        private String statusClass;
-        private String createdAt;
-
-        public ListDTO(Inquiry inquiry) {
-            this.id = inquiry.getId();
-            this.title = inquiry.getTitle();
-            this.isPublic = inquiry.isPublic();
-            this.createdAt = DateUtil.formatDateTime(inquiry.getCreatedAt());
-            this.categoryLabel = resolveCategoryLabel(inquiry.getCategory());
-            this.statusLabel = resolveStatusLabel(inquiry.getStatus());
-            this.statusClass = resolveStatusClass(inquiry.getStatus());
+    public record ListDTO(
+            @NotNull  Integer id,
+            @NotBlank String  categoryLabel,
+            @NotBlank String  title,
+                      boolean isPublic,
+            @NotBlank String  statusLabel,
+            @NotBlank String  statusClass,
+            @NotBlank String  createdAt
+    ) {
+        public static ListDTO from(Inquiry inquiry) {
+            return new ListDTO(
+                    inquiry.getId(),
+                    resolveCategoryLabel(inquiry.getCategory()),
+                    inquiry.getTitle(),
+                    inquiry.isPublic(),
+                    resolveStatusLabel(inquiry.getStatus()),
+                    resolveStatusClass(inquiry.getStatus()),
+                    DateUtil.formatDateTime(inquiry.getCreatedAt())
+            );
         }
     }
 
-    @Getter
-    public static class DetailDTO {
-        private String categoryLabel;
-        private String title;
-        private String content;
-        private String username;
-        private String createdAt;
-        private String statusLabel;
-        private String statusClass;
-        private boolean hasReply;
-        private String reply;
-
-        public DetailDTO(Inquiry inquiry){
-            this.title = inquiry.getTitle();
-            this.content = inquiry.getContent();
-            this.username = inquiry.getUser().getUsername();
-            this.createdAt = DateUtil.formatDateTime(inquiry.getCreatedAt());
-            this.categoryLabel = resolveCategoryLabel(inquiry.getCategory());
-            this.statusLabel = resolveStatusLabel(inquiry.getStatus());
-            this.statusClass = resolveStatusClass(inquiry.getStatus());
-            this.hasReply = inquiry.getReply() != null;
-            this.reply = this.hasReply ? inquiry.getReply() : null;
+    public record DetailDTO(
+            @NotBlank String  categoryLabel,
+            @NotBlank String  title,
+            @NotBlank String  content,
+            @NotBlank String  username,
+            @NotBlank String  createdAt,
+            @NotBlank String  statusLabel,
+            @NotBlank String  statusClass,
+                      boolean hasReply,
+                      String  reply
+    ) {
+        public static DetailDTO from(Inquiry inquiry) {
+            boolean hasReply = inquiry.getReply() != null;
+            return new DetailDTO(
+                    resolveCategoryLabel(inquiry.getCategory()),
+                    inquiry.getTitle(),
+                    inquiry.getContent(),
+                    inquiry.getUser().getUsername(),
+                    DateUtil.formatDateTime(inquiry.getCreatedAt()),
+                    resolveStatusLabel(inquiry.getStatus()),
+                    resolveStatusClass(inquiry.getStatus()),
+                    hasReply,
+                    hasReply ? inquiry.getReply() : null
+            );
         }
     }
 
-    @Getter
-    public static class AdminListDTO {
-        private Integer id;
-        private String categoryLabel;
-        private String title;
-        private String username;
-        private String statusLabel;
-        private String statusClass;
-        private String createdAt;
-
-        public AdminListDTO(Inquiry inquiry) {
-            this.id = inquiry.getId();
-            this.title = inquiry.getTitle();
-            this.username = inquiry.getUser().getUsername();
-            this.createdAt = DateUtil.formatDateTime(inquiry.getCreatedAt());
-            this.categoryLabel = resolveCategoryLabel(inquiry.getCategory());
-            this.statusLabel = resolveStatusLabel(inquiry.getStatus());
-            this.statusClass = resolveStatusClass(inquiry.getStatus());
+    public record AdminListDTO(
+            @NotNull  Integer id,
+            @NotBlank String  categoryLabel,
+            @NotBlank String  title,
+            @NotBlank String  username,
+            @NotBlank String  statusLabel,
+            @NotBlank String  statusClass,
+            @NotBlank String  createdAt
+    ) {
+        public static AdminListDTO from(Inquiry inquiry) {
+            return new AdminListDTO(
+                    inquiry.getId(),
+                    resolveCategoryLabel(inquiry.getCategory()),
+                    inquiry.getTitle(),
+                    inquiry.getUser().getUsername(),
+                    resolveStatusLabel(inquiry.getStatus()),
+                    resolveStatusClass(inquiry.getStatus()),
+                    DateUtil.formatDateTime(inquiry.getCreatedAt())
+            );
         }
     }
 
-    @Getter
-    public static class AdminDetailDTO {
-        private Integer id;
-        private String categoryLabel;
-        private String title;
-        private String content;
-        private String username;
-        private String reply;
-        private String statusLabel;
-        private String statusClass;
-        private boolean notifyEmail;
-        private boolean notifySms;
-        private String createdAt;
-
-        public AdminDetailDTO(Inquiry inquiry) {
-            this.id = inquiry.getId();
-            this.title = inquiry.getTitle();
-            this.content = inquiry.getContent();
-            this.username = inquiry.getUser().getUsername();
-            this.reply = inquiry.getReply();
-            this.createdAt = DateUtil.formatDateTime(inquiry.getCreatedAt());
-            this.categoryLabel = resolveCategoryLabel(inquiry.getCategory());
-            this.statusLabel = resolveStatusLabel(inquiry.getStatus());
-            this.statusClass = resolveStatusClass(inquiry.getStatus());
-            this.notifyEmail = inquiry.isNotifyEmail();
-            this.notifySms = inquiry.isNotifySms();
+    public record AdminDetailDTO(
+            @NotNull  Integer id,
+            @NotBlank String  categoryLabel,
+            @NotBlank String  title,
+            @NotBlank String  content,
+            @NotBlank String  username,
+                      String  reply,
+            @NotBlank String  statusLabel,
+            @NotBlank String  statusClass,
+                      boolean notifyEmail,
+                      boolean notifySms,
+            @NotBlank String  createdAt
+    ) {
+        public static AdminDetailDTO from(Inquiry inquiry) {
+            return new AdminDetailDTO(
+                    inquiry.getId(),
+                    resolveCategoryLabel(inquiry.getCategory()),
+                    inquiry.getTitle(),
+                    inquiry.getContent(),
+                    inquiry.getUser().getUsername(),
+                    inquiry.getReply(),
+                    resolveStatusLabel(inquiry.getStatus()),
+                    resolveStatusClass(inquiry.getStatus()),
+                    inquiry.isNotifyEmail(),
+                    inquiry.isNotifySms(),
+                    DateUtil.formatDateTime(inquiry.getCreatedAt())
+            );
         }
     }
+
+    // ── 공통 변환 헬퍼 ────────────────────────────────────────────
 
     private static String resolveCategoryLabel(InquiryCategory category) {
         if (category == null) return "";
@@ -130,6 +138,4 @@ public class InquiryResponse {
             case CANCELLED -> "inquiry-status--cancelled";
         };
     }
-
-
 }

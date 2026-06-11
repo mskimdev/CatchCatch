@@ -27,22 +27,12 @@ public class InquiryService {
 
     @Transactional
     public void save(InquiryRequest.SaveDTO req, User user) {
-        Inquiry inquiry = Inquiry.builder()
-                .title(req.getTitle())
-                .content(req.getContent())
-                .user(user)
-                .category(req.getCategory())
-                .isPublic(req.isPublic())
-                .notifyEmail(req.isNotifyEmail())
-                .notifySms(req.isNotifySms())
-                .build();
-
-        inquiryRepository.save(inquiry);
+        inquiryRepository.save(req.toEntity(user));
     }
 
     public List<InquiryResponse.ListDTO> findAll() {
         return inquiryRepository.findAllByOrderByCreatedAtDesc().stream()
-                .map(InquiryResponse.ListDTO::new)
+                .map(InquiryResponse.ListDTO::from)
                 .toList();
     }
 
@@ -56,7 +46,7 @@ public class InquiryService {
             }
         }
 
-        return new InquiryResponse.DetailDTO(inquiry);
+        return InquiryResponse.DetailDTO.from(inquiry);
     }
 
     // ── 어드민 ──────────────────────────────────────
@@ -67,22 +57,22 @@ public class InquiryService {
                 : inquiryRepository.findAllByStatusOrderByCreatedAtDesc(status);
 
         return inquiries.stream()
-                .map(InquiryResponse.AdminListDTO::new)
+                .map(InquiryResponse.AdminListDTO::from)
                 .toList();
     }
 
     public InquiryResponse.AdminDetailDTO findByIdForAdmin(Integer id) {
         Inquiry inquiry = inquiryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("문의를 찾을 수 없습니다."));
-        return new InquiryResponse.AdminDetailDTO(inquiry);
+        return InquiryResponse.AdminDetailDTO.from(inquiry);
     }
 
     @Transactional
-    public void reply(Integer id, String reply) {
+    public void reply(Integer id, InquiryRequest.ReplyDTO reqDTO) {
         Inquiry inquiry = inquiryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("문의를 찾을 수 없습니다."));
-        inquiry.setReply(reply);
-        sendNotification(inquiry, reply);
+        inquiry.setReply(reqDTO.reply());
+        sendNotification(inquiry, reqDTO.reply());
         inquiry.setStatus(InquiryStatus.RESOLVED);
     }
 
