@@ -1,6 +1,6 @@
 -- ================
 --  user_tb
---  비밀번호: 전부 "1234" BCrypt 암호화
+--  비밀번호: 전부 "ssar1234" BCrypt 암호화
 -- ================
 INSERT INTO user_tb
 (username, password, email, phone, profile_image, oauth_provider, role, created_at, is_deleted)
@@ -12,25 +12,25 @@ VALUES
      NULL, 'LOCAL', 'ADMIN', NOW(), false),
 
     ('user1',
-     '$2a$10$pJgHFhQeqpkfNKJBLISTlO8Aq3DXdEq7SlAAnNdFpSInGKaOhGKAq',
+     '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK',
      'user1@test.com',
      '010-1111-1111',
      NULL, 'LOCAL', 'USER', NOW(), false),
 
     ('user2',
-     '$2a$10$pJgHFhQeqpkfNKJBLISTlO8Aq3DXdEq7SlAAnNdFpSInGKaOhGKAq',
+     '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK',
      'user2@test.com',
      '010-2222-2222',
      NULL, 'LOCAL', 'USER', NOW(), false),
 
     ('user3',
-     '$2a$10$pJgHFhQeqpkfNKJBLISTlO8Aq3DXdEq7SlAAnNdFpSInGKaOhGKAq',
+     '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK',
      'user3@test.com',
      '010-3333-3333',
      NULL, 'LOCAL', 'USER', NOW(), false),
 
     ('kakaouser',
-     '$2a$10$pJgHFhQeqpkfNKJBLISTlO8Aq3DXdEq7SlAAnNdFpSInGKaOhGKAq',
+     '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK',
      'kakao_12345@kakao.com',
      '010-4444-4444',
      NULL, 'KAKAO', 'USER', NOW(), false),
