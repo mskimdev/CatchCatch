@@ -6,6 +6,7 @@ import com.catchcatch.ticket.concert.dto.ConcertResponse;
 import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.seat.SeatRepository;
+import com.catchcatch.ticket.venue.VenueRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class ConcertService {
 
     private final ConcertRepository concertRepository;
     private final SeatRepository seatRepository;
+    private final VenueRepository venueRepository;
 
     // ==========================================
     // 1. 홈페이지 관련 메서드
@@ -32,7 +34,7 @@ public class ConcertService {
     public List<ConcertResponse.ListDTO> getHomepageConcerts() {
         List<Concert> concertList = concertRepository.findAllByStatusWithFetchJoin(ConcertStatus.OPEN);
         return concertList.stream()
-                .map(ConcertResponse.ListDTO::new)
+                .map(ConcertResponse.ListDTO::from)
                 .collect(Collectors.toList());
     } // end of getHomepageConcerts
 
@@ -40,7 +42,7 @@ public class ConcertService {
     public List<ConcertResponse.ListDTO> getPopularConcerts() {
         List<Concert> popularList = concertRepository.findAll();
         return popularList.stream()
-                .map(ConcertResponse.ListDTO::new)
+                .map(ConcertResponse.ListDTO::from)
                 .collect(Collectors.toList());
     } // end of getPopularConcerts
 
@@ -48,7 +50,7 @@ public class ConcertService {
     public List<ConcertResponse.ListDTO> getComingSoonConcerts() {
         List<Concert> soonList = concertRepository.findAllByStatusWithFetchJoin(ConcertStatus.COMING_SOON);
         return soonList.stream()
-                .map(ConcertResponse.ListDTO::new)
+                .map(ConcertResponse.ListDTO::from)
                 .collect(Collectors.toList());
     }
 

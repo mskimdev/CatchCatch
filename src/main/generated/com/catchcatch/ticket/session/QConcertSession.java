@@ -32,6 +32,8 @@ public class QConcertSession extends EntityPathBase<ConcertSession> {
 
     public final BooleanPath isDeleted = createBoolean("isDeleted");
 
+    public final StringPath round = createString("round");
+
     public final ListPath<com.catchcatch.ticket.seat.Seat, com.catchcatch.ticket.seat.QSeat> seats = this.<com.catchcatch.ticket.seat.Seat, com.catchcatch.ticket.seat.QSeat>createList("seats", com.catchcatch.ticket.seat.Seat.class, com.catchcatch.ticket.seat.QSeat.class, PathInits.DIRECT2);
 
     public final DatePath<java.time.LocalDate> sessionDate = createDate("sessionDate", java.time.LocalDate.class);

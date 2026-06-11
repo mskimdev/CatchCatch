@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.session;
 
+import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.seat.SeatRepository;
 import com.catchcatch.ticket.seat.SeatStatus;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ public class ConcertSessionService {
 
     private final ConcertSessionRepository concertSessionRepository;
     private final SeatRepository seatRepository;
+    private final ConcertRepository concertRepository;
 
     /**
      * 콘서트 상세 화면 달력 활성화용 관람일 조회

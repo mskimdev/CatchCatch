@@ -21,14 +21,14 @@ public interface ConcertRepository extends JpaRepository<Concert, Integer>, Conc
 
     // 2. [상세 페이지용] 공연 정보 + 공연장(Venue) + 회차(Sessions) 모두 한 번에 조회
     @Query("SELECT DISTINCT c FROM Concert c " +
-            "LEFT JOIN FETCH c.venue " +
+            "JOIN FETCH c.venue " +
             "LEFT JOIN FETCH c.sessions " +
             "WHERE c.id = :id")
     Optional<Concert> findByIdWithDetails(@Param("id") Integer id);
 
-    // 3. 💡 [빠른 예매용] 공연 상세 + 회차 정보만 조회 (N+1 방지)
-    @Query("SELECT DISTINCT c FROM Concert c JOIN FETCH c.sessions WHERE c.id = :concertId")
-    Optional<Concert> findByIdWithSessions(@Param("concertId") Integer concertId);
+    // 3.  공연 목록 조회 시 회차 정보까지 한 번에 가져오기
+    @Query("SELECT DISTINCT c FROM Concert c LEFT JOIN FETCH c.sessions LEFT JOIN FETCH c.venue")
+    List<Concert> findAllWithSessionsAndVenue();
 
     // 4. 공연 상세 + 공연장 정보만 조회
     @Query("SELECT c FROM Concert c JOIN FETCH c.venue WHERE c.id = :id")
