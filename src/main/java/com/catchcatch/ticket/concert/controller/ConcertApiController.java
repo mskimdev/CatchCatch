@@ -5,6 +5,7 @@ import com.catchcatch.ticket.concert.service.AdminConcertService;
 import com.catchcatch.ticket.concert.service.ConcertService;
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.Resp;
+import com.catchcatch.ticket.session.ConcertSessionRequest;
 import com.catchcatch.ticket.user.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -59,6 +60,31 @@ public class ConcertApiController {
         adminConcertService.deleteConcert(id);
         // 2. 성공 응답 반환
         return Resp.ok("콘서트 삭제 성공");
+    }
+
+    @PostMapping("/{concertId}/sessions")
+    public ResponseEntity<?> addSession(
+            @PathVariable Integer concertId,
+            @Valid @RequestBody ConcertSessionRequest.SaveDTO reqDTO) {
+        adminConcertService.addSession(concertId, reqDTO);
+        return ResponseEntity.ok(Resp.ok("회차 등록 성공"));
+    }
+
+    @PutMapping("/{concertId}/sessions/{sessionId}")
+    public ResponseEntity<?> updateSession(
+            @PathVariable Integer concertId,
+            @PathVariable Integer sessionId,
+            @Valid @RequestBody ConcertSessionRequest.SaveDTO reqDTO) {
+        adminConcertService.updateSession(sessionId, reqDTO);
+        return ResponseEntity.ok(Resp.ok("회차 수정 성공"));
+    }
+
+    @DeleteMapping("/{concertId}/sessions/{sessionId}")
+    public ResponseEntity<?> deleteSession(
+            @PathVariable Integer concertId,
+            @PathVariable Integer sessionId) {
+        adminConcertService.deleteSession(sessionId);
+        return ResponseEntity.ok(Resp.ok("회차 삭제 성공"));
     }
 
 } // end of class

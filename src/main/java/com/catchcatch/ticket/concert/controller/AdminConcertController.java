@@ -25,10 +25,8 @@ public class AdminConcertController {
     @GetMapping
     public String getAllConcerts(Model model) {
         List<AdminConcertRequest.ListResponseDTO> response = adminConcertService.getAllConcerts();
-
         model.addAttribute("pageTitle", "공연 목록 관리");
         model.addAttribute("concerts", response);
-
         return "admin/concert/list";
     }
 
@@ -36,7 +34,6 @@ public class AdminConcertController {
     @GetMapping("/{id}")
     public String getConcertDetail(@PathVariable Integer id, Model model) {
         AdminConcertRequest.DetailResponseDTO concert = adminConcertService.getDetail(id);
-
         model.addAttribute("pageTitle", "공연 상세 조회");
         model.addAttribute("concert", concert);
         return "admin/concert/detail";
@@ -69,13 +66,4 @@ public class AdminConcertController {
         return "admin/concert/update";
     }
 
-    // 6. 공연 삭제
-    // ✅ 수정 후 (REST API 정석)
-    @DeleteMapping("/{id}") // URI에서 delete 제거 (가이드라인 준수)
-    public ResponseEntity<?> deleteConcert(@PathVariable Integer id) {
-        adminConcertService.deleteConcert(id);
-
-        // 비동기 통신이므로 화면(redirect)이 아닌, 성공했다는 데이터(JSON)만 반환합니다.
-        return ResponseEntity.ok(Resp.ok("공연이 성공적으로 삭제되었습니다."));
-    }
 }

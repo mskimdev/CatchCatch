@@ -1,5 +1,7 @@
 {{> admin/layout/header}}
 
+<script src="/js/core/api.js"></script>
+
 <body id="page-top">
 <div id="wrapper">
     {{> admin/layout/sidebar}}
@@ -45,20 +47,22 @@
                                         {{/venueList}}
                                     </select>
                                 </div>
-                            </div> <div class="row">
-                            <div class="col-md-4 form-group">
-                                <label>예매 오픈 일시</label>
-                                <input type="datetime-local" name="ticketOpenDate" class="form-control" value="{{concert.ticketOpenDate}}" required>
                             </div>
-                            <div class="col-md-4 form-group">
-                                <label>공연 시작일</label>
-                                <input type="date" name="startDate" class="form-control" value="{{concert.startDate}}" required>
+
+                            <div class="row">
+                                <div class="col-md-4 form-group">
+                                    <label>예매 오픈 일시</label>
+                                    <input type="datetime-local" name="ticketOpenDate" class="form-control" value="{{concert.ticketOpenDate}}" required>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label>공연 시작일</label>
+                                    <input type="date" name="startDate" class="form-control" value="{{concert.startDate}}" required>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label>공연 종료일</label>
+                                    <input type="date" name="endDate" class="form-control" value="{{concert.endDate}}" required>
+                                </div>
                             </div>
-                            <div class="col-md-4 form-group">
-                                <label>공연 종료일</label>
-                                <input type="date" name="endDate" class="form-control" value="{{concert.endDate}}" required>
-                            </div>
-                        </div>
 
                             <div class="row">
                                 <div class="col-md-6 form-group">
@@ -126,18 +130,16 @@
 
 <script>
     document.querySelector("#btnUpdateConcert").addEventListener("click", async () => {
-
         const form = document.querySelector("#concertUpdateForm");
-        // Mustache 문법으로 현재 접속 중인 공연의 ID를 JS 변수에 할당합니다.
         const concertId = {{concert.id}};
 
-        // 1. FormData 사용 금지 정책에 따라, 폼 필드의 값을 직접 추출하여 순수 JSON 객체로 조립합니다.
+        // 1. 가이드라인 규칙: FormData 사용 금지 정책에 따라 순수 JSON 객체로 직접 필드 매핑
         const reqDTO = {
             title: form.title.value,
             artist: form.artist.value,
             genre: form.genre.value,
             category: form.category.value,
-            venueId: parseInt(form.venueId.value), // 백엔드 타입에 맞게 숫자로 변환
+            venueId: parseInt(form.venueId.value), // Long/Integer 바인딩을 위해 숫자로 형변환
             ticketOpenDate: form.ticketOpenDate.value,
             startDate: form.startDate.value,
             endDate: form.endDate.value,
@@ -153,17 +155,17 @@
         };
 
         try {
-            // 2. 직접 fetch 호출을 금지하므로, 프로젝트의 공통 모듈인 api 객체를 사용합니다.
-            // (static/js/core/api.js 등에 정의되어 있어야 함)
-            let response = await api.put(`/api/v1/concerts/${concertId}`, reqDTO);
+            // 💡 핵심 수정 1: api.js의 실제 함수 형식인 apiPut() 사용
+            // 💡 핵심 수정 2: 기존의 엉뚱한 주소(/api/v1/concerts/...)를 ConcertApiController 명세와 맞춘 `/api/concert/${concertId}`로 교체!
+            let { res, data } = await apiPut(`/api/concert/${concertId}`, reqDTO);
 
-            // 3. 응답 객체(Resp)의 HTTP 상태 코드 또는 커스텀 코드를 기반으로 성공 여부 판별
-            if (response.status === 200 || response.code === 200) {
+            // 💡 핵심 수정 3: { res, data } 반환 규격 및 Resp 공통 래퍼 판별 구조에 맞게 수정
+            if (res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
                 alert("공연 정보가 성공적으로 수정되었습니다.");
-                // 수정이 완료되면 해당 공연의 상세 페이지로 리다이렉트
+                // 수정 완료 후 동기 뷰 컨트롤러(AdminConcertController)의 상세 보기 주소로 이동
                 location.href = `/admin/concerts/${concertId}`;
             } else {
-                alert("수정 실패: " + (response.msg || "알 수 없는 오류"));
+                alert("수정 실패: " + (data && data.msg ? data.msg : "알 수 없는 오류"));
             }
         } catch (error) {
             console.error("수정 요청 중 오류 발생:", error);
@@ -171,5 +173,4 @@
         }
     });
 </script>
-
 </body>
