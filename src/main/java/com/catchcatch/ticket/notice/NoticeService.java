@@ -23,7 +23,7 @@ public class NoticeService {
         return notices.stream()
                 .map(notice -> {
                     int num = notice.isPinned() ? 0 : counter[0]--;
-                    return new NoticeResponse.ListDTO(notice, num);
+                    return NoticeResponse.ListDTO.from(notice, num);
                 })
                 .toList();
     }
@@ -33,6 +33,6 @@ public class NoticeService {
                 () -> new NotFoundException("해당하는 공지사항을 찾을 수 없습니다.")
         );
 
-        return new NoticeResponse.DetailDTO(notice);
+        return NoticeResponse.DetailDTO.from(notice);
     }
 }

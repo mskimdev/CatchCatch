@@ -1,61 +1,63 @@
 package com.catchcatch.ticket.notice;
 
 import com.catchcatch.ticket.core.util.DateUtil;
+import lombok.Builder;
 import lombok.Data;
 
 public class NoticeResponse {
 
-    @Data
-    public static class ListDTO{
-        private Integer id;
-        private String title;
-        private String createdAt;
-        private boolean isPinned;
-        private Integer num;
-        private int viewCount;
-
-        public ListDTO(Notice notice, Integer num){
-            this.id = notice.getId();
-            this.title = notice.getTitle();
-            this.createdAt = DateUtil.formatDateTime(notice.getCreatedAt());
-            this.isPinned = notice.isPinned();
-            this.num = num;
-            this.viewCount = notice.getViewCount();
+    public record ListDTO(
+            Integer id,
+            String title,
+            String createdAt,
+            boolean isPinned,
+            Integer num,
+            int viewCount){
+        public static ListDTO from(Notice notice, Integer num){
+            return new ListDTO(
+                    notice.getId(),
+                    notice.getTitle(),
+                    DateUtil.formatDateTime(notice.getCreatedAt()),
+                    notice.isPinned(),
+                    num,
+                    notice.getViewCount()
+            );
         }
     }
 
-    @Data
-    public static class DetailDTO{
-        private String title;
-        private String content;
-        private boolean isPinned;
-        private int viewCount;
-        private String createdAt;
-
-
-        public DetailDTO(Notice notice){
-            this.title = notice.getTitle();
-            this.content = notice.getContent();
-            this.isPinned = notice.isPinned();
-            this.viewCount = notice.getViewCount();
-            this.createdAt = DateUtil.formatDateTime(notice.getCreatedAt());
+    @Builder
+    public record DetailDTO(
+            String title,
+            String content,
+            boolean isPinned,
+            int viewCount,
+            String createdAt){
+        public static DetailDTO from(Notice notice){
+            return new DetailDTO(
+                    notice.getTitle(),
+                    notice.getContent(),
+                    notice.isPinned(),
+                    notice.getViewCount(),
+                    DateUtil.formatDateTime(notice.getCreatedAt())
+            );
         }
     }
 
-    @Data
-    public static class AdminListDTO{
-        private Integer id;
-        private String title;
-        private boolean isPinned;
-        private int viewCount;
-        private String createdAt;
+    public record AdminListDTO(
+            Integer id,
+            String title,
+            boolean isPinned,
+            int viewCount,
+            String createdAt){
 
-        public AdminListDTO(Notice notice){
-            this.id = notice.getId();
-            this.title = notice.getTitle();
-            this.isPinned = notice.isPinned();
-            this.viewCount = notice.getViewCount();
-            this.createdAt = DateUtil.formatDateTime(notice.getCreatedAt());
+        public static AdminListDTO from(Notice notice){
+            return new AdminListDTO(
+                    notice.getId(),
+                    notice.getTitle(),
+                    notice.isPinned(),
+                    notice.getViewCount(),
+                    DateUtil.formatDateTime(notice.getCreatedAt())
+            );
         }
     }
 }
