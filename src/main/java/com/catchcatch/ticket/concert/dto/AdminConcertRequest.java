@@ -52,7 +52,6 @@ public class AdminConcertRequest {
             @DateTimeFormat(pattern = "yyyy-MM-dd")
             LocalDate endDate,
 
-            MultipartFile posterImage,
             String organizer,
             String detailTitle,
             String detailDescription1,
@@ -62,6 +61,7 @@ public class AdminConcertRequest {
             String contact,
             String runtime,
             String detailBannerUrl,
+            MultipartFile posterImage,
 
             // 💡 핵심: 자바스크립트로 동적 추가되는 회차 리스트를 이 필드가 통째로 흡수합니다!
             List<SessionCreateRequest> sessions
@@ -79,73 +79,6 @@ public class AdminConcertRequest {
     ) {
     }
 
-//    @Data
-//    @NoArgsConstructor
-//    @AllArgsConstructor
-//    @Builder
-//    public static class CreateRequestDTO {
-//        @NotBlank(message = "공연 제목은 필수입니다.")
-//        private String title;
-//
-//        @NotBlank(message = "아티스트명은 필수입니다.")
-//        private String artist;
-//
-//        @NotNull(message = "공연장 ID는 필수입니다.")
-//        private Integer venueId;
-//
-//        @NotBlank(message = "장르 정보가 필요합니다.")
-//        private String genre;
-//
-//        @Future(message = "티켓 오픈일은 미래여야 합니다.")
-//        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
-//        private LocalDateTime ticketOpenDate;
-//
-//        private String posterUrl;
-//
-//        @NotBlank(message = "공연 상태는 필수입니다.")
-//        private String concertStatus;
-//
-//        private String description;
-//
-//        @DateTimeFormat(pattern = "yyyy-MM-dd")
-//        private LocalDate startDate;
-//
-//        @DateTimeFormat(pattern = "yyyy-MM-dd")
-//        private LocalDate endDate;
-//
-//        private MultipartFile posterImage;
-//
-//        private String organizer;
-//
-//        private String detailTitle;
-//
-//        private String detailDescription1;
-//
-//        private String detailDescription2;
-//
-//        private String category;
-//
-//        private String ageLimit;
-//
-//        private String contact;
-//
-//        private String runtime;
-//
-//        private String detailBannerUrl;
-//
-//        // 💡 핵심: 자바스크립트로 동적 추가되는 회차 리스트를 이 필드가 통째로 흡수합니다!
-//        private List<SessionCreateRequest> sessions;
-//    }
-//
-//    @Data
-//    public static class SessionCreateRequest {
-//        // HTML5 datetime-local 포맷 바인딩용 LocalDateTime
-//        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
-//        private LocalDateTime sessionDate;
-//
-//        // 엔티티에 round 필드를 추가했다면 바인딩, 없거나 동적 계산 시 생략 가능
-//        private String round;
-//    }
 
     /**
      * 2. 관리자용 목록 조회 응답 DTO
@@ -204,61 +137,6 @@ public class AdminConcertRequest {
     }
 
 
-//    @Getter
-//    @Builder
-//    @AllArgsConstructor
-//    public static class ListResponseDTO {
-//        private Integer id;
-//        private String title;
-//        private String artist;
-//        private String concertStatus;
-//        private String venueName;       //  공연장 이름
-//        private String genre;           //  장르
-//        private String ageLimit;        //  관람 제한
-//        private String runtime;         //  러닝타임
-//        private Integer totalSessions;  //  매핑된 총 회차 수
-//        private LocalDate startDate;    //  공연 시작일
-//        private LocalDate endDate;      //  공연 종료일
-//        private LocalDateTime ticketOpenDate; // 예매 시작일
-//        private String description;     //  상세 설명
-//        // 💡 회차 리스트를 담을 DTO 필드 추가
-//        private List<SessionDTO> sessionList;
-//
-//        @Data
-//        @Builder
-//        public static class SessionDTO {
-//            private LocalDate sessionDate;
-//            private LocalTime sessionTime;
-//            private String round;
-//        }
-//
-//
-//        public static ListResponseDTO from(Concert concert) {
-//            return ListResponseDTO.builder()
-//                    .id(concert.getId())
-//                    .title(concert.getTitle())
-//                    .artist(concert.getArtist())
-//                    .concertStatus(concert.getConcertStatus() != null ? concert.getConcertStatus().name() : "COMING_SOON")
-//                    .venueName(concert.getVenue() != null ? concert.getVenue().getName() : "공연장 미지정")
-//                    .genre(concert.getGenre())
-//                    .ageLimit(concert.getAgeLimit())
-//                    .runtime(concert.getRuntime())
-//                    // 💡 연관관계 리스트의 size()를 측정하여 총 몇 회차인지 계산합니다.
-//                    .totalSessions(concert.getSessions() != null ? concert.getSessions().size() : 0)
-//                    // 💡 엔티티 리스트를 SessionDTO 리스트로 변환
-//                    .sessionList(concert.getSessions() != null ?
-//                            concert.getSessions().stream()
-//                                    .map(s -> SessionDTO.builder()
-//                                            .sessionDate(s.getSessionDate())
-//                                            .sessionTime(s.getSessionTime())
-//                                            .round(s.getRound())
-//                                            .build())
-//                                    .collect(Collectors.toList())
-//                            : Collections.emptyList())
-//                    .build();
-//        }
-//    }
-
     /**
      * 3. 관리자용 수정 응답 DTO
      */
@@ -307,6 +185,7 @@ public class AdminConcertRequest {
             String concertStatus,
 
             // 💡 이미지 업로드 관련
+            String posterImageBase64,
             MultipartFile posterImage, // 폼에서 파일을 새로 올릴 경우를 위해
             String posterUrl          // 기존 파일 경로 유지/변경용
     ) {
@@ -367,160 +246,12 @@ public class AdminConcertRequest {
                     .endDate(concert.getEndDate())
                     // 💡 회차 리스트 변환 (Null 체크 포함)
                     .sessionList(concert.getSessions() != null ? concert.getSessions().stream()
-                                    .map(SessionDTO::from)
-                                    .collect(Collectors.toList())
+                            .map(SessionDTO::from)
+                            .collect(Collectors.toList())
                             : Collections.emptyList())
                     .build();
         }
     }
 
-//
-//    @Getter
-//    @Setter
-//    @Builder
-//    @AllArgsConstructor
-//    @NoArgsConstructor
-//    public static class UpdateRequestDTO {
-//        // 1. 기존 필수 정보
-//        @NotBlank(message = "공연 제목은 필수입니다.")
-//        private String title;
-//
-//        @NotBlank(message = "아티스트명은 필수입니다.")
-//        private String artist;
-//
-//        @NotNull(message = "공연장 ID는 필수입니다.")
-//        private Integer venueId;
-//
-//        @NotBlank(message = "장르 정보가 필요합니다.")
-//        private String genre;
-//
-//        @NotBlank(message = "카테고리 정보가 필요합니다.") // 💡 추가됨
-//        private String category;
-//
-//        @NotBlank(message = "관람 등급은 필수입니다.")
-//        private String ageLimit;
-//
-//        @NotBlank(message = "공연 시간은 필수입니다.")
-//        private String runtime;
-//
-//        // 2. 날짜 정보 (필수)
-//        @DateTimeFormat(pattern = "yyyy-MM-dd")
-//        private LocalDate startDate; // 💡 추가됨
-//
-//        @DateTimeFormat(pattern = "yyyy-MM-dd")
-//        private LocalDate endDate;   // 💡 추가됨
-//
-//        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
-//        private LocalDateTime ticketOpenDate;
-//
-//        // 3. 설명 및 이미지 경로
-//        private String description;
-//        private String detailTitle;
-//        private String detailDescription1;
-//        private String detailDescription2;
-//        private String organizer;
-//        private String contact;
-//        private String concertStatus;
-//
-//        // 💡 이미지 업로드 관련
-//        private MultipartFile posterImage; // 폼에서 파일을 새로 올릴 경우를 위해
-//        private String posterUrl;          // 기존 파일 경로 유지/변경용
-//    }
-//
-//    // 공연 상세보기 DTO
-//    @Getter
-//    @Builder
-//    @AllArgsConstructor
-//    public static class DetailResponseDTO {
-//        private Integer id;
-//        private String title;
-//        private String artist;
-//        private String description;
-//        private String venueName;
-//        private List<SessionDTO> sessionList; // 회차 목록
-//        private String concertStatus;
-//
-//        private LocalDateTime ticketOpenDate;
-//        private String genre;
-//        private String ageLimit;        // 예: 만 15세 이상
-//        private String runtime;
-//        private String detailDescription1;
-//        private String detailDescription2;
-//        private LocalDate startDate;
-//        private LocalDate endDate;
-//
-//        // 회차 정보를 담을 DTO
-//        @Getter
-//        @Builder
-//        public static class SessionDTO {
-//            private LocalDate sessionDate;
-//            private LocalTime sessionTime;
-//            private String round;
-//
-//            public static SessionDTO from(ConcertSession session) {
-//                return SessionDTO.builder()
-//                        .sessionDate(session.getSessionDate())
-//                        .sessionTime(session.getSessionTime())
-//                        .round(session.getRound())
-//                        .build();
-//            }
-//        }
-//
-//        public static DetailResponseDTO from(Concert concert) {
-//            return DetailResponseDTO.builder()
-//                    .id(concert.getId())
-//                    .title(concert.getTitle())
-//                    .artist(concert.getArtist())
-//                    .description(concert.getDescription())
-//                    .venueName(concert.getVenue() != null ? concert.getVenue().getName() : "공연장 미지정")
-//                    .concertStatus(concert.getConcertStatus() != null ? concert.getConcertStatus().name() : "COMING_SOON")
-//                    .ticketOpenDate(concert.getTicketOpenDate())
-//                    .genre(concert.getGenre())
-//                    .ageLimit(concert.getAgeLimit())
-//                    .runtime(concert.getRuntime())
-//                    .detailDescription1(concert.getDetailDescription1())
-//                    .detailDescription2(concert.getDetailDescription2())
-//                    .startDate(concert.getStartDate())
-//                    .endDate(concert.getEndDate())
-//                    // 💡 회차 리스트 변환 (Null 체크 포함)
-//                    .sessionList(concert.getSessions() != null ?
-//                            concert.getSessions().stream()
-//                                    .map(SessionDTO::from)
-//                                    .collect(Collectors.toList())
-//                            : Collections.emptyList())
-//                    .build();
-//        }
-//    }
-
-
-//    /**
-//     * 4. 관리자용 회차(Session) 등록 요청 DTO
-//     */
-//    @Builder
-//    public record SessionCreateDTO(
-//            @NotBlank(message = "회차명(예: 1회차)은 필수입니다.")
-//            String round,
-//
-//            @NotNull(message = "공연 날짜는 필수입니다.")
-//            LocalDate sessionDate,
-//
-//            @NotNull(message = "공연 시간은 필수입니다.")
-//            LocalTime sessionTime
-//    ) {}
-//
-//    /**
-//     * 5. 관리자용 회차(Session) 수정 요청 DTO
-//     */
-//    @Builder
-//    public record SessionUpdateDTO(
-//            @NotBlank(message = "회차명(예: 1회차)은 필수입니다.")
-//            String round,
-//
-//            @NotNull(message = "공연 날짜는 필수입니다.")
-//            LocalDate sessionDate,
-//
-//            @NotNull(message = "공연 시간은 필수입니다.")
-//            LocalTime sessionTime
-//    ) {}
 
 }

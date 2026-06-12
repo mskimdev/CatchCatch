@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 -- ================
+=======
+================
+>>>>>>> main
 --  faq_tb
 -- ================
 INSERT INTO faq_tb (category, question, answer, is_visible, created_at)

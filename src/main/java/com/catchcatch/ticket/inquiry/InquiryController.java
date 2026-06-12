@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/customercenter/inquires")
+@RequestMapping("/support/inquiries")
 public class InquiryController {
 
     private final InquiryService inquiryService;
@@ -22,7 +22,7 @@ public class InquiryController {
     public String inquiryForm(HttpSession session, Model model) {
         User user = (User)session.getAttribute(Define.SESSION_USER);
         model.addAttribute("hasPhone", user != null && user.getPhone() != null && !user.getPhone().isBlank());
-        return "customercenter/inquiry-save";
+        return "support/inquiry-save";
     }
 
     @PostMapping("/save")
@@ -30,21 +30,21 @@ public class InquiryController {
         // 유효성 검사 (일단 패스)
         inquiryService.save(req, (User)session.getAttribute(Define.SESSION_USER));
 
-        return "redirect:/customercenter/inquiries";
+        return "redirect:/support/inquiries";
     }
 
     @GetMapping
     public String inquiryList(Model model) {
         model.addAttribute("inquiries", inquiryService.findAll());
 
-        return "customercenter/inquiry-list";
+        return "support/inquiry-list";
     }
 
     @GetMapping("/{id}")
     public String inquiryDetail(@PathVariable Integer id, Model model, HttpSession session) {
         User user = (User) session.getAttribute(Define.SESSION_USER);
         model.addAttribute("inquiry", inquiryService.findById(id, user));
-        return "customercenter/inquiry-detail";
+        return "support/inquiry-detail";
     }
     
 }

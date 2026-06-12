@@ -76,7 +76,6 @@ public class ConcertController {
 
         model.addAttribute("pageTitle", "콘서트 일정");
         model.addAttribute("loginHeader", true);
-        model.addAttribute("activeSchedule", true);
 
         return "concert/list";
     }
@@ -100,6 +99,8 @@ public class ConcertController {
 
         model.addAttribute("currentGenre", pageData.currentGenre());
         model.addAttribute("openSoonList", pageData.openSoonList());
+
+        model.addAttribute("pageTitle", "오픈 예정");
 
         return "concert/open-soon";
     }
