@@ -7,11 +7,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class InformationController {
 
-    @GetMapping("/events")
-    public String events(Model model) {
-        addPublicPageAttributes(model, "이벤트");
-        return "information/events";
-    }
+//    @GetMapping("/events")
+//    public String events(Model model) {
+//        addPublicPageAttributes(model, "이벤트");
+//        return "information/events";
+//    }
 
     @GetMapping("/support")
     public String support(Model model) {
