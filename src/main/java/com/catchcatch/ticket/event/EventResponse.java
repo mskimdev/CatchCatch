@@ -58,13 +58,15 @@ public class EventResponse {
             Integer eventId,
             String title,
             Integer rewardPoint,
+            Integer currentPoint,
             String message
     ) {
-        public JoinDTO(Event event) {
+        public JoinDTO(Event event, Integer currentPoint) {
             this(
                     event.getId(),
                     event.getTitle(),
                     event.getRewardPoint(),
+                    currentPoint,
                     "이벤트 참여가 완료되었습니다."
             );
         }
