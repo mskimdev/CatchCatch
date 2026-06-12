@@ -1,55 +1,50 @@
 package com.catchcatch.ticket.user.dto;
 
 import com.catchcatch.ticket.core.exception.BadRequestException;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 public class UserRequest {
 
-    @Data
-    public static class JoinDTO {
-        private String username;
-        private String email;
-        private String password;
-        private String passwordConfirm;
-        private String phone;
-
-        public void validate() {
-            if (username == null || username.isBlank()) {
-                throw new BadRequestException("아이디를 입력해주세요.");
-            }
-            if (email == null || email.isBlank()) {
-                throw new BadRequestException("이메일을 입력해주세요.");
-            }
-            if (!email.contains("@")) {
-                throw new BadRequestException("이메일 형식이 올바르지 않습니다.");
-            }
-            if (password == null || password.length() < 8) {
-                throw new BadRequestException("비밀번호는 8자 이상이어야 합니다.");
-            }
-            if (!password.equals(passwordConfirm)) {
+    public record JoinDTO(
+            @NotBlank(message = "아이디를 입력해주세요")
+            String username,
+            @Email(message = "이메일 형식이 올바르지 않습니다.")
+            @NotBlank(message = "이메일을 입력해주세요.")
+            String email,
+            @Size(min = 8, message = "비밀번호는 8자 이상입니다.")
+            @NotBlank(message = "비밀번호를 입력해주세요.")
+            String password,
+            @NotBlank(message = "비밀번호를 입력해주세요.")
+            String passwordConfirm,
+            String phone){
+        public void pwdValidate(){
+            if(!password.equals(passwordConfirm)){
                 throw new BadRequestException("비밀번호가 일치하지 않습니다.");
             }
         }
     }
 
-    @Data
-    public static class SocialJoinDTO {
-        private String email;
-        private String username;
-        private String phone;
+    public record SocialJoinDTO(
+            @NotBlank(message = "이메일 불러오기 실패.")
+            @Email(message = "이메일을 올바른 형태로 불러오지 못했습니다.")
+            String email,
+            @NotBlank(message = "아이디를 입력해주세요.")
+            String username,
+            String phone){
+    }
 
-        public void validate() {
-            if (username == null || username.isBlank()) {
-                throw new BadRequestException("아이디를 입력해주세요.");
-            }
-            if (email == null || email.isBlank()) {
-                throw new BadRequestException("이메일을 입력해주세요.");
-            }
-            if (!email.contains("@")) {
-                throw new BadRequestException("이메일 형식이 올바르지 않습니다.");
-            }
-        }
+    public record LoginDTO(
+            @NotBlank(message = "이메일을 입력해주세요.")
+            @Email(message = "이메일 형식이 올바르지 않습니다.")
+            String email,
+            @NotBlank(message = "비밀번호를 입력해주세요.")
+            String password
+    ){
+
     }
 
     public record ProfileUpdateDTO(
@@ -79,18 +74,12 @@ public class UserRequest {
         }
     }
 
-    @Data
-    public static class EmailCheckDTO {
-        private String email;
-        private String code;
+    public record EmailCheckDTO(
+            @Email(message = "이메일 형식이 올바르지 않습니다.")
+            @NotBlank(message = "이메일을 입력해주세요.")
+            String email,
+            @NotBlank(message = "인증번호를 입력해주세요.")
+            String code){
 
-        public void validate() {
-            if (email == null || email.trim().isEmpty()) {
-                throw new BadRequestException("이메일을 입력해주세요");
-            }
-            if (!email.contains("@")) {
-                throw new BadRequestException("올바른 이메일 형식이 아닙니다");
-            }
-        }
     }
 }

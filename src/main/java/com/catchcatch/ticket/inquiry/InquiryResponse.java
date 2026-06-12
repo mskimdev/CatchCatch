@@ -9,16 +9,16 @@ import jakarta.validation.constraints.NotNull;
 public class InquiryResponse {
 
     public record ListDTO(
-            @NotNull  Integer id,
-            @NotBlank String  categoryLabel,
-            @NotBlank String  title,
-                      boolean isPublic,
-            @NotBlank String  statusLabel,
-            @NotBlank String  statusClass,
-            @NotBlank String  createdAt
+            Integer id,
+            String categoryLabel,
+            String title,
+            boolean isPublic,
+            String statusLabel,
+            String statusClass,
+            String createdAt
     ) {
-        public static ListDTO from(Inquiry inquiry) {
-            return new ListDTO(
+        public ListDTO(Inquiry inquiry) {
+            this(
                     inquiry.getId(),
                     resolveCategoryLabel(inquiry.getCategory()),
                     inquiry.getTitle(),
@@ -31,19 +31,18 @@ public class InquiryResponse {
     }
 
     public record DetailDTO(
-            @NotBlank String  categoryLabel,
-            @NotBlank String  title,
-            @NotBlank String  content,
-            @NotBlank String  username,
-            @NotBlank String  createdAt,
-            @NotBlank String  statusLabel,
-            @NotBlank String  statusClass,
-                      boolean hasReply,
-                      String  reply
+            @NotBlank String categoryLabel,
+            @NotBlank String title,
+            @NotBlank String content,
+            @NotBlank String username,
+            @NotBlank String createdAt,
+            @NotBlank String statusLabel,
+            @NotBlank String statusClass,
+            boolean hasReply,
+            String reply
     ) {
-        public static DetailDTO from(Inquiry inquiry) {
-            boolean hasReply = inquiry.getReply() != null;
-            return new DetailDTO(
+        public DetailDTO(Inquiry inquiry){
+            this(
                     resolveCategoryLabel(inquiry.getCategory()),
                     inquiry.getTitle(),
                     inquiry.getContent(),
@@ -51,23 +50,22 @@ public class InquiryResponse {
                     DateUtil.formatDateTime(inquiry.getCreatedAt()),
                     resolveStatusLabel(inquiry.getStatus()),
                     resolveStatusClass(inquiry.getStatus()),
-                    hasReply,
-                    hasReply ? inquiry.getReply() : null
-            );
+                    inquiry.getReply() != null,
+                    inquiry.getReply() != null ? inquiry.getReply() : null);
         }
     }
 
     public record AdminListDTO(
-            @NotNull  Integer id,
-            @NotBlank String  categoryLabel,
-            @NotBlank String  title,
-            @NotBlank String  username,
-            @NotBlank String  statusLabel,
-            @NotBlank String  statusClass,
-            @NotBlank String  createdAt
+            @NotNull Integer id,
+            @NotBlank String categoryLabel,
+            @NotBlank String title,
+            @NotBlank String username,
+            @NotBlank String statusLabel,
+            @NotBlank String statusClass,
+            @NotBlank String createdAt
     ) {
-        public static AdminListDTO from(Inquiry inquiry) {
-            return new AdminListDTO(
+        public AdminListDTO(Inquiry inquiry){
+            this(
                     inquiry.getId(),
                     resolveCategoryLabel(inquiry.getCategory()),
                     inquiry.getTitle(),
@@ -80,20 +78,20 @@ public class InquiryResponse {
     }
 
     public record AdminDetailDTO(
-            @NotNull  Integer id,
-            @NotBlank String  categoryLabel,
-            @NotBlank String  title,
-            @NotBlank String  content,
-            @NotBlank String  username,
-                      String  reply,
-            @NotBlank String  statusLabel,
-            @NotBlank String  statusClass,
-                      boolean notifyEmail,
-                      boolean notifySms,
-            @NotBlank String  createdAt
+            @NotNull Integer id,
+            @NotBlank String categoryLabel,
+            @NotBlank String title,
+            @NotBlank String content,
+            @NotBlank String username,
+            String reply,
+            @NotBlank String statusLabel,
+            @NotBlank String statusClass,
+            boolean notifyEmail,
+            boolean notifySms,
+            @NotBlank String createdAt
     ) {
-        public static AdminDetailDTO from(Inquiry inquiry) {
-            return new AdminDetailDTO(
+        public AdminDetailDTO(Inquiry inquiry){
+            this(
                     inquiry.getId(),
                     resolveCategoryLabel(inquiry.getCategory()),
                     inquiry.getTitle(),
@@ -114,18 +112,18 @@ public class InquiryResponse {
     private static String resolveCategoryLabel(InquiryCategory category) {
         if (category == null) return "";
         return switch (category) {
-            case TICKET  -> "예매/취소";
+            case TICKET -> "예매/취소";
             case PAYMENT -> "결제";
-            case USER    -> "회원";
-            case ETC     -> "기타";
+            case USER -> "회원";
+            case ETC -> "기타";
         };
     }
 
     private static String resolveStatusLabel(InquiryStatus status) {
         if (status == null) return "";
         return switch (status) {
-            case PENDING   -> "답변대기";
-            case RESOLVED  -> "답변완료";
+            case PENDING -> "답변대기";
+            case RESOLVED -> "답변완료";
             case CANCELLED -> "취소";
         };
     }
@@ -133,8 +131,8 @@ public class InquiryResponse {
     private static String resolveStatusClass(InquiryStatus status) {
         if (status == null) return "";
         return switch (status) {
-            case PENDING   -> "cc-inquiry-status--pending";
-            case RESOLVED  -> "cc-inquiry-status--resolved";
+            case PENDING -> "cc-inquiry-status--pending";
+            case RESOLVED -> "cc-inquiry-status--resolved";
             case CANCELLED -> "cc-inquiry-status--cancelled";
         };
     }
