@@ -40,19 +40,19 @@ public class UserService {
     private String catchcatchKey;
 
     @Transactional
-    public void join(UserRequest.JoinDTO req, String profileImageUrl) {
-        if (userRepository.existsByUsername(req.getUsername())) {
+    public void join(UserRequest.JoinDTO reqDTO, String profileImageUrl) {
+        if (userRepository.existsByUsername(reqDTO.username())) {
             throw new BadRequestException("이미 사용 중인 아이디입니다.");
         }
-        if (userRepository.existsByEmail(req.getEmail())) {
+        if (userRepository.existsByEmail(reqDTO.email())) {
             throw new BadRequestException("이미 사용 중인 이메일입니다.");
         }
 
         User user = User.builder()
-                .username(req.getUsername())
-                .email(req.getEmail())
-                .password(passwordEncoder.encode(req.getPassword()))
-                .phone(req.getPhone())
+                .username(reqDTO.username())
+                .email(reqDTO.email())
+                .password(passwordEncoder.encode(reqDTO.password()))
+                .phone(reqDTO.phone())
                 .profileImage(profileImageUrl)
                 .oauthProvider(OAuthProvider.LOCAL)
                 .role(Role.USER)
@@ -62,19 +62,19 @@ public class UserService {
     }
 
     @Transactional
-    public void socialJoin(UserRequest.SocialJoinDTO req, String profileImageUrl, HttpSession session) {
-        if (userRepository.existsByUsername(req.getUsername())) {
+    public void socialJoin(UserRequest.SocialJoinDTO reqDTO, String profileImageUrl, HttpSession session) {
+        if (userRepository.existsByUsername(reqDTO.username())) {
             throw new BadRequestException("이미 사용 중인 아이디입니다.");
         }
-        if (userRepository.existsByEmail(req.getEmail())) {
+        if (userRepository.existsByEmail(reqDTO.email())) {
             throw new BadRequestException("이미 사용 중인 이메일입니다.");
         }
         User tempUser = (User) session.getAttribute("tempUser");
 
         User user = User.builder()
-                .username(req.getUsername())
-                .email(req.getEmail())
-                .phone(req.getPhone())
+                .username(reqDTO.username())
+                .email(reqDTO.email())
+                .phone(reqDTO.phone())
                 .password(passwordEncoder.encode(catchcatchKey))
                 .profileImage(profileImageUrl)
                 .oauthProvider(tempUser.getOauthProvider())
@@ -85,11 +85,11 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public User login(String email, String password) {
-        User user = userRepository.findByEmail(email)
+    public User login(UserRequest.LoginDTO reqDTO) {
+        User user = userRepository.findByEmail(reqDTO.email())
                 .orElseThrow(() -> new BadRequestException("이메일 또는 비밀번호가 올바르지 않습니다."));
 
-        if (!passwordEncoder.matches(password, user.getPassword())) {
+        if (!passwordEncoder.matches(reqDTO.password(), user.getPassword())) {
             throw new BadRequestException("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
@@ -140,7 +140,6 @@ public class UserService {
                 );
     }
 
-    @Transactional(readOnly = true)
     public List<Concert> findLikedConcertsByUser(Integer userId) {
         return concertLikeRepository.findAllWithConcertByUserId(userId)
                 .stream()
@@ -148,7 +147,6 @@ public class UserService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public List<BookingResponse.MyPageListDTO> findBookingsByUser(Integer userId, Status status) {
         List<Booking> bookings = status == null
                 ? bookingRepository.findAllWithDetailsByUserId(userId)

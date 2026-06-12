@@ -8,6 +8,7 @@ import com.catchcatch.ticket.notification.sender.EmailSender;
 import com.catchcatch.ticket.notification.NotificationMessage;
 import com.catchcatch.ticket.notification.sender.SmsSender;
 import com.catchcatch.ticket.user.User;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,21 +32,21 @@ public class InquiryService {
 
     public List<InquiryResponse.ListDTO> findAll() {
         return inquiryRepository.findAllByOrderByCreatedAtDesc().stream()
-                .map(InquiryResponse.ListDTO::from)
+                .map(InquiryResponse.ListDTO::new)
                 .toList();
     }
 
-    public InquiryResponse.DetailDTO findById(Integer id, User sessionUser) {
+    public InquiryResponse.DetailDTO findById(Integer id, Integer userId) {
         Inquiry inquiry = inquiryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("해당하는 문의 내역을 찾을 수 없습니다."));
 
         if (!inquiry.isPublic()) {
-            if (sessionUser == null || !inquiry.getUser().getId().equals(sessionUser.getId())) {
+            if (!inquiry.getUser().getId().equals(userId)) {
                 throw new ForbiddenException("접근 권한이 없습니다.");
             }
         }
 
-        return InquiryResponse.DetailDTO.from(inquiry);
+        return new InquiryResponse.DetailDTO(inquiry);
     }
 
     // ── 어드민 ──────────────────────────────────────
@@ -56,18 +57,18 @@ public class InquiryService {
                 : inquiryRepository.findAllByStatusOrderByCreatedAtDesc(status);
 
         return inquiries.stream()
-                .map(InquiryResponse.AdminListDTO::from)
+                .map(InquiryResponse.AdminListDTO::new)
                 .toList();
     }
 
     public InquiryResponse.AdminDetailDTO findByIdForAdmin(Integer id) {
         Inquiry inquiry = inquiryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("문의를 찾을 수 없습니다."));
-        return InquiryResponse.AdminDetailDTO.from(inquiry);
+        return new InquiryResponse.AdminDetailDTO(inquiry);
     }
 
     @Transactional
-    public void reply(Integer id, InquiryRequest.ReplyDTO reqDTO) {
+    public void reply(Integer id, @Valid InquiryRequest.ReplyDTO reqDTO) {
         Inquiry inquiry = inquiryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("문의를 찾을 수 없습니다."));
         inquiry.setReply(reqDTO.reply());
