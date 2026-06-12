@@ -1,0 +1,90 @@
+{{> layout/header}}
+
+<link rel="stylesheet" href="/css/event-detail.css">
+<link rel="stylesheet" href="/css/event-list.css">
+
+<main class="cc-main">
+    <div class="cc-container cc-info-page">
+
+        <section class="cc-info-hero cc-info-hero--event">
+            <div>
+                <p class="cc-info-hero__eyebrow">CATCHCATCH EVENT</p>
+                <h1>{{event.title}}</h1>
+                <p>CatchCatch 이벤트 상세 정보를 확인해보세요.</p>
+            </div>
+
+            <div class="cc-info-hero__icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none">
+                    <path d="M12 26h40v28H12z"/>
+                    <path d="M8 18h48v12H8zM32 18v36"/>
+                    <path d="M32 18c-9 0-14-3-14-8 0-4 4-6 7-4 4 2 7 12 7 12ZM32 18c9 0 14-3 14-8 0-4-4-6-7-4-4 2-7 12-7 12Z"/>
+                </svg>
+            </div>
+        </section>
+
+        <section class="cc-info-section">
+            <div class="cc-event-detail">
+                <div class="cc-event-detail__visual cc-event-visual--violet">
+                    <span>EVENT</span>
+                    <strong>
+                        {{event.rewardPoint}}P<br>
+                        혜택
+                    </strong>
+                    <b>+</b>
+                </div>
+
+                <div class="cc-event-detail__body">
+                    <span class="cc-badge cc-badge--fill">이벤트</span>
+
+                    <h2>{{event.title}}</h2>
+
+                    <p class="cc-event-detail__desc">
+                        {{event.description}}
+                    </p>
+
+                    <div class="cc-event-detail__info">
+                        <div>
+                            <strong>지급 포인트</strong>
+                            <span>{{event.rewardPoint}}P</span>
+                        </div>
+
+                        <div>
+                            <strong>이벤트 기간</strong>
+                            <span>{{event.startDate}} - {{event.endDate}}</span>
+                        </div>
+                    </div>
+
+                    <div class="cc-event-detail__actions">
+                        <a class="cc-btn cc-btn--line" href="/events">목록으로</a>
+                        <button class="cc-btn cc-btn--primary"
+                                type="button"
+                                onclick="joinEvent({{event.id}})">
+                            이벤트 참여하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</main>
+
+<script>
+    async function joinEvent(eventId) {
+        const response = await fetch(`/api/events/${eventId}/join`, {
+            method: "POST"
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            alert(result.message || result.msg || "이벤트 참여에 실패했습니다.");
+            return;
+        }
+
+        alert(result.message || result.msg || "이벤트 참여가 완료되었습니다.");
+        location.reload();
+    }
+</script>
+
+{{> layout/footer}}

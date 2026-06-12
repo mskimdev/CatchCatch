@@ -21,6 +21,9 @@ public class Event {
     @Column(nullable = false, length = 100)
     private String title;
 
+    @Column(length = 1000)
+    private String description;
+
     @Column(name = "reward_point", nullable = false)
     private Integer rewardPoint;
 
@@ -30,16 +33,12 @@ public class Event {
     @Column(name = "end_date", nullable = false)
     private Timestamp endDate;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private EventStatus status;
-
     @Builder
-    public Event(String title, Integer rewardPoint, Timestamp startDate, Timestamp endDate, EventStatus status) {
+    public Event(String title, String description, Integer rewardPoint, Timestamp startDate, Timestamp endDate) {
         this.title = title;
+        this.description = description;
         this.rewardPoint = rewardPoint;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.status = status == null ? EventStatus.ACTIVE : status;
     }
 }
