@@ -2,13 +2,13 @@ package com.catchcatch.ticket.concert.core;
 
 import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
 import com.catchcatch.ticket.session.ConcertSession;
-import com.catchcatch.ticket.venue.QVenue;
 import com.catchcatch.ticket.venue.Venue;
 import jakarta.persistence.*;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.*;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -104,26 +104,29 @@ public class Concert {
         private String region;  // 지역 (all, seoul, incheon 등)
     }
 
-    @Builder(builderClassName = "ConcertUpdater", builderMethodName = "updater")
-    public void update(AdminConcertRequest.UpdateRequestDTO dto, Venue venue, String posterUrl) {
+    public void update(AdminConcertRequest.UpdateRequestDTO dto, Venue newVenue, String updatePosterUrl) {
         this.title = dto.title();
         this.artist = dto.artist();
-        this.description = dto.description();
-        this.posterUrl = posterUrl; // 이미지 경로는 서비스에서 결정 후 전달
-        this.detailTitle = dto.detailTitle();
-        this.detailDescription1 = dto.detailDescription1();
-        this.detailDescription2 = dto.detailDescription2();
-        this.venue = venue; // 연관관계 엔티티 변경
         this.genre = dto.genre();
-        this.ageLimit = dto.ageLimit();
-        this.runtime = dto.runtime();
-        this.organizer = dto.organizer();
-        this.contact = dto.contact();
-        this.concertStatus = ConcertStatus.valueOf(dto.concertStatus());
+        this.category = dto.category();
+        this.venue = newVenue; // 💡 새롭게 찾은 Venue 엔티티로 교체
         this.ticketOpenDate = dto.ticketOpenDate();
         this.startDate = dto.startDate();
         this.endDate = dto.endDate();
-        this.category = dto.category();
+        this.runtime = dto.runtime();
+        this.ageLimit = dto.ageLimit();
+        this.organizer = dto.organizer();
+        this.contact = dto.contact();
+        this.detailTitle = dto.detailTitle();
+        this.description = dto.description();
+        this.detailDescription1 = dto.detailDescription1();
+        this.detailDescription2 = dto.detailDescription2();
+        this.posterUrl = updatePosterUrl; // 💡 분기 처리된 포스터 URL 적용
+
+        // String으로 넘어온 상태값을 Enum으로 변환하여 업데이트
+        if (dto.concertStatus() != null) {
+            this.concertStatus = ConcertStatus.valueOf(dto.concertStatus());
+        }
     }
 
 } // end of class
