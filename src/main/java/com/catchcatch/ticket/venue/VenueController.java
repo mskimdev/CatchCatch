@@ -1,6 +1,7 @@
 // venueController.java
 package com.catchcatch.ticket.venue;
 
+import com.catchcatch.ticket.core.util.Resp;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -8,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -47,19 +49,20 @@ public class VenueController {
     }
 
     // 관리자 공연장 삭제 처리
-    @DeleteMapping("/admin/venues/{id}")
-    @ResponseBody
+    @DeleteMapping("/api/venues/{id}")
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         venueService.deleteById(id);
-        return ResponseEntity.ok().build();
+        return Resp.ok("삭제되었습니다.");
     }
-    // 관리자 공연장 수정 처리
-    @PutMapping("/admin/venues/{id}")
-    @ResponseBody
-    public ResponseEntity<?> update(@PathVariable Integer id,
-                                    @RequestBody VenueRequest.UpdateDTO request) {
-        venueService.update(id, request);
-        return ResponseEntity.ok().build();
+
+    @PutMapping("/api/venues/{id}")
+    public ResponseEntity<?> updateVenue(
+            @PathVariable Integer id,
+            @RequestBody VenueRequest.UpdateDTO reqDTO
+    ) {
+        venueService.update(id, reqDTO);
+
+        return Resp.ok(Map.of("msg", "공연장이 수정되었습니다."));
     }
 
     // 관리자 공연장 목록 페이지 + 검색

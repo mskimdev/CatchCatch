@@ -6,3 +6,4 @@ RUNSCRIPT FROM 'classpath:db/data/payment.sql';
 RUNSCRIPT FROM 'classpath:db/data/notice.sql';
 RUNSCRIPT FROM 'classpath:db/data/inquiry.sql';
 RUNSCRIPT FROM 'classpath:db/data/event.sql';
+RUNSCRIPT FROM 'classpath:db/data/faq.sql';
