@@ -1,67 +1,66 @@
-//package com.catchcatch.ticket.faq;
-//
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.stereotype.Controller;
-//import org.springframework.ui.Model;
-//import org.springframework.web.bind.annotation.*;
-//
-//import java.util.List;
-//
-//@Controller
-//@RequiredArgsConstructor
-//public class AdminFaqController {
-//
-//    private final FaqService faqService;
-//
-//    // 관리자 FAQ 목록 페이지 + 검색
-//    @GetMapping("/admin/faqs")
-//    public String faqAdminList(@RequestParam(required = false) String keyword,
-//                               Model model) {
-//
-//        List<Faq> faqs = faqService.findAll(keyword);
-//
-//        boolean isSearch = keyword != null && !keyword.isBlank();
-//
-//        return "admin/faq-list";
-//    }
-//
-//    // 관리자 FAQ 등록 페이지
-//    @GetMapping("/admin/faqs/save")
-//    public String faqSaveForm(Model model) {
-//
-//        return "admin/faq-save";
-//    }
-//
-//    // 관리자 FAQ 등록 처리
-//    @PostMapping("/admin/faqs/save")
-//    public String faqSaveProc(FaqRequest.SaveDTO dto) {
-//        faqService.save(dto);
-//        return "redirect:/admin/faqs";
-//    }
-//
-//    // 관리자 FAQ 수정 페이지
-//    @GetMapping("/admin/faqs/{id}/edit")
-//    public String faqEditForm(@PathVariable Integer id,
-//                              Model model) {
-//
-//        Faq faq = faqService.findById(id);
-//
-//        return "admin/faq-edit";
-//    }
-//
-//    // 관리자 FAQ 수정 처리
-//    @PostMapping("/admin/faqs/{id}/edit")
-//    public String faqEditProc(@PathVariable Integer id,
-//                              FaqRequest.UpdateDTO dto) {
-//
-//        faqService.update(id, dto);
-//        return "redirect:/admin/faqs";
-//    }
-//
-//    // 관리자 FAQ 삭제 처리
-//    @PostMapping("/admin/faqs/{id}/delete")
-//    public String faqDeleteProc(@PathVariable Integer id) {
-//        faqService.deleteById(id);
-//        return "redirect:/admin/faqs";
-//    }
-//}
+package com.catchcatch.ticket.faq;
+
+import com.catchcatch.ticket.inquiry.Inquiry;
+import com.catchcatch.ticket.inquiry.InquiryResponse;
+import com.catchcatch.ticket.inquiry.InquiryService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@Controller
+@RequiredArgsConstructor
+public class AdminFaqController {
+
+    private final FaqService faqService;
+    private final InquiryService inquiryService;
+
+    // 관리자 FAQ 목록 페이지 + 검색
+    @GetMapping("/admin/boards/faq")
+    public String faqList(@RequestParam(required = false) String keyword,
+                          Model model) {
+
+        List<Faq> faqs = faqService.findAll(keyword);
+
+        boolean isSearch = keyword != null && !keyword.isBlank();
+
+        model.addAttribute("pageTitle", "FAQ 관리");
+        model.addAttribute("faqs", faqs);
+        model.addAttribute("faqCount", faqs.size());
+
+        model.addAttribute("keyword", isSearch ? keyword : "");
+        model.addAttribute("isSearch", isSearch);
+
+        return "admin/board/faq/list";
+    }
+
+
+    // 관리자 FAQ 등록 처리
+    @PostMapping("/admin/boards/faq/save")
+    public String faqSave(FaqRequest.SaveDTO req) {
+        faqService.save(req);
+        return "redirect:/admin/boards/faq";
+    }
+
+    // 관리자 FAQ 등록 페이지
+    @GetMapping("/admin/boards/faq/save")
+    public String faqSaveForm(@RequestParam(required = false) Integer inquiryId,
+                              Model model) {
+
+        model.addAttribute("pageTitle", "FAQ 등록");
+
+        model.addAttribute("question", "");
+        model.addAttribute("answer", "");
+
+        if (inquiryId != null) {
+            InquiryResponse.AdminDetailDTO inquiry = inquiryService.findByIdForAdmin(inquiryId);
+
+            model.addAttribute("question", inquiry.title());
+            model.addAttribute("answer", inquiry.reply() == null ? "" : inquiry.reply());
+        }
+
+        return "admin/board/faq/save";
+    }
+}

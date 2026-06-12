@@ -32,10 +32,6 @@ public class Faq {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String answer;
 
-    // 노출 여부
-    @Column(nullable = false)
-    private Boolean isVisible;
-
     // 등록일
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -44,18 +40,16 @@ public class Faq {
 
 
     @Builder
-    public Faq(FaqCategory category, String question, String answer, Boolean isVisible) {
+    public Faq(FaqCategory category, String question, String answer) {
         this.category = category;
         this.question = question;
         this.answer = answer;
-        this.isVisible = isVisible;
     }
 
-    public void update(FaqCategory category, String question, String answer, Boolean isVisible) {
+    public void update(FaqCategory category, String question, String answer) {
         this.category = category;
         this.question = question;
         this.answer = answer;
-        this.isVisible = isVisible;
     }
 
     public String getFormattedCreatedAt() {

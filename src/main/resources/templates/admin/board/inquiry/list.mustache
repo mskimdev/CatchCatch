@@ -95,11 +95,19 @@
                                             <span class="badge {{statusClass}}">{{statusLabel}}</span>
                                         </td>
                                         <td class="align-middle text-center" style="width:160px;">{{createdAt}}</td>
-                                        <td class="align-middle text-center" style="width:90px;">
-                                            <a href="/admin/boards/inquiry/{{id}}"
-                                               class="btn btn-primary btn-sm">
-                                                <i class="fas fa-reply"></i> 답변
-                                            </a>
+
+                                        <td class="align-middle text-center" style="width:190px;">
+                                            <div class="d-flex justify-content-center align-items-center" style="gap:6px;">
+                                                <a href="/admin/boards/inquiry/{{id}}"
+                                                   class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-reply"></i> 답변
+                                                </a>
+
+                                                <a href="/admin/boards/faq/save?inquiryId={{id}}"
+                                                class="btn btn-info btn-sm">
+                                                <i class="fas fa-question-circle"></i> FAQ등록
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 {{/inquiries}}
