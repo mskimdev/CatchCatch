@@ -40,4 +40,8 @@ public interface ConcertRepository extends JpaRepository<Concert, Integer>, Conc
     // 6. 예매 가능(OPEN) 공연만 단순 조회
     @Query("SELECT c FROM Concert c WHERE c.concertStatus = 'OPEN' ORDER BY c.createdAt DESC")
     List<Concert> findAllByStatusOpen();
+
+    // 7. 특정 공연장에 등록된 공연이 존재하는지 확인
+    @Query("SELECT COUNT(c) > 0 FROM Concert c WHERE c.venue.id = :venueId")
+    boolean existsByVenueId(Integer venueId);
 }
