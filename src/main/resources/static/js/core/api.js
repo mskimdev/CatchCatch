@@ -17,10 +17,10 @@ function apiPost(url, body) {
   return apiRequest('POST', url, body);
 }
 
-export function apiPut(url, body) {
+function apiPut(url, body) {
   return apiRequest('PUT', url, body);
 }
 
-export function apiDelete(url) {
+function apiDelete(url) {
   return apiRequest('DELETE', url, null);
 }

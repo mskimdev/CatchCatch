@@ -1,6 +1,8 @@
 package com.catchcatch.ticket.inquiry;
 
+import com.catchcatch.ticket.core.exception.ForbiddenException;
 import com.catchcatch.ticket.core.util.Define;
+import com.catchcatch.ticket.inquiry.enums.InquiryStatus;
 import com.catchcatch.ticket.user.User;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -34,16 +36,53 @@ public class InquiryController {
     }
 
     @GetMapping
-    public String inquiryList(Model model) {
-        model.addAttribute("inquiries", inquiryService.findAll());
+    public String inquiryList(Model model,
+                              @RequestParam(required = false) InquiryStatus status,
+                              @RequestParam(defaultValue = "false") boolean publicOnly,
+                              @RequestParam(defaultValue = "desc") String sort,
+                              @RequestParam(defaultValue = "false") boolean myOnly,
+                              @SessionAttribute(Define.SESSION_USER) User sessionUser) {
+
+        boolean asc = "asc".equals(sort);
+
+
+        model.addAttribute("inquiries", inquiryService.findAllByFilter(status, publicOnly, asc, myOnly, sessionUser.getId()));
+
+        model.addAttribute("filterAll", status == null && !myOnly);
+        model.addAttribute("filterResolved", InquiryStatus.RESOLVED.equals(status));
+        model.addAttribute("filterPublic", publicOnly);
+        model.addAttribute("filterMy", myOnly);
+        model.addAttribute("sortDesc", !asc);
+        model.addAttribute("sortAsc", asc);
+
 
         return "support/inquiry-list";
     }
 
     @GetMapping("/{id}")
     public String inquiryDetail(@PathVariable Integer id, Model model, @SessionAttribute(Define.SESSION_USER) User sessionUser) {
-        model.addAttribute("inquiry", inquiryService.findById(id, sessionUser.getId()));
+
+        InquiryResponse.DetailDTO inquiry = inquiryService.findById(id, sessionUser.getId());
+
+
+        model.addAttribute("inquiry", inquiry);
         return "support/inquiry-detail";
+    }
+
+    @GetMapping("/{id}/edit")
+    public String inquiryEditForm(
+            @PathVariable Integer id, Model model,
+            @SessionAttribute(Define.SESSION_USER) User sessionUser
+    ){
+        InquiryResponse.DetailDTO inquiry = inquiryService.findById(id, sessionUser.getId());
+        if(!inquiry.isOwner()){
+            throw new ForbiddenException("수정 권한이 없습니다.(본인 게시글 아님");
+        }
+
+        model.addAttribute("hasPhone", sessionUser.getPhone() != null && !sessionUser.getPhone().isBlank());
+        model.addAttribute("inquiry", inquiry);
+
+        return "support/inquiry-edit";
     }
 
 }

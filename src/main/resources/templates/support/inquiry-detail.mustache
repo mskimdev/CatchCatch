@@ -18,12 +18,18 @@
 
         <main class="cc-inquiry-content">
 
+            {{#inquiry}}
             <div class="cc-content-header">
                 <h2>문의 상세</h2>
-                <a class="cc-back-btn" href="/support/inquiries">목록으로</a>
+                <div style="display:flex; gap:8px">
+                    {{#isOwner}}{{^hasReply}}
+                    <a class="cc-btn cc-btn--outline" href="/support/inquiries/{{id}}/edit">수정</a>
+                    {{/hasReply}}{{/isOwner}}
+                    <a class="cc-btn cc-btn--outline" href="/support/inquiries">목록으로</a>
+                </div>
             </div>
 
-            {{#inquiry}}
+
             <div class="cc-inquiry-detail">
                 <div class="cc-inquiry-detail__header">
                     <div class="cc-inquiry-detail__meta">

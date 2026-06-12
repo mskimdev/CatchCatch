@@ -23,6 +23,25 @@
                 <a class="cc-btn cc-btn--primary" href="/support/inquiries/save">문의하기</a>
             </div>
 
+            <div class="cc-inquiry-filter">
+                <div class="cc-faq-tabs">
+                    <a data-status="" class="cc-faq-tab{{#filterAll}} is-active{{/filterAll}}" style="cursor:pointer">전체</a>
+                    <a data-status="RESOLVED" class="cc-faq-tab{{#filterResolved}} is-active{{/filterResolved}}" style="cursor:pointer">답변완료</a>
+                    <a id="myOnlyTab" class="cc-faq-tab{{#filterMy}} is-active{{/filterMy}}" style="cursor:pointer">내 문의</a>
+                </div>
+                <div class="cc-inquiry-filter__right">
+                    <label class="cc-inquiry-toggle">
+                        <input type="checkbox" id="publicOnlyToggle" {{#filterPublic}}checked{{/filterPublic}}>
+                        <span class="cc-inquiry-toggle__track"></span>
+                        <span class="cc-inquiry-toggle__label">공개글만 보기</span>
+                    </label>
+                    <select id="sortSelect" class="cc-inquiry-sort">
+                        <option value="desc" {{#sortDesc}}selected{{/sortDesc}}>최신순</option>
+                        <option value="asc" {{#sortAsc}}selected{{/sortAsc}}>오래된순</option>
+                    </select>
+                </div>
+            </div>
+
             <table class="cc-inquiry-table">
                 <thead>
                 <tr>
@@ -34,13 +53,16 @@
                 </thead>
                 <tbody>
                 {{#inquiries}}
-                <tr class="cc-inquiry-row{{^isPublic}} cc-inquiry-row--private{{/isPublic}}"
-                    {{#isPublic}}onclick="location.href='/support/inquiries/{{id}}'"{{/isPublic}}>
+                <tr class="cc-inquiry-row{{^isPublic}}{{^isOwner}} cc-inquiry-row--private{{/isOwner}}{{/isPublic}}"
+                    onclick="location.href='/support/inquiries/{{id}}'"
+                    {{^isPublic}}{{^isOwner}}style="pointer-events:none"{{/isOwner}}{{/isPublic}}>
                     <td><span class="cc-inquiry-category">{{categoryLabel}}</span></td>
                     <td class="cc-inquiry-title">
-                        {{^isPublic}}<svg class="cc-inquiry-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>{{/isPublic}}
-                        {{title}}
-                        {{^isPublic}}<span class="cc-inquiry-private-badge">비공개</span>{{/isPublic}}
+                        {{#isPublic}}{{title}}{{/isPublic}}
+                        {{^isPublic}}
+                            {{#isOwner}}{{title}} <span class="cc-inquiry-private-badge">비공개</span>{{/isOwner}}
+                            {{^isOwner}}<svg class="cc-inquiry-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> 비공개 문의입니다.{{/isOwner}}
+                        {{/isPublic}}
                     </td>
                     <td>
                         <span class="cc-inquiry-status {{statusClass}}">{{statusLabel}}</span>
@@ -61,4 +83,5 @@
     </div>
 </div>
 
+<script src="/js/support/inquiry-list.js"></script>
 {{> layout/footer}}

@@ -40,6 +40,11 @@ function initProfileUpdate() {
       body.newPasswordConfirm = form.querySelector('[name="newPasswordConfirm"]').value;
     }
 
+    if(body.newPassword !== body.newPasswordConfirm) {
+      CcUI.toast("비밀번호를 확인해주세요.", 'warning');
+      return;
+    }
+
     CcUI.loading.show('저장 중입니다...');
     const { res, data } = await apiPut('/api/users/mypage', body);
     CcUI.loading.hide();

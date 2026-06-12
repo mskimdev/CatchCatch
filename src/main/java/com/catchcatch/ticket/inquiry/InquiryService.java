@@ -21,6 +21,7 @@ import java.util.List;
 public class InquiryService {
 
     private final InquiryRepository inquiryRepository;
+    private final InquiryQueryRepository inquiryQueryRepository;
 
     private final EmailSender emailSender;
     private final SmsSender smsSender;
@@ -30,11 +31,11 @@ public class InquiryService {
         inquiryRepository.save(req.toEntity(user));
     }
 
-    public List<InquiryResponse.ListDTO> findAll() {
-        return inquiryRepository.findAllByOrderByCreatedAtDesc().stream()
-                .map(InquiryResponse.ListDTO::new)
-                .toList();
+    public List<InquiryResponse.ListDTO> findAllByFilter(InquiryStatus status, boolean publicOnly, boolean asc, boolean myOnly, Integer userId) {
+        return inquiryQueryRepository.findAllByFilter(status, publicOnly, asc, myOnly, userId).stream()
+                .map(inquiry -> new InquiryResponse.ListDTO(inquiry, userId)).toList();
     }
+
 
     public InquiryResponse.DetailDTO findById(Integer id, Integer userId) {
         Inquiry inquiry = inquiryRepository.findById(id)
@@ -46,7 +47,7 @@ public class InquiryService {
             }
         }
 
-        return new InquiryResponse.DetailDTO(inquiry);
+        return new InquiryResponse.DetailDTO(inquiry, inquiry.getUser().getId().equals(userId));
     }
 
     // ── 어드민 ──────────────────────────────────────

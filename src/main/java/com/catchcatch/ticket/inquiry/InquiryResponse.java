@@ -13,16 +13,18 @@ public class InquiryResponse {
             String categoryLabel,
             String title,
             boolean isPublic,
+            boolean isOwner,
             String statusLabel,
             String statusClass,
             String createdAt
     ) {
-        public ListDTO(Inquiry inquiry) {
+        public ListDTO(Inquiry inquiry, Integer userId) {
             this(
                     inquiry.getId(),
                     resolveCategoryLabel(inquiry.getCategory()),
                     inquiry.getTitle(),
                     inquiry.isPublic(),
+                    inquiry.getUser().getId().equals(userId),
                     resolveStatusLabel(inquiry.getStatus()),
                     resolveStatusClass(inquiry.getStatus()),
                     DateUtil.formatDateTime(inquiry.getCreatedAt())
@@ -31,18 +33,21 @@ public class InquiryResponse {
     }
 
     public record DetailDTO(
-            @NotBlank String categoryLabel,
-            @NotBlank String title,
-            @NotBlank String content,
-            @NotBlank String username,
-            @NotBlank String createdAt,
-            @NotBlank String statusLabel,
-            @NotBlank String statusClass,
+            InquiryCategory category,
+            String categoryLabel,
+            String title,
+            String content,
+            String username,
+            String createdAt,
+            String statusLabel,
+            String statusClass,
             boolean hasReply,
-            String reply
+            String reply,
+            boolean isOwner
     ) {
-        public DetailDTO(Inquiry inquiry){
+        public DetailDTO(Inquiry inquiry, boolean isOwner){
             this(
+                    inquiry.getCategory(),
                     resolveCategoryLabel(inquiry.getCategory()),
                     inquiry.getTitle(),
                     inquiry.getContent(),
@@ -51,7 +56,8 @@ public class InquiryResponse {
                     resolveStatusLabel(inquiry.getStatus()),
                     resolveStatusClass(inquiry.getStatus()),
                     inquiry.getReply() != null,
-                    inquiry.getReply() != null ? inquiry.getReply() : null);
+                    inquiry.getReply() != null ? inquiry.getReply() : null,
+                    isOwner);
         }
     }
 

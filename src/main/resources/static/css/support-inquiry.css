@@ -4,6 +4,92 @@
     min-width: 0;
 }
 
+/* ── 필터 바 ─────────────────────────────────────────────────── */
+.cc-inquiry-filter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.cc-inquiry-filter .cc-faq-tabs {
+    margin-bottom: 0;
+}
+
+.cc-inquiry-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.cc-inquiry-toggle input[type="checkbox"] {
+    display: none;
+}
+
+.cc-inquiry-toggle__track {
+    width: 40px;
+    height: 22px;
+    background: var(--cc-line-strong);
+    border-radius: 11px;
+    position: relative;
+    transition: background .2s ease;
+    flex-shrink: 0;
+}
+
+.cc-inquiry-toggle__track::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform .2s ease;
+}
+
+.cc-inquiry-toggle input:checked + .cc-inquiry-toggle__track {
+    background: var(--cc-primary);
+}
+
+.cc-inquiry-toggle input:checked + .cc-inquiry-toggle__track::after {
+    transform: translateX(18px);
+}
+
+.cc-inquiry-toggle__label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--cc-subtext);
+}
+
+.cc-inquiry-filter__right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.cc-inquiry-sort {
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--cc-line-strong);
+    border-radius: var(--cc-radius-sm);
+    background: var(--cc-surface);
+    color: var(--cc-subtext);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    outline: none;
+    transition: border-color .15s ease;
+}
+
+.cc-inquiry-sort:focus {
+    border-color: var(--cc-primary);
+}
+
 /* ── 문의 테이블 ─────────────────────────────────────────────── */
 .cc-inquiry-table {
     width: 100%;

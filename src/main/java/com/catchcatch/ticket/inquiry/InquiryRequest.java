@@ -3,21 +3,23 @@ package com.catchcatch.ticket.inquiry;
 import com.catchcatch.ticket.inquiry.enums.InquiryCategory;
 import com.catchcatch.ticket.user.User;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 public class InquiryRequest {
 
     public record SaveDTO(
-            @NotBlank(message = "카테고리를 선택해주세요")
+            @NotNull(message = "카테고리를 선택해주세요.")
             InquiryCategory category,
             @NotBlank(message = "제목을 입력해주세요")
             String title,
             @NotBlank(message = "내용을 입력해주세요")
             String content,
-            boolean isPublic,
-            boolean notifyEmail,
-            boolean notifySms
+            Boolean isPublic,
+            Boolean notifyEmail,
+            Boolean notifySms
     ){
         public Inquiry toEntity(User user){
             return Inquiry.builder()
@@ -25,9 +27,9 @@ public class InquiryRequest {
                     .content(content)
                     .user(user)
                     .category(category)
-                    .isPublic(isPublic)
-                    .notifyEmail(notifyEmail)
-                    .notifySms(notifySms)
+                    .isPublic(Boolean.TRUE.equals(isPublic))
+                    .notifyEmail(Boolean.TRUE.equals(notifyEmail))
+                    .notifySms(Boolean.TRUE.equals(notifySms))
                     .build();
         }
     }

@@ -30,8 +30,7 @@ public class UserApiController {
     @PostMapping("/email/send-code")
     public ResponseEntity<?> sendCode(
             @Parameter(description = "인증 코드를 받을 이메일 주소") UserRequest.EmailCheckDTO req) {
-        req.validate();
-        userApiService.sendCode(req.getEmail());
+        userApiService.sendCode(req.email());
         return Resp.ok("인증번호 발송 성공");
     }
 
@@ -43,13 +42,12 @@ public class UserApiController {
     @PostMapping("/email/verify-code")
     public ResponseEntity<?> verifyCode(
             @Parameter(description = "인증 대상 이메일 및 코드") UserRequest.EmailCheckDTO req) {
-        req.validate();
 
-        if (req.getCode() == null || req.getCode().trim().isEmpty()) {
+        if (req.code() == null || req.code().trim().isEmpty()) {
             return Resp.fail(HttpStatus.BAD_REQUEST, "인증번호를 입력해주세요.");
         }
 
-        if (userApiService.verifyCode(req.getEmail(), req.getCode())) {
+        if (userApiService.verifyCode(req.email(), req.code())) {
             return Resp.ok("인증되었습니다.");
         } else {
             return Resp.fail(HttpStatus.BAD_REQUEST, "인증번호가 일치하지 않습니다.");
@@ -63,7 +61,6 @@ public class UserApiController {
             HttpSession session) {
         if (reqDTO.currentPassword() != null && !reqDTO.currentPassword().isBlank())
             reqDTO.isLocalValidate();
-
         User updatedUser = userApiService.update(reqDTO, sessionUser.getId());
         session.setAttribute(Define.SESSION_USER, updatedUser);
         return Resp.ok("회원 정보가 저장되었습니다.");
