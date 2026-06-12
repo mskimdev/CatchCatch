@@ -1,5 +1,7 @@
 {{> admin/layout/header}}
 
+<script src="/js/core/api.js"></script>
+
 <body id="page-top">
 <div id="wrapper">
     {{> admin/layout/sidebar}}
@@ -12,7 +14,7 @@
 
                 <h1 class="h3 mb-4 text-gray-800">새 공연 등록 (테스트 데이터 셋업 완료)</h1>
 
-                <form action="/admin/concerts/create" method="POST" enctype="multipart/form-data">
+                <form id="concertForm" action="/admin/concerts/create" method="POST" enctype="multipart/form-data">
 
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
@@ -22,7 +24,8 @@
                             <div class="row">
                                 <div class="col-md-6 form-group">
                                     <label>공연 제목</label>
-                                    <input type="text" name="title" class="form-control" value="[테스트] 2026 싸이 흠뻑쇼 - 서울" required>
+                                    <input type="text" name="title" class="form-control" value="[테스트] 2026 싸이 흠뻑쇼 - 서울"
+                                           required>
                                 </div>
                                 <div class="col-md-6 form-group">
                                     <label>아티스트</label>
@@ -58,11 +61,13 @@
                             <div class="row">
                                 <div class="col-md-4 form-group">
                                     <label>예매 오픈 일시</label>
-                                    <input type="datetime-local" name="ticketOpenDate" class="form-control" value="2026-07-01T20:00" required>
+                                    <input type="datetime-local" name="ticketOpenDate" class="form-control"
+                                           value="2026-07-01T20:00" required>
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label>공연 시작일</label>
-                                    <input type="date" name="startDate" class="form-control" value="2026-08-15" required>
+                                    <input type="date" name="startDate" class="form-control" value="2026-08-15"
+                                           required>
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label>공연 종료일</label>
@@ -110,9 +115,10 @@
                             </div>
 
                             <div class="row">
-                                <div class="col-md-6 form-group">
-                                    <label>포스터 이미지 <span class="text-danger small">(보안상 수동 업로드 필수)</span></label>
-                                    <input type="file" name="posterImage" class="form-control" required accept="image/*">
+                                <label>포스터 이미지 <span class="text-danger small">(보안상 수동 업로드 필수)</span></label>
+                                <div class="custom-file">
+                                    <input type="file" name="posterImage" class="custom-file-input" id="posterImage" required accept="image/*">
+                                    <label class="custom-file-label" for="posterImage" data-browse="찾아보기">이미지 파일을 선택하세요</label>
                                 </div>
                                 <div class="col-md-6 form-group">
                                     <label>공연 상태</label>
@@ -134,20 +140,25 @@
                                 <div class="row session-row mb-3">
                                     <div class="col-md-5">
                                         <label>공연 일시</label>
-                                        <input type="datetime-local" name="sessions[0].sessionDate" class="form-control" value="2026-08-15T18:42" required>
+                                        <input type="datetime-local" name="sessions[0].sessionDate" class="form-control"
+                                               value="2026-08-15T18:42" required>
                                     </div>
                                     <div class="col-md-5">
                                         <label>회차명 (예: 1회차)</label>
                                         <input type="text" name="sessions[0].round" class="form-control" value="1회차">
                                     </div>
                                     <div class="col-md-2 d-flex align-items-end">
-                                        <button type="button" class="btn btn-danger btn-remove" style="display:none;">삭제</button>
+                                        <button type="button" class="btn btn-danger btn-remove" style="display:none;">
+                                            삭제
+                                        </button>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="mt-3">
-                                <button type="button" id="btn-add-session" class="btn btn-outline-success w-100">+ 회차 칸 추가하기</button>
+                                <button type="button" id="btn-add-session" class="btn btn-outline-success w-100">+ 회차 칸
+                                    추가하기
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -158,30 +169,68 @@
                 </form>
 
                 <script>
-                    let sessionIndex = 1; // 다음 인덱스는 1부터 시작
+                    // 1. 회차 추가 기능
+                    let sessionIndex = 1;
+                    const btnAddSession = document.getElementById('btn-add-session');
+                    if (btnAddSession) {
+                        btnAddSession.addEventListener('click', function() {
+                            const container = document.getElementById('session-container');
+                            const newRow = document.createElement('div');
+                            newRow.className = 'row session-row mb-3';
+                            newRow.innerHTML = `
+                                <div class="col-md-5">
+                                    <label>공연 일시</label>
+                                    <input type="datetime-local" name="sessions[${sessionIndex}].sessionDate" class="form-control" required>
+                                </div>
+                                <div class="col-md-5">
+                                    <label>회차명 (예: ${sessionIndex + 1}회차)</label>
+                                    <input type="text" name="sessions[${sessionIndex}].round" class="form-control" value="${sessionIndex + 1}회차">
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="button" class="btn btn-danger btn-remove" onclick="this.parentElement.parentElement.remove()">삭제</button>
+                                </div>
+                            `;
+                            container.appendChild(newRow);
+                            sessionIndex++;
+                        });
+                    }
 
-                    document.getElementById('btn-add-session').addEventListener('click', function() {
-                        const container = document.getElementById('session-container');
-                        const newRow = document.createElement('div');
-                        newRow.className = 'row session-row mb-3';
+                    // 2. 파일 선택 시 파일명 표시 (SB Admin 2 템플릿용)
+                    const fileInput = document.querySelector('.custom-file-input');
+                    if (fileInput) {
+                        fileInput.addEventListener('change', function(e) {
+                            if (e.target.files.length > 0) {
+                                let fileName = e.target.files[0].name;
+                                let nextSibling = e.target.nextElementSibling;
+                                if (nextSibling) {
+                                    nextSibling.innerText = fileName;
+                                }
+                            }
+                        });
+                    }
 
-                        newRow.innerHTML = `
-                            <div class="col-md-5">
-                                <label>공연 일시</label>
-                                <input type="datetime-local" name="sessions[${sessionIndex}].sessionDate" class="form-control" value="2026-08-16T18:42" required>
-                            </div>
-                            <div class="col-md-5">
-                                <label>회차명 (예: ${sessionIndex + 1}회차)</label>
-                                <input type="text" name="sessions[${sessionIndex}].round" class="form-control" value="${sessionIndex + 1}회차">
-                            </div>
-                            <div class="col-md-2 d-flex align-items-end">
-                                <button type="button" class="btn btn-danger btn-remove" onclick="this.parentElement.parentElement.remove()">삭제</button>
-                            </div>
-                        `;
+                    // 3. 폼 제출 가로채기 (원본 CcUI.confirm 객체 문법 완벽 적용)
+                    const form = document.getElementById("concertForm");
 
-                        container.appendChild(newRow);
-                        sessionIndex++;
-                    });
+                    if (form) {
+                        form.addEventListener("submit", function(e) {
+                            e.preventDefault(); // 기본 폼 전송을 일단 막음
+
+                            // 팀에서 만든 CcUI.confirm은 이렇게 객체({})로 감싸서 넘겨야 동작합니다!
+                            CcUI.confirm({
+                                title: '새 공연 등록',
+                                text: '입력하신 정보로 새 공연을 등록하시겠습니까?',
+                                confirmText: '등록하기',
+                                onConfirm: function() {
+                                    // 사용자가 '등록하기' 버튼을 누르면 이 부분이 실행됩니다.
+                                    CcUI.loading.show(); // 로딩창 띄우기
+
+                                    // 브라우저에서 가장 안전하게 폼(POST)을 전송하는 방법
+                                    HTMLFormElement.prototype.submit.call(form);
+                                }
+                            });
+                        });
+                    }
                 </script>
 
             </div>

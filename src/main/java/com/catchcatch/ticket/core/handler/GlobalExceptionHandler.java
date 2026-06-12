@@ -1,6 +1,6 @@
 package com.catchcatch.ticket.core.handler;
 
-import com.catchcatch.ticket.core.errors.*;
+import com.catchcatch.ticket.core.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import com.catchcatch.ticket.core.util.HtmlUtil;

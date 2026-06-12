@@ -1,9 +1,6 @@
 package com.catchcatch.ticket.refund;
 
-import com.catchcatch.ticket.booking.Booking;
-import com.catchcatch.ticket.booking.BookingRepository;
-import com.catchcatch.ticket.core.errors.BadRequestException;
-import com.catchcatch.ticket.core.errors.NotFoundException;
+import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.payment.Payment;
 import com.catchcatch.ticket.payment.PaymentRepository;
 import lombok.RequiredArgsConstructor;

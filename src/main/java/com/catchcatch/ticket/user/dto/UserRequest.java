@@ -1,6 +1,6 @@
 package com.catchcatch.ticket.user.dto;
 
-import com.catchcatch.ticket.core.errors.BadRequestException;
+import com.catchcatch.ticket.core.exception.BadRequestException;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 

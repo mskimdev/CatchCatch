@@ -1,4 +1,4 @@
-package com.catchcatch.ticket.core.errors;
+package com.catchcatch.ticket.core.exception;
 
 public class BadRequestException extends RuntimeException {
     public BadRequestException(String message) {

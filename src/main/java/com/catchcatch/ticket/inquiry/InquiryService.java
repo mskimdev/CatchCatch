@@ -1,7 +1,7 @@
 package com.catchcatch.ticket.inquiry;
 
-import com.catchcatch.ticket.core.errors.ForbiddenException;
-import com.catchcatch.ticket.core.errors.NotFoundException;
+import com.catchcatch.ticket.core.exception.ForbiddenException;
+import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.core.util.HtmlUtil;
 import com.catchcatch.ticket.inquiry.enums.InquiryStatus;
 import com.catchcatch.ticket.notification.sender.EmailSender;
@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service

@@ -3,7 +3,7 @@ package com.catchcatch.ticket.user;
 import com.catchcatch.ticket.booking.BookingService;
 import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
-import com.catchcatch.ticket.core.errors.UnauthorizedException;
+import com.catchcatch.ticket.core.exception.UnauthorizedException;
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.ProfileImageUtil;
 import com.catchcatch.ticket.user.dto.UserRequest;

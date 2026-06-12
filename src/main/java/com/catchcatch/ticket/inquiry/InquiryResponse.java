@@ -133,9 +133,9 @@ public class InquiryResponse {
     private static String resolveStatusClass(InquiryStatus status) {
         if (status == null) return "";
         return switch (status) {
-            case PENDING   -> "inquiry-status--pending";
-            case RESOLVED  -> "inquiry-status--resolved";
-            case CANCELLED -> "inquiry-status--cancelled";
+            case PENDING   -> "cc-inquiry-status--pending";
+            case RESOLVED  -> "cc-inquiry-status--resolved";
+            case CANCELLED -> "cc-inquiry-status--cancelled";
         };
     }
 }

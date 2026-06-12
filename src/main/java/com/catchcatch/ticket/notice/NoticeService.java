@@ -1,6 +1,6 @@
 package com.catchcatch.ticket.notice;
 
-import com.catchcatch.ticket.core.errors.NotFoundException;
+import com.catchcatch.ticket.core.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
