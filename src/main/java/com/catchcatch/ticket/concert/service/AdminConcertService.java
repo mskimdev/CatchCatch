@@ -4,7 +4,7 @@ import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
-import com.catchcatch.ticket.core.errors.NotFoundException;
+import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.core.util.ProfileImageUtil;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.session.ConcertSessionRepository;

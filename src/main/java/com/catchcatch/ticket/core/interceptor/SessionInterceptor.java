@@ -27,5 +27,11 @@ public class SessionInterceptor implements HandlerInterceptor {
         if (!modelAndView.getModel().containsKey("keyword")) {
             modelAndView.addObject("keyword", "");
         }
+
+        String uri = request.getRequestURI();
+        modelAndView.addObject("activeSchedule", uri.startsWith("/concerts") && !uri.startsWith("/concerts/open-soon"));
+        modelAndView.addObject("activeOpen",     uri.startsWith("/concerts/open-soon"));
+        modelAndView.addObject("activeEvent",    uri.startsWith("/events"));
+        modelAndView.addObject("activeQna",      uri.startsWith("/customercenter"));
     }
 }

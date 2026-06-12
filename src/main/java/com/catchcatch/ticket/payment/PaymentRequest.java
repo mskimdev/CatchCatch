@@ -1,9 +1,8 @@
 package com.catchcatch.ticket.payment;
 
-import com.catchcatch.ticket.core.errors.BadRequestException;
+import com.catchcatch.ticket.core.exception.BadRequestException;
 import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 public class PaymentRequest {
 

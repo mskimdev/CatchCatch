@@ -1,4 +1,4 @@
-package com.catchcatch.ticket.core.errors;
+package com.catchcatch.ticket.core.exception;
 
 public class ForbiddenException extends RuntimeException {
     public ForbiddenException(String message) {

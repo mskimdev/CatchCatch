@@ -1,7 +1,7 @@
 package com.catchcatch.ticket.user;
 
-import com.catchcatch.ticket.core.errors.BadRequestException;
-import com.catchcatch.ticket.core.errors.NotFoundException;
+import com.catchcatch.ticket.core.exception.BadRequestException;
+import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.core.util.HtmlUtil;
 import com.catchcatch.ticket.core.util.MailUtil;
 import com.catchcatch.ticket.core.util.ProfileImageUtil;
@@ -14,9 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Service

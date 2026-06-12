@@ -1,6 +1,6 @@
 package com.catchcatch.ticket.core.util;
 
-import com.catchcatch.ticket.core.errors.BadRequestException;
+import com.catchcatch.ticket.core.exception.BadRequestException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;

@@ -1,196 +1,253 @@
-body {
-    background-color: #faf7ff;
-}
-
-.customer-center-container {
-    width: 1180px;
-    margin: 40px auto;
-}
-
-.page-title {
-    font-size: 26px;
-    font-weight: 800;
-    margin-bottom: 28px;
-}
-
-.customer-layout {
+/* ── 고객센터 공통 레이아웃 ───────────────────────────────────── */
+.cc-customer {
     display: flex;
     gap: 30px;
+    align-items: flex-start;
 }
 
-.side-menu {
+.cc-customer__title {
+    font-size: 26px;
+    font-weight: 800;
+    margin: 0 0 28px;
+    color: var(--cc-text);
+}
+
+/* ── 사이드 메뉴 ─────────────────────────────────────────────── */
+.cc-side-menu {
     width: 230px;
-    background-color: #fff;
-    border: 1px solid #eadfff;
-    border-radius: 18px;
+    flex-shrink: 0;
+    background: var(--cc-surface);
+    border: 1px solid var(--cc-line);
+    border-radius: var(--cc-radius-md);
     padding: 18px 0;
-    height: fit-content;
 }
 
-.side-menu-item {
+.cc-side-menu__item {
     display: block;
     padding: 15px 22px;
     font-size: 15px;
     font-weight: 700;
-    color: #3d3750;
+    color: var(--cc-subtext);
     text-decoration: none;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+    border-left: 4px solid transparent;
 }
 
-.side-menu-item.active {
-    color: #6d32e6;
-    background-color: #f4eff;
-    border-left: 4px solid #7b35ff;
+.cc-side-menu__item:hover {
+    color: var(--cc-primary);
+    background: var(--cc-primary-softer);
 }
 
-.faq-content {
-    flex: 1;
+.cc-side-menu__item.is-active {
+    color: var(--cc-primary);
+    background: var(--cc-primary-softer);
+    border-left-color: var(--cc-primary);
 }
 
-.content-header {
+/* ── 콘텐츠 공통 헤더 ────────────────────────────────────────── */
+.cc-content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 22px;
 }
 
-.content-header h2 {
+.cc-content-header h2 {
     font-size: 24px;
     font-weight: 800;
     margin: 0;
+    color: var(--cc-text);
 }
 
-.faq-search-box {
+.cc-content-header p {
+    margin-top: 6px;
+    font-size: 14px;
+    color: var(--cc-muted);
+}
+
+/* ── FAQ 메인 영역 ───────────────────────────────────────────── */
+.cc-faq-content {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ── FAQ 검색 박스 ───────────────────────────────────────────── */
+.cc-faq-search {
     display: flex;
     gap: 10px;
-    background-color: #fff;
-    border: 1px solid #eadfff;
-    border-radius: 18px;
+    background: var(--cc-surface);
+    border: 1px solid var(--cc-line);
+    border-radius: var(--cc-radius-md);
     padding: 28px;
     margin-bottom: 18px;
 }
 
-.faq-search-box select,
-.faq-search-box input {
+.cc-faq-search select,
+.cc-faq-search input {
     height: 46px;
-    border: 1px solid #dfd4f5;
-    border-radius: 12px;
+    border: 1px solid var(--cc-line-strong);
+    border-radius: var(--cc-radius-sm);
     padding: 0 16px;
     font-size: 14px;
-    background-color: #fff;
+    background: var(--cc-surface);
+    color: var(--cc-subtext);
+    outline: none;
+    transition: border-color .15s ease;
 }
 
-.faq-search-box select {
+.cc-faq-search select:focus,
+.cc-faq-search input:focus {
+    border-color: var(--cc-primary);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, .10);
+}
+
+.cc-faq-search select {
     width: 180px;
     font-weight: 700;
 }
 
-.faq-search-box input {
+.cc-faq-search input {
     flex: 1;
 }
 
-.faq-search-box button {
+.cc-faq-search button {
     width: 100px;
     height: 46px;
     border: none;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #7b35ff, #9b4dff);
+    border-radius: var(--cc-radius-sm);
+    background: linear-gradient(135deg, var(--cc-primary), var(--cc-primary-dark));
     color: #fff;
     font-weight: 800;
     cursor: pointer;
+    transition: opacity .15s ease, transform .15s ease;
 }
 
-.faq-category-tabs {
+.cc-faq-search button:hover {
+    opacity: .9;
+    transform: translateY(-1px);
+}
+
+/* ── FAQ 카테고리 탭 ─────────────────────────────────────────── */
+.cc-faq-tabs {
     display: flex;
-    gap: 12px;
+    gap: 10px;
+    flex-wrap: wrap;
     margin-bottom: 24px;
 }
 
-.faq-category-tabs .tab {
-    padding: 12px 22px;
-    border: 1px solid #dfd4f5;
+.cc-faq-tabs .cc-faq-tab {
+    padding: 10px 20px;
+    border: 1px solid var(--cc-line-strong);
     border-radius: 14px;
-    background-color: #fff;
-    color: #2d2938;
+    background: var(--cc-surface);
+    color: var(--cc-subtext);
     text-decoration: none;
     font-weight: 800;
+    font-size: 14px;
+    transition: background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease;
 }
 
-.faq-category-tabs .tab.active {
-    background: linear-gradient(135deg, #7b35ff, #9b4dff);
+.cc-faq-tabs .cc-faq-tab:hover {
+    border-color: var(--cc-primary);
+    color: var(--cc-primary-dark);
+    background: var(--cc-primary-softer);
+}
+
+.cc-faq-tabs .cc-faq-tab.is-active {
+    background: linear-gradient(135deg, var(--cc-primary), var(--cc-primary-dark));
     color: #fff;
-    box-shadow: 0 8px 18px rgba(123, 53, 255, 0.25);
+    border-color: transparent;
+    box-shadow: 0 8px 18px rgba(124, 58, 237, .25);
 }
 
-.faq-table {
+/* ── FAQ 테이블 ──────────────────────────────────────────────── */
+.cc-faq-table {
     width: 100%;
     border-collapse: separate;
-    border-spacing: 0 12px;
+    border-spacing: 0 10px;
     font-size: 14px;
 }
 
-.faq-table thead th {
-    padding: 16px;
-    background-color: #f4ecff;
-    color: #3d3750;
+.cc-faq-table thead th {
+    padding: 14px 16px;
+    background: var(--cc-primary-softer);
+    color: var(--cc-subtext);
     font-weight: 800;
-}
-
-.faq-table tbody tr {
-    background-color: #fff;
-    box-shadow: 0 4px 14px rgba(72, 45, 120, 0.06);
-}
-
-.faq-table td {
-    padding: 18px 16px;
-    border-top: 1px solid #eadfff;
-    border-bottom: 1px solid #eadfff;
     text-align: center;
 }
 
-.faq-table td:first-child {
-    border-left: 1px solid #eadfff;
-    border-radius: 16px 0 0 16px;
-    color: #6d32e6;
-    font-weight: 800;
-}
-
-.faq-table td:last-child {
-    border-right: 1px solid #eadfff;
-    border-radius: 0 16px 16px 0;
-    color: #777;
-}
-
-.faq-table th:nth-child(2),
-.faq-table td:nth-child(2) {
+.cc-faq-table thead th:nth-child(2) {
     text-align: left;
 }
 
-.faq-question {
-    font-weight: 800;
-    color: #1f1b2d;
+.cc-faq-table tbody tr {
+    background: var(--cc-surface);
+    box-shadow: var(--cc-shadow-soft);
+    cursor: pointer;
+    transition: background .1s ease;
 }
 
-.empty-message {
+.cc-faq-table tbody tr:hover {
+    background: var(--cc-primary-softer);
+}
+
+.cc-faq-table td {
+    padding: 18px 16px;
+    border-top: 1px solid var(--cc-line);
+    border-bottom: 1px solid var(--cc-line);
+    text-align: center;
+    vertical-align: middle;
+}
+
+.cc-faq-table td:first-child {
+    border-left: 1px solid var(--cc-line);
+    border-radius: 14px 0 0 14px;
+    color: var(--cc-primary);
+    font-weight: 800;
+}
+
+.cc-faq-table td:last-child {
+    border-right: 1px solid var(--cc-line);
+    border-radius: 0 14px 14px 0;
+    color: var(--cc-muted);
+}
+
+.cc-faq-table td:nth-child(2) {
+    text-align: left;
+    font-weight: 800;
+    color: var(--cc-text);
+}
+
+.cc-empty-message {
     text-align: center !important;
     padding: 50px !important;
-    color: #888;
+    color: var(--cc-muted);
 }
 
-.pagination {
+/* ── 페이지네이션 ────────────────────────────────────────────── */
+.cc-pagination {
     display: flex;
     justify-content: center;
     gap: 16px;
     margin-top: 28px;
 }
 
-.pagination a {
+.cc-pagination a {
     text-decoration: none;
-    color: #b8aacd;
+    color: var(--cc-line-strong);
     font-size: 22px;
+    transition: color .15s ease;
 }
 
-.pagination a.active {
+.cc-pagination a:hover {
+    color: var(--cc-primary);
+}
+
+.cc-pagination a.is-active {
     width: 34px;
     height: 34px;
     line-height: 34px;
-    background: linear-gradient(135deg, #7b35ff, #9b4dff);
+    background: linear-gradient(135deg, var(--cc-primary), var(--cc-primary-dark));
     color: #fff;
     border-radius: 50%;
     text-align: center;

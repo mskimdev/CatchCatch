@@ -7,7 +7,7 @@ import com.catchcatch.ticket.booking.dto.BookingResponse;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.concertlike.ConcertLike;
 import com.catchcatch.ticket.concertlike.ConcertLikeRepository;
-import com.catchcatch.ticket.core.errors.BadRequestException;
+import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.oauth.OAuthClientFactory;
 import com.catchcatch.ticket.oauth.OAuthUserInfo;
 import com.catchcatch.ticket.user.dto.UserRequest;

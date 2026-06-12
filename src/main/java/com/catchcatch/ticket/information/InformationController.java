@@ -10,14 +10,12 @@ public class InformationController {
     @GetMapping("/events")
     public String events(Model model) {
         addPublicPageAttributes(model, "이벤트");
-        model.addAttribute("activeEvent", true);
         return "information/events";
     }
 
     @GetMapping("/support")
     public String support(Model model) {
         addPublicPageAttributes(model, "문의사항");
-        model.addAttribute("activeQna", true);
         return "information/support";
     }
 

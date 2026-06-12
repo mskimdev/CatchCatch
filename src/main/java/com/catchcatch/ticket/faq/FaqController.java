@@ -21,11 +21,11 @@ public class FaqController {
 
         List<Faq> faqs = faqService.findVisibleFaqs(category, keyword);
 
-        model.addAttribute("pageTitle", "고객센터");
+        model.addAttribute("pageTitle", "FAQ");
         model.addAttribute("keyword", keyword == null ? "" : keyword);
         model.addAttribute("faqs", faqs);
 
-        // 탭 active 처리용
+        // 탭 active 처리
         model.addAttribute("isAll", category == null);
         model.addAttribute("isMember", category == FaqCategory.MEMBER);
         model.addAttribute("isBooking", category == FaqCategory.BOOKING);
