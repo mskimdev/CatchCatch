@@ -32,6 +32,6 @@ public class SessionInterceptor implements HandlerInterceptor {
         modelAndView.addObject("activeSchedule", uri.startsWith("/concerts") && !uri.startsWith("/concerts/open-soon"));
         modelAndView.addObject("activeOpen",     uri.startsWith("/concerts/open-soon"));
         modelAndView.addObject("activeEvent",    uri.startsWith("/events"));
-        modelAndView.addObject("activeQna",      uri.startsWith("/customercenter"));
+        modelAndView.addObject("activeQna",      uri.startsWith("/support"));
     }
 }

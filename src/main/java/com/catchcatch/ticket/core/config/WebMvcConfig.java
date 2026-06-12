@@ -35,12 +35,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         /* 인증 처리 인터셉트 필요한 url*/
                         "/users/**",
                         "/api/concerts/**",
-                        "/customercenter/**",
+                        "/support/**",
                         "/concerts/liked-ids"
                 )
                 .excludePathPatterns(
-                        "/customercenter/faqs",
-                        "/customercenter/",
+                        "/support/faqs",
+                        "/support/",
                         "/api/concerts/liked-ids"
                 );
 

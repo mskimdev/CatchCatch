@@ -14,7 +14,7 @@ public class FaqController {
 
     private final FaqService faqService;
 
-    @GetMapping("/customercenter/faqs")
+    @GetMapping("/support/faqs")
     public String faqList(@RequestParam(required = false) FaqCategory category,
                           @RequestParam(required = false) String keyword,
                           Model model) {
@@ -34,6 +34,6 @@ public class FaqController {
         model.addAttribute("isEvent", category == FaqCategory.EVENT);
         model.addAttribute("isService", category == FaqCategory.SERVICE);
 
-        return "customercenter/faq";
+        return "support/faq";
     }
 }
