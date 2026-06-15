@@ -27,14 +27,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// 2. 이벤트 참여 기능 (에러 방지 밸브 추가)
+// 2. 이벤트 참여 기능 (CcUI 적용)
 async function joinEvent(eventId) {
     try {
         const response = await fetch(`/api/events/${eventId}/join`, {
             method: "POST"
         });
 
-        // 서버가 정상적인 JSON을 줬는지 검증 (HTML 에러 페이지 파싱 에러 방지)
+        // 서버가 정상적인 JSON을 줬는지 검증
         const contentType = response.headers.get("content-type");
         let result = {};
 
@@ -43,23 +43,34 @@ async function joinEvent(eventId) {
         }
 
         if (!response.ok) {
-            // 💡 단순히 글자만 띄우는 걸 넘어, '401'일 때는 로그인 창으로 보내주는 '액션'을 추가하는 것!
+            // 💡 1. 401 에러 (로그인 필요): 페이지 이동이 필요하므로 confirm 다이얼로그 활용
             if (response.status === 401) {
-                alert(result.message || "로그인이 필요합니다.");
-                location.href = "/login"; // 로그인 페이지 주소로 이동
+                CcUI.confirm({
+                    title: '로그인 안내',
+                    text: result.message || "로그인이 필요합니다.\n로그인 페이지로 이동하시겠습니까?",
+                    confirmText: '로그인',
+                    onConfirm: () => {
+                        location.href = "/login";
+                    }
+                });
                 return;
             }
 
-            // 그 외 400 에러(이미 참여함 등)는 그냥 알림창만 띄우고 제자리 유지
-            alert(result.message || "이벤트 참여에 실패했습니다.");
+            // 💡 2. 그 외 400 에러 (이미 참여함 등): 경고(warning) 타입 alert 사용
+            CcUI.alert(result.message || result.msg || "이벤트 참여에 실패했습니다.", 'warning');
             return;
         }
 
-        alert(result.message || result.msg || "이벤트 참여가 완료되었습니다.");
-        location.reload();
+        // 💡 3. 성공: 우상단 토스트 알림을 띄우고, 사용자가 읽을 수 있도록 1.5초 대기 후 새로고침
+        CcUI.toast(result.message || result.msg || "이벤트 참여가 완료되었습니다.", 'success');
+
+        setTimeout(() => {
+            location.reload();
+        }, 1500);
 
     } catch (error) {
         console.error("이벤트 참여 중 스크립트 에러 발생:", error);
-        alert("요청 처리 중 오류가 발생했습니다. 로그인을 확인하거나 잠시 후 다시 시도해주세요.");
+        // 💡 4. 시스템/네트워크 에러: 에러(error) 타입 alert 사용
+        CcUI.alert("요청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", 'error');
     }
 }
