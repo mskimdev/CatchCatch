@@ -3,7 +3,7 @@ package com.catchcatch.ticket.booking;
 import com.catchcatch.ticket.booking.dto.BookingRequest;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
 import com.catchcatch.ticket.core.util.Define;
-import com.catchcatch.ticket.user.User;
+import com.catchcatch.ticket.user.dto.SessionUser;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -28,7 +28,7 @@ public class BookingController {
             BookingRequest.StartDTO req,
             HttpSession session
     ) {
-        User sessionUser = getSessionUser(session);
+        SessionUser sessionUser = getSessionUser(session);
 
         if (sessionUser == null) {
             return "redirect:/login";
@@ -46,7 +46,7 @@ public class BookingController {
     // 예매 정보
     @GetMapping("/info")
     public String infoForm(Model model, HttpSession session) {
-        User sessionUser = getSessionUser(session);
+        SessionUser sessionUser = getSessionUser(session);
 
         if (sessionUser == null) {
             return "redirect:/login";
@@ -76,7 +76,7 @@ public class BookingController {
     // 좌석 선택
     @GetMapping("/seat")
     public String seatForm(Model model, HttpSession session) {
-        User sessionUser = getSessionUser(session);
+        SessionUser sessionUser = getSessionUser(session);
 
         if (sessionUser == null) {
             return "redirect:/login";
@@ -109,7 +109,7 @@ public class BookingController {
             BookingRequest.SeatSelectDTO req,
             HttpSession session
     ) {
-        User sessionUser = getSessionUser(session);
+        SessionUser sessionUser = getSessionUser(session);
 
         if (sessionUser == null) {
             return "redirect:/login";
@@ -132,7 +132,7 @@ public class BookingController {
     // 예매 완료
     @GetMapping("/complete")
     public String completeForm(Model model, HttpSession session) {
-        User sessionUser = getSessionUser(session);
+        SessionUser sessionUser = getSessionUser(session);
 
         if (sessionUser == null) {
             return "redirect:/login";
@@ -156,8 +156,8 @@ public class BookingController {
         return "booking/complete";
     }
 
-    private User getSessionUser(HttpSession session) {
-        return (User) session.getAttribute(Define.SESSION_USER);
+    private SessionUser getSessionUser(HttpSession session) {
+        return (SessionUser) session.getAttribute(Define.SESSION_USER);
     }
 
     private Integer getSessionInteger(HttpSession session, String name) {

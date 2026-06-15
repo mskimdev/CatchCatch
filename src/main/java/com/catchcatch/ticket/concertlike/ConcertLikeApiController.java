@@ -2,7 +2,7 @@ package com.catchcatch.ticket.concertlike;
 
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.Resp;
-import com.catchcatch.ticket.user.User;
+import com.catchcatch.ticket.user.dto.SessionUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,15 +29,15 @@ public class ConcertLikeApiController {
             @Parameter(description = "공연 ID") @PathVariable Integer concertId,
             HttpSession session) {
 
-        User user = (User) session.getAttribute(Define.SESSION_USER);
+        SessionUser user = (SessionUser) session.getAttribute(Define.SESSION_USER);
         return Resp.ok(concertLikeService.toggle(user.getId(), concertId));
     }
 
     @Operation(summary = "관심 공연 ID 목록 조회", description = "로그인 유저가 관심 등록한 공연 ID 목록을 반환합니다.")
     @GetMapping("/liked-ids")
     public ResponseEntity<?> getLikedIds(HttpSession session) {
-        User user = (User) session.getAttribute(Define.SESSION_USER);
+        SessionUser user = (SessionUser) session.getAttribute(Define.SESSION_USER);
         if (user == null) return Resp.ok(java.util.List.of());
-        return Resp.ok(concertLikeService.findLikedConcertIdsByUserId(user));
+        return Resp.ok(concertLikeService.findLikedConcertIdsByUserId(user.getId()));
     }
 }

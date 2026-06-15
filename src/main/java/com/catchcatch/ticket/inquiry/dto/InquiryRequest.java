@@ -1,12 +1,10 @@
-package com.catchcatch.ticket.inquiry;
+package com.catchcatch.ticket.inquiry.dto;
 
+import com.catchcatch.ticket.inquiry.Inquiry;
 import com.catchcatch.ticket.inquiry.enums.InquiryCategory;
 import com.catchcatch.ticket.user.User;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 
 public class InquiryRequest {
 

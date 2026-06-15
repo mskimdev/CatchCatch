@@ -1,13 +1,18 @@
-package com.catchcatch.ticket.inquiry;
+package com.catchcatch.ticket.inquiry.service;
 
 import com.catchcatch.ticket.core.exception.ForbiddenException;
 import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.core.util.HtmlUtil;
+import com.catchcatch.ticket.inquiry.Inquiry;
+import com.catchcatch.ticket.inquiry.dto.InquiryRequest;
+import com.catchcatch.ticket.inquiry.dto.InquiryResponse;
 import com.catchcatch.ticket.inquiry.enums.InquiryStatus;
+import com.catchcatch.ticket.inquiry.repository.InquiryRepository;
 import com.catchcatch.ticket.notification.sender.EmailSender;
 import com.catchcatch.ticket.notification.NotificationMessage;
 import com.catchcatch.ticket.notification.sender.SmsSender;
 import com.catchcatch.ticket.user.User;
+import com.catchcatch.ticket.user.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,18 +26,20 @@ import java.util.List;
 public class InquiryService {
 
     private final InquiryRepository inquiryRepository;
-    private final InquiryQueryRepository inquiryQueryRepository;
 
+    private final UserRepository userRepository;
     private final EmailSender emailSender;
     private final SmsSender smsSender;
 
     @Transactional
-    public void save(InquiryRequest.SaveDTO req, User user) {
+    public void save(InquiryRequest.SaveDTO req, Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("사용자 정보를 찾을 수 없습니다."));
         inquiryRepository.save(req.toEntity(user));
     }
 
     public List<InquiryResponse.ListDTO> findAllByFilter(InquiryStatus status, boolean publicOnly, boolean asc, boolean myOnly, Integer userId) {
-        return inquiryQueryRepository.findAllByFilter(status, publicOnly, asc, myOnly, userId).stream()
+        return inquiryRepository.findAllByFilter(status, publicOnly, asc, myOnly, userId).stream()
                 .map(inquiry -> new InquiryResponse.ListDTO(inquiry, userId)).toList();
     }
 
@@ -119,4 +126,5 @@ public class InquiryService {
                     .build());
         }
     }
+
 }

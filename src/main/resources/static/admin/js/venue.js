@@ -1,4 +1,4 @@
-import { apiPut, apiDelete } from "/js/core/api.js";
+
 
 document.addEventListener("DOMContentLoaded", function () {
     console.log("venue.js 실행됨");

@@ -1,6 +1,7 @@
-package com.catchcatch.ticket.inquiry;
+package com.catchcatch.ticket.inquiry.dto;
 
 import com.catchcatch.ticket.core.util.DateUtil;
+import com.catchcatch.ticket.inquiry.Inquiry;
 import com.catchcatch.ticket.inquiry.enums.InquiryCategory;
 import com.catchcatch.ticket.inquiry.enums.InquiryStatus;
 import jakarta.validation.constraints.NotBlank;

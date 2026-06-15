@@ -2,6 +2,7 @@ package com.catchcatch.ticket.user;
 
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.Resp;
+import com.catchcatch.ticket.user.dto.SessionUser;
 import com.catchcatch.ticket.user.dto.UserRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -57,12 +58,12 @@ public class UserApiController {
     @PutMapping("/users/mypage")
     public ResponseEntity<?> updateProfile(
             @RequestBody UserRequest.ProfileUpdateDTO reqDTO,
-            @SessionAttribute(Define.SESSION_USER) User sessionUser,
+            @SessionAttribute(Define.SESSION_USER) SessionUser sessionUser,
             HttpSession session) {
         if (reqDTO.currentPassword() != null && !reqDTO.currentPassword().isBlank())
             reqDTO.isLocalValidate();
         User updatedUser = userApiService.update(reqDTO, sessionUser.getId());
-        session.setAttribute(Define.SESSION_USER, updatedUser);
+        session.setAttribute(Define.SESSION_USER, new SessionUser(updatedUser));
         return Resp.ok("회원 정보가 저장되었습니다.");
     }
 }

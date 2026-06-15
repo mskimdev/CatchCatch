@@ -1,9 +1,12 @@
-package com.catchcatch.ticket.inquiry;
+package com.catchcatch.ticket.inquiry.controller;
 
 import com.catchcatch.ticket.core.exception.ForbiddenException;
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.Resp;
-import com.catchcatch.ticket.user.User;
+import com.catchcatch.ticket.inquiry.dto.InquiryRequest;
+import com.catchcatch.ticket.inquiry.dto.InquiryResponse;
+import com.catchcatch.ticket.inquiry.service.InquiryService;
+import com.catchcatch.ticket.user.dto.SessionUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +23,7 @@ public class InquiryApiController {
     public ResponseEntity<?> inquiryEdit(
             @PathVariable Integer id,
             @RequestBody @Valid InquiryRequest.EditDTO reqDTO,
-            @SessionAttribute(Define.SESSION_USER) User sessionUser
+            @SessionAttribute(Define.SESSION_USER) SessionUser sessionUser
     ) {
         InquiryResponse.DetailDTO inquiry = inquiryService.findById(id, sessionUser.getId());
         if (!inquiry.isOwner()) {

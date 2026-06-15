@@ -34,10 +34,8 @@ public class VenueController {
     }
 
     //관리자 공연장 수정 페이지
-    @GetMapping("/admin/venues/{id}/edit")
+    @GetMapping("/admin/venues/edit")
     public String venueEditForm(@PathVariable Integer id, Model model) {
-
-
         return "admin/venue/venue-edit";
     }
 
@@ -45,7 +43,7 @@ public class VenueController {
     @PostMapping("/admin/venues/save")
     public String venueSaveProc(VenueRequest.SaveDTO dto) {
         venueService.save(dto);
-        return "redirect:/admin/venue/venues";
+        return "redirect:/admin/venues";
     }
 
     // 관리자 공연장 삭제 처리

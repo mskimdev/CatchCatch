@@ -57,10 +57,25 @@
 
                 <tbody>
                 {{#faqs}}
-                    <tr>
+                    <tr class="cc-faq-question-row">
                         <td>{{category.label}}</td>
-                        <td>{{question}}</td>
+                        <td>
+                            <button type="button" class="cc-faq-question-button">
+                                <span>{{question}}</span>
+                                <span class="cc-faq-arrow">⌄</span>
+                            </button>
+                        </td>
                         <td>{{formattedCreatedAt}}</td>
+                    </tr>
+
+                    <tr class="cc-faq-answer-row">
+                        <td colspan="3">
+                            <div class="cc-faq-answer-wrap">
+                                <div class="cc-faq-answer-box">
+                                    {{answer}}
+                                </div>
+                            </div>
+                        </td>
                     </tr>
                 {{/faqs}}
 
@@ -84,5 +99,27 @@
 
     </div>
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const questionRows = document.querySelectorAll(".cc-faq-question-row");
+
+        questionRows.forEach(function (row) {
+            row.addEventListener("click", function () {
+                const answerRow = row.nextElementSibling;
+                const answerWrap = answerRow.querySelector(".cc-faq-answer-wrap");
+
+                const isOpen = row.classList.contains("is-open");
+
+                if (isOpen) {
+                    row.classList.remove("is-open");
+                    answerWrap.style.maxHeight = "0px";
+                } else {
+                    row.classList.add("is-open");
+                    answerWrap.style.maxHeight = answerWrap.scrollHeight + "px";
+                }
+            });
+        });
+    });
+</script>
 
 {{> layout/footer}}

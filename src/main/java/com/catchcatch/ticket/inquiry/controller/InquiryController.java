@@ -1,9 +1,11 @@
-package com.catchcatch.ticket.inquiry;
+package com.catchcatch.ticket.inquiry.controller;
 
-import com.catchcatch.ticket.core.exception.ForbiddenException;
 import com.catchcatch.ticket.core.util.Define;
+import com.catchcatch.ticket.inquiry.dto.InquiryRequest;
+import com.catchcatch.ticket.inquiry.dto.InquiryResponse;
+import com.catchcatch.ticket.inquiry.service.InquiryService;
 import com.catchcatch.ticket.inquiry.enums.InquiryStatus;
-import com.catchcatch.ticket.user.User;
+import com.catchcatch.ticket.user.dto.SessionUser;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +21,7 @@ public class InquiryController {
     private final InquiryService inquiryService;
 
     @GetMapping("/save")
-    public String inquiryForm(@SessionAttribute(Define.SESSION_USER) User sessionUser, Model model) {
+    public String inquiryForm(@SessionAttribute(Define.SESSION_USER) SessionUser sessionUser, Model model) {
         model.addAttribute("hasPhone", sessionUser != null &&
                 sessionUser.getPhone() != null &&
                 !sessionUser.getPhone().isBlank());
@@ -30,7 +32,8 @@ public class InquiryController {
     public String inquiryProc(@Valid InquiryRequest.SaveDTO req,
                               HttpSession session) {
         // 유효성 검사 (일단 패스)
-        inquiryService.save(req, (User) session.getAttribute(Define.SESSION_USER));
+        SessionUser sessionUser = (SessionUser) session.getAttribute(Define.SESSION_USER);
+        inquiryService.save(req, sessionUser.getId());
 
         return "redirect:/support/inquiries";
     }
@@ -41,7 +44,7 @@ public class InquiryController {
                               @RequestParam(defaultValue = "false") boolean publicOnly,
                               @RequestParam(defaultValue = "desc") String sort,
                               @RequestParam(defaultValue = "false") boolean myOnly,
-                              @SessionAttribute(Define.SESSION_USER) User sessionUser) {
+                              @SessionAttribute(Define.SESSION_USER) SessionUser sessionUser) {
 
         boolean asc = "asc".equals(sort);
 
@@ -60,7 +63,7 @@ public class InquiryController {
     }
 
     @GetMapping("/{id}")
-    public String inquiryDetail(@PathVariable Integer id, Model model, @SessionAttribute(Define.SESSION_USER) User sessionUser) {
+    public String inquiryDetail(@PathVariable Integer id, Model model, @SessionAttribute(Define.SESSION_USER) SessionUser sessionUser) {
 
         InquiryResponse.DetailDTO inquiry = inquiryService.findById(id, sessionUser.getId());
 
@@ -74,7 +77,7 @@ public class InquiryController {
     public String inquiryEditForm(
             @PathVariable Integer id,
             Model model,
-            @SessionAttribute(Define.SESSION_USER) User sessionUser){
+            @SessionAttribute(Define.SESSION_USER) SessionUser sessionUser){
 
         InquiryResponse.DetailDTO inquiry = inquiryService.findById(id, sessionUser.getId());
         model.addAttribute("inquiry", inquiry);

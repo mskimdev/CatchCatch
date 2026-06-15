@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.event;
 
-import com.catchcatch.ticket.user.User;
+import com.catchcatch.ticket.core.util.Define;
+import com.catchcatch.ticket.user.dto.SessionUser;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,7 @@ public class EventApiController {
     @ResponseBody
     public ResponseEntity<?> joinEvent(@PathVariable Integer eventId, HttpSession session) {
 
-        User sessionUser = (User) session.getAttribute("sessionUser");
+        SessionUser sessionUser = (SessionUser) session.getAttribute(Define.SESSION_USER);
 
         if (sessionUser == null) {
             return ResponseEntity
