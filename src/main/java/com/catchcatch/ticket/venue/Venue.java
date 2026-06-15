@@ -31,6 +31,9 @@ public class Venue {
     @CreationTimestamp
     private Timestamp createdAt;
 
+    @Column(name = "seat_json_url", length = 500)
+    private String seatLayoutUrl;
+
     @Builder
     public Venue(String name, String address, Integer totalCapacity) {
         this.name = name;
