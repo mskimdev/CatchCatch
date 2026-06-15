@@ -14,7 +14,12 @@ import java.sql.Timestamp;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "event_history_tb")
+@Table(
+        name = "event_history_tb",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"user_id", "event_id"})
+        }
+)
 public class EventHistory {
 
     @Id
