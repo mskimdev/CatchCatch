@@ -1,0 +1,100 @@
+{{> admin/layout/header}}
+
+<body id="page-top">
+<div id="wrapper">
+    {{> admin/layout/sidebar}}
+
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            {{> admin/layout/topbar}}
+
+            <div class="container-fluid">
+
+                <!-- 페이지 제목 -->
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">FAQ 수정</h1>
+                </div>
+
+                <!-- 수정 카드 -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            자주 묻는 사항 수정
+                        </h6>
+                    </div>
+
+                    <div class="card-body">
+                        <form id="faq-edit-form" data-id="{{faq.id}}">
+                            {{#_csrf}}
+                                <input type="hidden" name="{{parameterName}}" value="{{token}}">
+                            {{/_csrf}}
+
+                            <div class="form-group">
+                                <label for="category" class="font-weight-bold">
+                                    카테고리 <span class="text-danger">*</span>
+                                </label>
+                                <select id="category" name="category" class="form-control" required>
+                                    <option value="">카테고리를 선택하세요</option>
+                                    <option value="MEMBER" {{#isMember}}selected{{/isMember}}>회원</option>
+                                    <option value="BOOKING" {{#isBooking}}selected{{/isBooking}}>예매</option>
+                                    <option value="PAYMENT" {{#isPayment}}selected{{/isPayment}}>결제</option>
+                                    <option value="CANCEL_REFUND" {{#isCancelRefund}}selected{{/isCancelRefund}}>취소/환불</option>
+                                    <option value="EVENT" {{#isEvent}}selected{{/isEvent}}>이벤트/혜택</option>
+                                    <option value="SERVICE" {{#isService}}selected{{/isService}}>서비스/기타</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="question" class="font-weight-bold">
+                                    질문 <span class="text-danger">*</span>
+                                </label>
+                                <input id="question"
+                                       type="text"
+                                       name="question"
+                                       class="form-control"
+                                       value="{{faq.question}}"
+                                       placeholder="예: 결제 완료 후 예매 내역은 어디서 확인하나요?"
+                                       required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="answer" class="font-weight-bold">
+                                    답변 <span class="text-danger">*</span>
+                                </label>
+                                <textarea id="answer"
+                                          name="answer"
+                                          class="form-control"
+                                          rows="8"
+                                          placeholder="사용자에게 보여줄 답변을 입력하세요."
+                                          required>{{faq.answer}}</textarea>
+                            </div>
+
+
+
+                            <div class="alert alert-warning mt-4" role="alert">
+                                <i class="fas fa-info-circle"></i>
+                                수정한 내용은 사용자 FAQ 화면에 바로 반영됩니다.
+                            </div>
+
+                            <div class="d-flex justify-content-end mt-4">
+                                <a href="/admin/boards/faq" class="btn btn-secondary mr-2">
+                                    목록으로
+                                </a>
+                                <button type="submit" class="btn btn-warning">
+                                    FAQ 수정
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        {{> admin/layout/footer}}
+
+        <script src="/admin/js/faq.js"></script>
+    </div>
+</div>
+</body>
+</html>

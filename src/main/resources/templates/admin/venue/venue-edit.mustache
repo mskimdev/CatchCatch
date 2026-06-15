@@ -20,11 +20,6 @@
 
                     <div class="card-body">
                         <form id="venue-edit-form" data-id="{{venue.id}}">
-                            {{#_csrf}}
-                                <input type="hidden" id="csrf-token" value="{{token}}">
-                                <input type="hidden" id="csrf-header" value="{{headerName}}">
-                            {{/_csrf}}
-
                             <div class="row">
                                 <div class="col-md-6 form-group">
                                     <label for="name" class="font-weight-bold">
@@ -83,6 +78,6 @@
     </div>
 </div>
 
-<script src="/admin/js/venue-edit.js"></script>
+<script src="/admin/js/venue.js"></script>
 </body>
 </html>

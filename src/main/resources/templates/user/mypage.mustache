@@ -101,11 +101,17 @@
                                 <p style="margin: 0;" id="viewPhone" data-phone="{{phone}}"></p>
                             </div>
 
-                            <div style="background: var(--cc-bg-light, #f8f9fa); border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-                                <p style="margin: 0; font-size: 1rem; color: var(--cc-muted);">사용 가능 포인트</p>
-                                <h4 style="margin: 8px 0 0; color: var(--cc-primary, #0056b3); font-size: 1.5rem; font-weight: bold;">
-                                    {{point}} P
-                                </h4>
+                            <div class="cc-profile-point-box">
+                                <div>
+                                    <p class="cc-point-label">사용 가능 포인트</p>
+                                    <h4 class="cc-point-value">{{point}} P</h4>
+                                </div>
+
+                                <button type="button"
+                                        id="btnOpenPointModal"
+                                        class="cc-btn-point-history">
+                                    포인트 내역
+                                </button>
                             </div>
 
                             <button type="button" id="btnShowEditForm" class="cc-btn cc-btn--primary cc-btn--full">회원 정보 수정하기</button>
@@ -228,11 +234,48 @@
                 </div>
             {{/activeProfile}}
 
+            <!-- 포인트 내역 모달 -->
+            <div id="pointModalOverlay"
+                 class="cc-modal-overlay"
+                 aria-hidden="true"
+                 inert>
+                <div class="cc-modal-card"
+                     role="dialog"
+                     aria-modal="true"
+                     aria-labelledby="pointModalTitle">
+
+                    <button type="button"
+                            id="btnClosePointModal"
+                            class="cc-modal-close-btn"
+                            aria-label="포인트 내역 모달 닫기">
+                        <svg viewBox="0 0 24 24"
+                             width="28"
+                             height="28"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             stroke-linecap="round"
+                             stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+
+                    <div id="pointModalContent">
+                        <p class="cc-modal-loading-text">내역을 조회 중입니다...</p>
+                    </div>
+
+                </div>
+            </div>
+
         </section>
     </div>
 </main>
 <script>
-    window.MYPAGE_DATA = { isLocalUser: {{isLocalUser}} };
+    window.MYPAGE_DATA = {
+        isLocalUser: {{#isLocalUser}}true{{/isLocalUser}}{{^isLocalUser}}false{{/isLocalUser}}
+    };
 </script>
+<script src="/js/user/mypage.js"></script>
 <script src="/js/user/mypage.js"></script>
 {{> layout/footer}}

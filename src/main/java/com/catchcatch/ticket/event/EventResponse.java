@@ -40,7 +40,8 @@ public class EventResponse {
             String description,
             Integer rewardPoint,
             String startDate,
-            String endDate
+            String endDate,
+            boolean isActive
     ) {
         public DetailDTO(Event event) {
             this(
@@ -49,7 +50,8 @@ public class EventResponse {
                     event.getDescription(),
                     event.getRewardPoint(),
                     DateUtil.format(event.getStartDate()),
-                    DateUtil.format(event.getEndDate())
+                    DateUtil.format(event.getEndDate()),
+                    event.isActive()
             );
         }
     }

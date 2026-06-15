@@ -24,7 +24,7 @@ public interface FaqRepository extends JpaRepository<Faq, Integer> {
             )
             ORDER BY f.id DESC
             """)
-    List<Faq> searchVisibleFaqs(@Param("category") FaqCategory category,
+    List<Faq> searchFaqs(@Param("category") FaqCategory category,
                                 @Param("keyword") String keyword);
 
     // 관리자 검색: 노출 여부 상관없이 전체 검색
