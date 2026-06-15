@@ -106,12 +106,6 @@ function initProfileUpdate() {
   });
 }
 
-// 4. DOM 로드 시 실행
-document.addEventListener('DOMContentLoaded', function () {
-  initProfilePreview();
-  initProfileModeToggle(); // 토글 기능 초기화 추가
-  initProfileUpdate();
-});
 
 // 5. 이메일 및 전화번호 마스킹 처리 함수
 function initPrivacyMasking() {
@@ -144,12 +138,266 @@ function initPrivacyMasking() {
   }
 }
 
-// 기존 DOMContentLoaded에 마스킹 함수 실행 추가
 document.addEventListener('DOMContentLoaded', function () {
   initProfilePreview();
   initProfileModeToggle();
   initProfileUpdate();
-
-  // 새로 추가된 마스킹 함수 호출
   initPrivacyMasking();
+  initPointModal();
 });
+
+function unwrapBody(data) {
+  return data?.body ?? data?.data ?? data;
+}
+
+function escapeHtml(value) {
+  if (value === null || value === undefined) return '';
+
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function safeToast(message, type = 'success') {
+  if (window.CcUI?.toast) {
+    CcUI.toast(message, type);
+  } else {
+    alert(message);
+  }
+}
+
+function safeAlert(message, type = 'info') {
+  if (window.CcUI?.alert) {
+    CcUI.alert(message, type);
+  } else {
+    alert(message);
+  }
+}
+
+window.pointModalLastFocusedElement = null;
+
+function initPointModal() {
+  const btnOpen = document.getElementById('btnOpenPointModal');
+  const btnClose = document.getElementById('btnClosePointModal');
+  const overlay = document.getElementById('pointModalOverlay');
+
+  if (btnOpen) {
+    btnOpen.addEventListener('click', openPointModal);
+  }
+
+  if (btnClose) {
+    btnClose.addEventListener('click', closePointModal);
+  }
+
+  if (overlay) {
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) {
+        closePointModal();
+      }
+    });
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && overlay?.classList.contains('is-open')) {
+      closePointModal();
+    }
+  });
+}
+
+async function openPointModal() {
+  const overlay = document.getElementById('pointModalOverlay');
+  const content = document.getElementById('pointModalContent');
+  const btnClose = document.getElementById('btnClosePointModal');
+
+  if (!overlay || !content) {
+    console.error('pointModalOverlay 또는 pointModalContent 엘리먼트가 없습니다.');
+    return;
+  }
+
+  window.pointModalLastFocusedElement = document.activeElement;
+
+  overlay.removeAttribute('inert');
+  overlay.classList.add('is-open');
+  overlay.setAttribute('aria-hidden', 'false');
+
+  content.innerHTML = `
+    <p class="cc-modal-loading-text">
+      내역을 조회 중입니다...
+    </p>
+  `;
+
+  requestAnimationFrame(() => {
+    btnClose?.focus();
+  });
+
+  try {
+    const response = await fetch('/api/points/expiring');
+
+    if (!response.ok) {
+      throw new Error(`서버 응답 에러: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const expiringList = unwrapBody(data);
+
+    renderExpiringView(expiringList);
+  } catch (error) {
+    console.error('포인트 조회 실패:', error);
+    closePointModal();
+    safeAlert('포인트 내역을 불러오지 못했습니다.', 'error');
+  }
+}
+
+function renderExpiringView(list) {
+  const content = document.getElementById('pointModalContent');
+  if (!content) return;
+
+  let html = `
+    <h3 style="font-size:16px; font-weight:bold; margin-bottom:16px; color:#1e293b;">
+      30일 내 소멸 예정 포인트
+    </h3>
+  `;
+
+  if (!Array.isArray(list) || list.length === 0) {
+    html += `
+      <p style="text-align:center; color:#64748b; margin:30px 0; font-size:13px;">
+        30일 이내에 소멸 예정인 포인트가 없습니다. 🥳
+      </p>
+    `;
+  } else {
+    html += `
+      <ul style="list-style:none; padding:0; margin:0 0 20px 0; max-height:200px; overflow-y:auto;">
+    `;
+
+    list.forEach(item => {
+      const title = escapeHtml(item.title);
+      const balance = Number(item.balance ?? 0).toLocaleString();
+      const expiredAt = escapeHtml(item.expiredAt);
+
+      html += `
+        <li style="padding:10px 0; border-bottom:1px solid #f1f5f9; font-size:13px; display:flex; justify-content:space-between; gap:12px;">
+          <span style="color:#334155;">${title}</span>
+          <span style="color:#ef4444; font-weight:600; white-space:nowrap;">
+            ${balance}P
+            <span style="font-size:11px; color:#94a3b8; font-weight:400;">(${expiredAt})</span>
+          </span>
+        </li>
+      `;
+    });
+
+    html += `</ul>`;
+  }
+
+  html += `
+    <div style="text-align:center; margin-top:15px; border-top:1px solid #e2e8f0; padding-top:15px;">
+      <button type="button"
+              id="btnLoadAllPointHistory"
+              style="background:none; border:none; color:#0284c7; font-size:12px; font-weight:600; cursor:pointer; text-decoration:underline;">
+        전체 이용 내역 보기
+      </button>
+    </div>
+  `;
+
+  content.innerHTML = html;
+
+  const btnLoadAll = document.getElementById('btnLoadAllPointHistory');
+
+  if (btnLoadAll) {
+    btnLoadAll.addEventListener('click', loadAllHistory);
+  }
+}
+
+async function loadAllHistory() {
+  const content = document.getElementById('pointModalContent');
+  if (!content) return;
+
+  content.innerHTML = `
+    <p class="cc-modal-loading-text">
+      전체 내역을 조회 중입니다...
+    </p>
+  `;
+
+  try {
+    const response = await fetch('/api/points/history');
+
+    if (!response.ok) {
+      throw new Error(`서버 응답 에러: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const historyList = unwrapBody(data);
+
+    let html = `
+      <h3 style="font-size:16px; font-weight:bold; margin-bottom:16px; color:#1e293b;">
+        전체 포인트 이용 내역
+      </h3>
+      <ul style="list-style:none; padding:0; margin:0; max-height:250px; overflow-y:auto;">
+    `;
+
+    if (!Array.isArray(historyList) || historyList.length === 0) {
+      html += `
+        <p style="text-align:center; color:#64748b; margin:30px 0; font-size:13px;">
+          포인트 이용 내역이 존재하지 않습니다.
+        </p>
+      `;
+    } else {
+      historyList.forEach(item => {
+        const typeLabel = escapeHtml(item.typeLabel);
+        const title = escapeHtml(item.title);
+        const createdAt = escapeHtml(item.createdAt);
+
+        const amount = Number(item.amount ?? 0);
+        const isEarn = amount > 0;
+        const color = isEarn ? '#10b981' : '#ef4444';
+        const amountText = `${isEarn ? '+' : ''}${amount.toLocaleString()}P`;
+
+        html += `
+          <li style="padding:10px 0; border-bottom:1px solid #f1f5f9; font-size:13px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:2px; gap:12px;">
+              <strong style="color:#334155;">[${typeLabel}] ${title}</strong>
+              <span style="color:${color}; font-weight:600; white-space:nowrap;">
+                ${amountText}
+              </span>
+            </div>
+            <span style="font-size:11px; color:#94a3b8;">${createdAt}</span>
+          </li>
+        `;
+      });
+    }
+
+    html += `</ul>`;
+
+    content.innerHTML = html;
+  } catch (error) {
+    console.error('전체 내역 조회 실패:', error);
+    safeToast('전체 내역을 불러오지 못했습니다.', 'error');
+  }
+}
+
+function closePointModal() {
+  const overlay = document.getElementById('pointModalOverlay');
+
+  if (!overlay) return;
+
+  const activeElement = document.activeElement;
+
+  if (activeElement && overlay.contains(activeElement)) {
+    if (
+      window.pointModalLastFocusedElement &&
+      typeof window.pointModalLastFocusedElement.focus === 'function'
+    ) {
+      window.pointModalLastFocusedElement.focus();
+    } else {
+      activeElement.blur();
+    }
+  }
+
+  overlay.classList.remove('is-open');
+  overlay.setAttribute('aria-hidden', 'true');
+  overlay.setAttribute('inert', '');
+
+  window.pointModalLastFocusedElement = null;
+}
