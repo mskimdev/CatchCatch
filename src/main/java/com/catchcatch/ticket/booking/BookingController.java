@@ -157,6 +157,7 @@ public class BookingController {
     }
 
     private User getSessionUser(HttpSession session) {
+
         return (User) session.getAttribute(Define.SESSION_USER);
     }
 
