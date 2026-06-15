@@ -35,6 +35,8 @@ public class QUser extends EntityPathBase<User> {
 
     public final StringPath phone = createString("phone");
 
+    public final NumberPath<Integer> point = createNumber("point", Integer.class);
+
     public final StringPath profileImage = createString("profileImage");
 
     public final EnumPath<com.catchcatch.ticket.user.enums.Role> role = createEnum("role", com.catchcatch.ticket.user.enums.Role.class);
