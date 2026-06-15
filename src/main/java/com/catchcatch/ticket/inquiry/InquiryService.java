@@ -50,7 +50,17 @@ public class InquiryService {
         return new InquiryResponse.DetailDTO(inquiry, inquiry.getUser().getId().equals(userId));
     }
 
-    // ── 어드민 ──────────────────────────────────────
+    @Transactional
+    public void edit(Integer id, InquiryRequest.EditDTO req) {
+        Inquiry inquiry = inquiryRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("해당하는 문의 내역을 찾을 수 없습니다."));
+        inquiry.setCategory(req.category());
+        inquiry.setTitle(req.title());
+        inquiry.setContent(req.content());
+        inquiry.setPublic(Boolean.TRUE.equals(req.isPublic()));
+        inquiry.setNotifyEmail(Boolean.TRUE.equals(req.notifyEmail()));
+        inquiry.setNotifySms(Boolean.TRUE.equals(req.notifySms()));
+    }
 
     public List<InquiryResponse.AdminListDTO> findAllForAdmin(InquiryStatus status) {
         List<Inquiry> inquiries = status == null

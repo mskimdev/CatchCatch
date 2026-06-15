@@ -51,6 +51,10 @@ public class User {
     // 전화번호
     private String phone;
 
+    // 유저 포인트
+    @Column(nullable = false)
+    private Integer point = 0;
+
     // 프로필 이미지 파일명 또는 URL
     private String profileImage;
 
@@ -89,6 +93,38 @@ public class User {
         this.oauthProvider = oauthProvider;
         this.oauthId = oauthId;
         this.role = role;
+    }
+
+
+
+    // 포인트 적립
+    public void addPoint(Integer amount) {
+        if (amount == null || amount <= 0) {
+            throw new RuntimeException("적립 포인트가 올바르지 않습니다.");
+        }
+
+        if (this.point == null) {
+            this.point = 0;
+        }
+
+        this.point += amount;
+    }
+
+    // 포인트 사용
+    public void usePoint(Integer amount) {
+        if (amount == null || amount <= 0) {
+            throw new RuntimeException("사용 포인트가 올바르지 않습니다.");
+        }
+
+        if (this.point == null) {
+            this.point = 0;
+        }
+
+        if (this.point < amount) {
+            throw new RuntimeException("보유 포인트가 부족합니다.");
+        }
+
+        this.point -= amount;
     }
 
 

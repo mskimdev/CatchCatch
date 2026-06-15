@@ -65,24 +65,23 @@ public class InquiryController {
         InquiryResponse.DetailDTO inquiry = inquiryService.findById(id, sessionUser.getId());
 
 
+
         model.addAttribute("inquiry", inquiry);
         return "support/inquiry-detail";
     }
 
     @GetMapping("/{id}/edit")
     public String inquiryEditForm(
-            @PathVariable Integer id, Model model,
-            @SessionAttribute(Define.SESSION_USER) User sessionUser
-    ){
-        InquiryResponse.DetailDTO inquiry = inquiryService.findById(id, sessionUser.getId());
-        if(!inquiry.isOwner()){
-            throw new ForbiddenException("수정 권한이 없습니다.(본인 게시글 아님");
-        }
+            @PathVariable Integer id,
+            Model model,
+            @SessionAttribute(Define.SESSION_USER) User sessionUser){
 
-        model.addAttribute("hasPhone", sessionUser.getPhone() != null && !sessionUser.getPhone().isBlank());
+        InquiryResponse.DetailDTO inquiry = inquiryService.findById(id, sessionUser.getId());
         model.addAttribute("inquiry", inquiry);
+        model.addAttribute("hasPhone", sessionUser.getPhone() != null && !sessionUser.getPhone().isBlank());
 
         return "support/inquiry-edit";
+
     }
 
 }
