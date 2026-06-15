@@ -19,7 +19,7 @@ public class FaqController {
                           @RequestParam(required = false) String keyword,
                           Model model) {
 
-        List<Faq> faqs = faqService.findVisibleFaqs(category, keyword);
+        List<Faq> faqs = faqService.findFaqs(category, keyword);
 
         model.addAttribute("pageTitle", "FAQ");
         model.addAttribute("keyword", keyword == null ? "" : keyword);

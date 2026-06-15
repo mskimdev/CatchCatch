@@ -35,6 +35,25 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
+
+    .faq-action-cell {
+        width: 190px;
+        min-width: 190px;
+        white-space: nowrap;
+    }
+
+    .faq-action-buttons {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: nowrap;
+    }
+
+    .faq-action-buttons .btn {
+        white-space: nowrap;
+        min-width: 64px;
+    }
 </style>
 
 <body id="page-top">
@@ -110,8 +129,8 @@
                                             {{formattedCreatedAt}}
                                         </td>
 
-                                        <td class="align-middle text-center" style="width:140px;">
-                                            <div class="d-flex justify-content-center align-items-center" style="gap:6px;">
+                                        <td class="align-middle text-center faq-action-cell">
+                                            <div class="faq-action-buttons">
                                                 <a href="/admin/boards/faq/{{id}}/edit"
                                                    class="btn btn-warning btn-sm">
                                                     <i class="fas fa-edit"></i> 수정
@@ -161,6 +180,7 @@
                 });
             });
         </script>
+        <script src="/admin/js/faq.js"></script>
     </div>
 </div>
 </body>
