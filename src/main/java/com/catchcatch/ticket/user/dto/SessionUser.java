@@ -28,6 +28,18 @@ public class SessionUser {
         this.point = user.getPoint();
     }
 
+    // 포인트 업데이트 전용 생성자
+    public SessionUser(SessionUser origin, Integer updatedPoint) {
+        this.id = origin.getId();
+        this.username = origin.getUsername();
+        this.email = origin.getEmail();
+        this.phone = origin.getPhone();
+        this.profileImage = origin.getProfileImage();
+        this.role = origin.getRole();
+        this.oauthProvider = origin.getOauthProvider();
+        this.point = updatedPoint;
+    }
+
     public boolean isAdmin() {
         return Role.ADMIN.equals(this.role);
     }
