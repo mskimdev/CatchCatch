@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.payment;
 
-import com.catchcatch.ticket.user.User;
+import com.catchcatch.ticket.core.util.Define;
+import com.catchcatch.ticket.user.dto.SessionUser;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,7 +30,7 @@ public class PaymentController {
                               Model model,
                               HttpSession session) {
 
-        User sessionUser = (User) session.getAttribute("sessionUser");
+        SessionUser sessionUser = (SessionUser) session.getAttribute(Define.SESSION_USER);
 
         if (sessionUser == null) {
             return "redirect:/login-form";
@@ -51,7 +52,7 @@ public class PaymentController {
     @GetMapping("/users/payments")
     public String paymentList(Model model, HttpSession session) {
 
-        User sessionUser = (User) session.getAttribute("sessionUser");
+        SessionUser sessionUser = (SessionUser) session.getAttribute(Define.SESSION_USER);
 
         if (sessionUser == null) {
             return "redirect:/login";
@@ -77,7 +78,7 @@ public class PaymentController {
                                 Model model,
                                 HttpSession session) {
 
-        User sessionUser = (User) session.getAttribute("sessionUser");
+        SessionUser sessionUser = (SessionUser) session.getAttribute(Define.SESSION_USER);
 
         if (sessionUser == null) {
             return "redirect:/login-form";
@@ -104,7 +105,7 @@ public class PaymentController {
     @ResponseBody
     public ResponseEntity<?> preparePayment(@RequestBody PaymentRequest.PrepareDTO reqDTO, HttpSession session) {
 
-        User sessionUser = (User) session.getAttribute("sessionUser");
+        SessionUser sessionUser = (SessionUser) session.getAttribute(Define.SESSION_USER);
 
         if (sessionUser == null) {
             return ResponseEntity
@@ -137,7 +138,7 @@ public class PaymentController {
             @RequestBody PaymentRequest.CompleteDTO reqDTO,
             HttpSession session
     ) {
-        User sessionUser = (User) session.getAttribute("sessionUser");
+        SessionUser sessionUser = (SessionUser) session.getAttribute(Define.SESSION_USER);
 
         if (sessionUser == null) {
             return ResponseEntity

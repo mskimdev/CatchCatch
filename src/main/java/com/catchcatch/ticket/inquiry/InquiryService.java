@@ -8,6 +8,8 @@ import com.catchcatch.ticket.notification.sender.EmailSender;
 import com.catchcatch.ticket.notification.NotificationMessage;
 import com.catchcatch.ticket.notification.sender.SmsSender;
 import com.catchcatch.ticket.user.User;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,8 +28,12 @@ public class InquiryService {
     private final EmailSender emailSender;
     private final SmsSender smsSender;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Transactional
-    public void save(InquiryRequest.SaveDTO req, User user) {
+    public void save(InquiryRequest.SaveDTO req, Integer userId) {
+        User user = entityManager.getReference(User.class, userId);
         inquiryRepository.save(req.toEntity(user));
     }
 

@@ -2,7 +2,7 @@ package com.catchcatch.ticket.core.interceptor;
 
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.HtmlUtil;
-import com.catchcatch.ticket.user.User;
+import com.catchcatch.ticket.user.dto.SessionUser;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -16,7 +16,7 @@ public class AdminInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
         HttpSession session = request.getSession(false);
-        User sessionUser = session != null ? (User) session.getAttribute(Define.SESSION_USER) : null;
+        SessionUser sessionUser = session != null ? (SessionUser) session.getAttribute(Define.SESSION_USER) : null;
 
         if (sessionUser == null) {
             sendHtml(response, "static/html/error/unauthorized.html");

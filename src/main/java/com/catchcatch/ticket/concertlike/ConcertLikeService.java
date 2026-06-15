@@ -40,7 +40,7 @@ public class ConcertLikeService {
         return concertLikeRepository.existsByUserIdAndConcertId(userId, concertId);
     }
 
-    public List<Integer> findLikedConcertIdsByUserId(User user) {
-        return concertLikeRepository.findLikedConcertIdsByUserId(user.getId());
+    public List<Integer> findLikedConcertIdsByUserId(Integer userId) {
+        return concertLikeRepository.findLikedConcertIdsByUserId(userId);
     }
 }
