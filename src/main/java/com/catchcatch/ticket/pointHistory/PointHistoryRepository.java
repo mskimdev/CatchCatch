@@ -74,4 +74,25 @@ public interface PointHistoryRepository extends JpaRepository<PointHistory, Inte
             @Param("userId") Integer userId,
             @Param("now") Timestamp now
     );
+
+    /**
+     * 특정 유저의 30일 이내 만료 예정 포인트 내역 조회
+     * 남은 포인트(balance)가 0보다 크고, 만료일이 현재~30일뒤 사이인 데이터를 만료 임박순으로 정렬합니다.
+     */
+    @Query("""
+            select ph
+            from PointHistory ph
+            join fetch ph.user u
+            left join fetch ph.eventHistory eh
+            left join fetch eh.event e
+            where u.id = :userId
+              and ph.balance > 0
+              and ph.expiredAt between :now and :thirtyDaysLater
+            order by ph.expiredAt asc
+            """)
+    List<PointHistory> findExpiringPointsWithin30Days(
+            @Param("userId") Integer userId,
+            @Param("now") Timestamp now,
+            @Param("thirtyDaysLater") Timestamp thirtyDaysLater
+    );
 }

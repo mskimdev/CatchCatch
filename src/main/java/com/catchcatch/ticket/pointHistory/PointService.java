@@ -1,7 +1,9 @@
 package com.catchcatch.ticket.pointHistory;
 
+import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.eventhistory.EventHistory;
 import com.catchcatch.ticket.payment.Payment;
+import com.catchcatch.ticket.payment.PaymentResponse;
 import com.catchcatch.ticket.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -9,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -127,7 +130,7 @@ public class PointService {
      * -> EXPIRE row: amount = -700, balance = 0
      */
     @Transactional
-    public Integer expireUserPoint(User user) {
+    public void expireUserPoint(User user) {
 
         Timestamp now = new Timestamp(System.currentTimeMillis());
 
@@ -135,7 +138,7 @@ public class PointService {
                 pointHistoryRepository.findExpiredPointGroups(user.getId(), now);
 
         if (expiredPointGroups.isEmpty()) {
-            return user.getPoint();
+            return;
         }
 
         int totalExpiredAmount = 0;
@@ -165,7 +168,49 @@ public class PointService {
         if (totalExpiredAmount > 0) {
             user.usePoint(totalExpiredAmount);
         }
-
-        return user.getPoint();
     }
+
+
+    /**
+     * 특정 사용자의 전체 포인트 이용 내역 조회 (기간 제한 없음)
+     * 모달창 내에서 '전체 내역 보기' 버튼을 눌렀을 때 호출
+     */
+    @Transactional(readOnly = true)
+    public List<PointResponse.ListDTO> getAllPointHistoryList(Integer userId) {
+        // 1. 방어 코드 (로그인 세션 만료 등 예외 처리)
+        if (userId == null) {
+            throw new BadRequestException("사용자 정보가 없습니다.");
+        }
+
+        // 2. Repository에서 전체 내역 조회 후 DTO로 변환하여 반환
+        return pointHistoryRepository.findByUserId(userId)
+                .stream()
+                .map(PointResponse.ListDTO::new)
+                .toList();
+    }
+
+
+    /**
+     * 30일 내 만료 예정 포인트 내역 조회 (중앙 작은 모달창/새 창용)
+     */
+    @Transactional(readOnly = true)
+    public List<PointResponse.ExpiringDTO> getExpiringPoints(Integer userId) {
+        if (userId == null) {
+            throw new BadRequestException("사용자 정보가 없습니다.");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime thirtyDaysLater = now.plusDays(30).with(LocalTime.MAX); // 30일 뒤 밤 11시 59분까지
+
+        Timestamp nowTs = Timestamp.valueOf(now);
+        Timestamp thirtyDaysLaterTs = Timestamp.valueOf(thirtyDaysLater);
+
+        return pointHistoryRepository.findExpiringPointsWithin30Days(userId, nowTs, thirtyDaysLaterTs)
+                .stream()
+                .map(PointResponse.ExpiringDTO::new)
+                .toList();
+    }
+
+
+
 }
