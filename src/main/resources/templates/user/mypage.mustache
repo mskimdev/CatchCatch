@@ -69,163 +69,162 @@
                 </div>
             {{/activeWishlist}}
 
-            <!-- 회원 정보 수정 탭 -->
+            <!-- 회원 정보 탭 -->
             {{#activeProfile}}
-                <div class="cc-mypage-head cc-profile-page-head">
-                    <div>
-                        <p class="cc-profile-kicker">MY ACCOUNT</p>
-                        <h2>회원 정보 수정</h2>
-                        <p>연락처와 비밀번호를 안전하게 관리하세요.</p>
+                <div id="profileViewMode">
+                    <div class="cc-mypage-head cc-profile-page-head">
+                        <div>
+                            <p class="cc-profile-kicker">MY ACCOUNT</p>
+                            <h2>내 프로필</h2>
+                            <p>회원님의 기본 정보와 보유 포인트를 확인하세요.</p>
+                        </div>
+                    </div>
+
+                    <div class="cc-profile-view-layout" style="max-width: 600px; margin: 0 auto;">
+                        <div class="cc-card cc-profile-info-card" style="text-align: center; padding: 40px 20px;">
+
+                            <div class="cc-profile-avatar" style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; margin: 0 auto 20px; background-color: #f1f3f5; display: flex; align-items: center; justify-content: center;">
+                                {{#profileImage}}
+                                    <img src="{{profileImage}}" alt="프로필 이미지" style="width: 100%; height: 100%; object-fit: cover;">
+                                {{/profileImage}}
+                                {{^profileImage}}
+                                    <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#adb5bd" stroke-width="2">
+                                        <path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/>
+                                    </svg>
+                                {{/profileImage}}
+                            </div>
+
+                            <h3 style="font-size: 1.5rem; margin-bottom: 12px;">{{username}}</h3>
+
+                            <div style="margin-bottom: 30px; display: flex; flex-direction: column; gap: 6px; color: var(--cc-muted);">
+                                <p style="margin: 0;" id="viewEmail" data-email="{{email}}"></p>
+                                <p style="margin: 0;" id="viewPhone" data-phone="{{phone}}"></p>
+                            </div>
+
+                            <div style="background: var(--cc-bg-light, #f8f9fa); border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+                                <p style="margin: 0; font-size: 1rem; color: var(--cc-muted);">사용 가능 포인트</p>
+                                <h4 style="margin: 8px 0 0; color: var(--cc-primary, #0056b3); font-size: 1.5rem; font-weight: bold;">
+                                    {{point}} P
+                                </h4>
+                            </div>
+
+                            <button type="button" id="btnShowEditForm" class="cc-btn cc-btn--primary cc-btn--full">회원 정보 수정하기</button>
+                        </div>
                     </div>
                 </div>
-                <div class="cc-profile-edit-layout">
-                    <div class="cc-card cc-profile-edit-card">
 
-                        <form id="profileForm" enctype="multipart/form-data">
-                            {{#_csrf}}<input type="hidden" name="{{parameterName}}" value="{{token}}">{{/_csrf}}
-                            <div class="cc-profile-image-edit">
-                                <label class="cc-profile-image-edit__preview {{#profileImage}}has-image{{/profileImage}}"
-                                       for="profileImage" aria-label="프로필 이미지 변경">
-                                    <img data-profile-preview
-                                         {{#profileImage}}src="{{profileImage}}"{{/profileImage}} alt="프로필 이미지 미리보기">
-                                    <span class="cc-profile-image-edit__fallback" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path
-                                        d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
-                            </span>
-                                </label>
-                                <div>
-                                    <strong>프로필 이미지</strong>
-                                    <p>JPG, PNG, GIF, WEBP 파일을 5MB 이하로 등록해 주세요.</p>
-                                    <label class="cc-profile-image-edit__button" for="profileImage">이미지 변경</label>
-                                </div>
-                                <input id="profileImage" type="file" name="profileImage"
-                                       accept="image/jpeg,image/png,image/gif,image/webp" data-profile-input>
-                            </div>
-                            <div class="cc-profile-form-section">
-                                <div class="cc-profile-form-section__head"><span>01</span>
-                                    <div><h3>기본 정보</h3>
-                                        <p>예매 안내를 받을 연락처를 확인해 주세요.</p></div>
-                                </div>
-                                <div class="cc-field">
-                                    <label for="profileUsername">아이디</label>
-                                    <div class="cc-input-wrap">
-                                        <span class="cc-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24"
-                                                                                            fill="none"
-                                                                                            stroke="currentColor"
-                                                                                            stroke-width="2"><path
-                                                d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></span>
-                                        <input class="cc-input" id="profileUsername" type="text" name="username"
-                                               value="{{username}}" autocomplete="username">
-                                    </div>
-                                </div>
-                                <div class="cc-field">
-                                    <label for="profileEmail">이메일 <span class="cc-field-note">변경 불가</span></label>
-                                    <div class="cc-input-wrap">
-                                        <span class="cc-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24"
-                                                                                            fill="none"
-                                                                                            stroke="currentColor"
-                                                                                            stroke-width="2"><rect x="3"
-                                                                                                                   y="5"
-                                                                                                                   width="18"
-                                                                                                                   height="14"
-                                                                                                                   rx="2"/><path
-                                                d="m3 7 9 6 9-6"/></svg></span>
-                                        <input class="cc-input" id="profileEmail" type="email" value="{{email}}"
-                                               disabled>
-                                    </div>
-                                </div>
-                                <div class="cc-field">
-                                    <label for="profilePhone">전화번호</label>
-                                    <div class="cc-input-wrap">
-                                        <span class="cc-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24"
-                                                                                            fill="none"
-                                                                                            stroke="currentColor"
-                                                                                            stroke-width="2"><path
-                                                d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.7.6 2.5a2 2 0 0 1-.5 2.1L8 9.5a16 16 0 0 0 6.5 6.5l1.2-1.2a2 2 0 0 1 2.1-.5c.8.3 1.6.5 2.5.6a2 2 0 0 1 1.7 2Z"/></svg></span>
-                                        <input class="cc-input" id="profilePhone" type="tel" name="phone"
-                                               value="{{phone}}" placeholder="010-0000-0000" autocomplete="tel">
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{#isLocalUser}}
-                                <div class="cc-profile-form-section">
-                                    <div class="cc-profile-form-section__head"><span>02</span>
-                                        <div><h3>비밀번호 확인</h3>
-                                            <p>정보 보호를 위해 현재 비밀번호를 입력해 주세요.</p></div>
-                                    </div>
-                                    <div class="cc-field">
-                                        <label for="currentPassword">현재 비밀번호</label>
-                                        <div class="cc-input-wrap">
-                                        <span class="cc-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24"
-                                                                                            fill="none"
-                                                                                            stroke="currentColor"
-                                                                                            stroke-width="2"><rect x="4"
-                                                                                                                   y="10"
-                                                                                                                   width="16"
-                                                                                                                   height="10"
-                                                                                                                   rx="2"/><path
-                                                d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
-                                            <input class="cc-input" id="currentPassword" type="password"
-                                                   name="currentPassword" placeholder="현재 비밀번호 입력"
-                                                   autocomplete="current-password">
-                                        </div>
-                                    </div>
-                                    <div class="cc-field">
-                                        <label for="newPassword">새 비밀번호 <span
-                                                style="font-weight:700;color:var(--cc-muted)">(선택)</span></label>
-                                        <div class="cc-input-wrap">
-                                        <span class="cc-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24"
-                                                                                            fill="none"
-                                                                                            stroke="currentColor"
-                                                                                            stroke-width="2"><rect x="4"
-                                                                                                                   y="10"
-                                                                                                                   width="16"
-                                                                                                                   height="10"
-                                                                                                                   rx="2"/><path
-                                                d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
-                                            <input class="cc-input" id="newPassword" type="password" name="newPassword"
-                                                   placeholder="변경 시 8자 이상 입력" autocomplete="new-password">
-                                        </div>
-                                    </div>
-                                    <div class="cc-field">
-                                        <label for="newPasswordConfirm">새 비밀번호 확인 <span
-                                                style="font-weight:700;color:var(--cc-muted)">(선택)</span></label>
-                                        <div class="cc-input-wrap">
-                                        <span class="cc-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24"
-                                                                                            fill="none"
-                                                                                            stroke="currentColor"
-                                                                                            stroke-width="2"><rect x="4"
-                                                                                                                   y="10"
-                                                                                                                   width="16"
-                                                                                                                   height="10"
-                                                                                                                   rx="2"/><path
-                                                d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
-                                            <input class="cc-input" id="newPasswordConfirm" type="password"
-                                                   name="newPasswordConfirm" placeholder="새 비밀번호 재입력"
-                                                   autocomplete="new-password">
-                                        </div>
-                                    </div>
-                                </div>
-                            {{/isLocalUser}}
-                            <button class="cc-btn cc-btn--primary cc-btn--full" type="submit">변경 사항 저장</button>
-                        </form>
-                    </div>
-                    <aside class="cc-card cc-profile-guide">
-                        <div class="cc-profile-guide__icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 3 20 6v5c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6l8-3Z"/>
-                                <path d="m9 12 2 2 4-4"/>
-                            </svg>
+                <!-- 회원 정보 수정 탭 -->
+                <div id="profileEditMode" style="display: none;">
+                    <div class="cc-mypage-head cc-profile-page-head">
+                        <div>
+                            <p class="cc-profile-kicker">MY ACCOUNT</p>
+                            <h2>회원 정보 수정</h2>
+                            <p>연락처와 비밀번호를 안전하게 관리하세요.</p>
                         </div>
-                        <h3>안전한 계정 관리</h3>
-                        <p>비밀번호는 다른 서비스와 다르게 설정하고 주기적으로 변경해 주세요.</p>
-                        <ul>
-                            <li>새 비밀번호는 8자 이상</li>
-                            <li>이메일은 예매 안내에 사용</li>
-                            <li>변경 전 현재 비밀번호 확인</li>
-                        </ul>
-                    </aside>
+                    </div>
+
+                    <div class="cc-profile-edit-layout">
+                        <div class="cc-card cc-profile-edit-card">
+                            <form id="profileForm" enctype="multipart/form-data">
+                                {{#_csrf}}<input type="hidden" name="{{parameterName}}" value="{{token}}">{{/_csrf}}
+
+                                <div class="cc-profile-image-edit">
+                                    <label class="cc-profile-image-edit__preview {{#profileImage}}has-image{{/profileImage}}"
+                                           for="profileImage" aria-label="프로필 이미지 변경">
+                                        <img data-profile-preview {{#profileImage}}src="{{profileImage}}"{{/profileImage}} alt="프로필 이미지 미리보기">
+                                        <span class="cc-profile-image-edit__fallback" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+                            </span>
+                                    </label>
+                                    <div>
+                                        <strong>프로필 이미지</strong>
+                                        <p>JPG, PNG, GIF, WEBP 파일을 5MB 이하로 등록해 주세요.</p>
+                                        <label class="cc-profile-image-edit__button" for="profileImage">이미지 변경</label>
+                                    </div>
+                                    <input id="profileImage" type="file" name="profileImage" accept="image/jpeg,image/png,image/gif,image/webp" data-profile-input>
+                                </div>
+
+                                <div class="cc-profile-form-section">
+                                    <div class="cc-profile-form-section__head"><span>01</span>
+                                        <div><h3>기본 정보</h3>
+                                            <p>예매 안내를 받을 연락처를 확인해 주세요.</p></div>
+                                    </div>
+                                    <div class="cc-field">
+                                        <label for="profileUsername">아이디</label>
+                                        <div class="cc-input-wrap">
+                                            <span class="cc-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></span>
+                                            <input class="cc-input" id="profileUsername" type="text" name="username" value="{{username}}" autocomplete="username">
+                                        </div>
+                                    </div>
+                                    <div class="cc-field">
+                                        <label for="profileEmail">이메일 <span class="cc-field-note">변경 불가</span></label>
+                                        <div class="cc-input-wrap">
+                                            <span class="cc-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+                                            <input class="cc-input" id="profileEmail" type="email" value="{{email}}" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="cc-field">
+                                        <label for="profilePhone">전화번호</label>
+                                        <div class="cc-input-wrap">
+                                            <span class="cc-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.7.6 2.5a2 2 0 0 1-.5 2.1L8 9.5a16 16 0 0 0 6.5 6.5l1.2-1.2a2 2 0 0 1 2.1-.5c.8.3 1.6.5 2.5.6a2 2 0 0 1 1.7 2Z"/></svg></span>
+                                            <input class="cc-input" id="profilePhone" type="tel" name="phone" value="{{phone}}" placeholder="010-0000-0000" autocomplete="tel">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{#isLocalUser}}
+                                    <div class="cc-profile-form-section">
+                                        <div class="cc-profile-form-section__head"><span>02</span>
+                                            <div><h3>비밀번호 확인</h3>
+                                                <p>정보 보호를 위해 현재 비밀번호를 입력해 주세요.</p></div>
+                                        </div>
+                                        <div class="cc-field">
+                                            <label for="currentPassword">현재 비밀번호</label>
+                                            <div class="cc-input-wrap">
+                                                <span class="cc-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
+                                                <input class="cc-input" id="currentPassword" type="password" name="currentPassword" placeholder="현재 비밀번호 입력" autocomplete="current-password">
+                                            </div>
+                                        </div>
+                                        <div class="cc-field">
+                                            <label for="newPassword">새 비밀번호 <span style="font-weight:700;color:var(--cc-muted)">(선택)</span></label>
+                                            <div class="cc-input-wrap">
+                                                <span class="cc-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
+                                                <input class="cc-input" id="newPassword" type="password" name="newPassword" placeholder="변경 시 8자 이상 입력" autocomplete="new-password">
+                                            </div>
+                                        </div>
+                                        <div class="cc-field">
+                                            <label for="newPasswordConfirm">새 비밀번호 확인 <span style="font-weight:700;color:var(--cc-muted)">(선택)</span></label>
+                                            <div class="cc-input-wrap">
+                                                <span class="cc-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
+                                                <input class="cc-input" id="newPasswordConfirm" type="password" name="newPasswordConfirm" placeholder="새 비밀번호 재입력" autocomplete="new-password">
+                                            </div>
+                                        </div>
+                                    </div>
+                                {{/isLocalUser}}
+
+                                <div style="display: flex; gap: 10px; margin-top: 30px;">
+                                    <button type="button" id="btnCancelEdit" class="cc-btn" style="flex: 1; background: #e9ecef; color: #495057;">취소</button>
+                                    <button class="cc-btn cc-btn--primary" type="submit" style="flex: 2;">변경 사항 저장</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <aside class="cc-card cc-profile-guide">
+                            <div class="cc-profile-guide__icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 3 20 6v5c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6l8-3Z"/>
+                                    <path d="m9 12 2 2 4-4"/>
+                                </svg>
+                            </div>
+                            <h3>안전한 계정 관리</h3>
+                            <p>비밀번호는 다른 서비스와 다르게 설정하고 주기적으로 변경해 주세요.</p>
+                            <ul>
+                                <li>새 비밀번호는 8자 이상</li>
+                                <li>이메일은 예매 안내에 사용</li>
+                                <li>변경 전 현재 비밀번호 확인</li>
+                            </ul>
+                        </aside>
+                    </div>
                 </div>
             {{/activeProfile}}
 
