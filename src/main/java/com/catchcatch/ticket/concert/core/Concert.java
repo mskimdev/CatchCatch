@@ -1,12 +1,14 @@
 package com.catchcatch.ticket.concert.core;
 
+import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.venue.Venue;
 import jakarta.persistence.*;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.*;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -102,28 +104,29 @@ public class Concert {
         private String region;  // 지역 (all, seoul, incheon 등)
     }
 
-    @Builder(builderClassName = "ConcertUpdater", builderMethodName = "updater")
-    public void update(String title, String artist, String description, String posterUrl,
-                       String detailBannerUrl, String detailTitle, String detailDescription1,
-                       String detailDescription2, Venue venue, String genre, String ageLimit,
-                       String runtime, String organizer, String contact, ConcertStatus status,
-                       LocalDateTime ticketOpenDate) {
-        this.title = title;
-        this.artist = artist;
-        this.description = description;
-        this.posterUrl = posterUrl;
-        this.detailBannerUrl = detailBannerUrl;
-        this.detailTitle = detailTitle;
-        this.detailDescription1 = detailDescription1;
-        this.detailDescription2 = detailDescription2;
-        this.venue = venue; // 진짜 Venue 객체로 덮어씌움
-        this.genre = genre;
-        this.ageLimit = ageLimit;
-        this.runtime = runtime;
-        this.organizer = organizer;
-        this.contact = contact;
-        this.concertStatus = status; // 진짜 Enum 객체로 덮어씌움
-        this.ticketOpenDate = ticketOpenDate;
+    public void update(AdminConcertRequest.UpdateRequestDTO dto, Venue newVenue, String updatePosterUrl) {
+        this.title = dto.title();
+        this.artist = dto.artist();
+        this.genre = dto.genre();
+        this.category = dto.category();
+        this.venue = newVenue; // 💡 새롭게 찾은 Venue 엔티티로 교체
+        this.ticketOpenDate = dto.ticketOpenDate();
+        this.startDate = dto.startDate();
+        this.endDate = dto.endDate();
+        this.runtime = dto.runtime();
+        this.ageLimit = dto.ageLimit();
+        this.organizer = dto.organizer();
+        this.contact = dto.contact();
+        this.detailTitle = dto.detailTitle();
+        this.description = dto.description();
+        this.detailDescription1 = dto.detailDescription1();
+        this.detailDescription2 = dto.detailDescription2();
+        this.posterUrl = updatePosterUrl; // 💡 분기 처리된 포스터 URL 적용
+
+        // String으로 넘어온 상태값을 Enum으로 변환하여 업데이트
+        if (dto.concertStatus() != null) {
+            this.concertStatus = ConcertStatus.valueOf(dto.concertStatus());
+        }
     }
 
 } // end of class

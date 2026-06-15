@@ -81,8 +81,6 @@
                 <div class="cc-profile-edit-layout">
                     <div class="cc-card cc-profile-edit-card">
 
-                        <p id="profileSuccess" class="cc-profile-alert cc-profile-alert--success">{{successMessage}}</p>
-                        <p id="profileError" class="cc-profile-alert cc-profile-alert--error">{{errorMessage}}</p>
                         <form id="profileForm" enctype="multipart/form-data">
                             {{#_csrf}}<input type="hidden" name="{{parameterName}}" value="{{token}}">{{/_csrf}}
                             <div class="cc-profile-image-edit">

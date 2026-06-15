@@ -1,7 +1,7 @@
 spring:
   profiles:
     active:
-      - dev
+      - local
   config:
     import: optional:file:.env[.properties]
 
@@ -16,9 +16,13 @@ springdoc:
 
 portone:
   store-id: ${PORTONE_STORE_ID}
-  channel-key: ${PORTONE_CHANNEL_KEY}
   api-secret: ${PORTONE_API_SECRET}
-  
+  channel:
+    card: ${PORTONE_CARD_CHANNEL_KEY:}
+    kakaopay: ${PORTONE_KAKAOPAY_CHANNEL_KEY:}
+    tosspay: ${PORTONE_TOSSPAY_CHANNEL_KEY:}
+    vbank: ${PORTONE_VBANK_CHANNEL_KEY:}
+
 oauth:
   kakao:
     client-id: ${KAKAO_CLIENT_ID}

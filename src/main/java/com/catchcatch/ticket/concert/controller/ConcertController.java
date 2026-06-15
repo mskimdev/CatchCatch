@@ -67,18 +67,15 @@ public class ConcertController {
 
         model.addAttribute("searchTitle", searchTitle); // Mustache로 전달
 
-        model.addAttribute("concerts", responseData.getConcerts());
-        model.addAttribute("resultCount", responseData.getResultCount());
-        model.addAttribute("totalCount", responseData.getTotalCount());
-        model.addAttribute("openSoonCount", responseData.getOpenSoonCount());
-        model.addAttribute("availableCount", responseData.getAvailableCount());
-        model.addAttribute("deadlineCount", responseData.getDeadlineCount());
+        model.addAttribute("concerts", responseData.concerts());
+        model.addAttribute("resultCount", responseData.resultCount());
+        model.addAttribute("totalCount", responseData.totalCount());
+        model.addAttribute("openSoonCount", responseData.openSoonCount());
+        model.addAttribute("availableCount", responseData.availableCount());
+        model.addAttribute("deadlineCount", responseData.deadlineCount());
 
         model.addAttribute("pageTitle", "콘서트 일정");
         model.addAttribute("loginHeader", true);
-
-        model.addAttribute("activeSchedule", true);
-
 
         return "concert/list";
     }
@@ -98,11 +95,12 @@ public class ConcertController {
         ConcertResponse.OpenSoonPageResponse pageData = concertService.getOpenSoonPageData(genre);
 
         // 💡 이 코드가 콘솔 창에 출력되는지 반드시 확인하세요!
-        System.out.println(" 컨트롤러 실행됨! 현재 장르: " + pageData.getCurrentGenre());
+        System.out.println(" 컨트롤러 실행됨! 현재 장르: " + pageData.currentGenre());
 
-        // model에 래퍼 DTO 자체를 통째로 담아서 보냅니다.
-        model.addAttribute("currentGenre", pageData.getCurrentGenre());
-        model.addAttribute("openSoonList", pageData.getOpenSoonList());
+        model.addAttribute("currentGenre", pageData.currentGenre());
+        model.addAttribute("openSoonList", pageData.openSoonList());
+
+        model.addAttribute("pageTitle", "오픈 예정");
 
         return "concert/open-soon";
     }

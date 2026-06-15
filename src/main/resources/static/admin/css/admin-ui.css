@@ -1,0 +1,66 @@
+/* ================================================================
+   admin-ui.css — 어드민 공통 UI 스타일
+   SweetAlert2 (cc-swal-*) 클래스를 SB Admin 2 디자인에 맞게 재정의
+   ================================================================ */
+
+/* ── SweetAlert2 오버라이드 ───────────────────────────────────── */
+.cc-swal-popup {
+    border-radius: 8px !important;
+    border: 1px solid #e3e6f0 !important;
+    box-shadow: 0 0.15rem 1.75rem rgba(58, 59, 69, 0.15) !important;
+    padding: 32px 28px 28px !important;
+    font-family: Nunito, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif !important;
+}
+.cc-swal-title {
+    color: #3a3b45 !important;
+    font-size: 17px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0 !important;
+}
+.cc-swal-text {
+    color: #858796 !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    margin-top: 6px !important;
+}
+.cc-swal-actions {
+    gap: 8px !important;
+    margin-top: 24px !important;
+}
+.cc-swal-confirm,
+.cc-swal-cancel {
+    height: 40px !important;
+    padding: 0 20px !important;
+    border-radius: 4px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    border: none !important;
+    letter-spacing: 0 !important;
+    cursor: pointer !important;
+}
+.cc-swal-confirm {
+    color: #fff !important;
+    background-color: #4e73df !important;
+    box-shadow: none !important;
+}
+.cc-swal-confirm:hover {
+    background-color: #2e59d9 !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+.cc-swal-confirm--danger {
+    background-color: #e74a3b !important;
+    box-shadow: none !important;
+}
+.cc-swal-confirm--danger:hover {
+    background-color: #be2617 !important;
+    box-shadow: none !important;
+}
+.cc-swal-cancel {
+    color: #6e707e !important;
+    background-color: #fff !important;
+    border: 1px solid #d1d3e2 !important;
+}
+.cc-swal-cancel:hover {
+    background-color: #eaecf4 !important;
+}

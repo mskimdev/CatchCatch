@@ -1,6 +1,6 @@
 package com.catchcatch.ticket.faq;
 
-import com.catchcatch.ticket.core.errors.BadRequestException;
+import com.catchcatch.ticket.core.exception.BadRequestException;
 import lombok.Data;
 
 public class FaqRequest {

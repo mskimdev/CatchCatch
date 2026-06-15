@@ -1,0 +1,256 @@
+/* ── 고객센터 공통 레이아웃 ───────────────────────────────────── */
+.cc-customer {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.cc-customer__title {
+    font-size: 26px;
+    font-weight: 800;
+    margin: 0 0 28px;
+    color: var(--cc-text);
+}
+
+/* ── 사이드 메뉴 ─────────────────────────────────────────────── */
+.cc-side-menu {
+    width: 230px;
+    flex-shrink: 0;
+    background: var(--cc-surface);
+    border: 1px solid var(--cc-line);
+    border-radius: var(--cc-radius-md);
+    padding: 18px 0;
+}
+
+.cc-side-menu__item {
+    display: block;
+    padding: 15px 22px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--cc-subtext);
+    text-decoration: none;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+    border-left: 4px solid transparent;
+}
+
+.cc-side-menu__item:hover {
+    color: var(--cc-primary);
+    background: var(--cc-primary-softer);
+}
+
+.cc-side-menu__item.is-active {
+    color: var(--cc-primary);
+    background: var(--cc-primary-softer);
+    border-left-color: var(--cc-primary);
+}
+
+/* ── 콘텐츠 공통 헤더 ────────────────────────────────────────── */
+.cc-content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+}
+
+.cc-content-header h2 {
+    font-size: 24px;
+    font-weight: 800;
+    margin: 0;
+    color: var(--cc-text);
+}
+
+.cc-content-header p {
+    margin-top: 6px;
+    font-size: 14px;
+    color: var(--cc-muted);
+}
+
+/* ── FAQ 메인 영역 ───────────────────────────────────────────── */
+.cc-faq-content {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ── FAQ 검색 박스 ───────────────────────────────────────────── */
+.cc-faq-search {
+    display: flex;
+    gap: 10px;
+    background: var(--cc-surface);
+    border: 1px solid var(--cc-line);
+    border-radius: var(--cc-radius-md);
+    padding: 28px;
+    margin-bottom: 18px;
+}
+
+.cc-faq-search select,
+.cc-faq-search input {
+    height: 46px;
+    border: 1px solid var(--cc-line-strong);
+    border-radius: var(--cc-radius-sm);
+    padding: 0 16px;
+    font-size: 14px;
+    background: var(--cc-surface);
+    color: var(--cc-subtext);
+    outline: none;
+    transition: border-color .15s ease;
+}
+
+.cc-faq-search select:focus,
+.cc-faq-search input:focus {
+    border-color: var(--cc-primary);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, .10);
+}
+
+.cc-faq-search select {
+    width: 180px;
+    font-weight: 700;
+}
+
+.cc-faq-search input {
+    flex: 1;
+}
+
+.cc-faq-search button {
+    width: 100px;
+    height: 46px;
+    border: none;
+    border-radius: var(--cc-radius-sm);
+    background: linear-gradient(135deg, var(--cc-primary), var(--cc-primary-dark));
+    color: #fff;
+    font-weight: 800;
+    cursor: pointer;
+    transition: opacity .15s ease, transform .15s ease;
+}
+
+.cc-faq-search button:hover {
+    opacity: .9;
+    transform: translateY(-1px);
+}
+
+/* ── FAQ 카테고리 탭 ─────────────────────────────────────────── */
+.cc-faq-tabs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.cc-faq-tabs .cc-faq-tab {
+    padding: 10px 20px;
+    border: 1px solid var(--cc-line-strong);
+    border-radius: 14px;
+    background: var(--cc-surface);
+    color: var(--cc-subtext);
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 14px;
+    transition: background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+
+.cc-faq-tabs .cc-faq-tab:hover {
+    border-color: var(--cc-primary);
+    color: var(--cc-primary-dark);
+    background: var(--cc-primary-softer);
+}
+
+.cc-faq-tabs .cc-faq-tab.is-active {
+    background: linear-gradient(135deg, var(--cc-primary), var(--cc-primary-dark));
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 8px 18px rgba(124, 58, 237, .25);
+}
+
+/* ── FAQ 테이블 ──────────────────────────────────────────────── */
+.cc-faq-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    font-size: 14px;
+}
+
+.cc-faq-table thead th {
+    padding: 14px 16px;
+    background: var(--cc-primary-softer);
+    color: var(--cc-subtext);
+    font-weight: 800;
+    text-align: center;
+}
+
+.cc-faq-table thead th:nth-child(2) {
+    text-align: left;
+}
+
+.cc-faq-table tbody tr {
+    background: var(--cc-surface);
+    box-shadow: var(--cc-shadow-soft);
+    cursor: pointer;
+    transition: background .1s ease;
+}
+
+.cc-faq-table tbody tr:hover {
+    background: var(--cc-primary-softer);
+}
+
+.cc-faq-table td {
+    padding: 18px 16px;
+    border-top: 1px solid var(--cc-line);
+    border-bottom: 1px solid var(--cc-line);
+    text-align: center;
+    vertical-align: middle;
+}
+
+.cc-faq-table td:first-child {
+    border-left: 1px solid var(--cc-line);
+    border-radius: 14px 0 0 14px;
+    color: var(--cc-primary);
+    font-weight: 800;
+}
+
+.cc-faq-table td:last-child {
+    border-right: 1px solid var(--cc-line);
+    border-radius: 0 14px 14px 0;
+    color: var(--cc-muted);
+}
+
+.cc-faq-table td:nth-child(2) {
+    text-align: left;
+    font-weight: 800;
+    color: var(--cc-text);
+}
+
+.cc-empty-message {
+    text-align: center !important;
+    padding: 50px !important;
+    color: var(--cc-muted);
+}
+
+/* ── 페이지네이션 ────────────────────────────────────────────── */
+.cc-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 28px;
+}
+
+.cc-pagination a {
+    text-decoration: none;
+    color: var(--cc-line-strong);
+    font-size: 22px;
+    transition: color .15s ease;
+}
+
+.cc-pagination a:hover {
+    color: var(--cc-primary);
+}
+
+.cc-pagination a.is-active {
+    width: 34px;
+    height: 34px;
+    line-height: 34px;
+    background: linear-gradient(135deg, var(--cc-primary), var(--cc-primary-dark));
+    color: #fff;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 800;
+}

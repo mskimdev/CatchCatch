@@ -40,8 +40,6 @@ public class QPayment extends EntityPathBase<Payment> {
 
     public final EnumPath<PaymentStatus> status = createEnum("status", PaymentStatus.class);
 
-    public final com.catchcatch.ticket.user.QUser user;
-
     public QPayment(String variable) {
         this(Payment.class, forVariable(variable), INITS);
     }
@@ -61,7 +59,6 @@ public class QPayment extends EntityPathBase<Payment> {
     public QPayment(Class<? extends Payment> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.booking = inits.isInitialized("booking") ? new com.catchcatch.ticket.booking.QBooking(forProperty("booking"), inits.get("booking")) : null;
-        this.user = inits.isInitialized("user") ? new com.catchcatch.ticket.user.QUser(forProperty("user")) : null;
     }
 
 }

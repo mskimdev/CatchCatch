@@ -2,42 +2,125 @@ package com.catchcatch.ticket.booking.dto;
 
 import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.booking.Status;
+import com.catchcatch.ticket.booking.bookingSeat.BookingSeat;
+import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.seat.Seat;
+import com.catchcatch.ticket.session.ConcertSession;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BookingResponse {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final String STATUS_AVAILABLE = "AVAILABLE";
+
+    /*
+     * 화면에서 이미 선택 불가능한 좌석을 표시할 때 쓰는 값.
+     * 실제 SeatStatus.SOLD와 이름이 다르더라도 프론트 표시용으로 쓸 수 있음.
+     */
     private static final String STATUS_CONFIRMED = "CONFIRMED";
+
+    /**
+     * 예매 정보 화면용 DTO
+     */
+    @Getter
+    @Builder
+    public static class InfoDTO {
+        private Integer id;
+        private String title;
+        private String posterUrl;
+        private String category;
+        private String genre;
+
+        private Integer sessionId;
+        private String sessionText;
+        private String venueName;
+
+        private String ageLimit;
+        private String runtime;
+        private String organizer;
+        private String contact;
+
+        // 좌석 가격
+        private List<PriceDTO> prices;
+
+        public static InfoDTO from(Concert concert, ConcertSession concertSession, List<Seat> seats) {
+            return InfoDTO.builder()
+                    .id(concert.getId())
+                    .title(concert.getTitle())
+                    .posterUrl(concert.getPosterUrl())
+                    .category(concert.getCategory())
+                    .genre(concert.getGenre())
+                    .sessionId(concertSession.getId())
+                    .sessionText(concertSession.getSessionDate() + " " + concertSession.getSessionTime())
+                    .venueName(concert.getVenue().getName())
+                    .ageLimit(concert.getAgeLimit())
+                    .runtime(concert.getRuntime())
+                    .organizer(concert.getOrganizer())
+                    .contact(concert.getContact())
+                    .prices(toPriceDTOs(seats))
+                    .build();
+        }
+    }
+
+    // seat에 있는 좌석 가격
+    @Getter
+    @Builder
+    public static class PriceDTO {
+        private String gradeName;
+        private String gradeClass;
+        private String priceText;
+    }
 
     @Getter
     public static class DetailDTO {
         private Integer id;
         private Integer userId;
         private Integer concertSessionId;
-        private Integer seatId;
+
+        private List<Integer> seatIds;
+        private Integer seatCount;
+        private String seatName;
+
         private String bookingNumber;
         private Status status;
+
+        private Integer totalPrice;
+        private String totalPriceText;
+
         private Timestamp expiresAt;
         private Timestamp createdAt;
         private Timestamp canceledAt;
 
         public DetailDTO(Booking booking) {
+            List<BookingSeat> bookingSeats = safeBookingSeats(booking);
+
             this.id = booking.getId();
             this.userId = booking.getUser().getId();
             this.concertSessionId = booking.getConcertSession().getId();
-            this.seatId = booking.getSeat().getId();
+
+            this.seatIds = bookingSeats.stream()
+                    .map(bookingSeat -> bookingSeat.getSeat().getId())
+                    .toList();
+
+            this.seatCount = bookingSeats.size();
+            this.seatName = formatSeatName(bookingSeats);
+
             this.bookingNumber = booking.getBookingNumber();
             this.status = booking.getStatus();
+
+            this.totalPrice = calculateTotalPrice(bookingSeats);
+            this.totalPriceText = formatPrice(this.totalPrice);
+
             this.expiresAt = booking.getExpiresAt();
             this.createdAt = booking.getCreatedAt();
             this.canceledAt = booking.getCanceledAt();
@@ -49,15 +132,34 @@ public class BookingResponse {
         private Integer id;
         private String bookingNumber;
         private Integer concertSessionId;
-        private Integer seatId;
+
+        private List<Integer> seatIds;
+        private Integer seatCount;
+        private String seatName;
+
+        private Integer totalPrice;
+        private String totalPriceText;
+
         private Status status;
         private Timestamp createdAt;
 
         public ListDTO(Booking booking) {
+            List<BookingSeat> bookingSeats = safeBookingSeats(booking);
+
             this.id = booking.getId();
             this.bookingNumber = booking.getBookingNumber();
             this.concertSessionId = booking.getConcertSession().getId();
-            this.seatId = booking.getSeat().getId();
+
+            this.seatIds = bookingSeats.stream()
+                    .map(bookingSeat -> bookingSeat.getSeat().getId())
+                    .toList();
+
+            this.seatCount = bookingSeats.size();
+            this.seatName = formatSeatName(bookingSeats);
+
+            this.totalPrice = calculateTotalPrice(bookingSeats);
+            this.totalPriceText = formatPrice(this.totalPrice);
+
             this.status = booking.getStatus();
             this.createdAt = booking.getCreatedAt();
         }
@@ -70,16 +172,28 @@ public class BookingResponse {
         private Status status;
         private Timestamp createdAt;
         private Timestamp canceledAt;
+
         private Integer concertSessionId;
-        private Integer seatId;
+        private List<Integer> seatIds;
+        private Integer seatCount;
+
         private String concertTitle;
         private String concertPosterUrl;
         private String venueName;
+
         private String seatName;
+
         private Integer price;
         private String priceText;
 
+        private String statusLabel;
+        private Boolean isPending;
+        private Boolean isPaid;
+        private Boolean isCanceled;
+
         public MyPageListDTO(Booking booking) {
+            List<BookingSeat> bookingSeats = safeBookingSeats(booking);
+
             this.id = booking.getId();
             this.bookingNumber = booking.getBookingNumber();
             this.status = booking.getStatus();
@@ -87,15 +201,131 @@ public class BookingResponse {
             this.canceledAt = booking.getCanceledAt();
 
             this.concertSessionId = booking.getConcertSession().getId();
-            this.seatId = booking.getSeat().getId();
+
+            this.seatIds = bookingSeats.stream()
+                    .map(bookingSeat -> bookingSeat.getSeat().getId())
+                    .toList();
+
+            this.seatCount = bookingSeats.size();
 
             this.concertTitle = booking.getConcertSession().getConcert().getTitle();
             this.concertPosterUrl = booking.getConcertSession().getConcert().getPosterUrl();
             this.venueName = booking.getConcertSession().getConcert().getVenue().getName();
 
-            this.seatName = booking.getSeat().getSeatNumber();
-            this.price = booking.getSeat().getPrice();
-            this.priceText = formatPrice(booking.getSeat().getPrice());
+            this.seatName = formatSeatName(bookingSeats);
+
+            this.price = calculateTotalPrice(bookingSeats);
+            this.priceText = formatPrice(this.price);
+
+            this.statusLabel = toBookingStatusLabel(booking.getStatus());
+
+            this.isPending = booking.getStatus() == Status.PENDING;
+            this.isPaid = booking.getStatus() == Status.PAID;
+            this.isCanceled = booking.getStatus() == Status.CANCELED;
+        }
+    }
+
+    /**
+     * 결제 화면 DTO
+     *
+     * booking/payment-form.mustache 또는 payment/payment-form.mustache에서
+     * {{payment.bookingId}}, {{payment.selectedSeats}}, {{payment.totalPriceText}}
+     * 형태로 사용하기 위한 DTO.
+     */
+    @Getter
+    public static class PaymentDTO {
+        private Integer bookingId;
+        private String bookingNumber;
+
+        private Integer concertId;
+        private Integer concertSessionId;
+
+        private String concertTitle;
+        private String posterUrl;
+        private String sessionText;
+        private String venueText;
+
+        private List<BookingSeatDTO> selectedSeats;
+        private Integer seatCount;
+        private String seatName;
+
+        private Integer totalPrice;
+        private String totalPriceText;
+        private String ticketPriceText;
+        private String feeText;
+
+        private Integer userId;
+        private String username;
+        private String userEmail;
+
+        public PaymentDTO(Booking booking) {
+            List<BookingSeat> bookingSeats = safeBookingSeats(booking);
+
+            this.bookingId = booking.getId();
+            this.bookingNumber = booking.getBookingNumber();
+
+            this.concertId = booking.getConcertSession().getConcert().getId();
+            this.concertSessionId = booking.getConcertSession().getId();
+
+            this.concertTitle = booking.getConcertSession().getConcert().getTitle();
+            this.posterUrl = booking.getConcertSession().getConcert().getPosterUrl();
+
+            this.sessionText = booking.getConcertSession().getSessionDate()
+                    + " "
+                    + booking.getConcertSession().getSessionTime();
+
+            this.venueText = booking.getConcertSession().getConcert().getVenue().getName();
+
+            this.selectedSeats = bookingSeats.stream()
+                    .sorted(Comparator.comparing(bookingSeat -> bookingSeat.getSeat().getSeatNumber()))
+                    .map(BookingSeatDTO::new)
+                    .toList();
+
+            this.seatCount = bookingSeats.size();
+            this.seatName = formatSeatName(bookingSeats);
+
+            this.totalPrice = calculateTotalPrice(bookingSeats);
+            this.totalPriceText = formatPrice(this.totalPrice);
+            this.ticketPriceText = formatPrice(this.totalPrice);
+            this.feeText = formatPrice(0);
+
+            this.userId = booking.getUser().getId();
+            this.username = booking.getUser().getUsername();
+            this.userEmail = booking.getUser().getEmail();
+        }
+    }
+
+    /**
+     * 예매에 포함된 좌석 한 개를 화면에 보여주기 위한 DTO
+     */
+    @Getter
+    public static class BookingSeatDTO {
+        private Integer seatId;
+        private String seatNumber;
+        private String rowName;
+        private String seatNo;
+        private String grade;
+        private String gradeName;
+        private String gradeClass;
+        private Integer price;
+        private String priceText;
+
+        public BookingSeatDTO(BookingSeat bookingSeat) {
+            Seat seat = bookingSeat.getSeat();
+            String seatNumber = seat.getSeatNumber();
+            String grade = seat.getGrade().name();
+
+            this.seatId = seat.getId();
+            this.seatNumber = seatNumber;
+            this.rowName = parseSeatRowName(seatNumber);
+            this.seatNo = parseSeatNo(seatNumber);
+
+            this.grade = grade;
+            this.gradeName = formatGradeName(grade);
+            this.gradeClass = grade.toLowerCase();
+
+            this.price = bookingSeat.getPrice();
+            this.priceText = formatPrice(bookingSeat.getPrice());
         }
     }
 
@@ -196,6 +426,38 @@ public class BookingResponse {
         }
     }
 
+    // ===========================================
+    // private
+    // ===========================================
+
+    private static List<BookingSeat> safeBookingSeats(Booking booking) {
+        if (booking.getBookingSeats() == null) {
+            return List.of();
+        }
+
+        return booking.getBookingSeats();
+    }
+
+    private static Integer calculateTotalPrice(List<BookingSeat> bookingSeats) {
+        if (bookingSeats == null || bookingSeats.isEmpty()) {
+            return 0;
+        }
+
+        return bookingSeats.stream()
+                .mapToInt(bookingSeat -> bookingSeat.getPrice() == null ? 0 : bookingSeat.getPrice())
+                .sum();
+    }
+
+    private static String formatSeatName(List<BookingSeat> bookingSeats) {
+        if (bookingSeats == null || bookingSeats.isEmpty()) {
+            return "";
+        }
+
+        return bookingSeats.stream()
+                .map(bookingSeat -> bookingSeat.getSeat().getSeatNumber())
+                .collect(Collectors.joining(", "));
+    }
+
     private static int seatGradeOrder(String grade) {
         if (grade == null) {
             return 99;
@@ -260,6 +522,115 @@ public class BookingResponse {
             return objectMapper.writeValueAsString(value);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("JSON 변환 중 오류가 발생했습니다.", e);
+        }
+    }
+
+    // 좌석 가격
+    private static List<PriceDTO> toPriceDTOs(List<Seat> seats) {
+        if (seats == null || seats.isEmpty()) {
+            return List.of();
+        }
+
+        return seats.stream()
+                .collect(Collectors.toMap(
+                        seat -> seat.getGrade().name(),
+                        Seat::getPrice,
+                        (oldPrice, newPrice) -> oldPrice
+                ))
+                .entrySet()
+                .stream()
+                .sorted(Comparator.comparingInt(entry -> seatGradeOrder(entry.getKey())))
+                .map(entry -> PriceDTO.builder()
+                        .gradeName(formatGradeName(entry.getKey()))
+                        .gradeClass(entry.getKey().toLowerCase())
+                        .priceText(formatPrice(entry.getValue()))
+                        .build())
+                .toList();
+    }
+
+    private static String toBookingStatusLabel(Status status) {
+        if (status == null) {
+            return "-";
+        }
+
+        return switch (status) {
+            case PENDING -> "결제대기";
+            case PAID -> "예약확정";
+            case CANCELED -> "취소됨";
+            case EXPIRED -> "만료됨";
+        };
+    }
+
+    /**
+     * 예매 완료 화면 DTO
+     *
+     * booking/complete.mustache에서
+     * {{complete.bookingNumber}}, {{complete.concertTitle}},
+     * {{complete.selectedSeats}}, {{complete.totalPriceText}}
+     * 형태로 사용한다.
+     */
+    @Getter
+    public static class CompleteDTO {
+        private Integer bookingId;
+        private String bookingNumber;
+        private Status status;
+
+        private Integer concertId;
+        private Integer concertSessionId;
+
+        private String concertTitle;
+        private String posterUrl;
+        private String sessionText;
+        private String venueText;
+
+        private List<BookingSeatDTO> selectedSeats;
+        private Integer seatCount;
+        private String seatName;
+
+        private Integer totalPrice;
+        private String totalPriceText;
+
+        private Integer userId;
+        private String username;
+
+        private Timestamp createdAt;
+        private Timestamp expiresAt;
+
+        public CompleteDTO(Booking booking) {
+            List<BookingSeat> bookingSeats = safeBookingSeats(booking);
+
+            this.bookingId = booking.getId();
+            this.bookingNumber = booking.getBookingNumber();
+            this.status = booking.getStatus();
+
+            this.concertId = booking.getConcertSession().getConcert().getId();
+            this.concertSessionId = booking.getConcertSession().getId();
+
+            this.concertTitle = booking.getConcertSession().getConcert().getTitle();
+            this.posterUrl = booking.getConcertSession().getConcert().getPosterUrl();
+
+            this.sessionText = booking.getConcertSession().getSessionDate()
+                    + " "
+                    + booking.getConcertSession().getSessionTime();
+
+            this.venueText = booking.getConcertSession().getConcert().getVenue().getName();
+
+            this.selectedSeats = bookingSeats.stream()
+                    .sorted(Comparator.comparing(bookingSeat -> bookingSeat.getSeat().getSeatNumber()))
+                    .map(BookingSeatDTO::new)
+                    .toList();
+
+            this.seatCount = bookingSeats.size();
+            this.seatName = formatSeatName(bookingSeats);
+
+            this.totalPrice = calculateTotalPrice(bookingSeats);
+            this.totalPriceText = formatPrice(this.totalPrice);
+
+            this.userId = booking.getUser().getId();
+            this.username = booking.getUser().getUsername();
+
+            this.createdAt = booking.getCreatedAt();
+            this.expiresAt = booking.getExpiresAt();
         }
     }
 }

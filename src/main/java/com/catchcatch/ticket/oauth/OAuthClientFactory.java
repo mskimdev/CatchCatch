@@ -1,7 +1,7 @@
 package com.catchcatch.ticket.oauth;
 
 
-import com.catchcatch.ticket.core.errors.BadRequestException;
+import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.user.enums.OAuthProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

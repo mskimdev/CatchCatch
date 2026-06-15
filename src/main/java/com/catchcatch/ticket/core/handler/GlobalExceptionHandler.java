@@ -1,8 +1,9 @@
 package com.catchcatch.ticket.core.handler;
 
-import com.catchcatch.ticket.core.errors.*;
+import com.catchcatch.ticket.core.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import com.catchcatch.ticket.core.util.HtmlUtil;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -66,18 +67,20 @@ public class GlobalExceptionHandler {
 
         String message = e.getMessage() != null ? e.getMessage() : "잘못된 요청입니다";
 
-        // API 요청은 JSON, 일반 요청은 alert 스크립트 반환
+        // API 요청은 JSON, 일반 요청은 SweetAlert2 페이지 반환
         String uri = request.getRequestURI();
         if (uri.startsWith("/api/")) {
             return "{\"message\":\"" + message.replace("\"", "\\\"") + "\"}";
         }
 
-        String escapeMsg = message.replace("'", "\\'");
-        return """
-                <script>
-                    alert('%s');
-                    history.back();
-                </script>
-                """.formatted(escapeMsg);
+        try {
+            return HtmlUtil.loadWithPlaceholder(
+                    "static/html/error/alert.html",
+                    "{MESSAGE}",
+                    message.replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;"));
+        } catch (RuntimeException ex) {
+            log.error("alert.html 로드 실패", ex);
+            return "<script>alert('" + message.replace("'", "\\'") + "'); history.back();</script>";
+        }
     }
 }

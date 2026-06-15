@@ -5,319 +5,45 @@
     <title>{{#pageTitle}}{{pageTitle}} | {{/pageTitle}}CatchCatch</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- 예매창 전용 CSS -->
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/catchcatch-purple.css">
+    <link rel="stylesheet" href="/css/booking-header.css">
+    <link rel="stylesheet" href="/css/booking-info.css">
     <link rel="stylesheet" href="/css/booking-seat.css">
-    <link rel="stylesheet" href="/css/booking-payment.css">
     <link rel="stylesheet" href="/css/booking-complete.css">
-
-    <style>
-        :root {
-            --cc-primary: #7c3aed;
-            --cc-primary-dark: #4c1d95;
-            --cc-primary-softer: #f1eafe;
-            --cc-text: #1f1b2d;
-            --cc-subtext: #5f5870;
-            --cc-muted: #8a8299;
-            --cc-line: #e8e1f2;
-            --cc-line-strong: #d8cdea;
-            --cc-bg: #f6f4fb;
-            --cc-surface-soft: #f7f4fc;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            min-width: 0;
-            background: var(--cc-bg);
-            color: var(--cc-text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", Arial, sans-serif;
-        }
-
-        button,
-        select,
-        input {
-            font-family: inherit;
-        }
-
-        button {
-            border: 0;
-            cursor: pointer;
-        }
-
-        a {
-            color: inherit;
-            text-decoration: none;
-        }
-
-        .cc-main {
-            min-height: 100vh;
-            padding: 20px 24px 28px;
-        }
-
-        .cc-container {
-            width: 100%;
-            max-width: 1240px;
-            margin: 0 auto;
-        }
-
-        .cc-popup-header {
-            min-height: 56px;
-            margin-bottom: 10px;
-            padding: 0 18px;
-            border-radius: 16px;
-            background: #fff;
-            border: 1px solid var(--cc-line);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 10px 26px rgba(43, 21, 91, .06);
-        }
-
-        .cc-popup-header__title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 18px;
-            font-weight: 950;
-            color: var(--cc-primary-dark);
-        }
-
-        .cc-popup-header__meta {
-            font-size: 13px;
-            color: var(--cc-muted);
-            font-weight: 800;
-        }
-
-        .cc-popup-close {
-            height: 34px;
-            padding: 0 14px;
-            border-radius: 10px;
-            background: #f3effa;
-            color: var(--cc-primary-dark);
-            font-weight: 900;
-        }
-
-        .cc-popup-close:hover {
-            background: #e9ddfb;
-        }
-
-        .cc-stepper {
-            height: 44px;
-            margin-bottom: 14px;
-            padding: 0 18px;
-            border-radius: 14px;
-            background: rgba(255, 255, 255, .72);
-            border: 1px solid var(--cc-line);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 8px 20px rgba(43, 21, 91, .045);
-        }
-
-        .cc-step {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            color: var(--cc-muted);
-            font-size: 13px;
-            font-weight: 900;
-            white-space: nowrap;
-        }
-
-        .cc-step__num {
-            width: 22px;
-            height: 22px;
-            border-radius: 999px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: #eee8f7;
-            color: #8a8299;
-            font-size: 12px;
-            font-weight: 950;
-        }
-
-        .cc-step.is-done,
-        .cc-step.is-active {
-            color: var(--cc-primary-dark);
-        }
-
-        .cc-step.is-done .cc-step__num,
-        .cc-step.is-active .cc-step__num {
-            background: linear-gradient(135deg, #7c3aed, #4c1d95);
-            color: #fff;
-        }
-
-        .cc-step-line {
-            width: 54px;
-            height: 2px;
-            border-radius: 999px;
-            background: #ded6ea;
-        }
-
-        .cc-card {
-            background: #fff;
-            border: 1px solid var(--cc-line);
-            border-radius: 18px;
-            box-shadow: 0 10px 26px rgba(43, 21, 91, .06);
-        }
-
-        .cc-btn {
-            height: 46px;
-            border-radius: 12px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 950;
-            font-size: 15px;
-        }
-
-        .cc-btn--full {
-            width: 100%;
-        }
-
-        .cc-btn--primary {
-            background: linear-gradient(135deg, #7c3aed, #4c1d95);
-            color: #fff;
-        }
-
-        .cc-btn--outline {
-            border: 1px solid var(--cc-line);
-            background: #fff;
-            color: var(--cc-primary-dark);
-        }
-
-        .cc-btn--primary:hover {
-            filter: brightness(.96);
-        }
-
-        .cc-btn--outline:hover {
-            background: #faf7ff;
-        }
-
-        .cc-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            height: 26px;
-            padding: 0 10px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 900;
-        }
-
-        .cc-badge--fill {
-            background: var(--cc-primary);
-            color: #fff;
-        }
-
-        .cc-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-            flex: 0 0 auto;
-            margin-right: 5px;
-        }
-
-        .cc-dot--vip { background: #7c3aed; }
-        .cc-dot--r { background: #60a5fa; }
-        .cc-dot--s { background: #5eead4; }
-        .cc-dot--a { background: #fbbf24; }
-        .cc-dot--b { background: #9acd32; }
-        .cc-dot--gray { background: #d8d2e2; }
-
-        .cc-info-list {
-            display: grid;
-            gap: 10px;
-        }
-
-        .cc-info-row {
-            display: grid;
-            grid-template-columns: 120px 1fr;
-            gap: 12px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .cc-info-row__label {
-            color: var(--cc-muted);
-            font-weight: 900;
-        }
-
-        .cc-booking-footer {
-            margin-top: 20px;
-            padding: 16px 0 4px;
-            color: #8a8299;
-            font-size: 12px;
-            text-align: center;
-        }
-
-        .cc-booking-footer__links {
-            display: flex;
-            justify-content: center;
-            gap: 14px;
-            margin-bottom: 8px;
-            font-weight: 800;
-        }
-
-        .cc-booking-footer__links a {
-            color: #5f5870;
-        }
-
-        .cc-booking-footer__links a:hover {
-            color: var(--cc-primary-dark);
-        }
-
-        @media (max-width: 700px) {
-            .cc-main {
-                padding: 14px;
-            }
-
-            .cc-popup-header {
-                align-items: flex-start;
-                gap: 12px;
-                padding: 14px;
-            }
-
-            .cc-stepper {
-                overflow-x: auto;
-                justify-content: flex-start;
-            }
-
-            .cc-step-line {
-                width: 28px;
-                flex: 0 0 28px;
-            }
-
-            .cc-info-row {
-                grid-template-columns: 92px 1fr;
-            }
-        }
-    </style>
 </head>
 
 <body>
-<main class="cc-main">
-    <div class="cc-container">
 
-        <header class="cc-popup-header">
-            <div>
-                <div class="cc-popup-header__title">
-                    🎫 {{#bookingTitle}}{{bookingTitle}}{{/bookingTitle}}{{^bookingTitle}}예매{{/bookingTitle}}
-                </div>
-                <div class="cc-popup-header__meta">
-                    {{#bookingSubTitle}}{{bookingSubTitle}}{{/bookingSubTitle}}{{^bookingSubTitle}}예매 정보를 확인해주세요.{{/bookingSubTitle}}
-                </div>
+<header class="cc-booking-header">
+    <div class="cc-booking-header__inner">
+
+        <div class="cc-stepper" aria-label="예매 진행 단계">
+
+            <div class="cc-step {{#stepInfo}}is-active{{/stepInfo}}{{#stepInfoDone}}is-done{{/stepInfoDone}}">
+                <span class="cc-step__num">
+                    {{#stepInfoDone}}✓{{/stepInfoDone}}{{^stepInfoDone}}1{{/stepInfoDone}}
+                </span>
+                <span class="cc-step__text">예매정보</span>
             </div>
 
-            <button type="button" class="cc-popup-close" onclick="closeBookingWindow()">
-                창 닫기
-            </button>
-        </header>
+            <span class="cc-step-line"></span>
+
+            <div class="cc-step {{#stepSeat}}is-active{{/stepSeat}}{{#stepSeatDone}}is-done{{/stepSeatDone}}">
+                <span class="cc-step__num">
+                    {{#stepSeatDone}}✓{{/stepSeatDone}}{{^stepSeatDone}}2{{/stepSeatDone}}
+                </span>
+                <span class="cc-step__text">좌석선택</span>
+            </div>
+
+            <span class="cc-step-line"></span>
+
+            <div class="cc-step {{#stepComplete}}is-active{{/stepComplete}}">
+                <span class="cc-step__num">3</span>
+                <span class="cc-step__text">완료</span>
+            </div>
+
+        </div>
+
+    </div>
+</header>

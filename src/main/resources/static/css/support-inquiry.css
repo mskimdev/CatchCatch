@@ -1,0 +1,446 @@
+/* ── 문의 메인 영역 ──────────────────────────────────────────── */
+.cc-inquiry-content {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ── 필터 바 ─────────────────────────────────────────────────── */
+.cc-inquiry-filter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.cc-inquiry-filter .cc-faq-tabs {
+    margin-bottom: 0;
+}
+
+.cc-inquiry-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.cc-inquiry-toggle input[type="checkbox"] {
+    display: none;
+}
+
+.cc-inquiry-toggle__track {
+    width: 40px;
+    height: 22px;
+    background: var(--cc-line-strong);
+    border-radius: 11px;
+    position: relative;
+    transition: background .2s ease;
+    flex-shrink: 0;
+}
+
+.cc-inquiry-toggle__track::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform .2s ease;
+}
+
+.cc-inquiry-toggle input:checked + .cc-inquiry-toggle__track {
+    background: var(--cc-primary);
+}
+
+.cc-inquiry-toggle input:checked + .cc-inquiry-toggle__track::after {
+    transform: translateX(18px);
+}
+
+.cc-inquiry-toggle__label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--cc-subtext);
+}
+
+.cc-inquiry-filter__right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.cc-inquiry-sort {
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--cc-line-strong);
+    border-radius: var(--cc-radius-sm);
+    background: var(--cc-surface);
+    color: var(--cc-subtext);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    outline: none;
+    transition: border-color .15s ease;
+}
+
+.cc-inquiry-sort:focus {
+    border-color: var(--cc-primary);
+}
+
+/* ── 문의 테이블 ─────────────────────────────────────────────── */
+.cc-inquiry-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    font-size: 14px;
+}
+
+.cc-inquiry-table thead th {
+    padding: 14px 16px;
+    background: var(--cc-primary-softer);
+    color: var(--cc-subtext);
+    font-weight: 800;
+    text-align: center;
+}
+
+.cc-inquiry-table thead th:nth-child(2) {
+    text-align: left;
+}
+
+.cc-inquiry-row {
+    background: var(--cc-surface);
+    box-shadow: var(--cc-shadow-soft);
+    cursor: pointer;
+    transition: background .1s ease;
+}
+
+.cc-inquiry-row:hover {
+    background: var(--cc-primary-softer);
+}
+
+.cc-inquiry-row--private {
+    cursor: default;
+    opacity: .72;
+}
+
+.cc-inquiry-row--private:hover {
+    background: var(--cc-surface);
+}
+
+.cc-inquiry-table td {
+    padding: 16px;
+    border-top: 1px solid var(--cc-line);
+    border-bottom: 1px solid var(--cc-line);
+    text-align: center;
+    vertical-align: middle;
+}
+
+.cc-inquiry-table td:first-child {
+    border-left: 1px solid var(--cc-line);
+    border-radius: 14px 0 0 14px;
+}
+
+.cc-inquiry-table td:last-child {
+    border-right: 1px solid var(--cc-line);
+    border-radius: 0 14px 14px 0;
+}
+
+.cc-inquiry-title {
+    text-align: left !important;
+    font-weight: 700;
+    color: var(--cc-text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cc-inquiry-lock {
+    width: 13px;
+    height: 13px;
+    color: var(--cc-muted);
+    flex-shrink: 0;
+    vertical-align: -2px;
+}
+
+.cc-inquiry-category {
+    color: var(--cc-primary);
+    font-weight: 800;
+    font-size: 13px;
+}
+
+.cc-inquiry-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.cc-inquiry-status--pending {
+    background: #fff3cd;
+    color: #b07d00;
+}
+
+.cc-inquiry-status--resolved {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.cc-inquiry-status--cancelled {
+    background: #f0f0f0;
+    color: #888;
+}
+
+.cc-inquiry-date {
+    color: var(--cc-muted);
+    font-size: 13px;
+}
+
+.cc-inquiry-private-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #f0f0f0;
+    color: #999;
+    flex-shrink: 0;
+}
+
+/* ── 문의 상세 ───────────────────────────────────────────────── */
+.cc-inquiry-detail {
+    background: var(--cc-surface);
+    border: 1px solid var(--cc-line);
+    border-radius: var(--cc-radius-md);
+    overflow: hidden;
+}
+
+.cc-inquiry-detail__header {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid var(--cc-line);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cc-inquiry-detail__meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cc-inquiry-detail__title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--cc-text);
+    margin: 0;
+}
+
+.cc-inquiry-detail__info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.cc-inquiry-detail__author {
+    font-weight: 700;
+    color: var(--cc-subtext);
+}
+
+.cc-inquiry-detail__date {
+    color: var(--cc-muted);
+}
+
+.cc-inquiry-detail__body {
+    padding: 28px 32px;
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--cc-subtext);
+    min-height: 160px;
+    white-space: pre-wrap;
+    border-bottom: 1px solid var(--cc-line);
+}
+
+.cc-inquiry-detail__reply {
+    padding: 28px 32px;
+    background: var(--cc-surface-tint);
+    border-top: 2px solid var(--cc-line-strong);
+    border-left: 4px solid var(--cc-primary);
+}
+
+.cc-inquiry-detail__reply-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--cc-primary);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.cc-inquiry-detail__reply-label svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.cc-inquiry-detail__reply-body {
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--cc-text);
+    white-space: pre-wrap;
+    padding-left: 4px;
+}
+
+.cc-inquiry-detail__reply--pending {
+    background: var(--cc-surface-soft);
+    color: var(--cc-muted);
+    font-size: 14px;
+    text-align: center;
+    padding: 32px;
+}
+
+/* ── 문의 작성 폼 ────────────────────────────────────────────── */
+.cc-inquiry-form {
+    background: var(--cc-surface);
+    border: 1px solid var(--cc-line);
+    border-radius: var(--cc-radius-md);
+    padding: 36px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.cc-inquiry-form__row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cc-inquiry-form__label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--cc-subtext);
+}
+
+.cc-inquiry-form__required {
+    color: var(--cc-primary);
+}
+
+.cc-inquiry-form__select,
+.cc-inquiry-form__input {
+    height: 46px;
+    border: 1px solid var(--cc-line-strong);
+    border-radius: var(--cc-radius-sm);
+    padding: 0 16px;
+    font-size: 14px;
+    background: var(--cc-surface-soft);
+    color: var(--cc-text);
+    outline: none;
+    transition: border-color .15s ease, background .15s ease;
+}
+
+.cc-inquiry-form__select:focus,
+.cc-inquiry-form__input:focus {
+    border-color: var(--cc-primary);
+    background: var(--cc-surface);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, .10);
+}
+
+.cc-inquiry-form__select {
+    width: 220px;
+}
+
+.cc-inquiry-form__textarea {
+    border: 1px solid var(--cc-line-strong);
+    border-radius: var(--cc-radius-sm);
+    padding: 14px 16px;
+    font-size: 14px;
+    background: var(--cc-surface-soft);
+    color: var(--cc-text);
+    resize: vertical;
+    min-height: 220px;
+    outline: none;
+    transition: border-color .15s ease, background .15s ease;
+    font-family: inherit;
+    line-height: 1.6;
+}
+
+.cc-inquiry-form__textarea:focus {
+    border-color: var(--cc-primary);
+    background: var(--cc-surface);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, .10);
+}
+
+.cc-inquiry-form__counter {
+    text-align: right;
+    font-size: 12px;
+    color: var(--cc-muted);
+}
+
+.cc-inquiry-notify {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cc-inquiry-notify__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--cc-subtext);
+    cursor: pointer;
+    user-select: none;
+}
+
+.cc-inquiry-notify__item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--cc-primary);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.cc-inquiry-notify__item.is-disabled {
+    color: var(--cc-muted);
+    cursor: not-allowed;
+}
+
+.cc-inquiry-notify__item.is-disabled input[type="checkbox"] {
+    cursor: not-allowed;
+}
+
+.cc-inquiry-notify__desc {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--cc-muted);
+}
+
+.cc-inquiry-notify__warn {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--cc-danger);
+}
+
+.cc-inquiry-notify__link {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--cc-primary);
+    text-decoration: underline;
+}
+
+.cc-inquiry-form__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+}
