@@ -2,6 +2,7 @@ package com.catchcatch.ticket.event;
 
 import com.catchcatch.ticket.eventhistory.EventHistory;
 import com.catchcatch.ticket.eventhistory.EventHistoryRepository;
+import com.catchcatch.ticket.pointHistory.PointService;
 import com.catchcatch.ticket.user.User;
 import com.catchcatch.ticket.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +20,12 @@ public class EventService {
     private final EventRepository eventRepository;
     private final EventHistoryRepository eventHistoryRepository;
     private final UserRepository userRepository;
+    private final PointService pointService;
 
     /**
      * 이벤트 목록 조회
      * 기본값: 진행중 이벤트
-     *
+     * <p>
      * /events
      * /events?status=ongoing
      * /events?status=upcoming
@@ -92,10 +94,14 @@ public class EventService {
 
         eventHistoryRepository.save(eventHistory);
 
-        // TODO: 포인트 지급 기능 붙이면 여기서 처리
-        // pointService.이벤트포인트적립(userId, eventHistory.getId(), event.getRewardPoint());
+        Integer currentPoint = pointService.saveEventRewardPoint(
+                user,
+                eventHistory,
+                event.getRewardPoint(),
+                event.getPointValidMonths()
+        );
 
-        return new EventResponse.JoinDTO(event);
+        return new EventResponse.JoinDTO(event, currentPoint);
     }
 
     private String normalizeStatus(String status) {
