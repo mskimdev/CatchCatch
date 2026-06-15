@@ -1,6 +1,8 @@
-package com.catchcatch.ticket.inquiry;
+package com.catchcatch.ticket.inquiry.controller;
 
 import com.catchcatch.ticket.core.util.Resp;
+import com.catchcatch.ticket.inquiry.dto.InquiryRequest;
+import com.catchcatch.ticket.inquiry.service.InquiryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

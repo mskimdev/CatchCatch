@@ -1,7 +1,9 @@
-package com.catchcatch.ticket.inquiry;
+package com.catchcatch.ticket.inquiry.controller;
 
-import com.catchcatch.ticket.core.exception.ForbiddenException;
 import com.catchcatch.ticket.core.util.Define;
+import com.catchcatch.ticket.inquiry.dto.InquiryRequest;
+import com.catchcatch.ticket.inquiry.dto.InquiryResponse;
+import com.catchcatch.ticket.inquiry.service.InquiryService;
 import com.catchcatch.ticket.inquiry.enums.InquiryStatus;
 import com.catchcatch.ticket.user.dto.SessionUser;
 import jakarta.servlet.http.HttpSession;

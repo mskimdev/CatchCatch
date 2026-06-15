@@ -1,9 +1,10 @@
 package com.catchcatch.ticket.concertlike;
 
 import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.concert.repository.ConcertRepository;
+import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.user.User;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import com.catchcatch.ticket.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,9 +16,8 @@ import java.util.List;
 public class ConcertLikeService {
 
     private final ConcertLikeRepository concertLikeRepository;
-
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final UserRepository userRepository;
+    private final ConcertRepository concertRepository;
 
     // 관심 공연 토글 - 등록 시 true, 취소 시 false 반환
     @Transactional
@@ -27,8 +27,10 @@ public class ConcertLikeService {
             return false;
         }
 
-        User user = entityManager.getReference(User.class, userId);
-        Concert concert = entityManager.getReference(Concert.class, concertId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("사용자 정보를 찾을 수 없습니다."));
+        Concert concert = concertRepository.findById(concertId)
+                .orElseThrow(() -> new NotFoundException("공연 정보를 찾을 수 없습니다."));
 
         concertLikeRepository.save(ConcertLike.of(user, concert));
         return true;
