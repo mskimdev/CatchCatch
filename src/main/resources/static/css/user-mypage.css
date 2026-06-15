@@ -52,6 +52,7 @@
 .cc-profile-image-edit__button { display: inline-flex; padding: 7px 11px; border: 1px solid var(--cc-line-strong); border-radius: 9px; color: var(--cc-primary-dark); background: #fff; font-size: 12px; font-weight: 900; cursor: pointer; }
 .cc-profile-image-edit input[type="file"] { display: none; }
 .cc-profile-alert { margin: 0 0 18px; padding: 12px 14px; border-radius: 12px; font-size: 14px; font-weight: 850; }
+.cc-profile-alert:empty { display: none; }
 .cc-profile-alert--success { color: #166534; background: #f0fff4; border: 1px solid #bbf7d0; }
 .cc-profile-alert--error { color: var(--cc-danger); background: #fff0f0; border: 1px solid #fecaca; }
 .cc-profile-form-section + .cc-profile-form-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--cc-line); }

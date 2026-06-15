@@ -1,8 +1,6 @@
 package com.catchcatch.ticket.faq;
 
-import com.catchcatch.ticket.core.errors.BadRequestException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

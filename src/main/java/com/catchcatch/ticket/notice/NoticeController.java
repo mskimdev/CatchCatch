@@ -12,17 +12,17 @@ public class NoticeController {
 
     private final NoticeService noticeService;
 
-    @GetMapping("/customercenter/notices")
+    @GetMapping("/support/notices")
     public String noticeList(Model model){
         model.addAttribute("notices", noticeService.findAll());
 
-        return "customercenter/notice-list";
+        return "support/notice-list";
     }
 
-    @GetMapping("/customercenter/notices/{id}")
+    @GetMapping("/support/notices/{id}")
     public String noticeDetail(@PathVariable Integer id, Model model){
         model.addAttribute("notice", noticeService.findById(id));
 
-        return "customercenter/notice-detail";
+        return "support/notice-detail";
     }
 }

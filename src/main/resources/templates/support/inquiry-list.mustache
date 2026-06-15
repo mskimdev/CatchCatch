@@ -1,0 +1,87 @@
+{{> layout/header}}
+
+<link rel="stylesheet" href="/css/support-faq.css">
+<link rel="stylesheet" href="/css/support-inquiry.css">
+
+<div class="cc-container cc-main">
+
+    <h1 class="cc-customer__title">고객센터</h1>
+
+    <div class="cc-customer">
+
+        <aside class="cc-side-menu">
+            <a href="/support/faqs" class="cc-side-menu__item">FAQ</a>
+            <a href="/support/inquiries/save" class="cc-side-menu__item">1:1 문의하기</a>
+            <a href="/support/inquiries" class="cc-side-menu__item is-active">1:1 문의 내역</a>
+            <a href="/support/notices" class="cc-side-menu__item">공지사항</a>
+        </aside>
+
+        <main class="cc-inquiry-content">
+
+            <div class="cc-content-header">
+                <h2>1:1 문의 내역</h2>
+                <a class="cc-btn cc-btn--primary" href="/support/inquiries/save">문의하기</a>
+            </div>
+
+            <div class="cc-inquiry-filter">
+                <div class="cc-faq-tabs">
+                    <a data-status="" class="cc-faq-tab{{#filterAll}} is-active{{/filterAll}}" style="cursor:pointer">전체</a>
+                    <a data-status="RESOLVED" class="cc-faq-tab{{#filterResolved}} is-active{{/filterResolved}}" style="cursor:pointer">답변완료</a>
+                    <a id="myOnlyTab" class="cc-faq-tab{{#filterMy}} is-active{{/filterMy}}" style="cursor:pointer">내 문의</a>
+                </div>
+                <div class="cc-inquiry-filter__right">
+                    <label class="cc-inquiry-toggle">
+                        <input type="checkbox" id="publicOnlyToggle" {{#filterPublic}}checked{{/filterPublic}}>
+                        <span class="cc-inquiry-toggle__track"></span>
+                        <span class="cc-inquiry-toggle__label">공개글만 보기</span>
+                    </label>
+                    <select id="sortSelect" class="cc-inquiry-sort">
+                        <option value="desc" {{#sortDesc}}selected{{/sortDesc}}>최신순</option>
+                        <option value="asc" {{#sortAsc}}selected{{/sortAsc}}>오래된순</option>
+                    </select>
+                </div>
+            </div>
+
+            <table class="cc-inquiry-table">
+                <thead>
+                <tr>
+                    <th style="width:100px">유형</th>
+                    <th>제목</th>
+                    <th style="width:110px">상태</th>
+                    <th style="width:150px">등록일</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#inquiries}}
+                <tr class="cc-inquiry-row{{^isPublic}}{{^isOwner}} cc-inquiry-row--private{{/isOwner}}{{/isPublic}}"
+                    onclick="location.href='/support/inquiries/{{id}}'"
+                    {{^isPublic}}{{^isOwner}}style="pointer-events:none"{{/isOwner}}{{/isPublic}}>
+                    <td><span class="cc-inquiry-category">{{categoryLabel}}</span></td>
+                    <td class="cc-inquiry-title">
+                        {{#isPublic}}{{title}}{{/isPublic}}
+                        {{^isPublic}}
+                            {{#isOwner}}{{title}} <span class="cc-inquiry-private-badge">비공개</span>{{/isOwner}}
+                            {{^isOwner}}<svg class="cc-inquiry-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> 비공개 문의입니다.{{/isOwner}}
+                        {{/isPublic}}
+                    </td>
+                    <td>
+                        <span class="cc-inquiry-status {{statusClass}}">{{statusLabel}}</span>
+                    </td>
+                    <td class="cc-inquiry-date">{{createdAt}}</td>
+                </tr>
+                {{/inquiries}}
+                {{^inquiries}}
+                <tr>
+                    <td colspan="4" class="cc-empty-message">문의 내역이 없습니다.</td>
+                </tr>
+                {{/inquiries}}
+                </tbody>
+            </table>
+
+        </main>
+
+    </div>
+</div>
+
+<script src="/js/support/inquiry-list.js"></script>
+{{> layout/footer}}

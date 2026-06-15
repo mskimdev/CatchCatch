@@ -3,7 +3,7 @@ package com.catchcatch.ticket.user;
 import com.catchcatch.ticket.booking.BookingService;
 import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
-import com.catchcatch.ticket.core.errors.UnauthorizedException;
+import com.catchcatch.ticket.core.exception.UnauthorizedException;
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.ProfileImageUtil;
 import com.catchcatch.ticket.user.dto.UserRequest;
@@ -13,15 +13,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -34,7 +32,6 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final BookingService bookingService;
 
     @Value("${oauth.kakao.client-id}")
     private String kakaoClientId;
@@ -56,12 +53,11 @@ public class UserController {
     })
     @PostMapping("/login")
     public String login(
-            @Parameter(description = "이메일") String email,
-            @Parameter(description = "비밀번호") String password,
+            @Valid UserRequest.LoginDTO reqDTO,
             HttpSession session, Model model) {
 
         try {
-            User user = userService.login(email, password);
+            User user = userService.login(reqDTO);
             session.setAttribute(Define.SESSION_USER, user);
             return "redirect:/";
         } catch (Exception e) {
@@ -115,14 +111,13 @@ public class UserController {
     })
     @PostMapping("/social-join")
     public String socialJoinProc(
-            UserRequest.SocialJoinDTO req,
+            @Valid UserRequest.SocialJoinDTO reqDTO,
             @Parameter(description = "프로필 이미지 파일") MultipartFile profileImage,
             Model model, HttpSession session) {
         String profileImageUrl = null;
         try {
-            req.validate();
             profileImageUrl = ProfileImageUtil.save(profileImage);
-            userService.socialJoin(req, profileImageUrl, session);
+            userService.socialJoin(reqDTO, profileImageUrl, session);
             return "redirect:/login";
         } catch (Exception e) {
             ProfileImageUtil.delete(profileImageUrl);
@@ -147,14 +142,14 @@ public class UserController {
     })
     @PostMapping("/join")
     public String join(
-            UserRequest.JoinDTO req,
+            @Valid UserRequest.JoinDTO reqDTO,
             @Parameter(description = "프로필 이미지 파일") MultipartFile profileImage,
-            Model model, HttpSession session) {
+            Model model) {
         String profileImageUrl = null;
         try {
-            req.validate();
+            reqDTO.pwdValidate();
             profileImageUrl = ProfileImageUtil.save(profileImage);
-            userService.join(req, profileImageUrl);
+            userService.join(reqDTO, profileImageUrl);
             return "redirect:/login";
         } catch (Exception e) {
             ProfileImageUtil.delete(profileImageUrl);
@@ -177,10 +172,9 @@ public class UserController {
             @ApiResponse(responseCode = "302", description = "미로그인 - 로그인 페이지로 리다이렉트")
     })
     @GetMapping("/users/mypage")
-    public String profile(HttpSession session, Model model) {
-        User user = getSessionUser(session);
-        if (user == null) return "redirect:/login";
-        addProfileAttributes(model, user);
+    public String profile(@SessionAttribute(Define.SESSION_USER) User sessionUser, Model model) {
+        if (sessionUser == null) return "redirect:/login";
+        addProfileAttributes(model, sessionUser);
         model.addAttribute("navProfile", true);
         return "user/mypage";
     }
@@ -192,12 +186,12 @@ public class UserController {
             @ApiResponse(responseCode = "302", description = "미로그인 - 로그인 페이지로 리다이렉트")
     })
     @GetMapping("/users/bookings")
-    public String bookings(@RequestParam(required = false) Status status, HttpSession session, Model model) {
-        User user = getSessionUser(session);
-        if (user == null) return "redirect:/login";
-        addSidebarAttributes(model, user);
+    public String bookings(@RequestParam(required = false) Status status,
+                           @SessionAttribute User sessionUser, Model model) {
+        if (sessionUser == null) return "redirect:/login";
+        addSidebarAttributes(model, sessionUser);
 
-        List<BookingResponse.MyPageListDTO> bookings = userService.findBookingsByUser(user.getId(), status);
+        List<BookingResponse.MyPageListDTO> bookings = userService.findBookingsByUser(sessionUser.getId(), status);
 
         model.addAttribute("bookings", bookings);
         model.addAttribute("navBookings", true);
@@ -213,12 +207,11 @@ public class UserController {
             @ApiResponse(responseCode = "302", description = "미로그인 - 로그인 페이지로 리다이렉트")
     })
     @GetMapping("/users/liked-concerts")
-    public String likedConcerts(HttpSession session, Model model) {
-        User user = getSessionUser(session);
-        if (user == null) return "redirect:/login";
-        addSidebarAttributes(model, user);
+    public String likedConcerts(@SessionAttribute(Define.SESSION_USER) User sessionUser, Model model) {
+        if (sessionUser == null) return "redirect:/login";
+        addSidebarAttributes(model, sessionUser);
         model.addAttribute("navLikedConcerts", true);
-        model.addAttribute("concerts", userService.findLikedConcertsByUser(user.getId()));
+        model.addAttribute("concerts", userService.findLikedConcertsByUser(sessionUser.getId()));
         return "user/liked-concerts";
     }
 
@@ -235,9 +228,6 @@ public class UserController {
         model.addAttribute("googleClientId", googleClientId);
     }
 
-    private User getSessionUser(HttpSession session) {
-        return (User) session.getAttribute(Define.SESSION_USER);
-    }
 
     private void addProfileAttributes(Model model, User user) {
         model.addAttribute("pageTitle", "회원 정보 수정");

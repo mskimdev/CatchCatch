@@ -4,8 +4,8 @@ import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.booking.BookingRepository;
 import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.booking.bookingSeat.BookingSeat;
-import com.catchcatch.ticket.core.errors.BadRequestException;
-import com.catchcatch.ticket.core.errors.NotFoundException;
+import com.catchcatch.ticket.core.exception.BadRequestException;
+import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,8 +33,17 @@ public class PaymentService {
     @Value("${portone.store-id}")
     private String storeId;
 
-    @Value("${portone.channel-key}")
-    private String channelKey;
+    @Value("${portone.channel.card}")
+    private String cardChannelKey;
+
+    @Value("${portone.channel.kakaopay}")
+    private String kakaoPayChannelKey;
+
+    @Value("${portone.channel.tosspay}")
+    private String tossPayChannelKey;
+
+    @Value("${portone.channel.vbank}")
+    private String vbankChannelKey;
 
     @Value("${portone.api-secret}")
     private String apiSecret;
@@ -145,8 +154,10 @@ public class PaymentService {
 
         Integer amount = calculatePaymentAmount(booking);
         String orderName = createOrderName(booking);
+        String selectedChannelKey = resolveChannelKey(reqDTO.getMethod());
 
-        Optional<Payment> existingPaymentOP = paymentRepository.findByBooking_Id(booking.getId());
+        Optional<Payment> existingPaymentOP =
+                paymentRepository.findByBookingId(booking.getId());
 
         if (existingPaymentOP.isPresent()) {
             Payment existingPayment = existingPaymentOP.get();
@@ -156,12 +167,14 @@ public class PaymentService {
             }
 
             if (existingPayment.getStatus() == PaymentStatus.READY) {
+                existingPayment.changeMethod(reqDTO.getMethod());
+
                 return PaymentResponse.PrepareDTO.builder()
                         .paymentId(existingPayment.getPaymentId())
                         .orderName(orderName)
                         .amount(existingPayment.getAmount())
                         .storeId(storeId)
-                        .channelKey(channelKey)
+                        .channelKey(selectedChannelKey)
                         .build();
             }
 
@@ -188,7 +201,7 @@ public class PaymentService {
                 .orderName(orderName)
                 .amount(savedPayment.getAmount())
                 .storeId(storeId)
-                .channelKey(channelKey)
+                .channelKey(selectedChannelKey)
                 .build();
     }
 
@@ -355,6 +368,30 @@ public class PaymentService {
                 .mapToInt(bookingSeat -> bookingSeat.getPrice() == null ? 0 : bookingSeat.getPrice())
                 .sum();
     }
+
+
+    private String resolveChannelKey(String method) {
+        String selectedChannelKey;
+
+        if ("card".equals(method)) {
+            selectedChannelKey = cardChannelKey;
+        } else if ("kakaopay".equals(method)) {
+            selectedChannelKey = kakaoPayChannelKey;
+        } else if ("tosspay".equals(method)) {
+            selectedChannelKey = tossPayChannelKey;
+        } else if ("vbank".equals(method)) {
+            selectedChannelKey = vbankChannelKey;
+        } else {
+            throw new BadRequestException("지원하지 않는 결제 수단입니다.");
+        }
+
+        if (selectedChannelKey == null || selectedChannelKey.isBlank()) {
+            throw new BadRequestException("해당 결제 수단의 채널키가 설정되어 있지 않습니다. method=" + method);
+        }
+
+        return selectedChannelKey;
+    }
+
 
     /**
      * 포트원 결제창에 보여줄 주문명

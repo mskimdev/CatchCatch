@@ -1,7 +1,7 @@
 package com.catchcatch.ticket.booking.dto;
 
 import com.catchcatch.ticket.booking.Status;
-import com.catchcatch.ticket.core.errors.BadRequestException;
+import com.catchcatch.ticket.core.exception.BadRequestException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

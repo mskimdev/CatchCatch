@@ -9,6 +9,7 @@
             {{> admin/layout/topbar}}
 
             <div class="container-fluid">
+
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800">{{pageTitle}}</h1>
                     <a href="/admin/concerts/create" class="btn btn-sm btn-primary shadow-sm">
@@ -27,6 +28,7 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>공연명</th>
+                                    <th>회차 정보</th>
                                     <th>관리</th>
                                 </tr>
                                 </thead>
@@ -35,18 +37,35 @@
                                 {{#concerts}}
                                     <tr>
                                         <td class="align-middle">{{id}}</td>
-                                        <td class="align-middle font-weight-bold">{{title}}</td>
+
+                                        <td class="align-middle font-weight-bold">
+                                            <a href="/admin/concerts/{{id}}">{{title}}</a>
+                                        </td>
+
                                         <td class="align-middle">
-                                            <a href="/admin/concerts/{{id}}/delete"
-                                               class="btn btn-danger btn-sm"
-                                               onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
+                                            <ul class="list-unstyled mb-0">
+                                                {{#sessionList}}
+                                                    <li class="badge badge-info mb-1 p-2">
+                                                        {{sessionDate}} {{sessionTime}} - {{round}}
+                                                    </li>
+                                                {{/sessionList}}
+                                                {{^sessionList}}
+                                                    <span class="text-muted small">등록된 회차 없음</span>
+                                                {{/sessionList}}
+                                            </ul>
+                                        </td>
+
+                                        <td class="align-middle">
+                                            <button type="button"
+                                                    class="btn btn-danger btn-sm"
+                                                    onclick="deleteConcert({{id}})">삭제</button>
                                         </td>
                                     </tr>
                                 {{/concerts}}
 
                                 {{^concerts}}
                                     <tr>
-                                        <td colspan="3" class="text-center py-4">등록된 공연이 없습니다.</td>
+                                        <td colspan="4" class="text-center py-4">등록된 공연이 없습니다.</td>
                                     </tr>
                                 {{/concerts}}
                                 </tbody>
@@ -60,4 +79,29 @@
         {{> admin/layout/footer}}
     </div>
 </div>
+
+<script src="/js/core/api.js"></script>
+
+<script>
+    async function deleteConcert(id) {
+        if (!confirm('정말 삭제하시겠습니까?')) {
+            return;
+        }
+
+        try {
+            let { res, data } = await apiDelete(`/api/concert/${id}`);
+
+            if(res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
+                alert('성공적으로 삭제되었습니다.');
+                window.location.reload(); // 목록 새로고침
+            } else {
+                // 실패 시 백엔드에서 보낸 에러 메시지(msg) 출력
+                alert('삭제에 실패했습니다: ' + (data && data.msg ? data.msg : '알 수 없는 오류'));
+            }
+        } catch (error) {
+            console.error('삭제 요청 중 오류 발생:', error);
+            alert('삭제 처리 중 서버와 통신에 실패했습니다.');
+        }
+    }
+</script>
 </body>

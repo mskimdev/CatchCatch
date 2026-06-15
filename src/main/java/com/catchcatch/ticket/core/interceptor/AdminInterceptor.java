@@ -1,8 +1,7 @@
 package com.catchcatch.ticket.core.interceptor;
 
-import com.catchcatch.ticket.core.errors.ForbiddenException;
-import com.catchcatch.ticket.core.errors.UnauthorizedException;
 import com.catchcatch.ticket.core.util.Define;
+import com.catchcatch.ticket.core.util.HtmlUtil;
 import com.catchcatch.ticket.user.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,13 +19,20 @@ public class AdminInterceptor implements HandlerInterceptor {
         User sessionUser = session != null ? (User) session.getAttribute(Define.SESSION_USER) : null;
 
         if (sessionUser == null) {
-            throw new UnauthorizedException("로그인 먼저 해주세요");
+            sendHtml(response, "static/html/error/unauthorized.html");
+            return false;
         }
 
         if (!sessionUser.isAdmin()) {
-            throw new ForbiddenException("관리자 권한이 필요합니다.");
+            sendHtml(response, "static/html/error/forbidden.html");
+            return false;
         }
 
         return true;
+    }
+
+    private void sendHtml(HttpServletResponse response, String path) throws Exception {
+        response.setContentType("text/html; charset=UTF-8");
+        response.getWriter().println(HtmlUtil.load(path));
     }
 }

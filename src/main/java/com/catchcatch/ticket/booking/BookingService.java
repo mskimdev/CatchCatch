@@ -5,7 +5,7 @@ import com.catchcatch.ticket.booking.bookingSeat.BookingSeatRepository;
 import com.catchcatch.ticket.booking.dto.BookingRequest;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
 import com.catchcatch.ticket.concert.core.Concert;
-import com.catchcatch.ticket.core.errors.BadRequestException;
+import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.seat.SeatRepository;
 import com.catchcatch.ticket.seat.SeatStatus;

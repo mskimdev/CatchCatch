@@ -3,121 +3,133 @@ package com.catchcatch.ticket.inquiry;
 import com.catchcatch.ticket.core.util.DateUtil;
 import com.catchcatch.ticket.inquiry.enums.InquiryCategory;
 import com.catchcatch.ticket.inquiry.enums.InquiryStatus;
-import lombok.Getter;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public class InquiryResponse {
 
-    @Getter
-    public static class ListDTO{
-        private Integer id;
-        private String categoryLabel;
-        private String title;
-        private boolean isPublic;
-        private String statusLabel;
-        private String statusClass;
-        private String createdAt;
-
-        public ListDTO(Inquiry inquiry) {
-            this.id = inquiry.getId();
-            this.title = inquiry.getTitle();
-            this.isPublic = inquiry.isPublic();
-            this.createdAt = DateUtil.formatDateTime(inquiry.getCreatedAt());
-            this.categoryLabel = resolveCategoryLabel(inquiry.getCategory());
-            this.statusLabel = resolveStatusLabel(inquiry.getStatus());
-            this.statusClass = resolveStatusClass(inquiry.getStatus());
+    public record ListDTO(
+            Integer id,
+            String categoryLabel,
+            String title,
+            boolean isPublic,
+            boolean isOwner,
+            String statusLabel,
+            String statusClass,
+            String createdAt
+    ) {
+        public ListDTO(Inquiry inquiry, Integer userId) {
+            this(
+                    inquiry.getId(),
+                    resolveCategoryLabel(inquiry.getCategory()),
+                    inquiry.getTitle(),
+                    inquiry.isPublic(),
+                    inquiry.getUser().getId().equals(userId),
+                    resolveStatusLabel(inquiry.getStatus()),
+                    resolveStatusClass(inquiry.getStatus()),
+                    DateUtil.formatDateTime(inquiry.getCreatedAt())
+            );
         }
     }
 
-    @Getter
-    public static class DetailDTO {
-        private String categoryLabel;
-        private String title;
-        private String content;
-        private String username;
-        private String createdAt;
-        private String statusLabel;
-        private String statusClass;
-        private boolean hasReply;
-        private String reply;
-
-        public DetailDTO(Inquiry inquiry){
-            this.title = inquiry.getTitle();
-            this.content = inquiry.getContent();
-            this.username = inquiry.getUser().getUsername();
-            this.createdAt = DateUtil.formatDateTime(inquiry.getCreatedAt());
-            this.categoryLabel = resolveCategoryLabel(inquiry.getCategory());
-            this.statusLabel = resolveStatusLabel(inquiry.getStatus());
-            this.statusClass = resolveStatusClass(inquiry.getStatus());
-            this.hasReply = inquiry.getReply() != null;
-            this.reply = this.hasReply ? inquiry.getReply() : null;
+    public record DetailDTO(
+            InquiryCategory category,
+            String categoryLabel,
+            String title,
+            String content,
+            String username,
+            String createdAt,
+            String statusLabel,
+            String statusClass,
+            boolean hasReply,
+            String reply,
+            boolean isOwner
+    ) {
+        public DetailDTO(Inquiry inquiry, boolean isOwner){
+            this(
+                    inquiry.getCategory(),
+                    resolveCategoryLabel(inquiry.getCategory()),
+                    inquiry.getTitle(),
+                    inquiry.getContent(),
+                    inquiry.getUser().getUsername(),
+                    DateUtil.formatDateTime(inquiry.getCreatedAt()),
+                    resolveStatusLabel(inquiry.getStatus()),
+                    resolveStatusClass(inquiry.getStatus()),
+                    inquiry.getReply() != null,
+                    inquiry.getReply() != null ? inquiry.getReply() : null,
+                    isOwner);
         }
     }
 
-    @Getter
-    public static class AdminListDTO {
-        private Integer id;
-        private String categoryLabel;
-        private String title;
-        private String username;
-        private String statusLabel;
-        private String statusClass;
-        private String createdAt;
-
-        public AdminListDTO(Inquiry inquiry) {
-            this.id = inquiry.getId();
-            this.title = inquiry.getTitle();
-            this.username = inquiry.getUser().getUsername();
-            this.createdAt = DateUtil.formatDateTime(inquiry.getCreatedAt());
-            this.categoryLabel = resolveCategoryLabel(inquiry.getCategory());
-            this.statusLabel = resolveStatusLabel(inquiry.getStatus());
-            this.statusClass = resolveStatusClass(inquiry.getStatus());
+    public record AdminListDTO(
+            @NotNull Integer id,
+            @NotBlank String categoryLabel,
+            @NotBlank String title,
+            @NotBlank String username,
+            @NotBlank String statusLabel,
+            @NotBlank String statusClass,
+            @NotBlank String createdAt
+    ) {
+        public AdminListDTO(Inquiry inquiry){
+            this(
+                    inquiry.getId(),
+                    resolveCategoryLabel(inquiry.getCategory()),
+                    inquiry.getTitle(),
+                    inquiry.getUser().getUsername(),
+                    resolveStatusLabel(inquiry.getStatus()),
+                    resolveStatusClass(inquiry.getStatus()),
+                    DateUtil.formatDateTime(inquiry.getCreatedAt())
+            );
         }
     }
 
-    @Getter
-    public static class AdminDetailDTO {
-        private Integer id;
-        private String categoryLabel;
-        private String title;
-        private String content;
-        private String username;
-        private String reply;
-        private String statusLabel;
-        private String statusClass;
-        private boolean notifyEmail;
-        private boolean notifySms;
-        private String createdAt;
-
-        public AdminDetailDTO(Inquiry inquiry) {
-            this.id = inquiry.getId();
-            this.title = inquiry.getTitle();
-            this.content = inquiry.getContent();
-            this.username = inquiry.getUser().getUsername();
-            this.reply = inquiry.getReply();
-            this.createdAt = DateUtil.formatDateTime(inquiry.getCreatedAt());
-            this.categoryLabel = resolveCategoryLabel(inquiry.getCategory());
-            this.statusLabel = resolveStatusLabel(inquiry.getStatus());
-            this.statusClass = resolveStatusClass(inquiry.getStatus());
-            this.notifyEmail = inquiry.isNotifyEmail();
-            this.notifySms = inquiry.isNotifySms();
+    public record AdminDetailDTO(
+            @NotNull Integer id,
+            @NotBlank String categoryLabel,
+            @NotBlank String title,
+            @NotBlank String content,
+            @NotBlank String username,
+            String reply,
+            @NotBlank String statusLabel,
+            @NotBlank String statusClass,
+            boolean notifyEmail,
+            boolean notifySms,
+            @NotBlank String createdAt
+    ) {
+        public AdminDetailDTO(Inquiry inquiry){
+            this(
+                    inquiry.getId(),
+                    resolveCategoryLabel(inquiry.getCategory()),
+                    inquiry.getTitle(),
+                    inquiry.getContent(),
+                    inquiry.getUser().getUsername(),
+                    inquiry.getReply(),
+                    resolveStatusLabel(inquiry.getStatus()),
+                    resolveStatusClass(inquiry.getStatus()),
+                    inquiry.isNotifyEmail(),
+                    inquiry.isNotifySms(),
+                    DateUtil.formatDateTime(inquiry.getCreatedAt())
+            );
         }
     }
+
+    // ── 공통 변환 헬퍼 ────────────────────────────────────────────
 
     private static String resolveCategoryLabel(InquiryCategory category) {
         if (category == null) return "";
         return switch (category) {
-            case TICKET  -> "예매/취소";
+            case TICKET -> "예매/취소";
             case PAYMENT -> "결제";
-            case USER    -> "회원";
-            case ETC     -> "기타";
+            case USER -> "회원";
+            case ETC -> "기타";
         };
     }
 
     private static String resolveStatusLabel(InquiryStatus status) {
         if (status == null) return "";
         return switch (status) {
-            case PENDING   -> "답변대기";
-            case RESOLVED  -> "답변완료";
+            case PENDING -> "답변대기";
+            case RESOLVED -> "답변완료";
             case CANCELLED -> "취소";
         };
     }
@@ -125,11 +137,9 @@ public class InquiryResponse {
     private static String resolveStatusClass(InquiryStatus status) {
         if (status == null) return "";
         return switch (status) {
-            case PENDING   -> "inquiry-status--pending";
-            case RESOLVED  -> "inquiry-status--resolved";
-            case CANCELLED -> "inquiry-status--cancelled";
+            case PENDING -> "cc-inquiry-status--pending";
+            case RESOLVED -> "cc-inquiry-status--resolved";
+            case CANCELLED -> "cc-inquiry-status--cancelled";
         };
     }
-
-
 }
