@@ -51,6 +51,12 @@ public class VenueService {
         venue.update(dto.getName(), dto.getAddress(), dto.getTotalCapacity());
     }
 
+    // 공연장 단건 조회
+    public Venue findById(Integer id) {
+        return venueRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 공연장입니다."));
+    }
+
     @Transactional
     public void deleteById(Integer id) {
         Venue venue = venueRepository.findById(id)
