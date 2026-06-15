@@ -27,8 +27,6 @@ public class QFaq extends EntityPathBase<Faq> {
 
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
 
-    public final BooleanPath isVisible = createBoolean("isVisible");
-
     public final StringPath question = createString("question");
 
     public QFaq(String variable) {
