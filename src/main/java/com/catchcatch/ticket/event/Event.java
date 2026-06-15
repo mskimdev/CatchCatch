@@ -50,4 +50,9 @@ public class Event {
         this.startDate = startDate;
         this.endDate = endDate;
     }
+
+    public boolean isActive() {
+        long now = System.currentTimeMillis();
+        return this.startDate.getTime() <= now && now <= this.endDate.getTime();
+    }
 }

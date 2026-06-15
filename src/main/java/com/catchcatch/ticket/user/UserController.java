@@ -240,5 +240,6 @@ public class UserController {
         model.addAttribute("phone", user.getPhone() == null ? "" : user.getPhone());
         model.addAttribute("profileImage", user.getProfileImage());
         model.addAttribute("isLocalUser", user.getOauthProvider() == com.catchcatch.ticket.user.enums.OAuthProvider.LOCAL);
+        model.addAttribute("point", user.getPoint());
     }
 }
