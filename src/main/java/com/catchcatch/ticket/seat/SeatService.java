@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.seat;
 
+import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.session.ConcertSessionRepository;
 import lombok.RequiredArgsConstructor;
@@ -163,10 +164,14 @@ public class SeatService {
 
     @Transactional
     public void createSeatsFromJson(Integer sessionId,
-                                    List<SeatRequest.SeatJsonDTO> jsonSeats) {
+                                    List<SeatRequest.SeatJsonDTO> jsonSeats
+                                    )
+    {
 
         ConcertSession session = concertSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("해당 회차를 찾을 수 없습니다."));
+
+        Concert concert = session.getConcert();
 
         List<Seat> seatEntities = new ArrayList<>();
 
@@ -186,8 +191,8 @@ public class SeatService {
                     ? SeatStatus.OBSTRUCTED : SeatStatus.AVAILABLE;
             SeatGrade grade = SeatGrade.valueOf(jsonSeat.getGrade());
 
-            // 가격 책정 (임시 로직 사용) TODO - concert price추가
-            Integer price = determinePriceTemp(grade);
+            // 가격 책정
+            Integer price = concert.getPriceByGrade(grade);
 
             // 엔티티 생성
             Seat seat = Seat.builder()
@@ -209,16 +214,6 @@ public class SeatService {
 
     } // end of createSeatsFromJson
 
-    // TODO: concert 도메인에 가격 필드 추가 후 삭제할 예정
-    private Integer determinePriceTemp(SeatGrade grade){
-        return switch (grade){
-            case VIP -> 150000;
-            case R -> 130000;
-            case S -> 110000;
-            case A -> 90000;
-            default -> 0;
-        };
-    } // end of determinePriceTemp
 
     // 더미데이터 추가하여 테스트용으로 사용
     public List<SeatRequest.SeatJsonDTO> generateDummySeats(int count) {

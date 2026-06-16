@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.concert.core;
 
 import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
+import com.catchcatch.ticket.seat.SeatGrade;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.venue.Venue;
 import jakarta.persistence.*;
@@ -19,7 +20,7 @@ import java.util.List;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter // 💡 @Data 대신 @Getter와 @Setter를 사용하여 무한 루프(StackOverflow) 방지
+@Getter
 @Setter
 @Table(name = "concert_tb")
 @Builder
@@ -60,7 +61,7 @@ public class Concert {
     private boolean isDeleted = false;
 
     // ==========================================
-    // 💡 화면(detail.mustache) 구성을 위해 추가된 상세 필드들
+    // 화면(detail.mustache) 구성을 위해 추가된 상세 필드들
     // ==========================================
 
     // [상단 뱃지 영역]
@@ -82,7 +83,7 @@ public class Concert {
     private String detailDescription2; // 배너 서브 설명 2
 
     // ==========================================
-    // 💡 연관관계 매핑 (외래키 관리)
+    // 연관관계 매핑 (외래키 관리)
     // ==========================================
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -93,11 +94,33 @@ public class Concert {
     @OneToMany(mappedBy = "concert", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ConcertSession> sessions = new ArrayList<>(); // Null 에러 방지를 위해 초기화
 
+    // 등급별 가격 정보 (null 방지를 위해 기본값 처리를 헬퍼 메서드에서 진행)
+    @Column(name = "price_vip")
+    private Integer priceVip;
+
+    @Column(name = "price_r")
+    private Integer priceR;
+
+    @Column(name = "price_s")
+    private Integer priceS;
+
+    @Column(name = "price_a")
+    private Integer priceA;
+
+    // 가격 방어적 코드 - 가격 세팅 x -> 0원 반환
+    public Integer getPriceByGrade(SeatGrade grade) {
+        if (grade == null) return 0;
+        return switch (grade) {
+            case VIP -> this.priceVip != null ? this.priceVip : 0;
+            case R -> this.priceR != null ? this.priceR : 0;
+            case S -> this.priceS != null ? this.priceS : 0;
+            case A -> this.priceA != null ? this.priceA : 0;
+        };
+    }
 
     @Getter
     @Setter
     public class ConcertSearchCondition {
-        // 💡 프론트엔드(머스태치)의 URL 파라미터명(?status=...&genre=...)과 일치해야 한다.
         private String keyword; // 검색어 (제목 또는 아티스트)
         private String status;  // 상태 (all, open-soon, available, deadline)
         private String genre;   // 장르 (all, concert, festival)
@@ -109,7 +132,7 @@ public class Concert {
         this.artist = dto.artist();
         this.genre = dto.genre();
         this.category = dto.category();
-        this.venue = newVenue; // 💡 새롭게 찾은 Venue 엔티티로 교체
+        this.venue = newVenue; // 새롭게 찾은 Venue 엔티티로 교체
         this.ticketOpenDate = dto.ticketOpenDate();
         this.startDate = dto.startDate();
         this.endDate = dto.endDate();
@@ -121,7 +144,11 @@ public class Concert {
         this.description = dto.description();
         this.detailDescription1 = dto.detailDescription1();
         this.detailDescription2 = dto.detailDescription2();
-        this.posterUrl = updatePosterUrl; // 💡 분기 처리된 포스터 URL 적용
+        this.posterUrl = updatePosterUrl; // 분기 처리된 포스터 URL 적용
+        this.priceVip = dto.priceVip();
+        this.priceR = dto.priceR();
+        this.priceS = dto.priceS();
+        this.priceA = dto.priceA();
 
         // String으로 넘어온 상태값을 Enum으로 변환하여 업데이트
         if (dto.concertStatus() != null) {
