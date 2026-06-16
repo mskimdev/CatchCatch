@@ -1,6 +1,9 @@
 package com.catchcatch.ticket.notice;
 
 import com.catchcatch.ticket.core.exception.NotFoundException;
+import com.catchcatch.ticket.user.User;
+import com.catchcatch.ticket.user.UserRepository;
+import com.catchcatch.ticket.user.dto.SessionUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +16,7 @@ import java.util.List;
 public class NoticeService {
 
     private final NoticeRepository noticeRepository;
+    private final UserRepository userRepository;
 
     public List<NoticeResponse.ListDTO> findAll() {
         List<Notice> notices = noticeRepository.findAllByOrderByIsPinnedDescCreatedAtDesc();
@@ -35,4 +39,16 @@ public class NoticeService {
 
         return new NoticeResponse.DetailDTO(notice);
     }
+
+    @Transactional
+    public void save(NoticeRequest.SaveDTO reqDTO, Integer userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundException("유저를 찾을 수 없습니다.")
+        );
+
+        Notice notice = reqDTO.toEntity();
+        notice.setUser(user);
+        noticeRepository.save(notice);
+    }
+
 }
