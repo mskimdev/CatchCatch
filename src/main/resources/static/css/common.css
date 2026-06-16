@@ -872,6 +872,15 @@ img { max-width: 100%; display: block; }
   color: #fff;
   border-bottom-right-radius: 4px;
 }
+.cc-chat-msg--ai .cc-chat-msg__bubble a {
+  color: var(--cc-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+}
+.cc-chat-msg--ai .cc-chat-msg__bubble a:hover {
+  opacity: 0.75;
+}
 
 .cc-chat-typing {
   display: flex;
@@ -975,7 +984,23 @@ img { max-width: 100%; display: block; }
   pointer-events: auto;
 }
 
+.cc-chat-panel__resize {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 5px;
+  height: 100%;
+  cursor: ew-resize;
+  z-index: 10;
+}
+.cc-chat-panel__resize:hover,
+.cc-chat-panel__resize.is-dragging {
+  background: var(--cc-primary, #7c3aed);
+  opacity: 0.3;
+}
+
 @media (max-width: 480px) {
   .cc-chat-panel { width: 100%; }
+  .cc-chat-panel__resize { display: none; }
   .cc-fab-wrap { bottom: 20px; right: 16px; }
 }

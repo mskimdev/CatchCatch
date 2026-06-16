@@ -1,3 +1,36 @@
+function initPanelResize(panel) {
+  const handle = document.createElement('div');
+  handle.className = 'cc-chat-panel__resize';
+  panel.appendChild(handle);
+
+  const MIN_W = 320;
+  const MAX_W = Math.min(720, window.innerWidth - 40);
+
+  handle.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    handle.classList.add('is-dragging');
+    const startX = e.clientX;
+    const startW = panel.offsetWidth;
+
+    function onMove(e) {
+      const delta = startX - e.clientX;
+      const newW = Math.min(MAX_W, Math.max(MIN_W, startW + delta));
+      panel.style.width = newW + 'px';
+    }
+    function onUp() {
+      handle.classList.remove('is-dragging');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+}
+
+const renderer = new marked.Renderer();
+renderer.link = ({ href, text }) => `<a href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+marked.use({ renderer });
+
 function initFab() {
   const wrap = document.getElementById('cc-fab');
   if (!wrap) return;
@@ -43,6 +76,8 @@ function initFab() {
   document.querySelectorAll('.cc-chat-panel__close').forEach(btn => {
     btn.addEventListener('click', closeAll);
   });
+
+  document.querySelectorAll('.cc-chat-panel').forEach(initPanelResize);
 
   document.getElementById('cc-fab-chat')?.addEventListener('click', () => {
     openPanel('cc-live-panel');
@@ -174,29 +209,18 @@ function initFab() {
     const typingId = 'cc-typing-ai';
     showTyping(aiBody, typingId);
 
-    try {
-      const csrf = document.querySelector('meta[name="csrf-token"]');
-      const headers = { 'Content-Type': 'application/json' };
-      if (csrf) headers[csrf.dataset.param] = csrf.content;
+    const { res, data } = await apiPost('/api/chat/ai', { message: text });
 
-      const res = await fetch('/api/chat/ai', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ message: text }),
-      });
+    document.getElementById(typingId)?.remove();
 
-      document.getElementById(typingId)?.remove();
-
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      appendMsg(aiBody, 'ai', escHtml(data.answer ?? '답변을 가져올 수 없습니다.'));
-    } catch {
-      document.getElementById(typingId)?.remove();
+    if (res?.ok && data?.body?.answer) {
+      appendMsg(aiBody, 'ai', marked.parse(data.body.answer));
+    } else {
       appendMsg(aiBody, 'ai', '일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-    } finally {
-      aiSend.disabled = false;
-      aiInput.focus();
     }
+
+    aiSend.disabled = false;
+    aiInput.focus();
   }
 }
 
