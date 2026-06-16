@@ -28,7 +28,7 @@
 
             <div class="container-fluid">
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                    <h1 class="h3 mb-0 text-gray-800">공지 등록</h1>
+                    <h1 class="h3 mb-0 text-gray-800">공지 수정</h1>
 
                     <a href="/admin/boards/notice" class="btn btn-sm btn-secondary shadow-sm">
                         <i class="fas fa-list fa-sm"></i> 목록으로
@@ -43,7 +43,7 @@
                             </div>
 
                             <div class="card-body">
-                                <form id="notice-form" action="/admin/boards/notice/save" method="post">
+                                <form id="notice-form" action="/admin/boards/notice/{{notice.id}}/edit" method="post">
                                     {{#_csrf}}
                                         <input type="hidden" name="{{parameterName}}" value="{{token}}">
                                     {{/_csrf}}
@@ -53,6 +53,7 @@
                                         <input type="text"
                                                class="form-control"
                                                name="title"
+                                               value="{{notice.title}}"
                                                placeholder="공지사항 제목을 입력하세요"
                                                maxlength="100"
                                                required>
@@ -64,7 +65,7 @@
                                                   class="form-control"
                                                   name="content"
                                                   placeholder="공지사항 내용을 입력하세요"
-                                                  required></textarea>
+                                                  required>{{notice.content}}</textarea>
                                     </div>
 
                                     <div class="form-group mb-4">
@@ -73,7 +74,8 @@
                                                    class="custom-control-input"
                                                    id="isPinned"
                                                    name="isPinned"
-                                                   value="true">
+                                                   value="true"
+                                                   {{#notice.isPinned}}checked{{/notice.isPinned}}>
                                             <label class="custom-control-label font-weight-bold" for="isPinned">
                                                 상단 고정
                                             </label>
@@ -85,8 +87,8 @@
 
                                     <div class="d-flex justify-content-end">
                                         <a href="/admin/boards/notice" class="btn btn-secondary mr-2">취소</a>
-                                        <button type="submit" id="submit-btn" class="btn btn-primary">
-                                            <i class="fas fa-save mr-1"></i> 등록
+                                        <button type="submit" id="submit-btn" class="btn btn-warning">
+                                            <i class="fas fa-save mr-1"></i> 수정
                                         </button>
                                     </div>
                                 </form>
@@ -97,16 +99,26 @@
                     <div class="col-lg-4">
                         <div class="card shadow mb-4">
                             <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">작성 안내</h6>
+                                <h6 class="m-0 font-weight-bold text-primary">공지 정보</h6>
                             </div>
 
-                            <div class="card-body text-muted small">
-                                <p class="mb-2">
-                                    공지사항은 사용자 고객센터 공지사항 화면에 노출됩니다.
-                                </p>
-                                <p class="mb-0">
-                                    중요한 안내만 상단 고정으로 설정해 주세요.
-                                </p>
+                            <div class="card-body">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tbody>
+                                    <tr>
+                                        <td class="font-weight-bold text-muted" style="width:90px;">번호</td>
+                                        <td>#{{notice.id}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-weight-bold text-muted">조회수</td>
+                                        <td>{{notice.viewCount}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-weight-bold text-muted">등록일</td>
+                                        <td>{{notice.createdAt}}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -118,7 +130,7 @@
 
         <script>
             document.getElementById('notice-form').addEventListener('submit', function (e) {
-                if (!confirm('공지사항을 등록하시겠습니까?')) {
+                if (!confirm('공지사항을 수정하시겠습니까?')) {
                     e.preventDefault();
                     return;
                 }
