@@ -12,7 +12,7 @@
 
             <div class="container-fluid">
 
-                <h1 class="h3 mb-4 text-gray-800">새 공연 등록 (테스트 데이터 셋업 완료)</h1>
+                <h1 class="h3 mb-4 text-gray-800">새 공연 등록</h1>
 
                 <form id="concertForm" action="/admin/concerts/create" method="POST" enctype="multipart/form-data">
 
@@ -35,97 +35,88 @@
 
                             <div class="row">
                                 <div class="col-md-4 form-group">
-                                    <label>장르</label>
-                                    <select name="genre" class="form-control" required>
-                                        <option value="concert" selected>콘서트</option>
-                                        <option value="musical">뮤지컬</option>
-                                        <option value="classic">클래식</option>
-                                        <option value="festival">페스티벌</option>
+                                    <label>공연장 선택</label>
+                                    <select name="venueId" class="form-control">
+                                        {{#venueList}}
+                                            <option value="{{id}}">{{name}}</option>
+                                        {{/venueList}}
+                                        {{^venueList}}
+                                            <option value="1">올림픽공원 체조경기장 (기본값)</option>
+                                            <option value="2">KSPO DOME</option>
+                                        {{/venueList}}
                                     </select>
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label>카테고리</label>
-                                    <input type="text" name="category" class="form-control" value="대중음악" required>
+                                    <select name="category" class="form-control">
+                                        <option value="콘서트" selected>콘서트</option>
+                                        <option value="뮤지컬">뮤지컬</option>
+                                        <option value="팬미팅">팬미팅</option>
+                                        <option value="페스티벌">페스티벌</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label>공연장</label>
-                                    <select name="venueId" class="form-control" required>
-                                        <option value="" selected disabled>공연장을 선택하세요 (수동 선택 필요)</option>
-                                        {{#venueList}}
-                                            <option value="{{id}}">{{name}}</option>
-                                        {{/venueList}}
-                                    </select>
+                                    <label>장르 (검색용)</label>
+                                    <input type="text" name="genre" class="form-control" value="concert" required>
                                 </div>
                             </div>
 
+                            <!-- 💡 새로 추가된 티켓 가격 설정 영역 -->
+                            <hr class="mt-4 mb-4">
+                            <h6 class="font-weight-bold text-primary mb-3">티켓 가격 설정</h6>
+                            <div class="row">
+                                <div class="col-md-3 form-group">
+                                    <label>VIP석 가격</label>
+                                    <input type="number" name="priceVip" class="form-control" value="165000" min="0" required>
+                                </div>
+                                <div class="col-md-3 form-group">
+                                    <label>R석 가격</label>
+                                    <input type="number" name="priceR" class="form-control" value="143000" min="0" required>
+                                </div>
+                                <div class="col-md-3 form-group">
+                                    <label>S석 가격</label>
+                                    <input type="number" name="priceS" class="form-control" value="121000" min="0" required>
+                                </div>
+                                <div class="col-md-3 form-group">
+                                    <label>A석 가격</label>
+                                    <input type="number" name="priceA" class="form-control" value="99000" min="0" required>
+                                </div>
+                            </div>
+
+                            <hr class="mt-4 mb-4">
+                            <h6 class="font-weight-bold text-primary mb-3">상세 일정 및 운영 정보</h6>
+
                             <div class="row">
                                 <div class="col-md-4 form-group">
-                                    <label>예매 오픈 일시</label>
-                                    <input type="datetime-local" name="ticketOpenDate" class="form-control"
-                                           value="2026-07-01T20:00" required>
+                                    <label>티켓 오픈일</label>
+                                    <input type="datetime-local" name="ticketOpenDate" class="form-control" required>
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label>공연 시작일</label>
-                                    <input type="date" name="startDate" class="form-control" value="2026-08-15"
-                                           required>
+                                    <input type="date" name="startDate" class="form-control" required>
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label>공연 종료일</label>
-                                    <input type="date" name="endDate" class="form-control" value="2026-08-17" required>
+                                    <input type="date" name="endDate" class="form-control" required>
                                 </div>
                             </div>
 
                             <div class="row">
-                                <div class="col-md-6 form-group">
-                                    <label>러닝타임</label>
-                                    <input type="text" name="runtime" class="form-control" value="180분">
+                                <div class="col-md-3 form-group">
+                                    <label>관람 시간</label>
+                                    <input type="text" name="runtime" class="form-control" value="150분" required>
                                 </div>
-                                <div class="col-md-6 form-group">
-                                    <label>관람 연령</label>
-                                    <input type="text" name="ageLimit" class="form-control" value="전체 관람가">
+                                <div class="col-md-3 form-group">
+                                    <label>관람 등급</label>
+                                    <input type="text" name="ageLimit" class="form-control" value="만 7세 이상 관람가" required>
                                 </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6 form-group">
-                                    <label>주최자</label>
-                                    <input type="text" name="organizer" class="form-control" value="피네이션">
+                                <div class="col-md-3 form-group">
+                                    <label>주최/주관</label>
+                                    <input type="text" name="organizer" class="form-control" value="피네이션" required>
                                 </div>
-                                <div class="col-md-6 form-group">
-                                    <label>문의처</label>
-                                    <input type="text" name="contact" class="form-control" value="02-1234-5678">
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>공연 상세 제목</label>
-                                <input type="text" name="detailTitle" class="form-control" value="SUMMER SWAG 2026">
-                            </div>
-                            <div class="form-group">
-                                <label>공연 설명</label>
-                                <textarea name="description" class="form-control" rows="2">올여름을 시원하게 날려버릴 싸이의 흠뻑쇼! 역대급 스케일로 돌아왔습니다.</textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>상세 설명 1</label>
-                                <textarea name="detailDescription1" class="form-control" rows="2">드레스코드는 블루! 물총과 방수팩은 필수 지참입니다.</textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>상세 설명 2</label>
-                                <textarea name="detailDescription2" class="form-control" rows="2">대중교통 이용을 적극 권장합니다. 공연장 주변 주차가 매우 혼잡합니다.</textarea>
-                            </div>
-
-                            <div class="row">
-                                <label>포스터 이미지 <span class="text-danger small">(보안상 수동 업로드 필수)</span></label>
-                                <div class="custom-file">
-                                    <input type="file" name="posterImage" class="custom-file-input" id="posterImage" required accept="image/*">
-                                    <label class="custom-file-label" for="posterImage" data-browse="찾아보기">이미지 파일을 선택하세요</label>
-                                </div>
-                                <div class="col-md-6 form-group">
-                                    <label>공연 상태</label>
-                                    <select name="concertStatus" class="form-control" required>
-                                        <option value="OPEN" selected>예매중</option>
-                                        <option value="COMING_SOON">오픈예정</option>
-                                    </select>
+                                <div class="col-md-3 form-group">
+                                    <label>고객센터 연락처</label>
+                                    <input type="text" name="contact" class="form-control" value="1544-1111" required>
                                 </div>
                             </div>
                         </div>
@@ -133,99 +124,64 @@
 
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-success">공연 회차 정보 입력</h6>
+                            <h6 class="m-0 font-weight-bold text-primary">상세 설명 및 포스터</h6>
                         </div>
                         <div class="card-body">
-                            <div id="session-container">
-                                <div class="row session-row mb-3">
-                                    <div class="col-md-5">
-                                        <label>공연 일시</label>
-                                        <input type="datetime-local" name="sessions[0].sessionDate" class="form-control"
-                                               value="2026-08-15T18:42" required>
-                                    </div>
-                                    <div class="col-md-5">
-                                        <label>회차명 (예: 1회차)</label>
-                                        <input type="text" name="sessions[0].round" class="form-control" value="1회차">
-                                    </div>
-                                    <div class="col-md-2 d-flex align-items-end">
-                                        <button type="button" class="btn btn-danger btn-remove" style="display:none;">
-                                            삭제
-                                        </button>
-                                    </div>
-                                </div>
+                            <div class="form-group">
+                                <label>메인 상세 타이틀</label>
+                                <input type="text" name="detailTitle" class="form-control" value="기록적인 폭염을 날려버릴 짜릿한 워터쇼"
+                                       required>
+                            </div>
+                            <div class="form-group">
+                                <label>상세 설명 1</label>
+                                <textarea name="detailDescription1" class="form-control" rows="3"
+                                          required>더 강력해진 물대포와 역대급 스케일의 무대</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>상세 설명 2</label>
+                                <textarea name="detailDescription2" class="form-control" rows="3"
+                                          required>드레스코드는 블루! 흠뻑 젖을 준비 완료?</textarea>
                             </div>
 
-                            <div class="mt-3">
-                                <button type="button" id="btn-add-session" class="btn btn-outline-success w-100">+ 회차 칸
-                                    추가하기
-                                </button>
+                            <div class="form-group mt-4">
+                                <label>메인 포스터 이미지 업로드 (최대 10MB)</label>
+                                <div class="custom-file">
+                                    <input type="file" name="posterFile" class="custom-file-input" id="customFile"
+                                           accept="image/*" required>
+                                    <label class="custom-file-label" for="customFile">이미지 파일을 선택하세요</label>
+                                </div>
+                                <small class="text-muted mt-2 d-block">가로 400px, 세로 600px 비율의 이미지를 권장합니다.</small>
                             </div>
                         </div>
                     </div>
-                    <div class="mb-5">
-                        <button type="submit" class="btn btn-primary btn-lg btn-block">모든 정보 한 번에 등록하기</button>
+
+                    <div class="text-center mb-5">
+                        <button type="button" class="btn btn-secondary mr-2" onclick="history.back()">취소</button>
+                        <button type="submit" class="btn btn-primary px-5">공연 등록하기</button>
                     </div>
 
                 </form>
 
                 <script>
-                    // 1. 회차 추가 기능
-                    let sessionIndex = 1;
-                    const btnAddSession = document.getElementById('btn-add-session');
-                    if (btnAddSession) {
-                        btnAddSession.addEventListener('click', function() {
-                            const container = document.getElementById('session-container');
-                            const newRow = document.createElement('div');
-                            newRow.className = 'row session-row mb-3';
-                            newRow.innerHTML = `
-                                <div class="col-md-5">
-                                    <label>공연 일시</label>
-                                    <input type="datetime-local" name="sessions[${sessionIndex}].sessionDate" class="form-control" required>
-                                </div>
-                                <div class="col-md-5">
-                                    <label>회차명 (예: ${sessionIndex + 1}회차)</label>
-                                    <input type="text" name="sessions[${sessionIndex}].round" class="form-control" value="${sessionIndex + 1}회차">
-                                </div>
-                                <div class="col-md-2 d-flex align-items-end">
-                                    <button type="button" class="btn btn-danger btn-remove" onclick="this.parentElement.parentElement.remove()">삭제</button>
-                                </div>
-                            `;
-                            container.appendChild(newRow);
-                            sessionIndex++;
-                        });
-                    }
+                    document.getElementById('customFile').addEventListener('change', function (e) {
+                        var fileName = document.getElementById("customFile").files[0].name;
+                        var nextSibling = e.target.nextElementSibling;
+                        if (nextSibling) {
+                            nextSibling.innerText = fileName;
+                        }
+                    });
 
-                    // 2. 파일 선택 시 파일명 표시 (SB Admin 2 템플릿용)
-                    const fileInput = document.querySelector('.custom-file-input');
-                    if (fileInput) {
-                        fileInput.addEventListener('change', function(e) {
-                            if (e.target.files.length > 0) {
-                                let fileName = e.target.files[0].name;
-                                let nextSibling = e.target.nextElementSibling;
-                                if (nextSibling) {
-                                    nextSibling.innerText = fileName;
-                                }
-                            }
-                        });
-                    }
-
-                    // 3. 폼 제출 가로채기 (원본 CcUI.confirm 객체 문법 완벽 적용)
                     const form = document.getElementById("concertForm");
 
                     if (form) {
                         form.addEventListener("submit", function(e) {
-                            e.preventDefault(); // 기본 폼 전송을 일단 막음
-
-                            // 팀에서 만든 CcUI.confirm은 이렇게 객체({})로 감싸서 넘겨야 동작합니다!
+                            e.preventDefault();
                             CcUI.confirm({
                                 title: '새 공연 등록',
                                 text: '입력하신 정보로 새 공연을 등록하시겠습니까?',
                                 confirmText: '등록하기',
                                 onConfirm: function() {
-                                    // 사용자가 '등록하기' 버튼을 누르면 이 부분이 실행됩니다.
-                                    CcUI.loading.show(); // 로딩창 띄우기
-
-                                    // 브라우저에서 가장 안전하게 폼(POST)을 전송하는 방법
+                                    CcUI.loading.show();
                                     HTMLFormElement.prototype.submit.call(form);
                                 }
                             });

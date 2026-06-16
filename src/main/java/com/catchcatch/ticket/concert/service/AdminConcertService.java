@@ -6,6 +6,7 @@ import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.core.util.ProfileImageUtil;
+import com.catchcatch.ticket.seat.SeatService;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.session.ConcertSessionRepository;
 import com.catchcatch.ticket.session.ConcertSessionRequest;
@@ -29,6 +30,7 @@ public class AdminConcertService {
     private final ConcertRepository concertRepository;
     private final VenueRepository venueRepository;
     private final ConcertSessionRepository concertSessionRepository;
+    private final SeatService seatService;
 
     // 공연 목록
     @Transactional(readOnly = true)
@@ -90,6 +92,7 @@ public class AdminConcertService {
                 .priceR(dto.priceR())
                 .priceS(dto.priceS())
                 .priceA(dto.priceA())
+                .detailBannerUrl(dto.detailBannerUrl())
                 .build();
 
         // 영속성 컨텍스트에 저장되면서 concert 객체 내부 파라미터에 id가 자동으로 꽂힙니다.
@@ -192,6 +195,8 @@ public class AdminConcertService {
                 .build();
 
         concertSessionRepository.save(concertSession);
+
+        seatService.generateDummySeats(concertSession.getId());
     }
 
     // 2. 회차 수정 (Dirty Checking 활용)
