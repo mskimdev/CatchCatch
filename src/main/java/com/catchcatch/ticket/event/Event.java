@@ -27,6 +27,9 @@ public class Event {
     @Column(name = "reward_point", nullable = false)
     private Integer rewardPoint;
 
+    @Column(name = "point_valid_months", nullable = false)
+    private Integer pointValidMonths;
+
     @Column(name = "start_date", nullable = false)
     private Timestamp startDate;
 
@@ -34,11 +37,22 @@ public class Event {
     private Timestamp endDate;
 
     @Builder
-    public Event(String title, String description, Integer rewardPoint, Timestamp startDate, Timestamp endDate) {
+    public Event(String title,
+                 String description,
+                 Integer rewardPoint,
+                 Integer pointValidMonths,
+                 Timestamp startDate,
+                 Timestamp endDate) {
         this.title = title;
         this.description = description;
         this.rewardPoint = rewardPoint;
+        this.pointValidMonths = pointValidMonths == null ? 3 : pointValidMonths;
         this.startDate = startDate;
         this.endDate = endDate;
+    }
+
+    public boolean isActive() {
+        long now = System.currentTimeMillis();
+        return this.startDate.getTime() <= now && now <= this.endDate.getTime();
     }
 }

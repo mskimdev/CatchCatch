@@ -40,10 +40,122 @@
         </div>
     </div>
 </footer>
+<!-- FAB -->
+<div class="cc-fab-wrap" id="cc-fab">
+  <button class="cc-fab-main" id="cc-fab-main" aria-label="도움말 메뉴 열기" aria-expanded="false">
+    <span class="cc-fab-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+    </span>
+  </button>
+
+  <div class="cc-fab-menu" role="menu">
+    <!-- 1:1 채팅 -->
+    <div class="cc-fab-item">
+      <span class="cc-fab-item__label">1:1 채팅</span>
+      <button class="cc-fab-item__btn cc-fab-item__btn--chat" id="cc-fab-chat" aria-label="1:1 채팅 열기" role="menuitem">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- AI 답변 -->
+    <div class="cc-fab-item">
+      <span class="cc-fab-item__label">AI 답변</span>
+      <button class="cc-fab-item__btn cc-fab-item__btn--ai" id="cc-fab-ai" aria-label="AI 챗봇 열기" role="menuitem">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a2 2 0 0 1 2 2v1h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2V4a2 2 0 0 1 2-2z"/>
+          <circle cx="9" cy="11" r="1"/><circle cx="15" cy="11" r="1"/>
+          <path d="M9 15s1 1 3 1 3-1 3-1"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 오버레이 (두 패널 공용) -->
+<div class="cc-chat-overlay" id="cc-chat-overlay" aria-hidden="true"></div>
+
+<!-- 1:1 채팅 사이드 패널 -->
+<aside class="cc-chat-panel" id="cc-live-panel" aria-label="1:1 채팅" aria-hidden="true">
+  <div class="cc-chat-panel__head cc-chat-panel__head--chat">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+    <span class="cc-chat-panel__title">1:1 채팅 문의</span>
+    <button class="cc-chat-panel__close" data-panel="cc-live-panel" aria-label="닫기">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <div class="cc-chat-panel__body" id="cc-live-body">
+    <div class="cc-chat-msg cc-chat-msg--ai">
+      <div class="cc-chat-msg__avatar">💬</div>
+      <div class="cc-chat-msg__bubble">
+        안녕하세요! 무엇을 도와드릴까요?<br>상담원이 연결되면 답변을 드리겠습니다.
+      </div>
+    </div>
+  </div>
+
+  <div class="cc-chat-panel__foot">
+    <textarea class="cc-chat-panel__input" id="cc-live-input" placeholder="메시지를 입력하세요..." rows="1" aria-label="메시지 입력"></textarea>
+    <button class="cc-chat-panel__send" id="cc-live-send" aria-label="전송">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+</aside>
+
+<!-- AI 챗봇 사이드 패널 -->
+<aside class="cc-chat-panel" id="cc-ai-panel" aria-label="AI 챗봇" aria-hidden="true">
+  <div class="cc-chat-panel__head">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2a2 2 0 0 1 2 2v1h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2V4a2 2 0 0 1 2-2z"/>
+      <circle cx="9" cy="11" r="1"/><circle cx="15" cy="11" r="1"/>
+    </svg>
+    <span class="cc-chat-panel__title">AI 도우미</span>
+    <span class="cc-chat-panel__badge">Beta</span>
+    <button class="cc-chat-panel__close" data-panel="cc-ai-panel" aria-label="닫기">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <div class="cc-chat-panel__body" id="cc-ai-body">
+    <div class="cc-chat-msg cc-chat-msg--ai">
+      <div class="cc-chat-msg__avatar">🤖</div>
+      <div class="cc-chat-msg__bubble">
+        안녕하세요! CatchCatch AI 도우미입니다 👋<br>공연 예매, 결제, 취소 등 무엇이든 물어보세요.
+      </div>
+    </div>
+    <div class="cc-chat-suggestions">
+      <button class="cc-chat-suggestion">예매 취소 방법</button>
+      <button class="cc-chat-suggestion">결제 수단 문의</button>
+      <button class="cc-chat-suggestion">좌석 선택 안내</button>
+      <button class="cc-chat-suggestion">환불 정책</button>
+    </div>
+  </div>
+
+  <div class="cc-chat-panel__foot">
+    <textarea class="cc-chat-panel__input" id="cc-ai-input" placeholder="질문을 입력하세요..." rows="1" aria-label="메시지 입력"></textarea>
+    <button class="cc-chat-panel__send" id="cc-ai-send" aria-label="전송">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+</aside>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="/js/core/ui.js"></script>
 <script src="/js/core/api.js"></script>
 <script src="/js/core/file.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 <script src="/js/layout/user-menu.js"></script>
+<script src="/js/layout/fab.js"></script>
 </body>
 </html>

@@ -3,6 +3,7 @@ package com.catchcatch.ticket.concert.dto;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.session.ConcertSession;
 import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -35,6 +36,18 @@ public class AdminConcertRequest {
             @NotBlank(message = "장르 정보가 필요합니다.")
             String genre,
 
+            @Min(value = 0, message = "VIP석 가격은 0원 이상이어야 합니다.")
+            Integer priceVip,
+
+            @Min(value = 0, message = "R석 가격은 0원 이상이어야 합니다.")
+            Integer priceR,
+
+            @Min(value = 0, message = "S석 가격은 0원 이상이어야 합니다.")
+            Integer priceS,
+
+            @Min(value = 0, message = "A석 가격은 0원 이상이어야 합니다.")
+            Integer priceA,
+
             @Future(message = "티켓 오픈일은 미래여야 합니다.")
             @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
             LocalDateTime ticketOpenDate,
@@ -63,8 +76,8 @@ public class AdminConcertRequest {
             String detailBannerUrl,
             MultipartFile posterImage,
 
-            // 💡 핵심: 자바스크립트로 동적 추가되는 회차 리스트를 이 필드가 통째로 흡수합니다!
             List<SessionCreateRequest> sessions
+
     ) {
     }
 
@@ -99,7 +112,7 @@ public class AdminConcertRequest {
             LocalDate endDate,      // 공연 종료일
             LocalDateTime ticketOpenDate, // 예매 시작일
             String description,     // 상세 설명
-            // 💡 회차 리스트를 담을 DTO 필드 추가
+            Integer priceVip,
             List<SessionDTO> sessionList
     ) {
         @Builder
@@ -120,9 +133,12 @@ public class AdminConcertRequest {
                     .genre(concert.getGenre())
                     .ageLimit(concert.getAgeLimit())
                     .runtime(concert.getRuntime())
-                    // 💡 연관관계 리스트의 size()를 측정하여 총 몇 회차인지 계산합니다.
+                    .priceVip(concert.getPriceVip())
+                    .startDate(concert.getStartDate())
+                    .endDate(concert.getEndDate())
+                    .ticketOpenDate(concert.getTicketOpenDate())
+                    .description(concert.getDescription())
                     .totalSessions(concert.getSessions() != null ? concert.getSessions().size() : 0)
-                    // 💡 엔티티 리스트를 SessionDTO 리스트로 변환
                     .sessionList(concert.getSessions() != null ?
                             concert.getSessions().stream()
                                     .map(s -> SessionDTO.builder()
@@ -143,7 +159,6 @@ public class AdminConcertRequest {
 
     @Builder
     public record UpdateRequestDTO(
-            // 1. 기존 필수 정보
             @NotBlank(message = "공연 제목은 필수입니다.")
             String title,
 
@@ -156,38 +171,57 @@ public class AdminConcertRequest {
             @NotBlank(message = "장르 정보가 필요합니다.")
             String genre,
 
-            @NotBlank(message = "카테고리 정보가 필요합니다.") // 💡 추가됨
+            @NotBlank(message = "카테고리 정보가 필요합니다.")
             String category,
 
-            @NotBlank(message = "관람 등급은 필수입니다.")
-            String ageLimit,
+            @Min(value = 0, message = "VIP석 가격은 0원 이상이어야 합니다.")
+            Integer priceVip,
 
-            @NotBlank(message = "공연 시간은 필수입니다.")
-            String runtime,
+            @Min(value = 0, message = "R석 가격은 0원 이상이어야 합니다.")
+            Integer priceR,
 
-            // 2. 날짜 정보 (필수)
-            @DateTimeFormat(pattern = "yyyy-MM-dd")
-            LocalDate startDate, // 💡 추가됨
+            @Min(value = 0, message = "S석 가격은 0원 이상이어야 합니다.")
+            Integer priceS,
 
-            @DateTimeFormat(pattern = "yyyy-MM-dd")
-            LocalDate endDate,   // 💡 추가됨
+            @Min(value = 0, message = "A석 가격은 0원 이상이어야 합니다.")
+            Integer priceA,
 
             @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
             LocalDateTime ticketOpenDate,
 
-            // 3. 설명 및 이미지 경로
-            String description,
-            String detailTitle,
-            String detailDescription1,
-            String detailDescription2,
-            String organizer,
-            String contact,
-            String concertStatus,
+            @DateTimeFormat(pattern = "yyyy-MM-dd")
+            LocalDate startDate,
 
-            // 💡 이미지 업로드 관련
-            String posterImageBase64,
-            MultipartFile posterImage, // 폼에서 파일을 새로 올릴 경우를 위해
-            String posterUrl          // 기존 파일 경로 유지/변경용
+            @DateTimeFormat(pattern = "yyyy-MM-dd")
+            LocalDate endDate,
+
+            @NotBlank(message = "관람 시간을 입력해주세요.")
+            String runtime,
+
+            @NotBlank(message = "관람 연령을 입력해주세요.")
+            String ageLimit,
+
+            @NotBlank(message = "주최/주관사를 입력해주세요.")
+            String organizer,
+
+            @NotBlank(message = "고객센터 연락처를 입력해주세요.")
+            String contact,
+
+            @NotBlank(message = "상세 타이틀을 입력해주세요.")
+            String detailTitle,
+
+            String description,
+
+            @NotBlank(message = "상세 설명1을 입력해주세요.")
+            String detailDescription1,
+
+            @NotBlank(message = "상세 설명2를 입력해주세요.")
+            String detailDescription2,
+
+            String posterUrl,
+
+            String concertStatus,
+            String posterImageBase64        // 기존 파일 경로 유지/변경용
     ) {
     }
 
@@ -199,7 +233,6 @@ public class AdminConcertRequest {
             String artist,
             String description,
             String venueName,
-            List<SessionDTO> sessionList, // 회차 목록
             String concertStatus,
             LocalDateTime ticketOpenDate,
             String genre,
@@ -208,7 +241,14 @@ public class AdminConcertRequest {
             String detailDescription1,
             String detailDescription2,
             LocalDate startDate,
-            LocalDate endDate
+            LocalDate endDate,
+            Integer priceVip,
+            Integer priceR,
+            Integer priceS,
+            Integer priceA,
+
+            List<SessionDTO> sessionList // 회차 목록
+
     ) {
         // 회차 정보를 담을 DTO
         @Builder
@@ -244,7 +284,12 @@ public class AdminConcertRequest {
                     .detailDescription2(concert.getDetailDescription2())
                     .startDate(concert.getStartDate())
                     .endDate(concert.getEndDate())
-                    // 💡 회차 리스트 변환 (Null 체크 포함)
+
+                    .priceVip(concert.getPriceVip() != null ? concert.getPriceVip() : 0)
+                    .priceR(concert.getPriceR() != null ? concert.getPriceR() : 0)
+                    .priceS(concert.getPriceS() != null ? concert.getPriceS() : 0)
+                    .priceA(concert.getPriceA() != null ? concert.getPriceA() : 0)
+
                     .sessionList(concert.getSessions() != null ? concert.getSessions().stream()
                             .map(SessionDTO::from)
                             .collect(Collectors.toList())

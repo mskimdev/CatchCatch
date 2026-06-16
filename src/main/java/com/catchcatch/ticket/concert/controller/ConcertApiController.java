@@ -5,7 +5,7 @@ import com.catchcatch.ticket.concert.service.AdminConcertService;
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.Resp;
 import com.catchcatch.ticket.session.ConcertSessionRequest;
-import com.catchcatch.ticket.user.User;
+import com.catchcatch.ticket.user.dto.SessionUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,7 +33,7 @@ public class ConcertApiController {
     public ResponseEntity<?> updateConcert(
             @PathVariable Integer id,
             @Valid @RequestBody AdminConcertRequest.UpdateRequestDTO reqDTO,
-            @SessionAttribute(name = Define.SESSION_USER,required = false)User sessionUser
+            @SessionAttribute(name = Define.SESSION_USER,required = false) SessionUser sessionUser
             ){
         // 1. 인증/인가 로직 - 인터셉터가 처리
         // 2. 서비스 로직 호출
@@ -53,7 +53,7 @@ public class ConcertApiController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteConcert(
             @PathVariable Integer id,
-            @SessionAttribute(name = Define.SESSION_USER,required = false) User sessionUser
+            @SessionAttribute(name = Define.SESSION_USER,required = false) SessionUser sessionUser
     ){
         // 1. 서비스 로직 호출
         adminConcertService.deleteConcert(id);

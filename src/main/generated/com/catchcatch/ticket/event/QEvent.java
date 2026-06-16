@@ -25,6 +25,8 @@ public class QEvent extends EntityPathBase<Event> {
 
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
 
+    public final NumberPath<Integer> pointValidMonths = createNumber("pointValidMonths", Integer.class);
+
     public final NumberPath<Integer> rewardPoint = createNumber("rewardPoint", Integer.class);
 
     public final DateTimePath<java.sql.Timestamp> startDate = createDateTime("startDate", java.sql.Timestamp.class);

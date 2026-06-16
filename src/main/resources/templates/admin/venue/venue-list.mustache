@@ -64,14 +64,10 @@
                                         </td>
                                         <td class="align-middle">{{formattedCreatedAt}}</td>
                                         <td class="align-middle text-center">
-                                            <button type="button"
-                                                    class="btn btn-warning btn-sm btn-edit"
-                                                    data-id="{{id}}"
-                                                    data-name="{{name}}"
-                                                    data-address="{{address}}"
-                                                    data-capacity="{{totalCapacity}}">
-                                                수정
-                                            </button>
+
+                                            <a class="btn btn-warning btn-sm" href="/admin/venues/{{id}}/edit">
+                                                <span class="text">수정</span>
+                                            </a>
 
                                             <button type="button"
                                                     class="btn btn-danger btn-sm btn-delete"
@@ -102,7 +98,7 @@
         </div>
     </div>
     {{> admin/layout/footer}}
-    <script type="module" src="/admin/js/venue.js"></script>
+    <script src="/admin/js/venue.js"></script>
 </div>
 </div>
 </body>

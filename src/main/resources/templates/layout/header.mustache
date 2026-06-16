@@ -6,6 +6,7 @@
     <title>{{#pageTitle}}{{pageTitle}} | {{/pageTitle}}CatchCatch</title>
     <link rel="stylesheet" href="/css/common.css">
     {{#_csrf}}<meta name="csrf-token" content="{{token}}" data-param="{{parameterName}}">{{/_csrf}}
+    {{#sessionUser}}<meta name="session-user-id" content="{{id}}">{{/sessionUser}}
 </head>
 <body class="cc-page {{#sessionUser}}cc-login-page{{/sessionUser}}">
 <header class="cc-header">
