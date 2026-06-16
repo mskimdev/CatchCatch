@@ -17,7 +17,9 @@ public class AiChatApiController {
 
     @PostMapping("/api/chat/ai")
     public ResponseEntity<?> ask(@RequestBody Map<String, String> body) {
-        String answer = aiChatService.ask(body.get("message"));
+        String sessionId = body.get("sessionId");
+        String message = body.get("message");
+        String answer = aiChatService.ask(sessionId, message);
         return Resp.ok(Map.of("answer", answer));
     }
 }

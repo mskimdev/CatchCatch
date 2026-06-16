@@ -52,4 +52,6 @@ public interface ConcertSessionRepository extends JpaRepository<ConcertSession, 
             @Param("concertId") Integer concertId,
             @Param("sessionDate") LocalDate sessionDate
     );
+
+    List<ConcertSession> findByConcertIdOrderBySessionDateAscSessionTimeAsc(Integer concertId);
 }

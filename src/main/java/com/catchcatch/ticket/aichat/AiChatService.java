@@ -2,19 +2,27 @@ package com.catchcatch.ticket.aichat;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.anthropic.AnthropicChatModel;
-import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
 public class AiChatService {
 
     private final AnthropicChatModel chatModel;
+    private final AiChatTools aiChatTools;
+
+    // sessionId → 대화 히스토리 (서버 메모리, 최대 20턴 유지)
+    private final Map<String, List<Message>> historyStore = new ConcurrentHashMap<>();
+    private static final int MAX_HISTORY = 20;
 
     private static final String CATCH_PROMPT = """
             당신은 CatchCatch 콘서트 예매 서비스의 AI 상담사 '캐치'입니다.
@@ -49,17 +57,42 @@ public class AiChatService {
             - 페이지를 안내할 때는 반드시 마크다운 링크 형식 [텍스트](URL) 을 사용합니다.
             - URL은 절대 그대로 노출하지 않습니다.
 
+            [대화 흐름]
+            - 공연명이나 아티스트명이 불명확하면 "어떤 공연을 말씀하시는 건가요?" 라고 되물어 확인합니다.
+            - 검색 결과가 여러 개면 목록을 보여주고 "어떤 공연을 원하시나요?" 라고 선택을 유도합니다.
+            - 이전 대화 맥락을 기억하고 활용합니다. 예: 앞서 언급한 공연에 대한 추가 질문이면 다시 묻지 않습니다.
+            - 회차가 여러 개면 목록을 보여주고 원하는 회차를 선택하게 합니다.
+
             [모르는 내용 처리]
             정확히 알 수 없는 내용은 [1:1 문의하기](/support/inquiries/save) 로 안내합니다.
             """;
 
-    public String ask(String message) {
-        Prompt prompt = new Prompt(
-                List.of(new SystemMessage(CATCH_PROMPT),
-                        new UserMessage(message))
-        );
+    public String ask(String sessionId, String message) {
+        List<Message> history = historyStore.computeIfAbsent(sessionId, k -> new ArrayList<>());
 
-        return chatModel.call(prompt).getResult().getOutput().getText();
+        history.add(new UserMessage(message));
+
+        String answer = ChatClient.builder(chatModel)
+                .build()
+                .prompt()
+                .system(CATCH_PROMPT)
+                .messages(history)
+                .tools(aiChatTools)
+                .call()
+                .content();
+
+        history.add(new AssistantMessage(answer));
+
+        // 최대 턴 수 초과 시 오래된 것부터 제거 (앞에서 2개씩 = user+assistant 1쌍)
+        while (history.size() > MAX_HISTORY) {
+            history.remove(0);
+            history.remove(0);
+        }
+
+        return answer;
     }
 
+    public void clearHistory(String sessionId) {
+        historyStore.remove(sessionId);
+    }
 }

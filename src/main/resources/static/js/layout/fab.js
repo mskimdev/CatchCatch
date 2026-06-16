@@ -192,6 +192,7 @@ function initFab() {
   const aiBody = document.getElementById('cc-ai-body');
   const aiInput = document.getElementById('cc-ai-input');
   const aiSend = document.getElementById('cc-ai-send');
+  const aiSessionId = crypto.randomUUID();
 
   aiBody.addEventListener('click', (e) => {
     const btn = e.target.closest('.cc-chat-suggestion');
@@ -209,7 +210,7 @@ function initFab() {
     const typingId = 'cc-typing-ai';
     showTyping(aiBody, typingId);
 
-    const { res, data } = await apiPost('/api/chat/ai', { message: text });
+    const { res, data } = await apiPost('/api/chat/ai', { sessionId: aiSessionId, message: text });
 
     document.getElementById(typingId)?.remove();
 
