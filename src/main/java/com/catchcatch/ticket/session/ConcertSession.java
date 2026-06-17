@@ -85,7 +85,7 @@ public class ConcertSession {
         this.isDeleted = false;
     }
 
-    // ConcertSession 엔티티 클래스 내부에 추가 - ConcertSessionRequest 관련
+    //  회차 수정
     public void updateSession(String round, LocalDate sessionDate, LocalTime sessionTime) {
         this.round = round;
         this.sessionDate = sessionDate;

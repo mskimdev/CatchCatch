@@ -2,6 +2,7 @@ package com.catchcatch.ticket.concert.repository;
 
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.concert.core.ConcertStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -53,6 +54,20 @@ public interface ConcertRepository extends JpaRepository<Concert, Integer>, Conc
     @Query("SELECT COUNT(c) > 0 FROM Concert c WHERE c.venue.id = :venueId")
     boolean existsByVenueId(Integer venueId);
 
-    // 8. 대시보드 - 공연 상태별 개수 (예: 오픈 예정 공연 수)
+    // 8. 추천 콘서트 (관심 등록 순)
+    @Query("SELECT c FROM Concert c LEFT JOIN c.concertLikes cl " +
+            "WHERE c.concertStatus = :status " +
+            "GROUP BY c.id " +
+            "ORDER BY COUNT(cl.id) DESC")
+    List<Concert> findRecommendConcerts(@Param("status") ConcertStatus status, Pageable pageable);
+
+    // 9. 인기 콘서트 (회차별 예매 총합 순)
+    @Query("SELECT c FROM Concert c " +
+            "LEFT JOIN c.sessions cs " +
+            "LEFT JOIN cs.bookings b " +
+            "GROUP BY c.id " +
+            "ORDER BY COUNT(b.id) DESC")
+    List<Concert> findPopularConcerts(Pageable pageable);
+    // 10. 대시보드 - 공연 상태별 개수 (예: 오픈 예정 공연 수)
     long countByConcertStatus(ConcertStatus concertStatus);
 }

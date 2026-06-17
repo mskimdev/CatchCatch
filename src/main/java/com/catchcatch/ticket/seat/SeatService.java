@@ -190,7 +190,7 @@ public class SeatService {
                     new TypeReference<List<SeatRequest.SeatJsonDTO>>() {}
             );
         }catch (Exception e){
-            throw new RuntimeException("도면 JSON 파싱 중 오류가 발생했습니다.", e); // TODO - 에러메서드 변경
+            throw new BadRequestException("도면 JSON 파싱 중 오류가 발생했습니다.");
         }
 
         List<Seat> seatEntities = new ArrayList<>();

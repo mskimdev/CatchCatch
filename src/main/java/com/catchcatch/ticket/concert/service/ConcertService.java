@@ -11,7 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,15 +33,21 @@ public class ConcertService {
 
     // 1. 추천 콘서트 (예매 가능)
     public List<ConcertResponse.ListDTO> getHomepageConcerts() {
-        List<Concert> concertList = concertRepository.findAllByStatusWithFetchJoin(ConcertStatus.OPEN);
+
+        Pageable pageable = PageRequest.of(0,8);
+
+        List<Concert> concertList = concertRepository.findRecommendConcerts(ConcertStatus.OPEN, pageable);
         return concertList.stream()
                 .map(ConcertResponse.ListDTO::from)
                 .collect(Collectors.toList());
     } // end of getHomepageConcerts
 
-    // 2. 인기 콘서트 TODO - 리뷰 및 조회 - findAll로 임시 대체
+    // 2. 인기 콘서트
     public List<ConcertResponse.ListDTO> getPopularConcerts() {
-        List<Concert> popularList = concertRepository.findAll();
+
+        Pageable pageable = PageRequest.of(0,8);
+
+        List<Concert> popularList = concertRepository.findPopularConcerts(pageable);
         return popularList.stream()
                 .map(ConcertResponse.ListDTO::from)
                 .collect(Collectors.toList());
