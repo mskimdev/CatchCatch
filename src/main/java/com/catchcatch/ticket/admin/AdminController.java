@@ -32,13 +32,6 @@ public class AdminController {
         return "admin/concert-sales-rates";
     }
 
-    // --- 3. 예매 관리 ---
-    @GetMapping("/bookings")
-    public String adminBookingList(Model model) {
-        model.addAttribute("pageTitle", "예매 관리");
-        return "admin/booking/list";
-    }
-
     // --- 4. 회원 관리 ---
     @GetMapping("/users")
     public String adminUserList(Model model) {

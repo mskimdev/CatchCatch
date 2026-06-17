@@ -122,6 +122,19 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     List<Booking> findAllWithDetailsByUserId(@Param("userId") Integer userId);
 
     /**
+     * 관리자 - 전체 예매 목록 조회 (사용자/공연 정보 포함)
+     */
+    @Query("""
+            select distinct b
+            from Booking b
+            join fetch b.user u
+            join fetch b.concertSession cs
+            join fetch cs.concert c
+            order by b.createdAt desc
+            """)
+    List<Booking> findAllWithDetails();
+
+    /**
      * 마이페이지 예매 목록 상태별 조회
      */
     @Query("""

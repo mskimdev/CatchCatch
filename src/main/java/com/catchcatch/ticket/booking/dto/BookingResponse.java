@@ -165,6 +165,32 @@ public class BookingResponse {
         }
     }
 
+    /**
+     * 관리자 - 예매 관리 목록 화면 DTO
+     *
+     * admin/booking/list.mustache에서
+     * {{bookingId}}, {{userName}}, {{userId}}, {{concertTitle}}, {{createdAt}}, {{isCancelled}}
+     * 형태로 사용한다.
+     */
+    @Getter
+    public static class AdminListDTO {
+        private Integer bookingId;
+        private Integer userId;
+        private String userName;
+        private String concertTitle;
+        private String createdAt;
+        private Boolean isCancelled;
+
+        public AdminListDTO(Booking booking) {
+            this.bookingId = booking.getId();
+            this.userId = booking.getUser().getId();
+            this.userName = booking.getUser().getUsername();
+            this.concertTitle = booking.getConcertSession().getConcert().getTitle();
+            this.createdAt = booking.getCreatedAt() == null ? "" : booking.getCreatedAt().toString();
+            this.isCancelled = booking.getStatus() == Status.CANCELED;
+        }
+    }
+
     @Getter
     public static class MyPageListDTO {
         private Integer id;
