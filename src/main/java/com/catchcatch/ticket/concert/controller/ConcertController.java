@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.concert.controller;
 
+import com.catchcatch.ticket.concert.banner.BannerResponse;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.concert.dto.ConcertResponse;
 import com.catchcatch.ticket.concert.service.ConcertService;
@@ -23,7 +24,7 @@ public class ConcertController {
 
     @GetMapping("/")
     public String homePage(Model model) {
-        List<ConcertResponse.BannerDTO> heroBanners = concertService.getHeroBanners();
+        List<BannerResponse.HomeBannerDTO> heroBanners = concertService.getHeroBanners();
         List<ConcertResponse.ListDTO> recommendConcerts = concertService.getHomepageConcerts();
         List<ConcertResponse.ListDTO> popularConcerts = concertService.getPopularConcerts();
         List<ConcertResponse.ListDTO> comingSoonConcerts = concertService.getComingSoonConcerts();

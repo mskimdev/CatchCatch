@@ -1,5 +1,8 @@
 package com.catchcatch.ticket.concert.service;
 
+import com.catchcatch.ticket.concert.banner.Banner;
+import com.catchcatch.ticket.concert.banner.BannerRepository;
+import com.catchcatch.ticket.concert.banner.BannerResponse;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.concert.dto.ConcertResponse;
@@ -25,7 +28,7 @@ public class ConcertService {
 
     private final ConcertRepository concertRepository;
     private final SeatRepository seatRepository;
-    private final VenueRepository venueRepository;
+    private final BannerRepository bannerRepository;
 
     // ==========================================
     // 1. 홈페이지 관련 메서드
@@ -62,13 +65,14 @@ public class ConcertService {
     }
 
     // 4. 상단 히어로 배너 데이터
-    public List<ConcertResponse.BannerDTO> getHeroBanners() {
-        // TODO - 지금은 하드코딩으로 임시 대체
-        return List.of(
-                new ConcertResponse.BannerDTO("/images/sample/banner-main.svg", "캐치캐치 단독", "아이유 2026 월드 투어", "서울", "놓칠 수 없는 단 하루의 무대", 1),
-                new ConcertResponse.BannerDTO("/images/sample/banner-sub.svg", "매진 임박", "에스파 LIVE TOUR", "SYNK", "지금 바로 예매하세요", 2),
-                new ConcertResponse.BannerDTO("/images/sample/banner-sub.svg", "매진 임박", "김민수 LIVE TOUR", "SYNK", "지금 바로 예매하세요", 2)
-        );
+    public List<BannerResponse.HomeBannerDTO> getHeroBanners() {
+
+        List<Banner> activeBanners = bannerRepository.findActiveBanners();
+
+        return activeBanners.stream()
+                .map(BannerResponse.HomeBannerDTO::from)
+                .toList();
+
     } // end of getHeroBanners
 
 
@@ -103,7 +107,7 @@ public class ConcertService {
      */
     public ConcertResponse.ConcertListResponseDTO searchConcertList(Concert.ConcertSearchCondition condition) {
 
-        // 💡 2. 다시 QueryDSL로 스위치 ON!
+        // 2. 다시 QueryDSL로 스위치 ON!
         return concertRepository.findConcertsByFilters(condition);
     }
 
