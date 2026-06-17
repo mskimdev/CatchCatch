@@ -111,6 +111,9 @@ public class BookingService {
             seat.hold();
         }
 
+        // 결제 없이 예매 완료 처리
+        booking.completePayment();
+
         Booking savedBooking = bookingRepository.save(booking);
 
         return new BookingResponse.DetailDTO(savedBooking);
