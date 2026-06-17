@@ -37,6 +37,10 @@ public interface ConcertRepository extends JpaRepository<Concert, Integer>, Conc
     // 5. 검색 기능 (제목 또는 아티스트명)
     List<Concert> findByTitleContainingOrArtistContaining(String title, String artist);
 
+    // AI 툴용 - venue fetch join 포함 키워드 검색
+    @Query("SELECT c FROM Concert c JOIN FETCH c.venue WHERE c.title LIKE %:keyword% OR c.artist LIKE %:keyword%")
+    List<Concert> findByKeywordWithVenue(@Param("keyword") String keyword);
+
     // 6. 예매 가능(OPEN) 공연만 단순 조회
     @Query("SELECT c FROM Concert c WHERE c.concertStatus = 'OPEN' ORDER BY c.createdAt DESC")
     List<Concert> findAllByStatusOpen();

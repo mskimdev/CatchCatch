@@ -5,6 +5,15 @@ spring:
   config:
     import: optional:file:.env[.properties]
 
+  ai:
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY}
+      chat:
+        options:
+          model: claude-haiku-4-5-20251001
+    retry:
+      max-attempts: 2
+
 springdoc:
   swagger-ui:
     enabled: true

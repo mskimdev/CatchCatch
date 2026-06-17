@@ -3,6 +3,7 @@ package com.catchcatch.ticket.seat;
 import com.catchcatch.ticket.session.ConcertSession;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -27,8 +28,26 @@ public class Seat {
     @JoinColumn(name = "session_id", nullable = false)
     private ConcertSession concertSession;
 
-    @Column(name = "seat_number", nullable = false, length = 10)
+    // 층수
+    @Column(name = "floor", nullable = false)
+    private Integer floor;      // 1층, 2층 등
+
+    // 구역
+    @Column(name = "section_name", nullable = false, length = 20)
+    private String sectionName;
+
+    // 행
+    @Column(name = "seat_row", nullable = false, length = 10)
+    private String seatRow;
+
+    // 열
+    @Column(name = "seat_col", nullable = false)
+    private Integer seatCol;
+
+    // 화면 출력용 풀네임
+    @Column(name = "seat_number", nullable = false, length = 20)
     private String seatNumber;
+
 
     /**
      * VIP / R / S / A
@@ -55,12 +74,19 @@ public class Seat {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public Seat(ConcertSession concertSession, String seatNumber, SeatGrade grade, Integer price) {
+    @Builder
+    public Seat(ConcertSession concertSession, Integer floor, String sectionName,
+                String seatRow, Integer seatCol, String seatNumber,
+                SeatGrade grade, Integer price, SeatStatus status) {
         this.concertSession = concertSession;
+        this.floor = floor;
+        this.sectionName = sectionName;
+        this.seatRow = seatRow;
+        this.seatCol = seatCol;
         this.seatNumber = seatNumber;
         this.grade = grade;
         this.price = price;
-        this.status = SeatStatus.AVAILABLE;
+        this.status = status != null ? status : SeatStatus.AVAILABLE;
     }
 
     /**

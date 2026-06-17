@@ -9,6 +9,7 @@
         color: #858796;
         margin-bottom: .4rem;
     }
+
     #content-textarea {
         min-height: 320px;
         resize: vertical;
@@ -26,10 +27,9 @@
             {{> admin/layout/topbar}}
 
             <div class="container-fluid">
-
-                <!-- 페이지 제목 -->
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                    <h1 class="h3 mb-0 text-gray-800">{{pageTitle}}</h1>
+                    <h1 class="h3 mb-0 text-gray-800">공지 등록</h1>
+
                     <a href="/admin/boards/notice" class="btn btn-sm btn-secondary shadow-sm">
                         <i class="fas fa-list fa-sm"></i> 목록으로
                     </a>
@@ -41,93 +41,89 @@
                             <div class="card-header py-3">
                                 <h6 class="m-0 font-weight-bold text-primary">공지 내용</h6>
                             </div>
-                            <div class="card-body">
-                                <form id="notice-form" action="{{formAction}}" method="post">
 
-                                    <!-- 제목 -->
+                            <div class="card-body">
+                                <form id="notice-form" action="/admin/boards/notice/save" method="post">
+                                    {{#_csrf}}
+                                        <input type="hidden" name="{{parameterName}}" value="{{token}}">
+                                    {{/_csrf}}
+
                                     <div class="form-group">
                                         <div class="form-section-label">제목</div>
-                                        <input type="text" class="form-control" name="title"
-                                               value="{{notice.title}}"
-                                               placeholder="공지사항 제목을 입력하세요" maxlength="100" required>
+                                        <input type="text"
+                                               class="form-control"
+                                               name="title"
+                                               placeholder="공지사항 제목을 입력하세요"
+                                               maxlength="100"
+                                               required>
                                     </div>
 
-                                    <!-- 내용 -->
                                     <div class="form-group">
                                         <div class="form-section-label">내용</div>
-                                        <textarea id="content-textarea" class="form-control" name="content"
-                                                  placeholder="공지사항 내용을 입력하세요" required>{{notice.content}}</textarea>
+                                        <textarea id="content-textarea"
+                                                  class="form-control"
+                                                  name="content"
+                                                  placeholder="공지사항 내용을 입력하세요"
+                                                  required></textarea>
                                     </div>
 
-                                    <!-- 고정 여부 -->
                                     <div class="form-group mb-4">
                                         <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input" id="isPinned"
-                                                   name="isPinned" value="true"
-                                                   {{#notice.isPinned}}checked{{/notice.isPinned}}>
+                                            <input type="checkbox"
+                                                   class="custom-control-input"
+                                                   id="isPinned"
+                                                   name="isPinned"
+                                                   value="true">
                                             <label class="custom-control-label font-weight-bold" for="isPinned">
                                                 상단 고정
                                             </label>
-                                            <small class="form-text text-muted">체크 시 공지사항 목록 최상단에 고정됩니다.</small>
+                                            <small class="form-text text-muted">
+                                                체크하면 사용자 공지사항 목록 상단에 고정됩니다.
+                                            </small>
                                         </div>
                                     </div>
 
                                     <div class="d-flex justify-content-end">
                                         <a href="/admin/boards/notice" class="btn btn-secondary mr-2">취소</a>
                                         <button type="submit" id="submit-btn" class="btn btn-primary">
-                                            <i class="fas fa-save mr-1"></i> {{submitLabel}}
+                                            <i class="fas fa-save mr-1"></i> 등록
                                         </button>
                                     </div>
-
                                 </form>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 우측 정보 패널 (수정 시에만 표시) -->
-                    {{#notice.id}}
                     <div class="col-lg-4">
                         <div class="card shadow mb-4">
                             <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">공지 정보</h6>
+                                <h6 class="m-0 font-weight-bold text-primary">작성 안내</h6>
                             </div>
-                            <div class="card-body">
-                                <table class="table table-sm table-borderless mb-0">
-                                    <tbody>
-                                        <tr>
-                                            <td class="font-weight-bold text-muted" style="width:80px;">번호</td>
-                                            <td>#{{notice.id}}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="font-weight-bold text-muted">조회수</td>
-                                            <td>{{notice.viewCount}}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="font-weight-bold text-muted">등록일</td>
-                                            <td>{{notice.createdAt}}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="font-weight-bold text-muted">수정일</td>
-                                            <td>{{notice.updatedAt}}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+
+                            <div class="card-body text-muted small">
+                                <p class="mb-2">
+                                    공지사항은 사용자 고객센터 공지사항 화면에 노출됩니다.
+                                </p>
+                                <p class="mb-0">
+                                    중요한 안내만 상단 고정으로 설정해 주세요.
+                                </p>
                             </div>
                         </div>
                     </div>
-                    {{/notice.id}}
                 </div>
-
             </div>
         </div>
+
         {{> admin/layout/footer}}
 
         <script>
             document.getElementById('notice-form').addEventListener('submit', function (e) {
-                e.preventDefault();
-                if (!confirm('저장하시겠습니까?')) return;
+                if (!confirm('공지사항을 등록하시겠습니까?')) {
+                    e.preventDefault();
+                    return;
+                }
+
                 document.getElementById('submit-btn').disabled = true;
-                this.submit();
             });
         </script>
     </div>

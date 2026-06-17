@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.faq;
 
 import com.catchcatch.ticket.core.util.Resp;
+import com.catchcatch.ticket.inquiry.Inquiry;
 import com.catchcatch.ticket.inquiry.dto.InquiryResponse;
 import com.catchcatch.ticket.inquiry.service.InquiryService;
 import jakarta.validation.Valid;
