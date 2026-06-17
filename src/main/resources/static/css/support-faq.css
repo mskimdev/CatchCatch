@@ -92,7 +92,7 @@
     background: var(--cc-surface);
     color: var(--cc-subtext);
     outline: none;
-    transition: border-color .15s ease;
+    transition: border-color .15s ease, box-shadow .15s ease;
 }
 
 .cc-faq-search select:focus,
@@ -160,7 +160,7 @@
     box-shadow: 0 8px 18px rgba(124, 58, 237, .25);
 }
 
-/* ── FAQ 테이블 ──────────────────────────────────────────────── */
+/* ── FAQ 테이블 / 아코디언 ───────────────────────────────────── */
 .cc-faq-table {
     width: 100%;
     border-collapse: separate;
@@ -180,18 +180,20 @@
     text-align: left;
 }
 
-.cc-faq-table tbody tr {
+/* 질문 행 */
+.cc-faq-question-row {
     background: var(--cc-surface);
     box-shadow: var(--cc-shadow-soft);
     cursor: pointer;
-    transition: background .1s ease;
+    transition: background .15s ease, transform .15s ease;
 }
 
-.cc-faq-table tbody tr:hover {
+.cc-faq-question-row:hover {
     background: var(--cc-primary-softer);
+    transform: translateY(-1px);
 }
 
-.cc-faq-table td {
+.cc-faq-question-row td {
     padding: 18px 16px;
     border-top: 1px solid var(--cc-line);
     border-bottom: 1px solid var(--cc-line);
@@ -199,29 +201,102 @@
     vertical-align: middle;
 }
 
-.cc-faq-table td:first-child {
+.cc-faq-question-row td:first-child {
     border-left: 1px solid var(--cc-line);
     border-radius: 14px 0 0 14px;
     color: var(--cc-primary);
     font-weight: 800;
 }
 
-.cc-faq-table td:last-child {
+.cc-faq-question-row td:last-child {
     border-right: 1px solid var(--cc-line);
     border-radius: 0 14px 14px 0;
     color: var(--cc-muted);
 }
 
-.cc-faq-table td:nth-child(2) {
+.cc-faq-question-row td:nth-child(2) {
     text-align: left;
     font-weight: 800;
     color: var(--cc-text);
 }
 
+/* 질문 버튼 */
+.cc-faq-question-button {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+}
+
+.cc-faq-question-button span:first-child {
+    display: block;
+    padding-right: 16px;
+}
+
+/* 화살표 */
+.cc-faq-arrow {
+    flex-shrink: 0;
+    margin-left: 14px;
+    font-size: 18px;
+    color: var(--cc-primary);
+    transition: transform .25s ease;
+}
+
+.cc-faq-question-row.is-open .cc-faq-arrow {
+    transform: rotate(180deg);
+}
+
+/* 답변 행 */
+.cc-faq-answer-row {
+    background: transparent;
+}
+
+.cc-faq-answer-row:hover {
+    background: transparent;
+}
+
+.cc-faq-answer-row td {
+    padding: 0;
+    border: none;
+}
+
+/* 답변 펼침 영역 */
+.cc-faq-answer-wrap {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .3s ease;
+}
+
+/* 실제 답변 박스 */
+.cc-faq-answer-box {
+    margin-top: -8px;
+    margin-bottom: 4px;
+    padding: 24px 28px;
+    background: #fbfaff;
+    border: 1px solid var(--cc-line);
+    border-left: 5px solid var(--cc-primary);
+    border-radius: 0 0 14px 14px;
+    color: var(--cc-subtext);
+    line-height: 1.8;
+    white-space: pre-line;
+    box-shadow: var(--cc-shadow-soft);
+}
+
+/* 빈 메시지 */
 .cc-empty-message {
     text-align: center !important;
     padding: 50px !important;
     color: var(--cc-muted);
+    background: var(--cc-surface);
+    border: 1px solid var(--cc-line);
+    border-radius: 14px;
 }
 
 /* ── 페이지네이션 ────────────────────────────────────────────── */

@@ -3,6 +3,7 @@ package com.catchcatch.ticket.concert.dto;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.session.ConcertSession;
 import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -63,8 +64,20 @@ public class AdminConcertRequest {
             String detailBannerUrl,
             MultipartFile posterImage,
 
-            // 💡 핵심: 자바스크립트로 동적 추가되는 회차 리스트를 이 필드가 통째로 흡수합니다!
-            List<SessionCreateRequest> sessions
+            List<SessionCreateRequest> sessions,
+
+            @Min(value = 0, message = "VIP석 가격은 0원 이상이어야 합니다.")
+            Integer priceVip,
+
+            @Min(value = 0, message = "R석 가격은 0원 이상이어야 합니다.")
+            Integer priceR,
+
+            @Min(value = 0, message = "S석 가격은 0원 이상이어야 합니다.")
+            Integer priceS,
+
+            @Min(value = 0, message = "A석 가격은 0원 이상이어야 합니다.")
+            Integer priceA
+
     ) {
     }
 
@@ -174,6 +187,18 @@ public class AdminConcertRequest {
 
             @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
             LocalDateTime ticketOpenDate,
+
+            @Min(value = 0, message = "VIP석 가격은 0원 이상이어야 합니다.")
+            Integer priceVip,
+
+            @Min(value = 0, message = "R석 가격은 0원 이상이어야 합니다.")
+            Integer priceR,
+
+            @Min(value = 0, message = "S석 가격은 0원 이상이어야 합니다.")
+            Integer priceS,
+
+            @Min(value = 0, message = "A석 가격은 0원 이상이어야 합니다.")
+            Integer priceA,
 
             // 3. 설명 및 이미지 경로
             String description,

@@ -1,7 +1,7 @@
 package com.catchcatch.ticket.core.interceptor;
 
 import com.catchcatch.ticket.core.util.Define;
-import com.catchcatch.ticket.user.User;
+import com.catchcatch.ticket.user.dto.SessionUser;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -19,7 +19,7 @@ public class SessionInterceptor implements HandlerInterceptor {
         HttpSession session = request.getSession(false);
         if (session == null) return;
 
-        User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
+        SessionUser sessionUser = (SessionUser) session.getAttribute(Define.SESSION_USER);
         if (sessionUser != null) {
             modelAndView.addObject(Define.SESSION_USER, sessionUser);
         }

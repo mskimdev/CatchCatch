@@ -86,6 +86,10 @@ public class AdminConcertService {
                 .detailDescription2(dto.detailDescription2())
                 .posterUrl(dbFilePath) // 위에서 받아온 파일 URL(또는 null)을 그대로 주입
                 .concertStatus(ConcertStatus.valueOf(dto.concertStatus()))
+                .priceVip(dto.priceVip())
+                .priceR(dto.priceR())
+                .priceS(dto.priceS())
+                .priceA(dto.priceA())
                 .build();
 
         // 영속성 컨텍스트에 저장되면서 concert 객체 내부 파라미터에 id가 자동으로 꽂힙니다.

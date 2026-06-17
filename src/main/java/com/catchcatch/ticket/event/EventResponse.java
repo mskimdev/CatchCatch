@@ -40,7 +40,8 @@ public class EventResponse {
             String description,
             Integer rewardPoint,
             String startDate,
-            String endDate
+            String endDate,
+            boolean isActive
     ) {
         public DetailDTO(Event event) {
             this(
@@ -49,7 +50,8 @@ public class EventResponse {
                     event.getDescription(),
                     event.getRewardPoint(),
                     DateUtil.format(event.getStartDate()),
-                    DateUtil.format(event.getEndDate())
+                    DateUtil.format(event.getEndDate()),
+                    event.isActive()
             );
         }
     }
@@ -58,13 +60,15 @@ public class EventResponse {
             Integer eventId,
             String title,
             Integer rewardPoint,
+            Integer currentPoint,
             String message
     ) {
-        public JoinDTO(Event event) {
+        public JoinDTO(Event event, Integer currentPoint) {
             this(
                     event.getId(),
                     event.getTitle(),
                     event.getRewardPoint(),
+                    currentPoint,
                     "이벤트 참여가 완료되었습니다."
             );
         }

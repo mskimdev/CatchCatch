@@ -56,10 +56,14 @@
 
                     <div class="cc-event-detail__actions">
                         <a class="cc-btn cc-btn--line" href="/events">목록으로</a>
+
                         <button class="cc-btn cc-btn--primary"
+                                id="btnJoinEvent"
                                 type="button"
+                                data-start="{{event.startDate}}"
+                                data-end="{{event.endDate}}"
                                 onclick="joinEvent({{event.id}})">
-                            이벤트 참여하기
+                            포인트 지급받기
                         </button>
                     </div>
                 </div>
@@ -68,23 +72,6 @@
 
     </div>
 </main>
-
-<script>
-    async function joinEvent(eventId) {
-        const response = await fetch(`/api/events/${eventId}/join`, {
-            method: "POST"
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            alert(result.message || result.msg || "이벤트 참여에 실패했습니다.");
-            return;
-        }
-
-        alert(result.message || result.msg || "이벤트 참여가 완료되었습니다.");
-        location.reload();
-    }
-</script>
+<script src="/js/point/point.js"></script>
 
 {{> layout/footer}}

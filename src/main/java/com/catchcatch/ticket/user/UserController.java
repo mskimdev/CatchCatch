@@ -6,6 +6,7 @@ import com.catchcatch.ticket.booking.dto.BookingResponse;
 import com.catchcatch.ticket.core.exception.UnauthorizedException;
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.ProfileImageUtil;
+import com.catchcatch.ticket.user.dto.SessionUser;
 import com.catchcatch.ticket.user.dto.UserRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -58,7 +59,7 @@ public class UserController {
 
         try {
             User user = userService.login(reqDTO);
-            session.setAttribute(Define.SESSION_USER, user);
+            session.setAttribute(Define.SESSION_USER, new SessionUser(user));
             return "redirect:/";
         } catch (Exception e) {
             model.addAttribute("errorMessage", e.getMessage());
@@ -88,7 +89,7 @@ public class UserController {
                 return "redirect:/social-join";
             }
 
-            session.setAttribute(Define.SESSION_USER, user);
+            session.setAttribute(Define.SESSION_USER, new SessionUser(user));
         } catch (Exception e) {
             log.error("소셜 로그인 실패: {}", e.getMessage());
             throw new UnauthorizedException("소셜 로그인 실패");
@@ -172,7 +173,7 @@ public class UserController {
             @ApiResponse(responseCode = "302", description = "미로그인 - 로그인 페이지로 리다이렉트")
     })
     @GetMapping("/users/mypage")
-    public String profile(@SessionAttribute(Define.SESSION_USER) User sessionUser, Model model) {
+    public String profile(@SessionAttribute(Define.SESSION_USER) SessionUser sessionUser, Model model) {
         if (sessionUser == null) return "redirect:/login";
         addProfileAttributes(model, sessionUser);
         model.addAttribute("navProfile", true);
@@ -187,7 +188,7 @@ public class UserController {
     })
     @GetMapping("/users/bookings")
     public String bookings(@RequestParam(required = false) Status status,
-                           @SessionAttribute User sessionUser, Model model) {
+                           @SessionAttribute SessionUser sessionUser, Model model) {
         if (sessionUser == null) return "redirect:/login";
         addSidebarAttributes(model, sessionUser);
 
@@ -207,7 +208,7 @@ public class UserController {
             @ApiResponse(responseCode = "302", description = "미로그인 - 로그인 페이지로 리다이렉트")
     })
     @GetMapping("/users/liked-concerts")
-    public String likedConcerts(@SessionAttribute(Define.SESSION_USER) User sessionUser, Model model) {
+    public String likedConcerts(@SessionAttribute(Define.SESSION_USER) SessionUser sessionUser, Model model) {
         if (sessionUser == null) return "redirect:/login";
         addSidebarAttributes(model, sessionUser);
         model.addAttribute("navLikedConcerts", true);
@@ -216,7 +217,7 @@ public class UserController {
     }
 
 
-    private void addSidebarAttributes(Model model, User user) {
+    private void addSidebarAttributes(Model model, SessionUser user) {
         model.addAttribute("username", user.getUsername());
         model.addAttribute("usernameInitial", user.getUsername().substring(0, 1).toUpperCase());
         model.addAttribute("email", user.getEmail());
@@ -229,7 +230,7 @@ public class UserController {
     }
 
 
-    private void addProfileAttributes(Model model, User user) {
+    private void addProfileAttributes(Model model, SessionUser user) {
         model.addAttribute("pageTitle", "회원 정보 수정");
         model.addAttribute("keyword", "");
         model.addAttribute("activeProfile", true);
@@ -239,5 +240,6 @@ public class UserController {
         model.addAttribute("phone", user.getPhone() == null ? "" : user.getPhone());
         model.addAttribute("profileImage", user.getProfileImage());
         model.addAttribute("isLocalUser", user.getOauthProvider() == com.catchcatch.ticket.user.enums.OAuthProvider.LOCAL);
+        model.addAttribute("point", user.getPoint());
     }
 }

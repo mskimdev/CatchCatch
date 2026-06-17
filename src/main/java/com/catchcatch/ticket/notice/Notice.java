@@ -2,10 +2,7 @@ package com.catchcatch.ticket.notice;
 
 import com.catchcatch.ticket.user.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -15,6 +12,7 @@ import java.sql.Timestamp;
 @Entity
 @Table(name = "notice_tb")
 @Data
+@NoArgsConstructor
 public class Notice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,4 +41,11 @@ public class Notice {
 
     @UpdateTimestamp
     private Timestamp updatedAt;
+
+    @Builder
+    public Notice(boolean isPinned, String title, String content) {
+        this.isPinned = isPinned;
+        this.title = title;
+        this.content = content;
+    }
 }

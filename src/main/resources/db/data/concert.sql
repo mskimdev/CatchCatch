@@ -104,53 +104,57 @@ VALUES (1, '2025-08-01', '18:00:00', NOW(), false),
 
 
 -- ================
---  seat_tb
+--  seat_tb (고도화된 4-Depth 좌석 구조 적용)
 -- ================
 INSERT INTO seat_tb
-    (session_id, seat_number, grade, price, status, updated_at)
+(session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
 VALUES
-    -- 아이유 VIP석
-    (1, 'VIP-01', 'VIP', 165000, 'SOLD', NOW()),
-    (1, 'VIP-02', 'VIP', 165000, 'SOLD', NOW()),
-    (1, 'VIP-03', 'VIP', 165000, 'HELD', NOW()),
-    (1, 'VIP-04', 'VIP', 165000, 'AVAILABLE', NOW()),
-    (1, 'VIP-05', 'VIP', 165000, 'AVAILABLE', NOW()),
-    -- 아이유 R석
-    (1, 'R-01', 'R', 132000, 'SOLD', NOW()),
-    (1, 'R-02', 'R', 132000, 'SOLD', NOW()),
-    (1, 'R-03', 'R', 132000, 'SOLD', NOW()),
-    (1, 'R-04', 'R', 132000, 'AVAILABLE', NOW()),
-    (1, 'R-05', 'R', 132000, 'AVAILABLE', NOW()),
-    (1, 'R-06', 'R', 132000, 'AVAILABLE', NOW()),
-    (1, 'R-07', 'R', 132000, 'AVAILABLE', NOW()),
-    (1, 'R-08', 'R', 132000, 'AVAILABLE', NOW()),
-    (1, 'R-09', 'R', 132000, 'AVAILABLE', NOW()),
-    (1, 'R-10', 'R', 132000, 'AVAILABLE', NOW()),
-    -- 아이유 S석
-    (1, 'S-01', 'S', 110000, 'SOLD', NOW()),
-    (1, 'S-02', 'S', 110000, 'AVAILABLE', NOW()),
-    (1, 'S-03', 'S', 110000, 'AVAILABLE', NOW()),
-    (1, 'S-04', 'S', 110000, 'AVAILABLE', NOW()),
-    (1, 'S-05', 'S', 110000, 'AVAILABLE', NOW()),
-    (1, 'S-06', 'S', 110000, 'AVAILABLE', NOW()),
-    (1, 'S-07', 'S', 110000, 'AVAILABLE', NOW()),
-    (1, 'S-08', 'S', 110000, 'AVAILABLE', NOW()),
-    (1, 'S-09', 'S', 110000, 'AVAILABLE', NOW()),
-    (1, 'S-10', 'S', 110000, 'AVAILABLE', NOW()),
-    -- 아이유 A석
-    (1, 'A-01', 'A', 88000, 'AVAILABLE', NOW()),
-    (1, 'A-02', 'A', 88000, 'AVAILABLE', NOW()),
-    (1, 'A-03', 'A', 88000, 'AVAILABLE', NOW()),
-    (1, 'A-04', 'A', 88000, 'AVAILABLE', NOW()),
-    (1, 'A-05', 'A', 88000, 'AVAILABLE', NOW()),
-    (1, 'A-06', 'A', 88000, 'AVAILABLE', NOW()),
-    (1, 'A-07', 'A', 88000, 'AVAILABLE', NOW()),
-    (1, 'A-08', 'A', 88000, 'AVAILABLE', NOW()),
-    (1, 'A-09', 'A', 88000, 'AVAILABLE', NOW()),
-    (1, 'A-10', 'A', 88000, 'AVAILABLE', NOW()),
-    -- 시카고 샘플 좌석
-    (3, 'VIP-01', 'VIP', 198000, 'SOLD', NOW()),
-    (3, 'VIP-02', 'VIP', 198000, 'AVAILABLE', NOW()),
-    (3, 'R-01', 'R', 165000, 'AVAILABLE', NOW()),
-    (3, 'S-01', 'S', 132000, 'AVAILABLE', NOW()),
-    (3, 'A-01', 'A', 99000, 'AVAILABLE', NOW());
+    -- 아이유 VIP석 (1층 VIP구역 A열)
+    (1, 1, 'VIP', 'A', 1, '1층 VIP구역 A열 1번', 'VIP', 165000, 'SOLD', NOW()),
+    (1, 1, 'VIP', 'A', 2, '1층 VIP구역 A열 2번', 'VIP', 165000, 'SOLD', NOW()),
+    (1, 1, 'VIP', 'A', 3, '1층 VIP구역 A열 3번', 'VIP', 165000, 'HELD', NOW()),
+    (1, 1, 'VIP', 'A', 4, '1층 VIP구역 A열 4번', 'VIP', 165000, 'AVAILABLE', NOW()),
+    (1, 1, 'VIP', 'A', 5, '1층 VIP구역 A열 5번', 'VIP', 165000, 'AVAILABLE', NOW()),
+
+    -- 아이유 R석 (1층 R구역 B열)
+    (1, 1, 'R', 'B', 1, '1층 R구역 B열 1번', 'R', 132000, 'SOLD', NOW()),
+    (1, 1, 'R', 'B', 2, '1층 R구역 B열 2번', 'R', 132000, 'SOLD', NOW()),
+    (1, 1, 'R', 'B', 3, '1층 R구역 B열 3번', 'R', 132000, 'SOLD', NOW()),
+    (1, 1, 'R', 'B', 4, '1층 R구역 B열 4번', 'R', 132000, 'AVAILABLE', NOW()),
+    (1, 1, 'R', 'B', 5, '1층 R구역 B열 5번', 'R', 132000, 'AVAILABLE', NOW()),
+    (1, 1, 'R', 'B', 6, '1층 R구역 B열 6번', 'R', 132000, 'AVAILABLE', NOW()),
+    (1, 1, 'R', 'B', 7, '1층 R구역 B열 7번', 'R', 132000, 'AVAILABLE', NOW()),
+    (1, 1, 'R', 'B', 8, '1층 R구역 B열 8번', 'R', 132000, 'AVAILABLE', NOW()),
+    (1, 1, 'R', 'B', 9, '1층 R구역 B열 9번', 'R', 132000, 'AVAILABLE', NOW()),
+    (1, 1, 'R', 'B', 10, '1층 R구역 B열 10번', 'R', 132000, 'AVAILABLE', NOW()),
+
+    -- 아이유 S석 (2층 S구역 A열)
+    (1, 2, 'S', 'A', 1, '2층 S구역 A열 1번', 'S', 110000, 'SOLD', NOW()),
+    (1, 2, 'S', 'A', 2, '2층 S구역 A열 2번', 'S', 110000, 'AVAILABLE', NOW()),
+    (1, 2, 'S', 'A', 3, '2층 S구역 A열 3번', 'S', 110000, 'AVAILABLE', NOW()),
+    (1, 2, 'S', 'A', 4, '2층 S구역 A열 4번', 'S', 110000, 'AVAILABLE', NOW()),
+    (1, 2, 'S', 'A', 5, '2층 S구역 A열 5번', 'S', 110000, 'AVAILABLE', NOW()),
+    (1, 2, 'S', 'A', 6, '2층 S구역 A열 6번', 'S', 110000, 'AVAILABLE', NOW()),
+    (1, 2, 'S', 'A', 7, '2층 S구역 A열 7번', 'S', 110000, 'AVAILABLE', NOW()),
+    (1, 2, 'S', 'A', 8, '2층 S구역 A열 8번', 'S', 110000, 'AVAILABLE', NOW()),
+    (1, 2, 'S', 'A', 9, '2층 S구역 A열 9번', 'S', 110000, 'AVAILABLE', NOW()),
+    (1, 2, 'S', 'A', 10, '2층 S구역 A열 10번', 'S', 110000, 'AVAILABLE', NOW()),
+
+    -- 아이유 A석 (2층 A구역 B열)
+    (1, 2, 'A', 'B', 1, '2층 A구역 B열 1번', 'A', 88000, 'AVAILABLE', NOW()),
+    (1, 2, 'A', 'B', 2, '2층 A구역 B열 2번', 'A', 88000, 'AVAILABLE', NOW()),
+    (1, 2, 'A', 'B', 3, '2층 A구역 B열 3번', 'A', 88000, 'AVAILABLE', NOW()),
+    (1, 2, 'A', 'B', 4, '2층 A구역 B열 4번', 'A', 88000, 'AVAILABLE', NOW()),
+    (1, 2, 'A', 'B', 5, '2층 A구역 B열 5번', 'A', 88000, 'AVAILABLE', NOW()),
+    (1, 2, 'A', 'B', 6, '2층 A구역 B열 6번', 'A', 88000, 'AVAILABLE', NOW()),
+    (1, 2, 'A', 'B', 7, '2층 A구역 B열 7번', 'A', 88000, 'AVAILABLE', NOW()),
+    (1, 2, 'A', 'B', 8, '2층 A구역 B열 8번', 'A', 88000, 'AVAILABLE', NOW()),
+    (1, 2, 'A', 'B', 9, '2층 A구역 B열 9번', 'A', 88000, 'AVAILABLE', NOW()),
+    (1, 2, 'A', 'B', 10, '2층 A구역 B열 10번', 'A', 88000, 'AVAILABLE', NOW()),
+
+    -- 시카고 샘플 좌석 (Session ID: 3)
+    (3, 1, 'VIP', 'A', 1, '1층 VIP구역 A열 1번', 'VIP', 198000, 'SOLD', NOW()),
+    (3, 1, 'VIP', 'A', 2, '1층 VIP구역 A열 2번', 'VIP', 198000, 'AVAILABLE', NOW()),
+    (3, 1, 'R', 'B', 1, '1층 R구역 B열 1번', 'R', 165000, 'AVAILABLE', NOW()),
+    (3, 2, 'S', 'A', 1, '2층 S구역 A열 1번', 'S', 132000, 'AVAILABLE', NOW()),
+    (3, 2, 'A', 'B', 1, '2층 A구역 B열 1번', 'A', 99000, 'AVAILABLE', NOW());

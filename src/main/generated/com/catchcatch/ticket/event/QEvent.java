@@ -19,15 +19,17 @@ public class QEvent extends EntityPathBase<Event> {
 
     public static final QEvent event = new QEvent("event");
 
+    public final StringPath description = createString("description");
+
     public final DateTimePath<java.sql.Timestamp> endDate = createDateTime("endDate", java.sql.Timestamp.class);
 
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
 
+    public final NumberPath<Integer> pointValidMonths = createNumber("pointValidMonths", Integer.class);
+
     public final NumberPath<Integer> rewardPoint = createNumber("rewardPoint", Integer.class);
 
     public final DateTimePath<java.sql.Timestamp> startDate = createDateTime("startDate", java.sql.Timestamp.class);
-
-    public final EnumPath<EventStatus> status = createEnum("status", EventStatus.class);
 
     public final StringPath title = createString("title");
 

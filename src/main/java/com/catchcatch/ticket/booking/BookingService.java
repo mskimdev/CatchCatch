@@ -12,8 +12,7 @@ import com.catchcatch.ticket.seat.SeatStatus;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.session.ConcertSessionRepository;
 import com.catchcatch.ticket.user.User;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import com.catchcatch.ticket.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,9 +34,7 @@ public class BookingService {
     private final SeatRepository seatRepository;
     private final BookingSeatRepository bookingSeatRepository;
     private final ConcertSessionRepository concertSessionRepository;
-
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final UserRepository userRepository;
 
     /**
      * 예매 생성
@@ -244,7 +241,8 @@ public class BookingService {
     }
 
     private User getUserReference(Integer userId) {
-        return entityManager.getReference(User.class, userId);
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException("사용자 정보를 찾을 수 없습니다."));
     }
 
     private String createBookingNumber() {
