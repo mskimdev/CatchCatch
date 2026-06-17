@@ -1,48 +1,39 @@
 package com.catchcatch.ticket.queue;
 
-import com.catchcatch.ticket.core.sse.SseEmitterRepository;
 import com.catchcatch.ticket.core.util.Define;
-import com.catchcatch.ticket.core.util.Resp;
 import com.catchcatch.ticket.user.dto.SessionUser;
 import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-@RestController
+@Controller
 @RequiredArgsConstructor
-@RequestMapping("/api/queue")
 public class QueueController {
 
     private final QueueService queueService;
-    private final SseEmitterRepository sseEmitterRepository;
 
-    @PostMapping("/enter")
-    public ResponseEntity<?> enter(@Valid @RequestBody QueueRequest.EnterDTO req, HttpSession session) {
-        Integer userId = getSessionUser(session).getId();
-        return Resp.ok(queueService.enter(req.concertSessionId(), userId));
-    }
+    @GetMapping("/queue/wait")
+    public String waitPage(@RequestParam Integer sessionId, Model model, HttpSession session) {
+        SessionUser sessionUser = (SessionUser) session.getAttribute(Define.SESSION_USER);
 
-    @GetMapping("/{queueId}/status")
-    public ResponseEntity<?> getStatus(@PathVariable Integer queueId) {
-        return Resp.ok(queueService.getStatus(queueId));
-    }
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
 
-    @PostMapping("/{queueId}/enter-booking")
-    public ResponseEntity<?> enterBooking(@PathVariable Integer queueId) {
-        queueService.enterBooking(queueId);
-        return Resp.ok(null);
-    }
+        // 이미 입장 처리됐다면 대기열 화면을 보여줄 필요 없이 좌석 화면으로 바로 보낸다.
+        if (queueService.hasEnteredAccess(sessionId, sessionUser.getId())) {
+            return "redirect:/booking/seat";
+        }
 
-    @GetMapping(value = "/subscribe/{concertSessionId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribe(@PathVariable Integer concertSessionId) {
-        return sseEmitterRepository.subscribe("queue:" + concertSessionId);
-    }
+        QueueResponse.StatusDTO status = queueService.enter(sessionId, sessionUser.getId());
 
-    private SessionUser getSessionUser(HttpSession session) {
-        return (SessionUser) session.getAttribute(Define.SESSION_USER);
+        model.addAttribute("pageTitle", "대기열");
+        model.addAttribute("sessionId", sessionId);
+        model.addAttribute("queueId", status.queueId());
+
+        return "queue/wait";
     }
 }
