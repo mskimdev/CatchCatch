@@ -1,6 +1,10 @@
 package com.catchcatch.ticket.payment;
 
+import com.catchcatch.ticket.booking.BookingService;
+import com.catchcatch.ticket.booking.dto.BookingResponse;
 import com.catchcatch.ticket.core.util.Define;
+import com.catchcatch.ticket.user.User;
+import com.catchcatch.ticket.user.UserRepository;
 import com.catchcatch.ticket.user.dto.SessionUser;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +22,8 @@ import java.util.Map;
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final BookingService bookingService;
+    private final UserRepository userRepository;
 
     /**
      * 결제 진행 화면
@@ -149,6 +155,58 @@ public class PaymentController {
         PaymentResponse.CompleteDTO responseDTO =
                 paymentService.completePayment(sessionUser.getId(), reqDTO);
 
+        // 최신 User 조회
+        User user = userRepository.findById(sessionUser.getId())
+                .orElseThrow();
+        // 세션 갱신
+        session.setAttribute(
+                Define.SESSION_USER,
+                new SessionUser(user)
+        );
+
         return ResponseEntity.ok(responseDTO);
+    }
+
+
+    // 결제 완료 후 예약 확정 화면
+    @GetMapping("/payment/complete")
+    public String completePaymentForm(@RequestParam("paymentId") String paymentId,
+                               Model model, HttpSession session) {
+        SessionUser sessionUser = getSessionUser(session);
+
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+
+
+        BookingResponse.CompleteDTO complete = bookingService.findCompleteByPaymentId(paymentId);
+
+        model.addAttribute("userId", sessionUser.getId());
+        model.addAttribute("username", sessionUser.getUsername());
+
+        // complete.mustache에서 {{booking.xxx}} 로 사용
+        model.addAttribute("booking", complete);
+
+        model.addAttribute("pageTitle", "예매 완료");
+
+        // 완료 화면에서는 예매 단계 헤더 안 쓸 거면 이거 필요 없음
+        // setBookingStep(model, 3);
+
+        return "booking/complete";
+    }
+
+
+    private SessionUser getSessionUser(HttpSession session) {
+        return (SessionUser) session.getAttribute(Define.SESSION_USER);
+    }
+
+    private Integer getSessionInteger(HttpSession session, String name) {
+        Object value = session.getAttribute(name);
+
+        if (value instanceof Integer integerValue) {
+            return integerValue;
+        }
+
+        return null;
     }
 }

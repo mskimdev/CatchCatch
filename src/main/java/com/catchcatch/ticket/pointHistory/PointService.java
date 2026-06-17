@@ -212,5 +212,16 @@ public class PointService {
     }
 
 
+    @Transactional(readOnly = true)
+    public Integer getUsablePoint(Integer userId) {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
+        return pointHistoryRepository.findUsablePointGroups(userId, now)
+                .stream()
+                .mapToInt(PointHistory::getBalance)
+                .sum();
+    }
+
+
 
 }
