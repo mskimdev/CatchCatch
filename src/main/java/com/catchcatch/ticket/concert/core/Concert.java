@@ -1,6 +1,8 @@
 package com.catchcatch.ticket.concert.core;
 
+import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
+import com.catchcatch.ticket.concertlike.ConcertLike;
 import com.catchcatch.ticket.seat.SeatGrade;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.venue.Venue;
@@ -90,9 +92,11 @@ public class Concert {
     @JoinColumn(name = "venue_id", nullable = false)
     private Venue venue;
 
-    // 양방향 매핑: Concert 삭제 시 하위 Session도 함께 삭제되도록 설정
     @OneToMany(mappedBy = "concert", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ConcertSession> sessions = new ArrayList<>(); // Null 에러 방지를 위해 초기화
+
+    @OneToMany(mappedBy = "concert",cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ConcertLike> concertLikes = new ArrayList<>();
 
     // 등급별 가격 정보 (null 방지를 위해 기본값 처리를 헬퍼 메서드에서 진행)
     @Column(name = "price_vip")

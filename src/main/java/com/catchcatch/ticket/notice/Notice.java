@@ -48,4 +48,10 @@ public class Notice {
         this.title = title;
         this.content = content;
     }
+
+    public void update(NoticeRequest.UpdateDTO reqDTO) {
+        this.isPinned = Boolean.TRUE.equals(reqDTO.isPinned());
+        this.title = reqDTO.title();
+        this.content = reqDTO.content();
+    }
 }

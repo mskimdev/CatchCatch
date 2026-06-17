@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SeatTrace Main</title>
+
+    <!-- Spring Boot static 경로 기준 -->
+    <link rel="stylesheet" href="/css/seatmap-main.css">
+</head>
+
+<body>
+<header class="app-header">
+    <div class="app-header__brand">
+        <span class="app-header__logo">▦</span>
+        <strong>SeatTrace</strong>
+        <small>좌석 도면 제작 시스템</small>
+    </div>
+</header>
+
+<main class="start-page">
+    <section class="start-panel">
+        <header class="start-panel__header">
+            <h1>어떤 좌석 시스템을 만들까요?</h1>
+            <p>콘서트 대형장과 소극장은 제작 방식이 다르므로 처음부터 분리합니다.</p>
+        </header>
+
+        <div class="seat-type-grid">
+            <!-- 콘서트 / 대형장 -->
+            <article class="seat-type-card">
+                <div class="seat-type-card__body">
+                    <h2>콘서트 / 대형장</h2>
+                    <p>
+                        도쿄돔, 체조경기장처럼 전체 구역도와 실제 좌석 배치가 다른 경우.
+                    </p>
+
+                    <div class="seat-type-card__note">
+                        Stage1 업로드 → Stage1 단색 도면 추출 → Stage2 구역 버튼 →
+                        Stage3 각 구역 좌석 생성
+                    </div>
+                </div>
+
+                <button
+                        type="button"
+                        class="seat-type-card__button seat-type-card__button--concert"
+                        data-start-type="concert">
+                    콘서트 제작 시작
+                </button>
+            </article>
+
+            <!-- 소극장 / 좌석 이미지 -->
+            <article class="seat-type-card">
+                <div class="seat-type-card__body">
+                    <h2>소극장 / 좌석 이미지</h2>
+                    <p>
+                        500석 내외처럼 좌석 하나하나가 원본 이미지에 보이는 경우.
+                    </p>
+
+                    <div class="seat-type-card__note">
+                        기존 방식 유지: 이미지 업로드 → 스포이드 → 좌석 후보 분석 →
+                        좌석 버튼 생성/보정
+                    </div>
+                </div>
+
+                <button
+                        type="button"
+                        class="seat-type-card__button seat-type-card__button--small"
+                        data-start-type="small">
+                    소극장 제작 시작
+                </button>
+            </article>
+        </div>
+
+        <footer class="start-panel__footer">
+            <button type="button" class="footer-link-button" id="continueWorkBtn">
+                진행중인 작업 불러오기
+            </button>
+
+            <button type="button" class="footer-reset-button" id="resetAllBtn">
+                저장된 작업 전체 초기화
+            </button>
+        </footer>
+    </section>
+</main>
+
+<input class="hidden" type="file" id="concertFileInput" accept="image/*">
+<input class="hidden" type="file" id="smallFileInput" accept="image/*">
+
+<div class="toast" id="toast"></div>
+
+<script src="/js/admin/seatmap-main.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+{{> admin/layout/header}}
+
+<body id="page-top">
+<div id="wrapper">
+    {{> admin/layout/sidebar}}
+
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            {{> admin/layout/topbar}}
+
+            <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">{{pageTitle}}</h1>
+                    <a href="/admin" class="btn btn-sm btn-outline-secondary">대시보드로</a>
+                </div>
+
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">전체 공연 예매율</h6>
+                    </div>
+                    <div class="card-body">
+                        {{#concertSalesRates}}
+                        <div class="mb-4">
+                            <a href="/admin/concerts/{{concertId}}" class="text-decoration-none text-reset">
+                                <h5 class="font-weight-bold">{{title}} <span class="float-right">{{salesRate}}%</span></h5>
+                                <div class="progress mb-2" style="height: 10px;"><div class="progress-bar {{progressBarClass}}" style="width: {{salesRate}}%"></div></div>
+                            </a>
+                            <div class="pl-3">
+                                {{#gradeSalesRates}}
+                                <div class="d-flex justify-content-between text-gray-600" style="font-size: 13px;">
+                                    <span>{{grade}}</span>
+                                    <span>{{soldCount}} / {{totalCount}} ({{salesRate}}%)</span>
+                                </div>
+                                {{/gradeSalesRates}}
+                            </div>
+                        </div>
+                        {{/concertSalesRates}}
+                        {{^concertSalesRates}}
+                        <p class="text-gray-500 small mb-0">등록된 공연 좌석 데이터가 없습니다.</p>
+                        {{/concertSalesRates}}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {{> admin/layout/footer}}
+    </div>
+</div>
+</body>
+</html>
