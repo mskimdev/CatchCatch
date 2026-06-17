@@ -25,6 +25,7 @@ public class NoticeResponse {
     }
 
     public record DetailDTO(
+            Integer id,
             String title,
             String content,
             boolean isPinned,
@@ -32,6 +33,7 @@ public class NoticeResponse {
             String createdAt){
         public DetailDTO(Notice notice){
             this(
+                    notice.getId(),
                     notice.getTitle(),
                     notice.getContent(),
                     notice.isPinned(),

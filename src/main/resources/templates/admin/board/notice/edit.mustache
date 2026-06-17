@@ -43,7 +43,7 @@
                             </div>
 
                             <div class="card-body">
-                                <form id="notice-form" action="/admin/boards/notice/{{notice.id}}/edit" method="post">
+                                <form id="notice-form" data-id="{{notice.id}}">
                                     {{#_csrf}}
                                         <input type="hidden" name="{{parameterName}}" value="{{token}}">
                                     {{/_csrf}}
@@ -130,12 +130,69 @@
 
         <script>
             document.getElementById('notice-form').addEventListener('submit', function (e) {
-                if (!confirm('공지사항을 수정하시겠습니까?')) {
-                    e.preventDefault();
+                e.preventDefault();
+
+                const form = e.currentTarget;
+                const noticeId = form.dataset.id;
+                const submitBtn = document.getElementById('submit-btn');
+                const title = form.querySelector('[name="title"]').value.trim();
+                const content = form.querySelector('[name="content"]').value.trim();
+                const isPinned = form.querySelector('[name="isPinned"]').checked;
+
+                if (!title) {
+                    CcUI.alert('공지사항 제목을 입력해 주세요.', 'warning');
                     return;
                 }
 
-                document.getElementById('submit-btn').disabled = true;
+                if (title.length > 100) {
+                    CcUI.alert('공지사항 제목은 100자 이하로 입력해 주세요.', 'warning');
+                    return;
+                }
+
+                if (!content) {
+                    CcUI.alert('공지사항 내용을 입력해 주세요.', 'warning');
+                    return;
+                }
+
+                const body = {
+                    title: title,
+                    content: content,
+                    isPinned: isPinned
+                };
+
+                CcUI.confirm({
+                    title: '공지사항을 수정하시겠습니까?',
+                    text: '수정한 내용은 사용자 공지사항 화면에 바로 반영됩니다.',
+                    confirmText: '수정',
+                    cancelText: '취소',
+                    onConfirm: async () => {
+                        try {
+                            submitBtn.disabled = true;
+                            CcUI.loading.show('수정 중입니다...');
+
+                            const { res, data } = await apiPut(`/admin/boards/notice/${noticeId}/edit`, body);
+
+                            CcUI.loading.hide();
+
+                            if (!res || !res.ok) {
+                                CcUI.alert(data?.msg ?? '공지사항 수정에 실패했습니다.', 'error');
+                                submitBtn.disabled = false;
+                                return;
+                            }
+
+                            CcUI.toast(data?.body ?? data?.msg ?? '공지사항이 수정되었습니다.');
+
+                            setTimeout(function () {
+                                location.href = '/admin/boards/notice';
+                            }, 500);
+                        } catch (error) {
+                            CcUI.loading.hide();
+                            console.error(error);
+                            CcUI.alert('공지사항 수정 중 오류가 발생했습니다.', 'error');
+                            submitBtn.disabled = false;
+                        }
+                    }
+                });
             });
         </script>
     </div>

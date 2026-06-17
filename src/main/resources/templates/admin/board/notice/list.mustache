@@ -132,8 +132,10 @@
 
                                                 <form action="/admin/boards/notice/{{id}}/delete"
                                                       method="post"
-                                                      class="d-inline"
-                                                      onsubmit="return confirm('공지사항을 삭제하시겠습니까?')">
+                                                      class="d-inline notice-delete-form">
+                                                    {{#_csrf}}
+                                                        <input type="hidden" name="{{parameterName}}" value="{{token}}">
+                                                    {{/_csrf}}
                                                     <button type="submit" class="btn btn-danger btn-sm">
                                                         <i class="fas fa-trash"></i> 삭제
                                                     </button>
@@ -173,6 +175,24 @@
                     "language": {
                         "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Korean.json"
                     }
+                });
+            });
+        </script>
+        <script>
+            document.querySelectorAll('.notice-delete-form').forEach(function (form) {
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+
+                    CcUI.confirm({
+                        title: '공지사항을 삭제하시겠습니까?',
+                        text: '삭제한 공지사항은 되돌릴 수 없습니다.',
+                        confirmText: '삭제',
+                        cancelText: '취소',
+                        danger: true,
+                        onConfirm: function () {
+                            form.submit();
+                        }
+                    });
                 });
             });
         </script>
