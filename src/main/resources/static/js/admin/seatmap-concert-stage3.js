@@ -383,16 +383,46 @@
         writeStorageJson(STORAGE_KEYS.seatJson, exportSeats());
     }
 
-    function downloadSeatJson() {
+    // JSON 으로 저장하기
+    async function saveSeatJsonToServer() {
         const data = JSON.stringify(exportSeats(), null, 2);
         localStorage.setItem(STORAGE_KEYS.seatJson, data);
 
-        const blob = new Blob([data], { type: 'application/json;charset=utf-8' });
-        const anchor = document.createElement('a');
-        anchor.href = URL.createObjectURL(blob);
-        anchor.download = 'concert-seats.json';
-        anchor.click();
-        URL.revokeObjectURL(anchor.href);
+        const fileName = makeSeatMapFileName();
+
+        try {
+            const response = await fetch('/admin/seatmap/json/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    fileName,
+                    json: data,
+                }),
+            });
+
+            if (!response.ok) {
+                showToast('JSON 저장 실패');
+                return;
+            }
+
+            const result = await response.json();
+
+            localStorage.setItem('concert_seat_json_url', result.jsonUrl);
+            showToast(`JSON 저장 완료: ${result.jsonUrl}`);
+
+        } catch (error) {
+            console.error('[SeatBuilder] JSON save failed', error);
+            showToast('JSON 저장 중 오류 발생');
+        }
+    }
+
+    function makeSeatMapFileName() {
+        const concertId = localStorage.getItem('concert_id') || 'concert';
+        const sessionId = localStorage.getItem('concert_session_id') || 'session';
+
+        return `seatmap-${concertId}-${sessionId}.json`;
     }
 
     /* =====================================================
@@ -982,7 +1012,9 @@
             resizeView();
         });
 
-        dom.saveJsonTop.addEventListener('click', downloadSeatJson);
+        // JSON 폴더에 저장하기
+        dom.saveJsonTop.addEventListener('click', saveSeatJsonToServer);
+
         dom.copyJson.addEventListener('click', copyJson);
 
         dom.overlayCanvas.addEventListener('pointerdown', event => {

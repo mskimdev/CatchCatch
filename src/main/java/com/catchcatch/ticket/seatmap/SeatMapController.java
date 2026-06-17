@@ -1,13 +1,19 @@
 package com.catchcatch.ticket.seatmap;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/admin/seatmap")
 public class SeatMapController {
+
+    private final SeatMapService seatMapService;
 
     // 메인 화면 진입
     @GetMapping("main")
@@ -40,4 +46,20 @@ public class SeatMapController {
     /**
      * 소극장 좌석
      */
+    // todo 아직 미완성
+
+    /**
+     * Stage3 좌석 JSON 파일 저장
+     */
+    @ResponseBody
+    @PostMapping("json/save")
+    public ResponseEntity<Map<String, String>> saveSeatMapJson(
+            @RequestBody SeatMapRequest.SaveDTO req
+    ) {
+        String jsonUrl = seatMapService.saveJsonFile(req);
+
+        return ResponseEntity.ok(Map.of(
+                "jsonUrl", jsonUrl
+        ));
+    }
 }
