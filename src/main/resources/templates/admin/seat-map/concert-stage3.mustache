@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concert Stage3 Seat Builder</title>
+    <style>
+        :root{
+          --nav:#0f172a;--panel:#fff;--line:#e5e7eb;--muted:#64748b;--ink:#111827;--bg:#f4f6fa;
+          --violet:#7c3aed;--blue:#2563eb;--green:#10b981;--red:#ef4444;--amber:#f59e0b;--seat:#dedede;
+          --shadow:0 16px 42px rgba(15,23,42,.12)
+        }
+        *{box-sizing:border-box}
+        html,body{height:100%}
+        body{margin:0;font-family:Pretendard,'Noto Sans KR',Arial,sans-serif;background:var(--bg);color:var(--ink);overflow:hidden}
+        button,input,select,textarea{font:inherit}
+        button{cursor:pointer}
+        button:disabled{opacity:.45;cursor:not-allowed}
+        .hidden{display:none!important}
+        .top{height:58px;background:var(--nav);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid #2d374b}
+        .brand{display:flex;align-items:center;gap:12px;font-weight:950;font-size:18px}
+        .brand small{font-size:13px;color:#cbd5e1;font-weight:800}
+        .logo{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#2563eb);display:grid;place-items:center}
+        .top-actions{display:flex;gap:8px}
+        .top-btn{border:1px solid #334155;background:#111c31;color:#fff;text-decoration:none;border-radius:10px;padding:10px 14px;font-weight:900}
+        .top-btn.main{background:linear-gradient(135deg,#7c3aed,#2563eb);border:0}
+        .work{height:calc(100vh - 58px);display:grid;grid-template-columns:380px 1fr 330px;min-width:1260px}
+        .side,.right{background:#fff;border-right:1px solid var(--line);overflow:auto;padding:16px}
+        .right{border-right:0;border-left:1px solid var(--line)}
+        .side-title{margin:2px 0 12px;color:#64748b;font-weight:950;font-size:13px}
+        .part-nav{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+        .part-btn{height:44px;border:1px solid var(--line);border-radius:12px;background:#fff;font-weight:950;color:#172033}
+        .part-btn.active{border-color:#7c3aed;color:#6d28d9;background:#f4f0ff;box-shadow:0 0 0 1px rgba(124,58,237,.18) inset}
+        .box{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}
+        .box.active{border-color:#a78bfa;box-shadow:0 0 0 2px rgba(124,58,237,.10)}
+        .box h3{margin:0 0 12px;font-size:17px}
+        .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .row.three{grid-template-columns:1fr 1fr 1fr}
+        label{display:block;font-size:12px;font-weight:950;color:#64748b;margin:8px 0 6px}
+        input,select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;background:#f8fafc;padding:10px 12px;font-weight:800;outline:none}
+        textarea{height:260px;resize:none;font-family:Consolas,monospace;font-size:12px;line-height:1.45}
+        .btn{height:46px;border:1px solid var(--line);border-radius:12px;background:#fff;font-weight:950;color:#172033}
+        .btn.primary{background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;border:0;width:100%}
+        .btn.dark{background:#0f172a;color:#fff;border:0;width:100%}
+        .btn.green{background:#10b981;color:#fff;border:0;width:100%}
+        .btn.red{background:#ef4444;color:#fff;border:0;width:100%}
+        .btn.amber{background:#f59e0b;color:#fff;border:0;width:100%}
+        .help{background:#f1f5f9;color:#52637a;border-radius:12px;padding:12px;font-size:12px;line-height:1.55;font-weight:800;margin-top:10px}
+        .list{max-height:285px;overflow:auto;padding-right:4px}
+        .item{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px;background:#fff}
+        .item.active{border-color:#8b5cf6;background:#f4f0ff}
+        .item strong{display:block;font-size:14px}
+        .item span{display:block;font-size:12px;color:#64748b;font-weight:800;margin-top:3px}
+        .dot{width:14px;height:14px;border-radius:4px;flex:0 0 auto}
+        .main{position:relative;overflow:auto;background:
+          radial-gradient(circle,#dbeafe 1.2px,transparent 1.3px) 0 0/22px 22px,
+          #fff}
+        .canvas-wrap{width:max-content;margin:32px auto;padding:0 16px 70px}
+        .canvas-card{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+        .canvas-head{height:42px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;padding:0 14px;font-weight:950;color:#475569;font-size:13px}
+        .canvas-box{position:relative;background:#f7f7f7;overflow:hidden}
+        canvas{display:block}
+        #base,#overlay{position:absolute;left:0;top:0}
+        #base{position:relative}
+        .mini-map{position:sticky;top:0;background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:14px;box-shadow:0 12px 24px rgba(15,23,42,.08);z-index:5}
+        .mini-map strong{font-size:14px}
+        .mini-frame{position:relative;margin-top:10px;border-radius:12px;overflow:hidden;background:#f8fafc;border:1px solid #eef2f7}
+        #miniCanvas{width:100%;height:190px;display:block;background:#f7f7f7}
+        .mini-map:hover .mini-frame{position:fixed;right:24px;top:74px;width:520px;height:390px;z-index:50;box-shadow:0 18px 50px rgba(15,23,42,.22)}
+        .mini-map:hover #miniCanvas{width:100%;height:100%}
+        .zoom-box{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+        .zoom-box button{height:36px}
+        .mode-pill{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+        .mode-pill button.active{background:#0f172a;color:#fff;border-color:#0f172a}
+        .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+        .stat{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:10px}
+        .stat b{display:block;font-size:18px}
+        .stat span{font-size:12px;color:#64748b;font-weight:800}
+        .legend{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;font-weight:900;color:#64748b}
+        .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px;vertical-align:-2px}
+        .toast{position:fixed;right:24px;bottom:24px;background:#0f172a;color:white;border-radius:14px;padding:13px 16px;font-weight:950;box-shadow:0 12px 28px rgba(15,23,42,.25);opacity:0;transform:translateY(10px);transition:.18s;z-index:99}
+        .toast.show{opacity:1;transform:translateY(0)}
+    </style>
+</head>
+<body>
+<header class="top">
+    <div class="brand"><span class="logo">▦</span>Concert Stage3 <small>각 구역 좌석 생성</small></div>
+    <div class="top-actions">
+        <a class="top-btn" href="javascript:history.back()">이전</a>
+        <button class="top-btn main" id="saveJsonTop">JSON 저장</button>
+    </div>
+</header>
+
+<div class="work">
+    <aside class="side">
+        <p class="side-title">Stage3 · 3단계 작업</p>
+        <div class="part-nav">
+            <button class="part-btn active" id="partBtn1">파트1 기준</button>
+            <button class="part-btn" id="partBtn2">파트2 수정</button>
+            <button class="part-btn" id="partBtn3">파트3 정리</button>
+        </div>
+
+        <section id="part1Panel">
+            <div class="box active">
+                <h3>파트 1 - 기준 잡기</h3>
+                <label>기준 구역</label>
+                <select id="baseSectionSelect"></select>
+                <div class="row">
+                    <div><label>세로 좌석 수</label><input type="number" id="baseRows" value="5" min="1"></div>
+                    <div><label>가로 좌석 수</label><input type="number" id="baseCols" value="10" min="1"></div>
+                </div>
+                <div class="row">
+                    <button class="btn dark" id="applyBaseOne">기준 구역만 생성</button>
+                    <button class="btn green" id="applyBaseAll">전체 구역 자동 추정</button>
+                </div>
+                <div class="help">
+                    기준 구역에 가로/세로 좌석 수를 입력하면 구역 면적 비율로 다른 구역 좌석 수를 자동 추정합니다.
+                    이후 파트2에서 이상한 구역만 삭제/복구하면 됩니다.
+                </div>
+            </div>
+
+            <div class="box">
+                <h3>구역별 좌석 수</h3>
+                <div class="list" id="sectionsList1"></div>
+            </div>
+
+            <button class="btn primary" id="goPart2">다음: 좌석 세부 수정</button>
+        </section>
+
+        <section id="part2Panel" class="hidden">
+            <div class="box active">
+                <h3>파트 2 - 좌석 수 세부 수정</h3>
+                <label>수정할 구역</label>
+                <select id="editSectionSelect"></select>
+                <div class="row">
+                    <div><label>세로 좌석 수</label><input type="number" id="editRows" value="5" min="1"></div>
+                    <div><label>가로 좌석 수</label><input type="number" id="editCols" value="10" min="1"></div>
+                </div>
+                <button class="btn dark" id="regenSelected">선택 구역 좌석 재생성</button>
+                <div class="help">
+                    아래 화면처럼 선택 구역 좌석만 크게 보여줍니다. 좌석을 드래그해서 삭제/복구/장애석 처리하세요.
+                </div>
+            </div>
+
+            <div class="box">
+                <h3>드래그 작업</h3>
+                <div class="mode-pill">
+                    <button id="modeRemove" class="active">삭제</button>
+                    <button id="modeAvailable">복구</button>
+                    <button id="modeObstructed">장애석</button>
+                </div>
+                <div class="help">
+                    삭제는 최종 JSON에서 제외됩니다. 장애석은 JSON에 <b>OBSTRUCTED</b> 상태로 남습니다.
+                </div>
+            </div>
+
+            <button class="btn primary" id="goPart3">다음: JSON 정리</button>
+        </section>
+
+        <section id="part3Panel" class="hidden">
+            <div class="box active">
+                <h3>파트 3 - 정리 / JSON 변환</h3>
+                <div class="stats">
+                    <div class="stat"><b id="sumFloors">0</b><span>층 수</span></div>
+                    <div class="stat"><b id="sumSections">0</b><span>구역 수</span></div>
+                    <div class="stat"><b id="sumSeats">0</b><span>좌석 수</span></div>
+                    <div class="stat"><b id="sumObstructed">0</b><span>장애석</span></div>
+                </div>
+                <div class="help" id="summaryText">좌석 정보를 생성하세요.</div>
+            </div>
+
+            <div class="box">
+                <h3>저장 JSON 미리보기</h3>
+                <textarea id="jsonPreview" readonly></textarea>
+                <button class="btn green" id="copyJson" style="margin-top:10px">JSON 복사</button>
+            </div>
+        </section>
+    </aside>
+
+    <main class="main">
+        <div class="canvas-wrap">
+            <div class="canvas-card">
+                <div class="canvas-head">
+                    <span id="canvasTitle">파트1 · 기준 구역 선택</span>
+                    <span id="sizeText">-</span>
+                </div>
+                <div class="canvas-box" id="canvasBox">
+                    <canvas id="base"></canvas>
+                    <canvas id="overlay"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <aside class="right">
+        <div class="mini-map">
+            <strong>배치도 미니맵</strong>
+            <div class="mini-frame"><canvas id="miniCanvas"></canvas></div>
+            <div class="zoom-box">
+                <button class="btn" id="zoomOut">-</button>
+                <button class="btn" id="zoomReset">100%</button>
+                <button class="btn" id="zoomIn">+</button>
+            </div>
+            <div class="help">미니맵 구역을 클릭하면 해당 구역 좌석을 미리봅니다. 마우스를 올리면 확대됩니다.</div>
+        </div>
+
+        <div class="box">
+            <h3>선택 구역 미리보기</h3>
+            <div class="stats">
+                <div class="stat"><b id="selName">-</b><span>구역</span></div>
+                <div class="stat"><b id="selCount">0</b><span>좌석</span></div>
+            </div>
+            <div class="legend" style="margin-top:10px">
+                <span><i style="background:#dedede"></i>기본</span>
+                <span><i style="background:#ef4444"></i>선택</span>
+                <span><i style="background:#94a3b8"></i>삭제</span>
+                <span><i style="background:#f59e0b"></i>장애석</span>
+            </div>
+        </div>
+
+        <div class="box">
+            <h3>구역 목록</h3>
+            <div class="list" id="sectionsListRight"></div>
+        </div>
+    </aside>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    const $ = id => document.getElementById(id);
+    const base = $('base');
+    const overlay = $('overlay');
+    const bctx = base.getContext('2d');
+    const octx = overlay.getContext('2d');
+    const miniCanvas = $('miniCanvas');
+    const mctx = miniCanvas.getContext('2d');
+    const box = $('canvasBox');
+
+    let part = 1;
+    let zoom = 1;
+    let W = 0;
+    let H = 0;
+    let gridW = 900;
+    let gridH = 620;
+
+    let imgUrl = localStorage.getItem('concert_overviewImage')
+      || localStorage.getItem('concert_cleanImage')
+      || localStorage.getItem('concert_originalImage');
+
+    let meta = JSON.parse(localStorage.getItem('concert_imageMeta') || '{}');
+    let sections = JSON.parse(localStorage.getItem('concert_sections') || '[]');
+    let seatsBySection = JSON.parse(localStorage.getItem('concert_stage3_seats') || '{}');
+
+    let selectedId = sections[0]?.id || null;
+    let dragPainting = false;
+    let paintMode = 'REMOVED';
+    let stageImg = null;
+
+    function toast(msg){
+      const t=$('toast');
+      t.textContent=msg;
+      t.classList.add('show');
+      setTimeout(()=>t.classList.remove('show'),1800);
+    }
+
+    function rowName(idx){
+      let n = idx + 1;
+      let s = '';
+      while(n > 0){
+        n--;
+        s = String.fromCharCode(97 + (n % 26)) + s;
+        n = Math.floor(n / 26);
+      }
+      return s;
+    }
+
+    function cleanCode(value, fallback){
+      const raw = String(value || fallback || '').trim();
+      const replaced = raw
+        .replace(/^구역\s*/,'')
+        .replace(/층/g,'')
+        .replace(/\s+/g,'')
+        .replace(/[^\w가-힣-]/g,'');
+      return replaced || String(fallback || 'A');
+    }
+
+    function floorCode(sec){
+      const m = String(sec.floor || '1층').match(/\d+/);
+      return m ? m[0] : cleanCode(sec.floor, '1');
+    }
+
+    function sectionCode(sec){
+      return cleanCode(sec.label || sec.name || sec.id, sec.id);
+    }
+
+    function renderPaths(sec){
+      if(sec.buttonShape?.paths?.length) return sec.buttonShape.paths;
+      if(sec.buttonPolygon?.length) return [sec.buttonPolygon];
+      if(sec.polygon?.length) return [sec.polygon];
+      return [];
+    }
+
+    function mainPath(sec){
+      const paths = renderPaths(sec);
+      return paths[0] || [];
+    }
+
+    function bboxOf(poly){
+      if(!poly.length) return {x:0,y:0,w:1,h:1};
+      const xs=poly.map(p=>p.x), ys=poly.map(p=>p.y);
+      return {x:Math.min(...xs), y:Math.min(...ys), w:Math.max(...xs)-Math.min(...xs), h:Math.max(...ys)-Math.min(...ys)};
+    }
+
+    function polygonArea(poly){
+      let sum=0;
+      for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+        sum += poly[j].x*poly[i].y - poly[i].x*poly[j].y;
+      }
+      return Math.abs(sum/2);
+    }
+
+    function sectionArea(sec){
+      const paths = renderPaths(sec);
+      if(!paths.length) return 0;
+      let area = polygonArea(paths[0]);
+      for(let i=1;i<paths.length;i++) area -= polygonArea(paths[i]);
+      return Math.max(0, area);
+    }
+
+    function pointInPoly(p, poly){
+      let inside=false;
+      for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+        const a=poly[i], b=poly[j];
+        const intersect = ((a.y>p.y)!==(b.y>p.y)) && p.x < (b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x;
+        if(intersect) inside=!inside;
+      }
+      return inside;
+    }
+
+    function pointInShape(p, sec){
+      const paths = renderPaths(sec);
+      if(!paths.length) return false;
+      let inside=false;
+      paths.forEach(poly=>{
+        if(pointInPoly(p, poly)) inside = !inside;
+      });
+      return inside;
+    }
+
+    function drawPath(ctx, poly){
+      poly.forEach((p,i)=>i ? ctx.lineTo(p.x,p.y) : ctx.moveTo(p.x,p.y));
+    }
+
+    function drawShape(ctx, sec, fill, stroke, lineWidth=2, dash=[]){
+      const paths = renderPaths(sec);
+      if(!paths.length) return;
+      ctx.save();
+      ctx.beginPath();
+      paths.forEach(poly=>{
+        drawPath(ctx, poly);
+        ctx.closePath();
+      });
+      ctx.fillStyle = fill;
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = lineWidth;
+      ctx.setLineDash(dash);
+      ctx.fill('evenodd');
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function getSection(){
+      return sections.find(s=>s.id===selectedId) || sections[0];
+    }
+
+    function estimateGridByArea(sec, baseSec, baseRows, baseCols){
+      const baseArea = Math.max(1, sectionArea(baseSec));
+      const area = Math.max(1, sectionArea(sec));
+      const baseCount = Math.max(1, baseRows * baseCols);
+      const targetCount = Math.max(1, Math.round(baseCount * area / baseArea));
+
+      const b = bboxOf(mainPath(sec));
+      const aspect = Math.max(.25, b.w / Math.max(1, b.h));
+      let cols = Math.max(1, Math.round(Math.sqrt(targetCount * aspect)));
+      let rows = Math.max(1, Math.ceil(targetCount / cols));
+
+      return {rows, cols};
+    }
+
+    function createSeatsForSection(sec, rows, cols){
+      const path = mainPath(sec);
+      if(!path.length) return [];
+
+      const b = bboxOf(path);
+      const seatW = Math.max(8, Math.min(36, (b.w / cols) * .72));
+      const seatH = Math.max(8, Math.min(36, (b.h / rows) * .72));
+      const seats = [];
+
+      for(let r=0;r<rows;r++){
+        for(let c=0;c<cols;c++){
+          const x = b.x + (c+.5) * b.w / cols;
+          const y = b.y + (r+.5) * b.h / rows;
+
+          if(!pointInShape({x,y}, sec)) continue;
+
+          seats.push({
+            id: sec.id + '-' + rowName(r) + '-' + (c+1),
+            sectionId: sec.id,
+            rowIndex: r,
+            colIndex: c,
+            row: rowName(r),
+            col: c+1,
+            x, y,
+            w: seatW,
+            h: seatH,
+            status: 'AVAILABLE'
+          });
+        }
+      }
+
+      sec.seatRows = rows;
+      sec.seatCols = cols;
+      return seats;
+    }
+
+    function sectionSeatCount(sec){
+      return (seatsBySection[sec.id] || []).filter(s=>s.status!=='REMOVED').length;
+    }
+
+    function exportSeats(){
+      const arr = [];
+      sections.forEach(sec=>{
+        const grade = sec.grade || '일반석';
+        const floor = floorCode(sec);
+        const zone = sectionCode(sec);
+        const seats = seatsBySection[sec.id] || [];
+
+        seats.forEach(seat=>{
+          if(seat.status === 'REMOVED') return;
+          arr.push({
+            id: `${floor}-${zone}-${seat.row}-${seat.col}`,
+            grade,
+            status: seat.status === 'OBSTRUCTED' ? 'OBSTRUCTED' : 'AVAILABLE'
+          });
+        });
+      });
+      return arr;
+    }
+
+    function save(){
+      localStorage.setItem('concert_stage3_seats', JSON.stringify(seatsBySection));
+      localStorage.setItem('concert_sections', JSON.stringify(sections));
+      localStorage.setItem('concert_seat_json', JSON.stringify(exportSeats()));
+    }
+
+    function downloadJson(){
+      const data = JSON.stringify(exportSeats(), null, 2);
+      localStorage.setItem('concert_seat_json', data);
+      const blob = new Blob([data], {type:'application/json;charset=utf-8'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'concert-seats.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function setupCanvas(){
+      if(!sections.length){
+        toast('Stage2에서 구역을 먼저 저장하세요.');
+      }
+
+      if(meta.width && meta.height){
+        W = meta.width;
+        H = meta.height;
+      }else{
+        const allPoints = sections.flatMap(s=>renderPaths(s).flat());
+        W = Math.ceil(Math.max(900, ...allPoints.map(p=>p.x+40)));
+        H = Math.ceil(Math.max(620, ...allPoints.map(p=>p.y+40)));
+      }
+
+      if(!sections.length){
+        sections = [
+          {id:'sec1',name:'A',floor:'1층',grade:'VIP',renderColor:'#8b5cf6',polygon:[{x:180,y:120},{x:360,y:120},{x:360,y:260},{x:180,y:260}]},
+          {id:'sec2',name:'B',floor:'1층',grade:'R',renderColor:'#f472b6',polygon:[{x:390,y:120},{x:570,y:120},{x:570,y:260},{x:390,y:260}]}
+        ];
+        selectedId = sections[0].id;
+        W=760; H=420;
+      }
+
+      miniCanvas.width = W;
+      miniCanvas.height = H;
+
+      if(imgUrl){
+        stageImg = new Image();
+        stageImg.onload=()=>{
+          renderMiniMap();
+          draw();
+        };
+        stageImg.src = imgUrl;
+      }else{
+        renderMiniMap();
+      }
+
+      resizeView();
+    }
+
+    function setCanvasSize(w,h){
+      base.width = overlay.width = w;
+      base.height = overlay.height = h;
+      $('sizeText').textContent = w + ' × ' + h;
+
+      const fit = Math.min(1, 1080 / w, 680 / h);
+      const s = fit * zoom;
+      [base, overlay].forEach(cv=>{
+        cv.style.width = (w*s)+'px';
+        cv.style.height = (h*s)+'px';
+      });
+      box.style.width = (w*s)+'px';
+      box.style.height = (h*s)+'px';
+    }
+
+    function resizeView(){
+      if(part===2){
+        setCanvasSize(gridW, gridH);
+      }else{
+        setCanvasSize(W, H);
+      }
+      draw();
+    }
+
+    function renderMiniMap(){
+      mctx.clearRect(0,0,W,H);
+      mctx.fillStyle='#f7f7f7';
+      mctx.fillRect(0,0,W,H);
+      if(stageImg){
+        mctx.save();
+        mctx.globalAlpha=.28;
+        mctx.drawImage(stageImg,0,0,W,H);
+        mctx.restore();
+      }
+
+      sections.forEach(sec=>{
+        drawShape(
+          mctx,
+          sec,
+          sec.id===selectedId?'rgba(239,68,68,.50)':'rgba(148,163,184,.35)',
+          sec.id===selectedId?'#ef4444':'#cbd5e1',
+          sec.id===selectedId?3:1.3,
+          []
+        );
+      });
+    }
+
+    function drawFullMap(){
+      bctx.clearRect(0,0,W,H);
+      bctx.fillStyle='#f7f7f7';
+      bctx.fillRect(0,0,W,H);
+
+      if(stageImg){
+        bctx.save();
+        bctx.globalAlpha=.28;
+        bctx.drawImage(stageImg,0,0,W,H);
+        bctx.restore();
+      }
+
+      octx.clearRect(0,0,W,H);
+
+      sections.forEach(sec=>{
+        const selected = sec.id === selectedId;
+        drawShape(
+          octx,
+          sec,
+          selected ? 'rgba(239,68,68,.12)' : 'rgba(124,58,237,.06)',
+          selected ? '#ef4444' : (sec.renderColor || sec.stroke || '#8b5cf6'),
+          selected ? 3 : 1.5,
+          selected ? [8,4] : [5,5]
+        );
+      });
+
+      renderMiniMap();
+    }
+
+    function gridLayoutForSelected(){
+      const sec = getSection();
+      const seats = seatsBySection[sec?.id] || [];
+      const rows = sec?.seatRows || Math.max(1, Math.max(...seats.map(s=>s.rowIndex+1), 5));
+      const cols = sec?.seatCols || Math.max(1, Math.max(...seats.map(s=>s.colIndex+1), 10));
+
+      const stageX = 120;
+      const stageY = 14;
+      const stageW = gridW - 240;
+      const stageH = 52;
+
+      const infoY = 78;
+      const labelW = 78;
+      const gridX = 110;
+      const gridY = 115;
+      const gridMaxW = gridW - gridX - 85;
+      const gridMaxH = gridH - gridY - 42;
+
+      const gap = 4;
+      const seatW = Math.max(10, Math.min(34, (gridMaxW - (cols-1)*gap) / cols));
+      const seatH = Math.max(10, Math.min(32, (gridMaxH - (rows-1)*gap) / rows));
+
+      return {sec,seats,rows,cols,stageX,stageY,stageW,stageH,infoY,labelW,gridX,gridY,gap,seatW,seatH};
+    }
+
+    function drawRoundRect(ctx,x,y,w,h,r){
+      r=Math.min(r,w/2,h/2);
+      ctx.beginPath();
+      ctx.moveTo(x+r,y);
+      ctx.lineTo(x+w-r,y);
+      ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+      ctx.lineTo(x+w,y+h-r);
+      ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+      ctx.lineTo(x+r,y+h);
+      ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+      ctx.lineTo(x,y+r);
+      ctx.quadraticCurveTo(x,y,x+r,y);
+      ctx.closePath();
+    }
+
+    function drawSeatGrid(){
+      const layout = gridLayoutForSelected();
+      const sec = layout.sec;
+      const seats = layout.seats;
+
+      bctx.clearRect(0,0,gridW,gridH);
+      octx.clearRect(0,0,gridW,gridH);
+
+      bctx.fillStyle='#f7f7f7';
+      bctx.fillRect(0,0,gridW,gridH);
+
+      bctx.fillStyle='#c9c9c9';
+      bctx.fillRect(layout.stageX, layout.stageY, layout.stageW, layout.stageH);
+      bctx.fillStyle='#fff';
+      bctx.font='bold 18px Arial';
+      bctx.textAlign='center';
+      bctx.textBaseline='middle';
+      bctx.fillText('무대방향 (STAGE)', gridW/2, layout.stageY+layout.stageH/2);
+
+      bctx.fillStyle='#9ca3af';
+      bctx.font='15px Arial';
+      bctx.fillText(`현재 보고 계신 구역은 ${sec?.floor || '1층'} ${sec?.name || '-'} 구역입니다.`, gridW/2, layout.infoY);
+
+      for(let r=0;r<layout.rows;r++){
+        const y = layout.gridY + r*(layout.seatH+layout.gap);
+        bctx.fillStyle='#9ca3af';
+        bctx.font='26px Arial';
+        bctx.textAlign='right';
+        bctx.textBaseline='middle';
+        bctx.fillText(String(r+1), 70, y+layout.seatH/2);
+      }
+
+      const map = new Map();
+      seats.forEach(s=>map.set(s.rowIndex+'-'+s.colIndex, s));
+
+      for(let r=0;r<layout.rows;r++){
+        for(let c=0;c<layout.cols;c++){
+          const seat = map.get(r+'-'+c);
+          const x = layout.gridX + c*(layout.seatW+layout.gap);
+          const y = layout.gridY + r*(layout.seatH+layout.gap);
+
+          if(seat && seat.status==='REMOVED'){
+            bctx.save();
+            bctx.strokeStyle='rgba(148,163,184,.22)';
+            bctx.setLineDash([3,3]);
+            bctx.strokeRect(x,y,layout.seatW,layout.seatH);
+            bctx.restore();
+            continue;
+          }
+
+          bctx.save();
+          drawRoundRect(bctx,x,y,layout.seatW,layout.seatH,2);
+          if(!seat){
+            bctx.fillStyle='rgba(209,213,219,.18)';
+            bctx.strokeStyle='rgba(209,213,219,.28)';
+          }else if(seat.status==='OBSTRUCTED'){
+            bctx.fillStyle='#f59e0b';
+            bctx.strokeStyle='#d97706';
+          }else{
+            bctx.fillStyle='var(--seat)';
+            bctx.strokeStyle='#f8fafc';
+          }
+          bctx.fill();
+          bctx.stroke();
+          bctx.restore();
+        }
+      }
+
+      renderMiniMap();
+    }
+
+    function draw(){
+      if(part===2) drawSeatGrid();
+      else drawFullMap();
+      updateSelectedInfo();
+    }
+
+    function renderSelects(){
+      const opts = sections.map(s=>`<option value="${s.id}">${s.name || s.id} · ${s.floor || '1층'} · ${s.grade || '등급'}</option>`).join('');
+      $('baseSectionSelect').innerHTML = opts;
+      $('editSectionSelect').innerHTML = opts;
+
+      if(selectedId){
+        $('baseSectionSelect').value = selectedId;
+        $('editSectionSelect').value = selectedId;
+      }
+    }
+
+    function renderSectionList(rootId){
+      const root = $(rootId);
+      if(!root) return;
+
+      if(!sections.length){
+        root.innerHTML = '<div class="help">구역 없음</div>';
+        return;
+      }
+
+      root.innerHTML = sections.map(sec=>{
+        const active = sec.id===selectedId ? ' active' : '';
+        const color = sec.renderColor || sec.stroke || '#8b5cf6';
+        const rows = sec.seatRows || 0;
+        const cols = sec.seatCols || 0;
+        const count = sectionSeatCount(sec);
+        return `<div class="item${active}" data-id="${sec.id}">
+          <i class="dot" style="background:${color}"></i>
+          <div>
+            <strong>${sec.name || sec.id}</strong>
+            <span>${sec.floor || '1층'} · ${sec.grade || '등급'} · ${rows}×${cols} · ${count}석</span>
+          </div>
+        </div>`;
+      }).join('');
+
+      root.querySelectorAll('.item').forEach(el=>{
+        el.onclick=()=>selectSection(el.dataset.id);
+      });
+    }
+
+    function renderLists(){
+      renderSelects();
+      renderSectionList('sectionsList1');
+      renderSectionList('sectionsListRight');
+    }
+
+    function selectSection(id){
+      selectedId = id;
+      const sec = getSection();
+      if(sec){
+        $('baseSectionSelect').value = sec.id;
+        $('editSectionSelect').value = sec.id;
+        $('editRows').value = sec.seatRows || $('baseRows').value || 5;
+        $('editCols').value = sec.seatCols || $('baseCols').value || 10;
+      }
+      renderLists();
+      draw();
+    }
+
+    function updateSelectedInfo(){
+      const sec = getSection();
+      if(!sec) return;
+      $('selName').textContent = sec.name || sec.id;
+      $('selCount').textContent = sectionSeatCount(sec);
+    }
+
+    function setPart(n){
+      part=n;
+      $('partBtn1').classList.toggle('active',n===1);
+      $('partBtn2').classList.toggle('active',n===2);
+      $('partBtn3').classList.toggle('active',n===3);
+      $('part1Panel').classList.toggle('hidden',n!==1);
+      $('part2Panel').classList.toggle('hidden',n!==2);
+      $('part3Panel').classList.toggle('hidden',n!==3);
+
+      $('canvasTitle').textContent =
+        n===1 ? '파트1 · 기준 구역 선택'
+        : n===2 ? '파트2 · 선택 구역 좌석 배치'
+        : '파트3 · JSON 정리';
+
+      resizeView();
+      if(n===3) updateSummary();
+      renderLists();
+    }
+
+    function applyBaseOne(){
+      const sec = sections.find(s=>s.id===$('baseSectionSelect').value);
+      if(!sec) return;
+
+      selectedId = sec.id;
+      const rows = Math.max(1, parseInt($('baseRows').value,10)||1);
+      const cols = Math.max(1, parseInt($('baseCols').value,10)||1);
+
+      seatsBySection[sec.id] = createSeatsForSection(sec, rows, cols);
+      save();
+      renderLists();
+      draw();
+      toast(`${sec.name || sec.id} 좌석 생성 완료`);
+    }
+
+    function applyBaseAll(){
+      const baseSec = sections.find(s=>s.id===$('baseSectionSelect').value);
+      if(!baseSec) return;
+
+      const baseRows = Math.max(1, parseInt($('baseRows').value,10)||1);
+      const baseCols = Math.max(1, parseInt($('baseCols').value,10)||1);
+
+      sections.forEach(sec=>{
+        let grid;
+        if(sec.id === baseSec.id){
+          grid = {rows:baseRows, cols:baseCols};
+        }else{
+          grid = estimateGridByArea(sec, baseSec, baseRows, baseCols);
+        }
+        seatsBySection[sec.id] = createSeatsForSection(sec, grid.rows, grid.cols);
+      });
+
+      selectedId = baseSec.id;
+      save();
+      renderLists();
+      draw();
+      toast('전체 구역 좌석 수 자동 추정 완료');
+    }
+
+    function regenSelected(){
+      const sec = sections.find(s=>s.id===$('editSectionSelect').value);
+      if(!sec) return;
+
+      selectedId = sec.id;
+      const rows = Math.max(1, parseInt($('editRows').value,10)||1);
+      const cols = Math.max(1, parseInt($('editCols').value,10)||1);
+      seatsBySection[sec.id] = createSeatsForSection(sec, rows, cols);
+      save();
+      renderLists();
+      draw();
+      toast('선택 구역 좌석 재생성 완료');
+    }
+
+    function pos(e){
+      const r = overlay.getBoundingClientRect();
+      return {
+        x:(e.clientX-r.left)*overlay.width/r.width,
+        y:(e.clientY-r.top)*overlay.height/r.height
+      };
+    }
+
+    function gridSeatAtPoint(p){
+      const layout = gridLayoutForSelected();
+      const sec = layout.sec;
+      if(!sec) return null;
+
+      const col = Math.floor((p.x - layout.gridX) / (layout.seatW + layout.gap));
+      const row = Math.floor((p.y - layout.gridY) / (layout.seatH + layout.gap));
+
+      if(row < 0 || col < 0 || row >= layout.rows || col >= layout.cols) return null;
+
+      const rx = layout.gridX + col*(layout.seatW+layout.gap);
+      const ry = layout.gridY + row*(layout.seatH+layout.gap);
+      if(p.x > rx + layout.seatW || p.y > ry + layout.seatH) return null;
+
+      const seats = seatsBySection[sec.id] || [];
+      return seats.find(s=>s.rowIndex===row && s.colIndex===col) || null;
+    }
+
+    function paintSeatAt(p){
+      const seat = gridSeatAtPoint(p);
+      if(!seat) return;
+
+      if(paintMode === 'AVAILABLE') seat.status = 'AVAILABLE';
+      else if(paintMode === 'OBSTRUCTED') seat.status = 'OBSTRUCTED';
+      else seat.status = 'REMOVED';
+
+      save();
+      draw();
+    }
+
+    function updateSummary(){
+      const data = exportSeats();
+      const floors = new Set(sections.map(s=>floorCode(s))).size;
+      const obstructed = data.filter(s=>s.status==='OBSTRUCTED').length;
+      $('sumFloors').textContent = floors;
+      $('sumSections').textContent = sections.length;
+      $('sumSeats').textContent = data.length;
+      $('sumObstructed').textContent = obstructed;
+
+      const byGrade = {};
+      data.forEach(s=>byGrade[s.grade]=(byGrade[s.grade]||0)+1);
+      const gradeText = Object.entries(byGrade).map(([g,c])=>`${g} ${c}석`).join(' · ') || '좌석 없음';
+
+      $('summaryText').textContent =
+        `최종 층 수 ${floors}개, 구역 ${sections.length}개, 좌석 ${data.length}석입니다. ` +
+        `장애석 ${obstructed}석. 등급별: ${gradeText}`;
+
+      $('jsonPreview').value = JSON.stringify(data, null, 2);
+    }
+
+    function copyJson(){
+      const text = $('jsonPreview').value;
+      navigator.clipboard?.writeText(text);
+      toast('JSON 복사 완료');
+    }
+
+    function setMode(mode){
+      paintMode = mode;
+      $('modeRemove').classList.toggle('active', mode==='REMOVED');
+      $('modeAvailable').classList.toggle('active', mode==='AVAILABLE');
+      $('modeObstructed').classList.toggle('active', mode==='OBSTRUCTED');
+    }
+
+    function miniPos(e){
+      const r = miniCanvas.getBoundingClientRect();
+      return {
+        x:(e.clientX-r.left)*miniCanvas.width/r.width,
+        y:(e.clientY-r.top)*miniCanvas.height/r.height
+      };
+    }
+
+    function init(){
+      setupCanvas();
+      renderLists();
+
+      const sec = getSection();
+      if(sec){
+        $('editRows').value = sec.seatRows || 5;
+        $('editCols').value = sec.seatCols || 10;
+      }
+
+      setPart(1);
+    }
+
+    $('partBtn1').onclick=()=>setPart(1);
+    $('partBtn2').onclick=()=>setPart(2);
+    $('partBtn3').onclick=()=>setPart(3);
+    $('goPart2').onclick=()=>setPart(2);
+    $('goPart3').onclick=()=>setPart(3);
+
+    $('baseSectionSelect').onchange=e=>selectSection(e.target.value);
+    $('editSectionSelect').onchange=e=>selectSection(e.target.value);
+
+    $('applyBaseOne').onclick=applyBaseOne;
+    $('applyBaseAll').onclick=applyBaseAll;
+    $('regenSelected').onclick=regenSelected;
+
+    $('modeRemove').onclick=()=>setMode('REMOVED');
+    $('modeAvailable').onclick=()=>setMode('AVAILABLE');
+    $('modeObstructed').onclick=()=>setMode('OBSTRUCTED');
+
+    $('zoomIn').onclick=()=>{zoom=Math.min(3,zoom+.15);resizeView();};
+    $('zoomOut').onclick=()=>{zoom=Math.max(.35,zoom-.15);resizeView();};
+    $('zoomReset').onclick=()=>{zoom=1;resizeView();};
+
+    $('saveJsonTop').onclick=downloadJson;
+    $('copyJson').onclick=copyJson;
+
+    overlay.onpointerdown=e=>{
+      const p = pos(e);
+
+      if(part===2){
+        dragPainting = true;
+        paintSeatAt(p);
+        return;
+      }
+
+      const hit = [...sections].reverse().find(sec=>pointInShape(p, sec));
+      if(hit) selectSection(hit.id);
+    };
+
+    window.onpointermove=e=>{
+      if(dragPainting && part===2) paintSeatAt(pos(e));
+    };
+
+    window.onpointerup=()=>{dragPainting=false;};
+
+    miniCanvas.onclick=e=>{
+      const p = miniPos(e);
+      const hit = [...sections].reverse().find(sec=>pointInShape(p, sec));
+      if(hit){
+        selectSection(hit.id);
+        setPart(2);
+      }
+    };
+
+    init();
+</script>
+</body>
+</html>
