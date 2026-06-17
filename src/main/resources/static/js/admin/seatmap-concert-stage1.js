@@ -1,3 +1,4 @@
+// stage1 js
 (() => {
     "use strict";
 

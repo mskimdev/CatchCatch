@@ -1,18 +1,28 @@
 {{> admin/layout/seatmap-header}}
+{{> admin/layout/seatmap-workspace}}
 
 <link href="/admin/css/seatmap-concert-stage2.css" rel="stylesheet">
 
 <body>
 <div class="app" id="stage2App" data-stage1-url="{{stage1Url}}" data-stage3-url="{{stage3Url}}">
 
-    <div class="work">
-        <aside class="side">
-            <p class="side-title">Stage2 · 4단계 작업</p>
+    <div class="seatmap-workspace seatmap-workspace--stage2">
+        <aside class="seatmap-side seatmap-side--left">
+            <p class="seatmap-side__title">Stage2 · 4단계 작업</p>
             <div class="part-nav">
                 <button class="part-btn active" id="partBtn1">파트1 추출</button>
                 <button class="part-btn" id="partBtn2">파트2 오토</button>
                 <button class="part-btn" id="partBtn3">파트3 보정</button>
                 <button class="part-btn" id="partBtn4">파트4 컬러</button>
+            </div>
+
+            <div class="box">
+                <h3>스테이지 이동</h3>
+                <div class="row">
+                    <button type="button" class="btn" id="backStage1Btn">Stage1 이동</button>
+                    <button type="button" class="btn green" id="toStage3Btn">Stage3 이동</button>
+                </div>
+                <button type="button" class="btn red" id="resetStage2Btn">Stage2 초기화</button>
             </div>
 
             <section id="part1Panel">
@@ -284,7 +294,7 @@
             </section>
         </aside>
 
-        <main class="main">
+        <main class="seatmap-main">
             <div class="canvas-wrap">
                 <div class="canvas-head">
                     <span id="canvasTitle">구역 도형화 도면</span>
@@ -297,7 +307,7 @@
             </div>
         </main>
 
-        <aside class="right">
+        <aside class="seatmap-side seatmap-side--right">
             <div class="minimap">
                 <h3 style="font-size: 13px; margin: 0 0 8px">원본 미니맵</h3>
                 <img id="miniImg" alt="원본 미니맵" />

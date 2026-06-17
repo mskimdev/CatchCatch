@@ -1,0 +1,566 @@
+:root {
+    --seatmap-nav: #0f172a;
+    --seatmap-panel: #ffffff;
+    --seatmap-line: #e5e7eb;
+    --seatmap-muted: #64748b;
+    --seatmap-ink: #111827;
+    --seatmap-bg: #f4f6fa;
+    --seatmap-soft: #f1f5f9;
+    --seatmap-violet: #7c3aed;
+    --seatmap-blue: #2563eb;
+    --seatmap-green: #10b981;
+    --seatmap-red: #ef4444;
+    --seatmap-amber: #f59e0b;
+    --seatmap-shadow: 0 16px 42px rgba(15, 23, 42, 0.12);
+    --seatmap-header-height: 58px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    overflow: hidden;
+    background: var(--seatmap-bg);
+    color: var(--seatmap-ink);
+    font-family: Pretendard, "Noto Sans KR", Arial, sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.mt-10 {
+    margin-top: 10px;
+}
+
+/* =========================================================
+   Seatmap 공통 3단 레이아웃
+   left side / center canvas / right side
+========================================================= */
+
+.seatmap-app,
+.app {
+    height: 100vh;
+    min-height: 0;
+}
+
+.seatmap-workspace {
+    display: grid;
+    grid-template-columns: 360px minmax(0, 1fr) 300px;
+    height: calc(100vh - var(--seatmap-header-height));
+    min-height: 0;
+    background: var(--seatmap-bg);
+}
+
+.seatmap-workspace--stage1 {
+    grid-template-columns: 360px minmax(0, 1fr) 300px;
+}
+
+.seatmap-workspace--stage2 {
+    grid-template-columns: 360px minmax(0, 1fr) 280px;
+}
+
+.seatmap-workspace--stage3 {
+    grid-template-columns: 380px minmax(0, 1fr) 330px;
+    min-width: 1260px;
+}
+
+.seatmap-side {
+    min-width: 0;
+    overflow: auto;
+    padding: 16px;
+    background: var(--seatmap-panel);
+}
+
+.seatmap-side--left {
+    border-right: 1px solid var(--seatmap-line);
+}
+
+.seatmap-side--right {
+    border-left: 1px solid var(--seatmap-line);
+}
+
+.seatmap-side__title {
+    margin: 2px 0 12px;
+    color: #738099;
+    font-size: 12px;
+    font-weight: 950;
+    letter-spacing: 0.06em;
+}
+
+.seatmap-main {
+    position: relative;
+    min-width: 0;
+    overflow: auto;
+    background:
+        radial-gradient(circle, #dbeafe 1px, transparent 1.1px) 0 0 / 20px 20px,
+        #ffffff;
+}
+
+/* =========================================================
+   Common cards / text
+========================================================= */
+
+.box,
+.seatmap-card,
+.minimap,
+.mini-map,
+.preview-card {
+    margin-bottom: 12px;
+    padding: 13px;
+    border: 1px solid var(--seatmap-line);
+    border-radius: 16px;
+    background: #ffffff;
+}
+
+.box.active {
+    border-color: #a78bfa;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08);
+}
+
+.box h3,
+.seatmap-card h3,
+.minimap h3,
+.mini-map h3,
+.preview-card h3 {
+    margin: 0 0 10px;
+    font-size: 15px;
+}
+
+.help,
+.help-text,
+.note,
+.seatmap-help {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 11px;
+    background: var(--seatmap-soft);
+    color: var(--seatmap-muted);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.55;
+}
+
+/* =========================================================
+   Form / Button
+========================================================= */
+
+label {
+    display: block;
+    margin: 0 0 5px;
+    color: var(--seatmap-muted);
+    font-size: 10px;
+    font-weight: 900;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    border: 1px solid var(--seatmap-line);
+    border-radius: 9px;
+    outline: 0;
+    background: #f8fafc;
+    font-weight: 800;
+}
+
+input,
+select {
+    height: 34px;
+    padding: 0 9px;
+}
+
+textarea {
+    min-height: 240px;
+    padding: 10px 12px;
+    resize: none;
+    font-family: Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #8b5cf6;
+    background: #ffffff;
+}
+
+input[type="range"] {
+    height: 20px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.row,
+.field-grid {
+    display: grid;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.row,
+.field-grid--two {
+    grid-template-columns: 1fr 1fr;
+}
+
+.row.three,
+.field-grid--three {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.btn,
+.button {
+    width: 100%;
+    min-height: 39px;
+    border: 1px solid var(--seatmap-line);
+    border-radius: 10px;
+    background: #ffffff;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 950;
+}
+
+.btn + .btn,
+.button + .button {
+    margin-top: 8px;
+}
+
+.btn.primary,
+.btn--primary,
+.button--primary {
+    border: 0;
+    background: linear-gradient(135deg, var(--seatmap-violet), var(--seatmap-blue));
+    color: #ffffff;
+}
+
+.btn.dark,
+.btn--dark,
+.button--dark {
+    border: 0;
+    background: #111827;
+    color: #ffffff;
+}
+
+.btn.green,
+.btn--green,
+.button--success {
+    border: 0;
+    background: var(--seatmap-green);
+    color: #ffffff;
+}
+
+.btn.red,
+.btn--red,
+.button--danger {
+    border: 0;
+    background: var(--seatmap-red);
+    color: #ffffff;
+}
+
+.btn.amber,
+.btn--amber,
+.button--warning {
+    border: 0;
+    background: var(--seatmap-amber);
+    color: #ffffff;
+}
+
+/* =========================================================
+   Part navigation
+========================================================= */
+
+.tabs,
+.part-nav {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.tabs {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.seatmap-workspace--stage2 .part-nav {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.seatmap-workspace--stage3 .part-nav {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.tab,
+.part-btn,
+.part-nav__button {
+    min-height: 38px;
+    border: 1px solid var(--seatmap-line);
+    border-radius: 10px;
+    background: #ffffff;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 950;
+}
+
+.tab.active,
+.part-btn.active,
+.part-nav__button.active {
+    border-color: #8b5cf6;
+    background: #f5f3ff;
+    color: #6d28d9;
+}
+
+/* =========================================================
+   Canvas common
+========================================================= */
+
+.canvas-wrap {
+    width: max-content;
+    margin: 28px auto 90px;
+    position: relative;
+}
+
+.canvas-head,
+.canvas-card__header {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+    border: 1px solid var(--seatmap-line);
+    border-bottom: 0;
+    border-radius: 16px 16px 0 0;
+    padding: 0 14px;
+    color: var(--seatmap-muted);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.canvas-card {
+    overflow: hidden;
+    padding: 0;
+    box-shadow: var(--seatmap-shadow);
+}
+
+.canvas-card__header {
+    border: 0;
+    border-bottom: 1px solid var(--seatmap-line);
+    border-radius: 0;
+}
+
+.canvas-box {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--seatmap-line);
+    background: #ffffff;
+    box-shadow: var(--seatmap-shadow);
+}
+
+.canvas-card .canvas-box {
+    border: 0;
+    box-shadow: none;
+    background: #f7f7f7;
+}
+
+.canvas-box canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.canvas-box canvas.base,
+.canvas-box #base {
+    position: relative;
+    display: block;
+}
+
+/* =========================================================
+   Lists / legend / stats
+========================================================= */
+
+.section-list {
+    display: grid;
+    gap: 7px;
+    max-height: 285px;
+    overflow: auto;
+    padding-right: 4px;
+}
+
+.sec-row,
+.section-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--seatmap-line);
+    border-radius: 10px;
+    padding: 8px;
+    background: #ffffff;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.sec-row.active,
+.section-item.active {
+    border-color: #8b5cf6;
+    background: #f5f3ff;
+}
+
+.sec-dot,
+.section-item__color {
+    width: 13px;
+    height: 13px;
+    border-radius: 4px;
+    background: #d9d9d9;
+    flex: 0 0 auto;
+}
+
+.sec-row strong,
+.section-item strong {
+    display: block;
+    font-size: 12px;
+}
+
+.sec-row span,
+.section-item span {
+    display: block;
+    color: var(--seatmap-muted);
+    font-size: 10px;
+    margin-top: 2px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.stat {
+    padding: 10px;
+    border: 1px solid var(--seatmap-line);
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+.stat b {
+    display: block;
+    font-size: 18px;
+}
+
+.stat span {
+    color: var(--seatmap-muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.legend {
+    display: grid;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.legend-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #475569;
+    border: 1px solid var(--seatmap-line);
+    border-radius: 9px;
+    padding: 7px;
+    background: #f8fafc;
+}
+
+.legend-row i {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+.json-box {
+    max-height: 140px;
+    overflow: auto;
+    background: #0f172a;
+    color: #dbeafe;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+/* =========================================================
+   Right panel common
+========================================================= */
+
+.minimap img,
+.preview-card canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 1px solid #edf2f7;
+    border-radius: 10px;
+    background: #f7f7f7;
+}
+
+.preview-card canvas {
+    position: relative;
+}
+
+/* =========================================================
+   Toast
+========================================================= */
+
+.toast {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 100;
+    padding: 12px 15px;
+    border-radius: 12px;
+    background: #111827;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 900;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: 0.16s;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: none;
+}
+
+@media (max-width: 1200px) {
+    .seatmap-workspace {
+        grid-template-columns: 330px minmax(0, 1fr);
+    }
+
+    .seatmap-side--right {
+        display: none;
+    }
+}

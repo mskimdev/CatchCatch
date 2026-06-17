@@ -1,11 +1,14 @@
 {{> admin/layout/seatmap-header}}
+{{> admin/layout/seatmap-workspace}}
 
 <link href="/admin/css/seatmap-concert-stage1.css" rel="stylesheet">
 
 <body>
-<div class="work">
-    <aside class="side">
-        <p class="side-title">Stage1 · 파트 분리</p>
+<div class="seatmap-workspace seatmap-workspace--stage1">
+
+    <!-- 왼쪽: 단계별 작업 패널 -->
+    <aside class="seatmap-side seatmap-side--left">
+        <p class="seatmap-side__title">Stage1 · 파트 분리</p>
 
         <div class="tabs">
             <button type="button" class="tab active" id="tab1">파트1 자르기</button>
@@ -20,21 +23,12 @@
                 <button type="button" class="btn btn--dark" id="cropStart">범위 드래그 시작</button>
                 <button type="button" class="btn" id="cropApply" disabled>선택 범위로 자르기</button>
                 <button type="button" class="btn btn--primary" id="go2">다음: 색상 추출</button>
-
-                <div class="help">
-                    도면 영역만 남기고 제목/범례/여백은 제거하세요.
-                </div>
             </div>
         </section>
 
         <section id="part2" class="hidden">
             <div class="box active">
                 <h3>파트 2 - 색상 선택 추출</h3>
-
-                <div class="help">
-                    오른쪽 이미지를 클릭하면 해당 색상이 추가되고 즉시 미리보기에 반영됩니다.
-                    원본은 선명하게 두고 선택된 도형 영역만 위에 덮어 표시합니다.
-                </div>
 
                 <div id="samples"></div>
 
@@ -117,16 +111,12 @@
                     <button type="button" class="btn btn--green" id="saveClean">Stage1 저장</button>
                     <button type="button" class="btn btn--primary" id="toStage3">Stage2 이동</button>
                 </div>
-
-                <div class="help">
-                    숫자 때문에 비어 보이는 부분은 <b>브러쉬 채우기</b>로 드래그해서 메우세요.
-                    실제 좌석 버튼이 아니라 Stage2 도면용 회색 사각형입니다.
-                </div>
             </div>
         </section>
     </aside>
 
-    <main class="main">
+    <!-- 가운데: 메인 캔버스 -->
+    <main class="seatmap-main">
         <div class="canvas-wrap">
             <div class="canvas-head">
                 <span id="title">원본 / 자르기</span>
@@ -140,6 +130,35 @@
             </div>
         </div>
     </main>
+
+    <!-- 오른쪽: 설명 / 작업 가이드 -->
+    <aside class="seatmap-side seatmap-side--right">
+        <div class="box">
+            <h3>작업 안내</h3>
+            <div class="help">Stage1은 도면 이미지를 좌석 구역 추출용 이미지로 정리하는 단계입니다.</div>
+        </div>
+
+        <div class="box">
+            <h3>파트 1</h3>
+            <div class="help">도면 영역만 남기고 제목, 범례, 여백은 제거하세요.</div>
+        </div>
+
+        <div class="box">
+            <h3>파트 2</h3>
+            <div class="help">
+                가운데 이미지를 클릭하면 해당 색상이 추가되고 미리보기에 반영됩니다.
+                원본은 유지하고 선택된 도형 영역만 위에 덮어 표시합니다.
+            </div>
+        </div>
+
+        <div class="box">
+            <h3>파트 3</h3>
+            <div class="help">
+                숫자 때문에 비어 보이는 부분은 <b>브러쉬 채우기</b>로 드래그해서 메우세요.
+                실제 좌석 버튼이 아니라 Stage2 도면용 회색 사각형입니다.
+            </div>
+        </div>
+    </aside>
 </div>
 
 <div class="toast" id="toast"></div>

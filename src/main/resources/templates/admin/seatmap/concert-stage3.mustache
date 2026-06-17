@@ -1,19 +1,25 @@
 {{> admin/layout/seatmap-header}}
+{{> admin/layout/seatmap-workspace}}
 
 <link href="/admin/css/seatmap-concert-stage3.css" rel="stylesheet">
 
 <body>
+<div class="seatmap-workspace seatmap-workspace--stage3">
 
-<div class="workspace">
     <!-- 왼쪽: 단계별 작업 패널 -->
-    <aside class="sidebar sidebar--left">
-        <p class="sidebar__title">Stage3 · 3단계 작업</p>
+    <aside class="seatmap-side seatmap-side--left">
+        <p class="seatmap-side__title">Stage3 · 3단계 작업</p>
 
         <nav class="part-nav" aria-label="작업 단계 선택">
             <button class="part-nav__button active" id="partBtn1">파트1 기준</button>
             <button class="part-nav__button" id="partBtn2">파트2 수정</button>
             <button class="part-nav__button" id="partBtn3">파트3 정리</button>
         </nav>
+
+        <div class="box">
+            <h3>JSON 저장</h3>
+            <button class="button button--success" id="saveJsonTop">JSON 파일 저장</button>
+        </div>
 
         <!-- Part 1: 기준 구역 설정 -->
         <section id="part1Panel">
@@ -116,7 +122,7 @@
     </aside>
 
     <!-- 가운데: 메인 캔버스 -->
-    <main class="canvas-area">
+    <main class="seatmap-main">
         <div class="canvas-wrap">
             <div class="canvas-card">
                 <div class="canvas-card__header">
@@ -132,7 +138,7 @@
     </main>
 
     <!-- 오른쪽: 미니맵/구역 목록 -->
-    <aside class="sidebar sidebar--right">
+    <aside class="seatmap-side seatmap-side--right">
         <div class="mini-map">
             <strong>배치도 미니맵</strong>
             <div class="mini-map__frame">
@@ -168,5 +174,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<script src="/js/admin/seatmap-concert-stage3.js" defer></script>
 </body>
 </html>

@@ -1,13 +1,6 @@
-// 위치 예시: src/main/resources/static/js/admin/seatmap/concert-stage2.js
+// stage2 js
 (() => {
-  // Concert Stage2 editor
-  //
-  // 수정 위치 요약:
-  // - 파트/패널 전환: setPart(), renderAll()
-  // - 구역 자동 추출: analyzeAll(), isShapePixel(), polygonFromCells()
-  // - 회색 도형 면 생성: makeButtonForSection(), faceFromGrayInsideSection()
-  // - 컬러 구역도: drawFinalMap(), renderPreview()
-  // - 저장 JSON: updateJson(), saveStage2()
+
 
   // ============================================================
   // 1. DOM / Canvas / 전역 상태
