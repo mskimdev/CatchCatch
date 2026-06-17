@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concert Stage3 Seat Builder</title>
+    <link rel="stylesheet" href="/css/seatmap-concert-stage3.css">
+    <script src="/js/admin/seatmap-concert-stage3.js" defer></script>
+</head>
+<body>
+<header class="top-bar">
+    <div class="brand">
+        <span class="brand__logo">▦</span>
+        Concert Stage3
+        <small>각 구역 좌석 생성</small>
+    </div>
+
+    <div class="top-actions">
+        <a class="top-button" href="javascript:history.back()">이전</a>
+        <button class="top-button top-button--primary" id="saveJsonTop">JSON 저장</button>
+    </div>
+</header>
+
+<div class="workspace">
+    <!-- 왼쪽: 단계별 작업 패널 -->
+    <aside class="sidebar sidebar--left">
+        <p class="sidebar__title">Stage3 · 3단계 작업</p>
+
+        <nav class="part-nav" aria-label="작업 단계 선택">
+            <button class="part-nav__button active" id="partBtn1">파트1 기준</button>
+            <button class="part-nav__button" id="partBtn2">파트2 수정</button>
+            <button class="part-nav__button" id="partBtn3">파트3 정리</button>
+        </nav>
+
+        <!-- Part 1: 기준 구역 설정 -->
+        <section id="part1Panel">
+            <div class="box active">
+                <h3>파트 1 - 기준 잡기</h3>
+
+                <label for="baseSectionSelect">기준 구역</label>
+                <select id="baseSectionSelect"></select>
+
+                <div class="field-grid field-grid--two">
+                    <div>
+                        <label for="baseRows">세로 좌석 수</label>
+                        <input type="number" id="baseRows" value="5" min="1">
+                    </div>
+                    <div>
+                        <label for="baseCols">가로 좌석 수</label>
+                        <input type="number" id="baseCols" value="10" min="1">
+                    </div>
+                </div>
+
+                <div class="field-grid field-grid--two">
+                    <button class="button button--dark" id="applyBaseOne">기준 구역만 생성</button>
+                    <button class="button button--success" id="applyBaseAll">전체 구역 자동 추정</button>
+                </div>
+
+                <div class="help-text">
+                    기준 구역에 가로/세로 좌석 수를 입력하면 구역 면적 비율로 다른 구역 좌석 수를 자동 추정합니다.
+                    이후 파트2에서 이상한 구역만 삭제/복구하면 됩니다.
+                </div>
+            </div>
+
+            <div class="box">
+                <h3>구역별 좌석 수</h3>
+                <div class="section-list" id="sectionsList1"></div>
+            </div>
+
+            <button class="button button--primary" id="goPart2">다음: 좌석 세부 수정</button>
+        </section>
+
+        <!-- Part 2: 좌석 편집 -->
+        <section id="part2Panel" class="hidden">
+            <div class="box active">
+                <h3>파트 2 - 좌석 수 세부 수정</h3>
+
+                <label for="editSectionSelect">수정할 구역</label>
+                <select id="editSectionSelect"></select>
+
+                <div class="field-grid field-grid--two">
+                    <div>
+                        <label for="editRows">세로 좌석 수</label>
+                        <input type="number" id="editRows" value="5" min="1">
+                    </div>
+                    <div>
+                        <label for="editCols">가로 좌석 수</label>
+                        <input type="number" id="editCols" value="10" min="1">
+                    </div>
+                </div>
+
+                <button class="button button--dark" id="regenSelected">선택 구역 좌석 재생성</button>
+
+                <div class="help-text">
+                    아래 화면처럼 선택 구역 좌석만 크게 보여줍니다. 좌석을 드래그해서 삭제/복구/장애석 처리하세요.
+                </div>
+            </div>
+
+            <div class="box">
+                <h3>드래그 작업</h3>
+                <div class="mode-group">
+                    <button id="modeRemove" class="active">삭제</button>
+                    <button id="modeAvailable">복구</button>
+                    <button id="modeObstructed">장애석</button>
+                </div>
+                <div class="help-text">
+                    삭제는 최종 JSON에서 제외됩니다. 장애석은 JSON에 <b>OBSTRUCTED</b> 상태로 남습니다.
+                </div>
+            </div>
+
+            <button class="button button--primary" id="goPart3">다음: JSON 정리</button>
+        </section>
+
+        <!-- Part 3: 결과 확인 -->
+        <section id="part3Panel" class="hidden">
+            <div class="box active">
+                <h3>파트 3 - 정리 / JSON 변환</h3>
+                <div class="stats">
+                    <div class="stat"><b id="sumFloors">0</b><span>층 수</span></div>
+                    <div class="stat"><b id="sumSections">0</b><span>구역 수</span></div>
+                    <div class="stat"><b id="sumSeats">0</b><span>좌석 수</span></div>
+                    <div class="stat"><b id="sumObstructed">0</b><span>장애석</span></div>
+                </div>
+                <div class="help-text" id="summaryText">좌석 정보를 생성하세요.</div>
+            </div>
+
+            <div class="box">
+                <h3>저장 JSON 미리보기</h3>
+                <textarea id="jsonPreview" readonly></textarea>
+                <button class="button button--success mt-10" id="copyJson">JSON 복사</button>
+            </div>
+        </section>
+    </aside>
+
+    <!-- 가운데: 메인 캔버스 -->
+    <main class="canvas-area">
+        <div class="canvas-wrap">
+            <div class="canvas-card">
+                <div class="canvas-card__header">
+                    <span id="canvasTitle">파트1 · 기준 구역 선택</span>
+                    <span id="sizeText">-</span>
+                </div>
+                <div class="canvas-box" id="canvasBox">
+                    <canvas id="base"></canvas>
+                    <canvas id="overlay"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 오른쪽: 미니맵/구역 목록 -->
+    <aside class="sidebar sidebar--right">
+        <div class="mini-map">
+            <strong>배치도 미니맵</strong>
+            <div class="mini-map__frame">
+                <canvas id="miniCanvas"></canvas>
+            </div>
+            <div class="zoom-controls">
+                <button class="button" id="zoomOut">-</button>
+                <button class="button" id="zoomReset">100%</button>
+                <button class="button" id="zoomIn">+</button>
+            </div>
+            <div class="help-text">미니맵 구역을 클릭하면 해당 구역 좌석을 미리봅니다. 마우스를 올리면 확대됩니다.</div>
+        </div>
+
+        <div class="box">
+            <h3>선택 구역 미리보기</h3>
+            <div class="stats">
+                <div class="stat"><b id="selName">-</b><span>구역</span></div>
+                <div class="stat"><b id="selCount">0</b><span>좌석</span></div>
+            </div>
+            <div class="legend mt-10">
+                <span><i class="legend__color legend__color--default"></i>기본</span>
+                <span><i class="legend__color legend__color--selected"></i>선택</span>
+                <span><i class="legend__color legend__color--removed"></i>삭제</span>
+                <span><i class="legend__color legend__color--obstructed"></i>장애석</span>
+            </div>
+        </div>
+
+        <div class="box">
+            <h3>구역 목록</h3>
+            <div class="section-list" id="sectionsListRight"></div>
+        </div>
+    </aside>
+</div>
+
+<div class="toast" id="toast"></div>
+</body>
+</html>
