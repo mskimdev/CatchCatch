@@ -31,8 +31,9 @@ public class Venue {
     @CreationTimestamp
     private Timestamp createdAt;
 
-    @Column(name = "seat_json_url", length = 500)
-    private String seatLayoutUrl;
+    // JSON 경로 저장
+    @Column(name = "seat_map_file_path")
+    private String seatMapFilePath;
 
     @Builder
     public Venue(String name, String address, Integer totalCapacity) {

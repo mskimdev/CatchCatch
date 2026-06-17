@@ -28,32 +28,12 @@ public class AdminSeatApiController {
 
     @PostMapping
     public ResponseEntity<Resp<String>> setupSessionSeats(
-            @PathVariable Integer sessionId,
-            @RequestBody List<SeatRequest.SeatJsonDTO> requestDTOs
-            ){
-        // 방어적 코드
-        if (requestDTOs == null || requestDTOs.isEmpty()){
-            throw new BadRequestException("등록할 좌석 데이터가 존재하지 않습니다.");
-        }
-        seatService.createSeatsFromJson(sessionId, requestDTOs);
+            @PathVariable Integer sessionId){
 
-        return Resp.ok("총" + requestDTOs.size() + "개의 좌석 배치가 성공적으로 완료되었습니다.");
+        seatService.createSeatsFromJson(sessionId);
 
-    }
+        return Resp.ok(sessionId + "번 회차의 좌석이 도면 경로를 통해 성공적으로 생성되었습니다.");
 
-    // 테스트용
-    @PostMapping("/{count}")
-    public ResponseEntity<Resp<String>> testGenerate(
-            @PathVariable Integer sessionId,
-            @PathVariable Integer count
-    ) {
-        // 1. 더미 데이터 생성
-        List<SeatRequest.SeatJsonDTO> dummyData = seatService.generateDummySeats(count);
-
-        // 2. 우리가 만든 batchInsert 로직 바로 호출
-        seatService.createSeatsFromJson(sessionId, dummyData);
-
-        return Resp.ok(count + "개의 더미 좌석이 생성되었습니다.");
     }
 
 }
