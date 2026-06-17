@@ -36,18 +36,4 @@ public class AdminSeatApiController {
 
     }
 
-    @PostMapping("/test-generate/{count}")
-    public ResponseEntity<Resp<String>> testGenerate(
-            @PathVariable Integer sessionId,
-            @PathVariable Integer count
-    ) {
-        // 1. Service에서 만든 더미 데이터 1만 개 생성기 호출
-        List<SeatRequest.SeatJsonDTO> dummyData = seatService.generateDummySeats(count);
-
-        // 2. 기존의 좌석 생성 로직(Batch Insert)에 더미 데이터 던져주기
-        seatService.createSeatsFromJson(sessionId);
-
-        return Resp.ok(count + "개의 더미 좌석이 성공적으로 생성되었습니다!");
-    }
-
 }

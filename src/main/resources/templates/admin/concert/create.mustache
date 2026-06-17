@@ -24,21 +24,11 @@
                             <div class="row">
                                 <div class="col-md-6 form-group">
                                     <label>공연 제목</label>
-                                    <input type="text" name="title" class="form-control" value="[테스트] 2026 싸이 흠뻑쇼 - 서울"
-                                           required>
+                                    <input type="text" name="title" class="form-control" value="[테스트] 2026 싸이 흠뻑쇼 - 서울" required>
                                 </div>
                                 <div class="col-md-6 form-group">
                                     <label>아티스트</label>
                                     <input type="text" name="artist" class="form-control" value="싸이 (PSY)" required>
-                                </div>
-                                <div class="col-md-4 form-group">
-                                    <label>공연 상태</label>
-                                    <select name="concertStatus" class="form-control">
-                                        <option value="COMING_SOON" selected>오픈 예정 (COMING_SOON)</option>
-                                        <option value="OPEN">오픈 (OPEN)</option>
-                                        <option value="CLOSED_SOON">마감 임박 (CLOSED_SOON)</option>
-                                        <option value="CLOSED">종료 (CLOSED)</option>
-                                    </select>
                                 </div>
                             </div>
 
@@ -70,7 +60,18 @@
                                 </div>
                             </div>
 
-                            <!-- 💡 새로 추가된 티켓 가격 설정 영역 -->
+                            <div class="row">
+                                <div class="col-md-4 form-group">
+                                    <label>공연 상태 제어</label>
+                                    <select name="concertStatus" class="form-control">
+                                        <option value="COMING_SOON" selected>오픈 예정 (COMING_SOON)</option>
+                                        <option value="OPEN">오픈 (OPEN)</option>
+                                        <option value="CLOSED_SOON">마감 임박 (CLOSED_SOON)</option>
+                                        <option value="CLOSED">종료 (CLOSED)</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <hr class="mt-4 mb-4">
                             <h6 class="font-weight-bold text-primary mb-3">티켓 가격 설정</h6>
                             <div class="row">
@@ -94,7 +95,6 @@
 
                             <hr class="mt-4 mb-4">
                             <h6 class="font-weight-bold text-primary mb-3">상세 일정 및 운영 정보</h6>
-
                             <div class="row">
                                 <div class="col-md-4 form-group">
                                     <label>티켓 오픈일</label>
@@ -132,31 +132,58 @@
                     </div>
 
                     <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">공연 회차(Session) 설정</h6>
+                            <button type="button" class="btn btn-sm btn-success shadow-sm" data-toggle="modal" data-target="#addSessionModal">
+                                <i class="fas fa-plus fa-sm"></i> 회차 추가
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover" id="sessionTable">
+                                    <thead class="thead-light">
+                                    <tr class="text-center">
+                                        <th style="width: 25%;">회차(N회차)</th>
+                                        <th style="width: 50%;">공연 일시</th>
+                                        <th style="width: 25%;">관리</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="sessionTableBody">
+                                    <tr id="emptyRow">
+                                        <td colspan="3" class="text-center py-4 text-muted">추가된 회차가 없습니다. 우측 상단의 '회차 추가' 버튼을 눌러주세요.</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow mb-4">
                         <div class="card-header py-3">
                             <h6 class="m-0 font-weight-bold text-primary">상세 설명 및 포스터</h6>
                         </div>
                         <div class="card-body">
                             <div class="form-group">
                                 <label>메인 상세 타이틀</label>
-                                <input type="text" name="detailTitle" class="form-control" value="기록적인 폭염을 날려버릴 짜릿한 워터쇼"
-                                       required>
+                                <input type="text" name="detailTitle" class="form-control" value="기록적인 폭염을 날려버릴 짜릿한 워터쇼" required>
+                            </div>
+                            <div class="form-group">
+                                <label>간략 설명 (description)</label>
+                                <input type="text" name="description" class="form-control" value="싸이의 역대급 워터 파티 브랜드 콘서트" required>
                             </div>
                             <div class="form-group">
                                 <label>상세 설명 1</label>
-                                <textarea name="detailDescription1" class="form-control" rows="3"
-                                          required>더 강력해진 물대포와 역대급 스케일의 무대</textarea>
+                                <textarea name="detailDescription1" class="form-control" rows="3" required>더 강력해진 물대포와 역대급 스케일의 무대</textarea>
                             </div>
                             <div class="form-group">
                                 <label>상세 설명 2</label>
-                                <textarea name="detailDescription2" class="form-control" rows="3"
-                                          required>드레스코드는 블루! 흠뻑 젖을 준비 완료?</textarea>
+                                <textarea name="detailDescription2" class="form-control" rows="3" required>드레스코드는 블루! 흠뻑 젖을 준비 완료?</textarea>
                             </div>
 
                             <div class="form-group mt-4">
                                 <label>메인 포스터 이미지 업로드 (최대 10MB)</label>
                                 <div class="custom-file">
-                                    <input type="file" name="posterFile" class="custom-file-input" id="customFile"
-                                           accept="image/*" required>
+                                    <input type="file" name="posterImage" class="custom-file-input" id="customFile" accept="image/*" required>
                                     <label class="custom-file-label" for="customFile">이미지 파일을 선택하세요</label>
                                 </div>
                                 <small class="text-muted mt-2 d-block">가로 400px, 세로 600px 비율의 이미지를 권장합니다.</small>
@@ -171,7 +198,35 @@
 
                 </form>
 
+                <div class="modal fade" id="addSessionModal" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">새 회차 추가</h5>
+                                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label>회차 (숫자만 입력)</label>
+                                    <input type="number" id="modalRound" class="form-control" placeholder="예: 1">
+                                </div>
+                                <div class="form-group">
+                                    <label>공연 일시</label>
+                                    <input type="datetime-local" id="modalSessionDate" class="form-control">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" type="button" data-dismiss="modal">취소</button>
+                                <button class="btn btn-success" type="button" onclick="addSessionRow()">추가하기</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <script>
+                    // 커스텀 파일 레이블 네임 스위칭
                     document.getElementById('customFile').addEventListener('change', function (e) {
                         var fileName = document.getElementById("customFile").files[0].name;
                         var nextSibling = e.target.nextElementSibling;
@@ -180,29 +235,95 @@
                         }
                     });
 
-                    const form = document.getElementById("concertForm");
+                    // 💡 클라이언트단 동적 회차 리스트 핸들링 로직
+                    let sessionIndex = 0;
 
+                    function addSessionRow() {
+                        const round = document.getElementById('modalRound').value;
+                        const sessionDate = document.getElementById('modalSessionDate').value;
+
+                        if (!round || !sessionDate) {
+                            alert('회차 번호와 공연 일시를 모두 입력해 주세요.');
+                            return;
+                        }
+
+                        // 빈 행 숨기기
+                        const emptyRow = document.getElementById('emptyRow');
+                        if (emptyRow) emptyRow.style.display = 'none';
+
+                        const tbody = document.getElementById('sessionTableBody');
+                        const tr = document.createElement('tr');
+                        tr.className = 'text-center session-row';
+
+                        // Spring ModelAttribute List Binding 규격 적용 (sessions[index].field)
+                        tr.innerHTML = `
+                            <td class="align-middle">
+                                <strong>${round}회차</strong>
+                                <input type="hidden" name="sessions[${sessionIndex}].round" value="${round}">
+                            </td>
+                            <td class="align-middle">
+                                ${sessionDate.replace('T', ' ')}
+                                <input type="hidden" name="sessions[${sessionIndex}].sessionDate" value="${sessionDate}">
+                            </td>
+                            <td class="align-middle">
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSessionRow(this)">삭제</button>
+                            </td>
+                        `;
+
+                        tbody.appendChild(tr);
+                        sessionIndex++;
+
+                        // 모달 초기화 및 닫기
+                        document.getElementById('modalRound').value = '';
+                        document.getElementById('modalSessionDate').value = '';
+                        $('#addSessionModal').modal('hide');
+
+                        reindexSessions();
+                    }
+
+                    function removeSessionRow(button) {
+                        button.closest('tr').remove();
+                        const rows = document.querySelectorAll('.session-row');
+                        if (rows.length === 0) {
+                            document.getElementById('emptyRow').style.display = 'table-row';
+                        }
+                        reindexSessions();
+                    }
+
+                    // 삭제/추가 시 배열 인덱스 번호 순차 재정렬 함수 (데이터 정합성 유지)
+                    function reindexSessions() {
+                        const rows = document.querySelectorAll('.session-row');
+                        sessionIndex = 0;
+                        rows.forEach((row) => {
+                            const roundInput = row.querySelector('input[name*=".round"]');
+                            const dateInput = row.querySelector('input[name*=".sessionDate"]');
+                            if (roundInput) roundInput.name = `sessions[${sessionIndex}].round`;
+                            if (dateInput) dateInput.name = `sessions[${sessionIndex}].sessionDate`;
+                            sessionIndex++;
+                        });
+                    }
+
+                    // 최종 폼 제출 트리거
+                    const form = document.getElementById("concertForm");
                     if (form) {
                         form.addEventListener("submit", function(e) {
                             e.preventDefault();
-                            CcUI.confirm({
-                                title: '새 공연 등록',
-                                text: '입력하신 정보로 새 공연을 등록하시겠습니까?',
-                                confirmText: '등록하기',
-                                onConfirm: function() {
-                                    CcUI.loading.show();
-                                    HTMLFormElement.prototype.submit.call(form);
+                            if (document.querySelectorAll('.session-row').length === 0) {
+                                if (!confirm('등록된 회차가 없습니다. 회차 없이 공연 정보만 먼저 생성하시겠습니까?')) {
+                                    return;
                                 }
-                            });
+                            }
+
+                            if (confirm('입력하신 정보로 새 공연 및 회차를 등록하시겠습니까?')) {
+                                form.submit();
+                            }
                         });
                     }
                 </script>
 
             </div>
         </div>
-
         {{> admin/layout/footer}}
-
     </div>
 </div>
 </body>

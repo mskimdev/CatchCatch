@@ -235,22 +235,4 @@ public class SeatService {
     } // end of createSeatsFromJson
 
 
-    // 더미데이터 추가하여 테스트용으로 사용
-    public List<SeatRequest.SeatJsonDTO> generateDummySeats(int count) {
-        List<SeatRequest.SeatJsonDTO> dummyList = new ArrayList<>();
-        String[] grades = {"VIP", "R", "S", "A"};
-
-        for (int i = 1; i <= count; i++) {
-            SeatRequest.SeatJsonDTO seat = new SeatRequest.SeatJsonDTO();
-
-            // 1-A-1-1 부터 10000까지 자동 생성
-            seat.setId("1-A-1-" + i);
-            seat.setGrade(grades[i % 4]);
-            seat.setStatus("AVAILABLE");
-
-            dummyList.add(seat);
-        }
-        return dummyList;
-    }
-
 }

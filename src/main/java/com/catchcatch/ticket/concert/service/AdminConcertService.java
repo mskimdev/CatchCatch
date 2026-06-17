@@ -6,6 +6,8 @@ import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.core.util.ProfileImageUtil;
+import com.catchcatch.ticket.seat.Seat;
+import com.catchcatch.ticket.seat.SeatJdbcRepository;
 import com.catchcatch.ticket.seat.SeatService;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.session.ConcertSessionRepository;
@@ -31,6 +33,7 @@ public class AdminConcertService {
     private final VenueRepository venueRepository;
     private final ConcertSessionRepository concertSessionRepository;
     private final SeatService seatService;
+    private final SeatJdbcRepository seatJdbcRepository;
 
     // 공연 목록
     @Transactional(readOnly = true)
@@ -114,6 +117,8 @@ public class AdminConcertService {
                         .build();
 
                 concertSessionRepository.save(session);
+
+                seatService.createSeatsFromJson(session.getId());
             }
         }
 
@@ -196,7 +201,7 @@ public class AdminConcertService {
 
         concertSessionRepository.save(concertSession);
 
-        seatService.generateDummySeats(concertSession.getId());
+        seatService.createSeatsFromJson(concertSession.getId());
     }
 
     // 2. 회차 수정 (Dirty Checking 활용)
