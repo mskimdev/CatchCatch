@@ -1,0 +1,544 @@
+/* =========================================================
+   Concert Stage3 Seat Builder
+   - 화면 스타일만 관리합니다.
+   - 기능 수정은 concert-stage3-seat-builder.js에서 처리합니다.
+   ========================================================= */
+
+/* ---------- Design Tokens ---------- */
+:root {
+    --color-nav: #0f172a;
+    --color-panel: #ffffff;
+    --color-line: #e5e7eb;
+    --color-muted: #64748b;
+    --color-ink: #111827;
+    --color-bg: #f4f6fa;
+
+    --color-violet: #7c3aed;
+    --color-blue: #2563eb;
+    --color-green: #10b981;
+    --color-red: #ef4444;
+    --color-amber: #f59e0b;
+    --color-seat: #dedede;
+
+    --shadow-card: 0 16px 42px rgba(15, 23, 42, 0.12);
+}
+
+/* ---------- Reset / Base ---------- */
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: Pretendard, 'Noto Sans KR', Arial, sans-serif;
+    color: var(--color-ink);
+    background: var(--color-bg);
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+label {
+    display: block;
+    margin: 8px 0 6px;
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 950;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--color-line);
+    border-radius: 10px;
+    outline: none;
+    background: #f8fafc;
+    font-weight: 800;
+}
+
+textarea {
+    height: 260px;
+    resize: none;
+    font-family: Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+canvas {
+    display: block;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.mt-10 {
+    margin-top: 10px;
+}
+
+/* ---------- Header ---------- */
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 58px;
+    padding: 0 18px;
+    border-bottom: 1px solid #2d374b;
+    color: #ffffff;
+    background: var(--color-nav);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+    font-weight: 950;
+}
+
+.brand small {
+    color: #cbd5e1;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.brand__logo {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--color-violet), var(--color-blue));
+}
+
+.top-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.top-button {
+    padding: 10px 14px;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    color: #ffffff;
+    background: #111c31;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.top-button--primary {
+    border: 0;
+    background: linear-gradient(135deg, var(--color-violet), var(--color-blue));
+}
+
+/* ---------- Layout ---------- */
+.workspace {
+    display: grid;
+    grid-template-columns: 380px 1fr 330px;
+    min-width: 1260px;
+    height: calc(100vh - 58px);
+}
+
+.sidebar {
+    overflow: auto;
+    padding: 16px;
+    background: var(--color-panel);
+}
+
+.sidebar--left {
+    border-right: 1px solid var(--color-line);
+}
+
+.sidebar--right {
+    border-left: 1px solid var(--color-line);
+}
+
+.sidebar__title {
+    margin: 2px 0 12px;
+    color: var(--color-muted);
+    font-size: 13px;
+    font-weight: 950;
+}
+
+.canvas-area {
+    position: relative;
+    overflow: auto;
+    background:
+        radial-gradient(circle, #dbeafe 1.2px, transparent 1.3px) 0 0 / 22px 22px,
+        #ffffff;
+}
+
+.canvas-wrap {
+    width: max-content;
+    margin: 32px auto;
+    padding: 0 16px 70px;
+}
+
+/* ---------- Common UI ---------- */
+.box {
+    margin-bottom: 14px;
+    padding: 16px;
+    border: 1px solid var(--color-line);
+    border-radius: 18px;
+    background: #ffffff;
+}
+
+.box.active {
+    border-color: #a78bfa;
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.10);
+}
+
+.box h3 {
+    margin: 0 0 12px;
+    font-size: 17px;
+}
+
+.field-grid {
+    display: grid;
+    gap: 10px;
+}
+
+.field-grid--two {
+    grid-template-columns: 1fr 1fr;
+}
+
+.field-grid--three {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.button {
+    height: 46px;
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    color: #172033;
+    background: #ffffff;
+    font-weight: 950;
+}
+
+.button--primary,
+.button--dark,
+.button--success,
+.button--danger,
+.button--warning {
+    width: 100%;
+    border: 0;
+    color: #ffffff;
+}
+
+.button--primary {
+    background: linear-gradient(135deg, var(--color-violet), var(--color-blue));
+}
+
+.button--dark {
+    background: #0f172a;
+}
+
+.button--success {
+    background: var(--color-green);
+}
+
+.button--danger {
+    background: var(--color-red);
+}
+
+.button--warning {
+    background: var(--color-amber);
+}
+
+.help-text {
+    margin-top: 10px;
+    padding: 12px;
+    border-radius: 12px;
+    color: #52637a;
+    background: #f1f5f9;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.55;
+}
+
+/* ---------- Step Navigation ---------- */
+.part-nav {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.part-nav__button {
+    height: 44px;
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    color: #172033;
+    background: #ffffff;
+    font-weight: 950;
+}
+
+.part-nav__button.active {
+    border-color: var(--color-violet);
+    color: #6d28d9;
+    background: #f4f0ff;
+    box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.18) inset;
+}
+
+/* ---------- Section List ---------- */
+.section-list {
+    max-height: 285px;
+    overflow: auto;
+    padding-right: 4px;
+}
+
+.section-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    padding: 12px;
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.section-item.active {
+    border-color: #8b5cf6;
+    background: #f4f0ff;
+}
+
+.section-item strong {
+    display: block;
+    font-size: 14px;
+}
+
+.section-item span {
+    display: block;
+    margin-top: 3px;
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.section-item__color {
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+}
+
+/* ---------- Canvas ---------- */
+.canvas-card {
+    overflow: hidden;
+    border: 1px solid var(--color-line);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: var(--shadow-card);
+}
+
+.canvas-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 42px;
+    padding: 0 14px;
+    border-bottom: 1px solid var(--color-line);
+    color: #475569;
+    font-size: 13px;
+    font-weight: 950;
+}
+
+.canvas-box {
+    position: relative;
+    overflow: hidden;
+    background: #f7f7f7;
+}
+
+#base,
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#base {
+    position: relative;
+}
+
+/* ---------- Mini Map ---------- */
+.mini-map {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    margin-bottom: 14px;
+    padding: 12px;
+    border: 1px solid var(--color-line);
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+.mini-map strong {
+    font-size: 14px;
+}
+
+.mini-map__frame {
+    position: relative;
+    overflow: hidden;
+    margin-top: 10px;
+    border: 1px solid #eef2f7;
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+#miniCanvas {
+    width: 100%;
+    height: 190px;
+    background: #f7f7f7;
+}
+
+.mini-map:hover .mini-map__frame {
+    position: fixed;
+    top: 74px;
+    right: 24px;
+    z-index: 50;
+    width: 520px;
+    height: 390px;
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.22);
+}
+
+.mini-map:hover #miniCanvas {
+    width: 100%;
+    height: 100%;
+}
+
+.zoom-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.zoom-controls button {
+    height: 36px;
+}
+
+/* ---------- Seat Edit Mode ---------- */
+.mode-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+}
+
+.mode-group button {
+    height: 46px;
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    color: #172033;
+    background: #ffffff;
+    font-weight: 950;
+}
+
+.mode-group button.active {
+    border-color: #0f172a;
+    color: #ffffff;
+    background: #0f172a;
+}
+
+/* ---------- Stats / Legend ---------- */
+.stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.stat {
+    padding: 10px;
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+.stat b {
+    display: block;
+    font-size: 18px;
+}
+
+.stat span {
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.legend__color {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 4px;
+    border-radius: 3px;
+    vertical-align: -2px;
+}
+
+.legend__color--default {
+    background: var(--color-seat);
+}
+
+.legend__color--selected {
+    background: var(--color-red);
+}
+
+.legend__color--removed {
+    background: #94a3b8;
+}
+
+.legend__color--obstructed {
+    background: var(--color-amber);
+}
+
+/* ---------- Toast ---------- */
+.toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 99;
+    padding: 13px 16px;
+    border-radius: 14px;
+    color: #ffffff;
+    background: #0f172a;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.25);
+    font-weight: 950;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: 0.18s;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
