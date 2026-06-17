@@ -11,6 +11,7 @@ import com.catchcatch.ticket.inquiry.repository.InquiryRepository;
 import com.catchcatch.ticket.notification.sender.EmailSender;
 import com.catchcatch.ticket.notification.NotificationMessage;
 import com.catchcatch.ticket.notification.sender.SmsSender;
+import com.catchcatch.ticket.notification.service.NotificationService;
 import com.catchcatch.ticket.user.User;
 import com.catchcatch.ticket.user.UserRepository;
 import jakarta.validation.Valid;
@@ -30,6 +31,7 @@ public class InquiryService {
     private final UserRepository userRepository;
     private final EmailSender emailSender;
     private final SmsSender smsSender;
+    private final NotificationService notificationService;
 
     @Transactional
     public void save(InquiryRequest.SaveDTO req, Integer userId) {
@@ -89,9 +91,12 @@ public class InquiryService {
     public void reply(Integer id, @Valid InquiryRequest.ReplyDTO reqDTO) {
         Inquiry inquiry = inquiryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("문의를 찾을 수 없습니다."));
-        inquiry.setReply(reqDTO.reply());
+
+        inquiry.reply(reqDTO.reply());
+
         sendNotification(inquiry, reqDTO.reply());
-        inquiry.setStatus(InquiryStatus.RESOLVED);
+
+        notificationService.InquiryReplyNotification(inquiry);
     }
 
     public long countPending() {
