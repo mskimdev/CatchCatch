@@ -1,18 +1,23 @@
 package com.catchcatch.ticket.aichat;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.anthropic.AnthropicChatModel;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AiChatService {
@@ -20,9 +25,11 @@ public class AiChatService {
     private final AnthropicChatModel chatModel;
     private final AiChatTools aiChatTools;
 
-    // sessionId → 대화 히스토리 (서버 메모리, 최대 20턴 유지)
-    private final Map<String, List<Message>> historyStore = new ConcurrentHashMap<>();
+    private record HistoryEntry(List<Message> messages, Instant lastAccess){}
+
+    private final Map<Integer, HistoryEntry> historyStore = new ConcurrentHashMap<>();
     private static final int MAX_HISTORY = 20;
+    private static final long IDLE_EXPIRE_MINUTES = 30;
 
     private static final String CATCH_PROMPT = """
             당신은 CatchCatch 콘서트 예매 서비스의 AI 상담사 '캐치'입니다.
@@ -67,32 +74,54 @@ public class AiChatService {
             정확히 알 수 없는 내용은 [1:1 문의하기](/support/inquiries/save) 로 안내합니다.
             """;
 
-    public String ask(String sessionId, String message) {
-        List<Message> history = historyStore.computeIfAbsent(sessionId, k -> new ArrayList<>());
+    public String ask(Integer userId, String message) {
+        List<Message> history = historyStore.computeIfAbsent(
+                userId, k -> new HistoryEntry(new ArrayList<>(), Instant.now())
+        ).messages();
 
         history.add(new UserMessage(message));
 
-        String answer = ChatClient.builder(chatModel)
-                .build()
-                .prompt()
-                .system(CATCH_PROMPT)
-                .messages(history)
-                .tools(aiChatTools)
-                .call()
-                .content();
+        String answer;
+        try{
+            answer = ChatClient.builder(chatModel)
+                    .build()
+                    .prompt()
+                    .system(CATCH_PROMPT)
+                    .messages(history)
+                    .tools(aiChatTools)
+                    .call()
+                    .content();
+
+        } catch(RuntimeException e){
+            log.warn("AI 챗봇 응답 생성 실패 - userId: {}", userId, e);
+            history.removeLast();
+            historyStore.put(userId, new HistoryEntry(history, Instant.now()));
+
+            return "일시적인 오류로 답변을 드리지 못했습니다. 잠시 후 다시 시도해주세요.";
+        }
+
 
         history.add(new AssistantMessage(answer));
 
-        // 최대 턴 수 초과 시 오래된 것부터 제거 (앞에서 2개씩 = user+assistant 1쌍)
         while (history.size() > MAX_HISTORY) {
-            history.remove(0);
-            history.remove(0);
+            history.removeFirst();
+            history.removeFirst();
         }
+
+        historyStore.put(userId, new HistoryEntry(history, Instant.now()));
 
         return answer;
     }
 
-    public void clearHistory(String sessionId) {
-        historyStore.remove(sessionId);
+    public void clearHistory(Integer userId) {
+        historyStore.remove(userId);
+    }
+
+    @Scheduled(fixedDelay = 600_000)
+    public void evictIdleHistories(){
+        Instant cutOff = Instant.now().minus(IDLE_EXPIRE_MINUTES, ChronoUnit.MINUTES);
+        historyStore.entrySet().removeIf(
+                entry -> entry.getValue().lastAccess().isBefore(cutOff)
+        );
     }
 }

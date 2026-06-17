@@ -37,6 +37,7 @@ function initFab() {
 
   const mainBtn = document.getElementById('cc-fab-main');
   const overlay = document.getElementById('cc-chat-overlay');
+  const userId = document.querySelector('meta[name="session-user-id"]')?.content;
 
   // ── FAB 토글 ──────────────────────────────────────────────────
   mainBtn.addEventListener('click', () => {
@@ -79,11 +80,25 @@ function initFab() {
 
   document.querySelectorAll('.cc-chat-panel').forEach(initPanelResize);
 
+  function requireLogin() {
+    if (userId) return true;
+    wrap.classList.remove('is-open');
+    mainBtn.setAttribute('aria-expanded', false);
+    CcUI.alert('로그인이 필요합니다', 'warning', () => {
+      location.href = '/login';
+    }, '해당 서비스는 로그인 후 이용하실 수 있습니다.');
+    return false;
+  }
+
   document.getElementById('cc-fab-chat')?.addEventListener('click', () => {
+    if (!requireLogin()) return;
     openPanel('cc-live-panel');
     connectStomp();
   });
-  document.getElementById('cc-fab-ai')?.addEventListener('click', () => openPanel('cc-ai-panel'));
+  document.getElementById('cc-fab-ai')?.addEventListener('click', () => {
+    if (!requireLogin()) return;
+    openPanel('cc-ai-panel');
+  });
 
   // ── 공용 헬퍼 ─────────────────────────────────────────────────
   function escHtml(t) {
@@ -95,7 +110,7 @@ function initFab() {
     const isLive = bodyEl.id === 'cc-live-body';
     const aiAvatar = isLive
       ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`
-      : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
+      : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2 2 0 0 1 2 2v1h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2V4a2 2 0 0 1 2-2z"/><circle cx="9" cy="11" r="1"/><circle cx="15" cy="11" r="1"/></svg>`;
     const userAvatar = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
     const div = document.createElement('div');
     div.className = `cc-chat-msg cc-chat-msg--${role}`;
@@ -111,7 +126,7 @@ function initFab() {
     const isLive = bodyEl.id === 'cc-live-body';
     const avatar = isLive
       ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`
-      : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
+      : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2 2 0 0 1 2 2v1h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2V4a2 2 0 0 1 2-2z"/><circle cx="9" cy="11" r="1"/><circle cx="15" cy="11" r="1"/></svg>`;
     const div = document.createElement('div');
     div.className = 'cc-chat-msg cc-chat-msg--ai';
     div.id = typingId;
@@ -146,7 +161,6 @@ function initFab() {
   }
 
   // ── 1:1 채팅 (STOMP) ──────────────────────────────────────────
-  const userId = document.querySelector('meta[name="session-user-id"]')?.content;
   let stompClient = null;
   let stompConnected = false;
 
@@ -192,7 +206,8 @@ function initFab() {
   const aiBody = document.getElementById('cc-ai-body');
   const aiInput = document.getElementById('cc-ai-input');
   const aiSend = document.getElementById('cc-ai-send');
-  const aiSessionId = crypto.randomUUID();
+  const aiReset = document.getElementById('cc-ai-reset');
+  const aiInitialBodyHtml = aiBody.innerHTML;
 
   aiBody.addEventListener('click', (e) => {
     const btn = e.target.closest('.cc-chat-suggestion');
@@ -200,6 +215,13 @@ function initFab() {
   });
 
   bindInput(aiInput, aiSend, sendAi);
+
+  aiReset?.addEventListener('click', async () => {
+    await apiPost('/api/chat/ai/reset', {});
+    aiBody.innerHTML = aiInitialBodyHtml;
+    aiInput.value = '';
+    aiInput.style.height = 'auto';
+  });
 
   async function sendAi(text) {
     aiInput.value = '';
@@ -210,7 +232,7 @@ function initFab() {
     const typingId = 'cc-typing-ai';
     showTyping(aiBody, typingId);
 
-    const { res, data } = await apiPost('/api/chat/ai', { sessionId: aiSessionId, message: text });
+    const { res, data } = await apiPost('/api/chat/ai', { message: text });
 
     document.getElementById(typingId)?.remove();
 

@@ -881,6 +881,17 @@ img { max-width: 100%; display: block; }
 .cc-chat-msg--ai .cc-chat-msg__bubble a:hover {
   opacity: 0.75;
 }
+.cc-chat-msg__bubble p {
+  margin: 0;
+}
+.cc-chat-msg__bubble p + p {
+  margin-top: 8px;
+}
+.cc-chat-msg__bubble ul,
+.cc-chat-msg__bubble ol {
+  margin: 4px 0;
+  padding-left: 20px;
+}
 
 .cc-chat-typing {
   display: flex;

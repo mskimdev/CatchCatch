@@ -64,11 +64,13 @@ const CcUI = (() => {
   // CcUI.alert('관람일을 선택해주세요.')
   // CcUI.alert('처리 실패', 'error')
   // CcUI.alert('처리 완료', 'success', () => location.href = '/...')
-  function alert(message, type = 'warning', onConfirm) {
+  // CcUI.alert('로그인이 필요합니다', 'warning', () => location.href = '/login', '해당 서비스는 로그인 후 이용하실 수 있습니다.')
+  function alert(message, type = 'warning', onConfirm, text = '') {
     Swal.fire({
       ...BASE_STYLE,
       icon: type,
       title: message,
+      html: text,
       confirmButtonText: '확인',
     }).then(result => {
       if (result.isConfirmed && typeof onConfirm === 'function') {
