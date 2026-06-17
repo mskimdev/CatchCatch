@@ -17,6 +17,13 @@
                     </a>
                 </div>
 
+                {{#isFilteredByComingSoon}}
+                <div class="alert alert-info d-flex justify-content-between align-items-center">
+                    <span>오픈 예정 콘서트만 표시 중입니다.</span>
+                    <a href="/admin/concerts" class="btn btn-sm btn-outline-secondary">전체 보기</a>
+                </div>
+                {{/isFilteredByComingSoon}}
+
                 <div class="card shadow mb-4">
                     <div class="card-header py-3">
                         <h6 class="m-0 font-weight-bold text-primary">공연 리스트</h6>

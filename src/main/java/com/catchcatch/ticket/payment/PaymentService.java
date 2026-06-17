@@ -6,7 +6,9 @@ import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.booking.bookingSeat.BookingSeat;
 import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.core.exception.NotFoundException;
+import com.catchcatch.ticket.pointHistory.PointService;
 import com.catchcatch.ticket.seat.Seat;
+import com.catchcatch.ticket.user.User;
 import com.catchcatch.ticket.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +31,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
+    private final PointService pointService;
 
     @Value("${portone.store-id}")
     private String storeId;
@@ -75,7 +78,9 @@ public class PaymentService {
             throw new BadRequestException("예매 좌석 정보가 없습니다.");
         }
 
-        return new PaymentResponse.FormDTO(booking);
+        Integer usablePoint = pointService.getUsablePoint(userId);
+
+        return new PaymentResponse.FormDTO(booking, usablePoint);
     }
 
     /**
@@ -129,19 +134,18 @@ public class PaymentService {
             throw new BadRequestException("사용자 정보가 없습니다.");
         }
 
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("사용자를 찾을 수 없습니다.");
-        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
 
-        if (reqDTO == null || reqDTO.getBookingId() == null) {
+        if (reqDTO == null || reqDTO.bookingId() == null) {
             throw new BadRequestException("예매 ID는 필수입니다.");
         }
 
-        if (reqDTO.getMethod() == null || reqDTO.getMethod().isBlank()) {
+        if (reqDTO.method() == null || reqDTO.method().isBlank()) {
             throw new BadRequestException("결제 수단은 필수입니다.");
         }
 
-        Booking booking = bookingRepository.findByIdAndUserIdWithPaymentInfo(reqDTO.getBookingId(), userId)
+        Booking booking = bookingRepository.findByIdAndUserIdWithPaymentInfo(reqDTO.bookingId(), userId)
                 .orElseThrow(() -> new NotFoundException("예매 내역을 찾을 수 없습니다."));
 
         if (booking.getStatus() != Status.PENDING) {
@@ -152,9 +156,27 @@ public class PaymentService {
             throw new BadRequestException("예매 좌석 정보가 없습니다.");
         }
 
-        Integer amount = calculatePaymentAmount(booking);
+        Integer originalAmount = calculatePaymentAmount(booking);
+        Integer usedPoint = reqDTO.usedPointValue();
+
+        pointService.expireUserPoint(user);
+
+        if (usedPoint > user.getPoint()) {
+            throw new BadRequestException("보유 포인트가 부족합니다.");
+        }
+
+        if (usedPoint > originalAmount) {
+            throw new BadRequestException("결제 금액보다 많은 포인트를 사용할 수 없습니다.");
+        }
+
+        validateUsedPoint(user, originalAmount, usedPoint);
+
+        Integer amount = originalAmount - usedPoint;
+
+        String method = reqDTO.method();
+
         String orderName = createOrderName(booking);
-        String selectedChannelKey = resolveChannelKey(reqDTO.getMethod());
+        String selectedChannelKey = resolveChannelKey(reqDTO.method());
 
         Optional<Payment> existingPaymentOP =
                 paymentRepository.findByBookingId(booking.getId());
@@ -167,11 +189,18 @@ public class PaymentService {
             }
 
             if (existingPayment.getStatus() == PaymentStatus.READY) {
-                existingPayment.changeMethod(reqDTO.getMethod());
+                existingPayment.changePrepareInfo(
+                        method,
+                        originalAmount,
+                        usedPoint,
+                        amount
+                );
 
                 return PaymentResponse.PrepareDTO.builder()
                         .paymentId(existingPayment.getPaymentId())
                         .orderName(orderName)
+                        .originalAmount(existingPayment.getOriginalAmount())
+                        .usedPoint(existingPayment.getUsedPoint())
                         .amount(existingPayment.getAmount())
                         .storeId(storeId)
                         .channelKey(selectedChannelKey)
@@ -190,8 +219,10 @@ public class PaymentService {
         Payment payment = Payment.builder()
                 .booking(booking)
                 .paymentId(paymentId)
+                .originalAmount(originalAmount)
+                .usedPoint(usedPoint)
                 .amount(amount)
-                .method(reqDTO.getMethod())
+                .method(method)
                 .build();
 
         Payment savedPayment = paymentRepository.save(payment);
@@ -199,6 +230,8 @@ public class PaymentService {
         return PaymentResponse.PrepareDTO.builder()
                 .paymentId(savedPayment.getPaymentId())
                 .orderName(orderName)
+                .originalAmount(savedPayment.getOriginalAmount())
+                .usedPoint(savedPayment.getUsedPoint())
                 .amount(savedPayment.getAmount())
                 .storeId(storeId)
                 .channelKey(selectedChannelKey)
@@ -252,13 +285,13 @@ public class PaymentService {
             throw new BadRequestException("사용자 정보가 없습니다.");
         }
 
-        if (reqDTO == null || reqDTO.getPaymentId() == null || reqDTO.getPaymentId().isBlank()) {
+        if (reqDTO == null || reqDTO.paymentId() == null) {
             throw new BadRequestException("결제 ID는 필수입니다.");
         }
 
         reqDTO.validate();
 
-        Payment payment = paymentRepository.findByPaymentIdAndUserId(reqDTO.getPaymentId(), userId)
+        Payment payment = paymentRepository.findByPaymentIdAndUserId(reqDTO.paymentId(), userId)
                 .orElseThrow(() -> new NotFoundException("결제 내역을 찾을 수 없습니다."));
 
         if (payment.getStatus() == PaymentStatus.PAID) {
@@ -269,12 +302,12 @@ public class PaymentService {
             throw new BadRequestException("결제 대기 상태가 아닙니다.");
         }
 
-        if (!payment.getPaymentId().equals(reqDTO.getPaymentId())) {
+        if (!payment.getPaymentId().equals(reqDTO.paymentId())) {
             throw new BadRequestException("주문 번호가 일치하지 않습니다.");
         }
 
         PaymentResponse.PortOnePayment portOnePayment =
-                getPortOnePayment(reqDTO.getPaymentId());
+                getPortOnePayment(reqDTO.paymentId());
 
         if (portOnePayment.getStatus() == null || !"PAID".equals(portOnePayment.getStatus())) {
             throw new BadRequestException("결제가 완료되지 않았습니다. status=" + portOnePayment.getStatus());
@@ -307,6 +340,17 @@ public class PaymentService {
 
         if (booking.getBookingSeats() == null || booking.getBookingSeats().isEmpty()) {
             throw new BadRequestException("예매 좌석 정보가 없습니다.");
+        }
+
+        User user = booking.getUser();
+
+        if (user == null) {
+            throw new BadRequestException("예매 사용자 정보가 없습니다.");
+        }
+
+        // 결제 성공 후 포인트 차감
+        if (payment.getUsedPoint() != null && payment.getUsedPoint() > 0) {
+            pointService.usePoint(user, payment, payment.getUsedPoint());
         }
 
         for (BookingSeat bookingSeat : booking.getBookingSeats()) {
@@ -417,4 +461,26 @@ public class PaymentService {
         return "catchcatch_" + bookingId + "_" + System.currentTimeMillis() + "_" +
                 UUID.randomUUID().toString().substring(0, 8);
     }
+
+
+    /**
+     * 사용하려는 포인트가 유효한지 검증
+     */
+    private void validateUsedPoint(User user, Integer originalAmount, Integer usedPoint) {
+        if (usedPoint == null || usedPoint == 0) {
+            return; // 포인트 사용 안 함
+        }
+        if (usedPoint < 0) {
+            throw new BadRequestException("사용할 포인트는 0 이상이어야 합니다.");
+        }
+        if (usedPoint > user.getPoint()) {
+            throw new BadRequestException("보유한 포인트가 부족합니다.");
+        }
+        if (usedPoint > originalAmount) {
+            throw new BadRequestException("결제 금액보다 많은 포인트를 사용할 수 없습니다.");
+        }
+    }
+
+
+
 }

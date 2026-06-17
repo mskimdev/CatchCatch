@@ -31,6 +31,10 @@ public interface ConcertRepository extends JpaRepository<Concert, Integer>, Conc
     @Query("SELECT DISTINCT c FROM Concert c LEFT JOIN FETCH c.sessions LEFT JOIN FETCH c.venue")
     List<Concert> findAllWithSessionsAndVenue();
 
+    // 3-1. [관리자 목록용] 상태 필터가 적용된 공연 목록 (회차/공연장 함께 조회)
+    @Query("SELECT DISTINCT c FROM Concert c LEFT JOIN FETCH c.sessions LEFT JOIN FETCH c.venue WHERE c.concertStatus = :status")
+    List<Concert> findAllWithSessionsAndVenueByStatus(@Param("status") ConcertStatus status);
+
     // 4. 공연 상세 + 공연장 정보만 조회
     @Query("SELECT c FROM Concert c JOIN FETCH c.venue WHERE c.id = :id")
     Optional<Concert> findByIdWithVenue(@Param("id") Integer id);
@@ -64,4 +68,6 @@ public interface ConcertRepository extends JpaRepository<Concert, Integer>, Conc
             "GROUP BY c.id " +
             "ORDER BY COUNT(b.id) DESC")
     List<Concert> findPopularConcerts(Pageable pageable);
+    // 10. 대시보드 - 공연 상태별 개수 (예: 오픈 예정 공연 수)
+    long countByConcertStatus(ConcertStatus concertStatus);
 }

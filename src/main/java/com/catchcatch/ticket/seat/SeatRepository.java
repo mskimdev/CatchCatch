@@ -49,6 +49,51 @@ public interface SeatRepository extends JpaRepository<Seat, Integer> {
     );
 
     /**
+     * 대시보드 - 공연별 판매율(SOLD / 전체) 집계
+     *
+     * 공연 1개에 회차가 여러 개여도 전체 좌석을 합산해 비율을 계산한다.
+     */
+    @Query("""
+            select cs.concert.id as concertId,
+                   cs.concert.title as title,
+                   count(s) as totalCount,
+                   sum(case when s.status = 'SOLD' then 1 else 0 end) as soldCount
+            from Seat s
+            join s.concertSession cs
+            group by cs.concert.id, cs.concert.title
+            """)
+    List<ConcertSalesRate> findConcertSalesRates();
+
+    interface ConcertSalesRate {
+        Integer getConcertId();
+        String getTitle();
+        long getTotalCount();
+        long getSoldCount();
+    }
+
+    /**
+     * 대시보드 - 공연별 등급별 판매율(SOLD / 전체) 집계
+     */
+    @Query("""
+            select cs.concert.id as concertId,
+                   s.grade as grade,
+                   count(s) as totalCount,
+                   sum(case when s.status = 'SOLD' then 1 else 0 end) as soldCount
+            from Seat s
+            join s.concertSession cs
+            where cs.concert.id = :concertId
+            group by cs.concert.id, s.grade
+            """)
+    List<GradeSalesRate> findGradeSalesRatesByConcertId(@Param("concertId") Integer concertId);
+
+    interface GradeSalesRate {
+        Integer getConcertId();
+        SeatGrade getGrade();
+        long getTotalCount();
+        long getSoldCount();
+    }
+
+    /**
      * 좌석 임시 점유 시 동시성 방지용 조회
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)

@@ -4,6 +4,7 @@ import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.booking.bookingSeat.BookingSeat;
 import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.payment.Payment;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -162,6 +163,32 @@ public class BookingResponse {
 
             this.status = booking.getStatus();
             this.createdAt = booking.getCreatedAt();
+        }
+    }
+
+    /**
+     * 관리자 - 예매 관리 목록 화면 DTO
+     *
+     * admin/booking/list.mustache에서
+     * {{bookingId}}, {{userName}}, {{userId}}, {{concertTitle}}, {{createdAt}}, {{isCancelled}}
+     * 형태로 사용한다.
+     */
+    @Getter
+    public static class AdminListDTO {
+        private Integer bookingId;
+        private Integer userId;
+        private String userName;
+        private String concertTitle;
+        private String createdAt;
+        private Boolean isCancelled;
+
+        public AdminListDTO(Booking booking) {
+            this.bookingId = booking.getId();
+            this.userId = booking.getUser().getId();
+            this.userName = booking.getUser().getUsername();
+            this.concertTitle = booking.getConcertSession().getConcert().getTitle();
+            this.createdAt = booking.getCreatedAt() == null ? "" : booking.getCreatedAt().toString();
+            this.isCancelled = booking.getStatus() == Status.CANCELED;
         }
     }
 
@@ -624,6 +651,45 @@ public class BookingResponse {
             this.seatName = formatSeatName(bookingSeats);
 
             this.totalPrice = calculateTotalPrice(bookingSeats);
+            this.totalPriceText = formatPrice(this.totalPrice);
+
+            this.userId = booking.getUser().getId();
+            this.username = booking.getUser().getUsername();
+
+            this.createdAt = booking.getCreatedAt();
+            this.expiresAt = booking.getExpiresAt();
+        }
+
+        public CompleteDTO(Booking booking, Payment payment) {
+            List<BookingSeat> bookingSeats = safeBookingSeats(booking);
+
+            this.bookingId = booking.getId();
+            this.bookingNumber = booking.getBookingNumber();
+            this.status = booking.getStatus();
+
+            this.concertId = booking.getConcertSession().getConcert().getId();
+            this.concertSessionId = booking.getConcertSession().getId();
+
+            this.concertTitle = booking.getConcertSession().getConcert().getTitle();
+            this.posterUrl = booking.getConcertSession().getConcert().getPosterUrl();
+
+            this.sessionText = booking.getConcertSession().getSessionDate()
+                    + " "
+                    + booking.getConcertSession().getSessionTime();
+
+            this.venueText = booking.getConcertSession().getConcert().getVenue().getName();
+
+            this.selectedSeats = bookingSeats.stream()
+                    .sorted(Comparator.comparing(bookingSeat -> bookingSeat.getSeat().getSeatNumber()))
+                    .map(BookingSeatDTO::new)
+                    .toList();
+
+            this.seatCount = bookingSeats.size();
+            this.seatName = formatSeatName(bookingSeats);
+
+            // 💡 중요: 가격을 좌석 총합이 아니라, payment에 저장된 실제 결제 금액(amount)으로 세팅합니다.
+            // 포인트 적용 전 오리지널 금액이 필요하다면 payment.getOriginalAmount()를 쓰셔도 됩니다.
+            this.totalPrice = payment.getAmount();
             this.totalPriceText = formatPrice(this.totalPrice);
 
             this.userId = booking.getUser().getId();

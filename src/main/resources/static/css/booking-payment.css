@@ -269,3 +269,74 @@
     grid-template-columns: 1fr;
   }
 }
+
+.cc-point-use {
+    margin-top: 14px;
+    padding: 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #faf9ff;
+}
+
+.cc-point-use__head {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.cc-point-use__head label {
+    font-weight: 900;
+    color: #1f1733;
+}
+
+.cc-point-use__head span {
+    color: #8b8498;
+    font-weight: 700;
+}
+
+.cc-point-control {
+    display: flex;
+    width: 100%;
+}
+
+.cc-point-control input {
+    flex: 1;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid #d8cff8;
+    border-right: 0;
+    border-radius: 10px 0 0 10px;
+    font-size: 14px;
+    font-weight: 800;
+    outline: none;
+}
+
+.cc-point-control input:focus {
+    border-color: #6c3df4;
+}
+
+.cc-point-control input:focus + button {
+    border-color: #6c3df4;
+}
+
+.cc-point-control button {
+    width: 62px;
+    height: 42px;
+    border: 1px solid #6c3df4;
+    border-radius: 0 10px 10px 0;
+    background: #6c3df4;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.cc-point-control button:hover {
+    background: #5b2ee8;
+}
+
+.cc-price-box__row--point b {
+    color: #ef4444;
+}
