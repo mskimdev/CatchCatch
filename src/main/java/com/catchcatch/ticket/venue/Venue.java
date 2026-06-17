@@ -36,10 +36,11 @@ public class Venue {
     private String seatMapFilePath;
 
     @Builder
-    public Venue(String name, String address, Integer totalCapacity) {
+    public Venue(String name, String address, Integer totalCapacity, String seatMapFilePath) {
         this.name = name;
         this.address = address;
         this.totalCapacity = totalCapacity;
+        this.seatMapFilePath = seatMapFilePath;
     }
 
     public String getFormattedCreatedAt() {
@@ -47,9 +48,10 @@ public class Venue {
         return DateUtil.formatDateTime(createdAt);
     }
 
-    public void update(String name, String address, Integer totalCapacity) {
+    public void update(String name, String address, Integer totalCapacity, String seatMapFilePath) {
         this.name = name;
         this.address = address;
         this.totalCapacity = totalCapacity;
+        this.seatMapFilePath = seatMapFilePath;
     }
 }

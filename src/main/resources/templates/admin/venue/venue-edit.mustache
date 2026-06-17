@@ -51,13 +51,19 @@
                                 <label for="address" class="font-weight-bold">
                                     주소 <span class="text-danger">*</span>
                                 </label>
-                                <input id="address"
-                                       class="form-control"
-                                       type="text"
-                                       name="address"
-                                       value="{{venue.address}}"
-                                       required>
+                                <input id="address" class="form-control" type="text" name="address" value="{{venue.address}}" required>
                             </div>
+
+                            <form action="/admin/venues/edit" method="post" enctype="multipart/form-data">
+                                {{#_csrf}}
+                                    <input type="hidden" name="{{parameterName}}" value="{{token}}">
+                                {{/_csrf}}
+
+                                <div class="form-group mt-3">
+                                    <label for="seatMapFile" class="font-weight-bold">좌석배치도 파일 (.json) <span class="text-danger">*</span></label>
+                                    <input id="seatMapFile" class="form-control-file" type="file" name="seatMapFile" accept=".json" required>
+                                    <small class="form-text text-muted">공연장 좌석 배치 정보가 담긴 JSON 파일을 업로드해 주세요.</small>
+                                </div>
 
                             <div class="alert alert-warning mt-4" role="alert">
                                 <i class="fas fa-info-circle"></i>
