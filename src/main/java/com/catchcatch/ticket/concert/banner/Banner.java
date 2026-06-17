@@ -46,4 +46,17 @@ public class Banner {
         this.isActive = isActive;
 
     }
+
+
+    public void update(BannerRequest.UpdateDTO dto, String updatedImageUrl) {
+        this.imageUrl = updatedImageUrl;
+        this.eyebrow = dto.eyebrow();
+        this.title = dto.title();
+        this.highlight = dto.highlight();
+        this.description = dto.description();
+        this.buttonText = dto.buttonText();
+        this.linkUrl = dto.linkUrl();
+        this.displayOrder = dto.displayOrder();
+        this.isActive = dto.isActive();
+    }
 }

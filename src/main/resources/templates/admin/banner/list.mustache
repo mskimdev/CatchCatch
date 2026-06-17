@@ -1,0 +1,88 @@
+{{> admin/layout/header}}
+
+<div class="container-fluid">
+
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">배너 관리</h1>
+        <a href="/admin/banners/create" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> 새 배너 등록
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">메인 페이지 배너 목록</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                    <tr>
+                        <th>순서</th>
+                        <th>이미지(썸네일)</th>
+                        <th>메인 타이틀</th>
+                        <th>연결 링크</th>
+                        <th>상태</th>
+                        <th>관리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{#banners}}
+                        <tr>
+                            <td class="align-middle text-center">{{displayOrder}}</td>
+                            <td class="align-middle text-center">
+                                <img src="{{imageUrl}}" alt="배너 이미지" style="height: 50px; width: auto; object-fit: contain; border-radius: 4px;">
+                            </td>
+                            <td class="align-middle">
+                                <strong>{{title}}</strong><br>
+                                <small class="text-muted">{{eyebrow}} | {{highlight}}</small>
+                            </td>
+                            <td class="align-middle"><a href="{{linkUrl}}" target="_blank">{{linkUrl}}</a></td>
+                            <td class="align-middle text-center">
+                                {{#isActive}}
+                                    <span class="badge badge-success">활성 (노출중)</span>
+                                {{/isActive}}
+                                {{^isActive}}
+                                    <span class="badge badge-secondary">비활성 (숨김)</span>
+                                {{/isActive}}
+                            </td>
+                            <td class="align-middle text-center">
+                                <a href="/admin/banners/{{id}}/update" class="btn btn-warning btn-sm">수정</a>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="deleteBanner({{id}})">삭제</button>
+                            </td>
+                        </tr>
+                    {{/banners}}
+                    {{^banners}}
+                        <tr>
+                            <td colspan="6" class="text-center">등록된 배너가 없습니다.</td>
+                        </tr>
+                    {{/banners}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+    function deleteBanner(bannerId) {
+        // 값을 콤마로 나열하지 않고, { } 객체 안에 Key: Value 형태로 묶어서 전달합니다!
+        CcUI.confirm({
+            title: '정말 이 배너를 삭제하시겠습니까?',
+            text: '삭제된 데이터는 복구할 수 없습니다.',
+            danger: true, // 확인 버튼을 빨간색으로 만들어주는 팀 커스텀 옵션
+            onConfirm: async () => {
+                // apiDelete 호출
+                const response = await apiDelete(`/api/admin/banners/${bannerId}`);
+
+                // 성공 시 새로고침
+                if (response) {
+                    CcUI.toast('배너가 성공적으로 삭제되었습니다.', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                }
+            }
+        });
+    }
+</script>
+
+{{> admin/layout/footer}}
