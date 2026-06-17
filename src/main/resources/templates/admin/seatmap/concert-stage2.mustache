@@ -1,30 +1,9 @@
-{{!
-  Spring Boot Mustache template
-  위치 예시: src/main/resources/templates/admin/seatmap/concert-stage2.mustache
-  Controller 예시: return "admin/seatmap/concert-stage2";
-  선택 model: stage1Url, stage3Url
-}}
-<!doctype html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Concert Stage2 - 구역 도형화</title>
-    <link rel="stylesheet" href="/css/seatmap-concert-stage2.css" />
-</head>
+{{> admin/layout/seatmap-header}}
+
+<link href="/admin/css/seatmap-concert-stage2.css" rel="stylesheet">
+
 <body>
 <div class="app" id="stage2App" data-stage1-url="{{stage1Url}}" data-stage3-url="{{stage3Url}}">
-    <header>
-        <div class="brand">
-            <span class="logo">▦</span>Concert Stage2
-            <small>구역 추출 → 오토 면 생성 → 선택 보정 → 컬러 구역도</small>
-        </div>
-        <div class="head-actions">
-            <button class="top-btn" id="backStage1Btn">이전</button>
-            <button class="top-btn" id="resetStage2Btn">Stage2 초기화</button>
-            <button class="top-btn main" id="toStage3Btn">Stage3</button>
-        </div>
-    </header>
 
     <div class="work">
         <aside class="side">

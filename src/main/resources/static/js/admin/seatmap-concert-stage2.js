@@ -16,9 +16,9 @@
   const appRoot = $("stage2App");
   const ROUTES = {
     // 이전 스테이지
-    stage1: appRoot?.dataset.stage1Url || "/admin/seatmap/concert-stage1",
+    stage1: appRoot?.dataset.stage1Url || "/admin/seatmap/concert/stage1",
     // 다음 스테이지
-    stage3: appRoot?.dataset.stage3Url || "/admin/seatmap/concert-stage3",
+    stage3: appRoot?.dataset.stage3Url || "/admin/seatmap/concert/stage3",
   };
   const base = $("baseCanvas");
   const overlay = $("overlayCanvas");

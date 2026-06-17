@@ -1,25 +1,8 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Concert Stage3 Seat Builder</title>
-    <link rel="stylesheet" href="/css/seatmap-concert-stage3.css">
-    <script src="/js/admin/seatmap-concert-stage3.js" defer></script>
-</head>
-<body>
-<header class="top-bar">
-    <div class="brand">
-        <span class="brand__logo">▦</span>
-        Concert Stage3
-        <small>각 구역 좌석 생성</small>
-    </div>
+{{> admin/layout/seatmap-header}}
 
-    <div class="top-actions">
-        <a class="top-button" href="javascript:history.back()">이전</a>
-        <button class="top-button top-button--primary" id="saveJsonTop">JSON 저장</button>
-    </div>
-</header>
+<link href="/admin/css/seatmap-concert-stage3.css" rel="stylesheet">
+
+<body>
 
 <div class="workspace">
     <!-- 왼쪽: 단계별 작업 패널 -->

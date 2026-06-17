@@ -9,7 +9,7 @@
 
     // 다음 스테이지 이동
     const PAGE_URL = {
-        STAGE2: "/admin/seatmap/concert-stage2",
+        STAGE2: "/admin/seatmap/concert/stage2",
     };
 
     const dom = {};
