@@ -6,7 +6,6 @@ import com.catchcatch.ticket.seat.Seat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 
 import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
@@ -16,316 +15,403 @@ import java.util.stream.Collectors;
 
 public class PaymentResponse {
 
-    @Data
-    public static class DetailDTO {
-        private Integer paymentPk;
+    /**
+     * 결제 상세 DTO
+     */
+    public record DetailDTO(
+            Integer paymentPk,
+            String bookingNumber,
 
-        private String bookingNumber;
+            // 결제 정보
+            String paymentId,
+            String pgTxId,
 
-        // 결제 정보
-        private String paymentId;
-        private String pgTxId;
-        private String pgTxIdText;
-        private Integer amount;
-        private String amountText;
-        private String method;
-        private PaymentStatus status;
-        private String statusLabel;
-        private Timestamp createdAt;
-        private String createdAtText;
-        private Timestamp paidAt;
-        private String paidAtText;
+            Integer originalAmount,
+            String originalAmountText,
 
-        // 예매 정보
-        private String concertTitle;
-        private String sessionDateText;
-        private String seatText;
-        private Integer seatCount;
-        private List<SeatDTO> selectedSeats;
+            Integer usedPoint,
+            String usedPointText,
 
+            // 실제 결제 금액
+            Integer amount,
+            String amountText,
+
+            String method,
+            PaymentStatus status,
+            String statusLabel,
+
+            Timestamp createdAt,
+            String createdAtText,
+
+            Timestamp paidAt,
+            String paidAtText,
+
+            // 예매 정보
+            String concertTitle,
+            String sessionDateText,
+            String seatText,
+            Integer seatCount,
+            List<SeatDTO> selectedSeats
+    ) {
         public DetailDTO(Payment payment) {
-            Booking booking = payment.getBooking();
-            List<BookingSeat> bookingSeats = safeBookingSeats(booking);
+            this(
+                    payment.getId(),
+                    payment.getBooking().getBookingNumber(),
 
-            this.paymentPk = payment.getId();
+                    payment.getPaymentId(),
+                    payment.getPgTxId(),
 
-            this.bookingNumber = booking.getBookingNumber();
+                    safeAmount(payment.getOriginalAmount()),
+                    formatAmount(payment.getOriginalAmount()),
 
-            this.paymentId = payment.getPaymentId();
-            this.pgTxId = payment.getPgTxId();
-            this.pgTxIdText = payment.getPgTxId() == null || payment.getPgTxId().isBlank()
-                    ? "-"
-                    : payment.getPgTxId();
+                    safeAmount(payment.getUsedPoint()),
+                    formatPoint(payment.getUsedPoint()),
 
-            this.amount = payment.getAmount();
-            this.amountText = formatAmount(payment.getAmount());
+                    safeAmount(payment.getAmount()),
+                    formatAmount(payment.getAmount()),
 
-            this.method = payment.getMethod();
-            this.status = payment.getStatus();
-            this.statusLabel = toStatusLabel(payment.getStatus());
+                    payment.getMethod(),
+                    payment.getStatus(),
+                    toStatusLabel(payment.getStatus()),
 
-            this.createdAt = payment.getCreatedAt();
-            this.createdAtText = formatTimestampSecond(payment.getCreatedAt());
+                    payment.getCreatedAt(),
+                    formatTimestampSecond(payment.getCreatedAt()),
 
-            this.paidAt = payment.getPaidAt();
-            this.paidAtText = formatTimestampSecond(payment.getPaidAt());
+                    payment.getPaidAt(),
+                    formatTimestampSecond(payment.getPaidAt()),
 
-            this.concertTitle = booking.getConcertSession()
-                    .getConcert()
-                    .getTitle();
-
-            this.sessionDateText =
-                    booking.getConcertSession().getSessionDate()
-                            + " "
-                            + booking.getConcertSession().getSessionTime();
-
-            this.seatCount = bookingSeats.size();
-            this.seatText = formatSeatText(bookingSeats);
-
-            this.selectedSeats = bookingSeats.stream()
-                    .sorted(Comparator.comparing(bs -> bs.getSeat().getSeatNumber()))
-                    .map(SeatDTO::new)
-                    .toList();
+                    getConcertTitle(payment.getBooking()),
+                    getSessionDateText(payment.getBooking()),
+                    formatSeatText(safeBookingSeats(payment.getBooking())),
+                    safeBookingSeats(payment.getBooking()).size(),
+                    toSeatDTOList(payment.getBooking())
+            );
         }
     }
 
-    @Data
-    public static class ListDTO {
-        private Integer id;
-        private String bookingNumber;
-        private String concertTitle;
-        private String seatText;
-        private Integer seatCount;
+    /**
+     * 결제 목록 DTO
+     */
+    public record ListDTO(
+            Integer id,
+            String bookingNumber,
+            String concertTitle,
+            String seatText,
+            Integer seatCount,
 
-        private Integer amount;
-        private String amountText;
+            Integer originalAmount,
+            String originalAmountText,
 
-        private Timestamp paidAt;
-        private String paidAtText;
+            Integer usedPoint,
+            String usedPointText,
 
-        private PaymentStatus status;
-        private String statusLabel;
+            // 실제 결제 금액
+            Integer amount,
+            String amountText,
 
-        private Boolean isPaid;
-        private Boolean isReady;
-        private Boolean isCancelled;
-        private Boolean isFailed;
+            Timestamp paidAt,
+            String paidAtText,
 
+            PaymentStatus status,
+            String statusLabel,
+
+            Boolean isPaid,
+            Boolean isReady,
+            Boolean isCancelled,
+            Boolean isFailed
+    ) {
         public ListDTO(Payment payment) {
-            Booking booking = payment.getBooking();
-            List<BookingSeat> bookingSeats = safeBookingSeats(booking);
+            this(
+                    payment.getId(),
+                    payment.getBooking().getBookingNumber(),
+                    getConcertTitle(payment.getBooking()),
+                    formatSeatText(safeBookingSeats(payment.getBooking())),
+                    safeBookingSeats(payment.getBooking()).size(),
 
-            this.id = payment.getId();
-            this.bookingNumber = booking.getBookingNumber();
+                    safeAmount(payment.getOriginalAmount()),
+                    formatAmount(payment.getOriginalAmount()),
 
-            this.concertTitle = booking.getConcertSession()
-                    .getConcert()
-                    .getTitle();
+                    safeAmount(payment.getUsedPoint()),
+                    formatPoint(payment.getUsedPoint()),
 
-            this.seatCount = bookingSeats.size();
-            this.seatText = formatSeatText(bookingSeats);
+                    safeAmount(payment.getAmount()),
+                    formatAmount(payment.getAmount()),
 
-            this.amount = payment.getAmount();
-            this.amountText = formatAmount(payment.getAmount());
+                    payment.getPaidAt(),
+                    formatTimestampMinute(payment.getPaidAt()),
 
-            this.paidAt = payment.getPaidAt();
-            this.paidAtText = formatTimestampMinute(payment.getPaidAt());
+                    payment.getStatus(),
+                    toStatusLabel(payment.getStatus()),
 
-            this.status = payment.getStatus();
-            this.statusLabel = toStatusLabel(payment.getStatus());
-
-            this.isPaid = payment.getStatus() == PaymentStatus.PAID;
-            this.isReady = payment.getStatus() == PaymentStatus.READY;
-            this.isCancelled = payment.getStatus() == PaymentStatus.CANCELLED;
-            this.isFailed = payment.getStatus() == PaymentStatus.FAILED;
+                    payment.getStatus() == PaymentStatus.PAID,
+                    payment.getStatus() == PaymentStatus.READY,
+                    payment.getStatus() == PaymentStatus.CANCELLED,
+                    payment.getStatus() == PaymentStatus.FAILED
+            );
         }
     }
 
     /**
      * 결제 화면 DTO
      *
-     * booking/payment.mustache에서
-     * {{payment.bookingId}}, {{payment.selectedSeats}}, {{payment.totalPriceText}}
-     * 이런 식으로 사용하기 위한 DTO.
+     * booking/payment.mustache에서 사용하는 DTO.
+     * 이 단계에서는 아직 사용 포인트가 선택되지 않았으므로 usedPoint는 기본 0.
      */
-    @Getter
-    public static class FormDTO {
-        private Integer bookingId;
-        private String bookingNumber;
+    public record FormDTO(
+            Integer bookingId,
+            String bookingNumber,
 
-        private Integer concertId;
-        private Integer concertSessionId;
+            Integer concertId,
+            Integer concertSessionId,
 
-        private String concertTitle;
-        private String posterUrl;
-        private String sessionText;
-        private String venueText;
+            String concertTitle,
+            String posterUrl,
+            String sessionText,
+            String venueText,
 
-        private List<SeatDTO> selectedSeats;
-        private Integer seatCount;
-        private String seatText;
+            List<SeatDTO> selectedSeats,
+            Integer seatCount,
+            String seatText,
 
-        private Integer totalPrice;
-        private String totalPriceText;
-        private String ticketPriceText;
-        private String feeText;
+            Integer totalPrice,
+            String totalPriceText,
+            String ticketPriceText,
+            String feeText,
 
-        private Integer userId;
-        private String userName;
-        private String userEmail;
-        private String userPhone;
+            Integer originalAmount,
+            String originalAmountText,
 
-        public FormDTO(Booking booking) {
-            List<BookingSeat> bookingSeats = safeBookingSeats(booking);
+            Integer usedPoint,
+            String usedPointText,
 
-            this.bookingId = booking.getId();
-            this.bookingNumber = booking.getBookingNumber();
+            Integer amount,
+            String amountText,
 
-            this.concertId = booking.getConcertSession()
-                    .getConcert()
-                    .getId();
+            Integer userPoint,
+            String userPointText,
 
-            this.concertSessionId = booking.getConcertSession().getId();
+            Integer usablePoint,
+            String usablePointText,
 
-            this.concertTitle = booking.getConcertSession()
-                    .getConcert()
-                    .getTitle();
+            Integer userId,
+            String userName,
+            String userEmail,
+            String userPhone
+    ) {
+        public FormDTO(Booking booking, Integer usablePoint) {
+            this(
+                    booking.getId(),
+                    booking.getBookingNumber(),
 
-            this.posterUrl = booking.getConcertSession()
-                    .getConcert()
-                    .getPosterUrl();
+                    booking.getConcertSession().getConcert().getId(),
+                    booking.getConcertSession().getId(),
 
-            this.sessionText = booking.getConcertSession().getSessionDate()
-                    + " "
-                    + booking.getConcertSession().getSessionTime();
+                    booking.getConcertSession().getConcert().getTitle(),
+                    booking.getConcertSession().getConcert().getPosterUrl(),
 
-            this.venueText = booking.getConcertSession()
-                    .getConcert()
-                    .getVenue()
-                    .getName();
+                    booking.getConcertSession().getSessionDate()
+                            + " "
+                            + booking.getConcertSession().getSessionTime(),
 
-            this.selectedSeats = bookingSeats.stream()
-                    .sorted(Comparator.comparing(bs -> bs.getSeat().getSeatNumber()))
-                    .map(SeatDTO::new)
-                    .toList();
+                    booking.getConcertSession().getConcert().getVenue().getName(),
 
-            this.seatCount = bookingSeats.size();
-            this.seatText = formatSeatText(bookingSeats);
+                    toSeatDTOList(booking),
+                    safeBookingSeats(booking).size(),
+                    formatSeatText(safeBookingSeats(booking)),
 
-            this.totalPrice = calculateTotalPrice(bookingSeats);
-            this.totalPriceText = formatAmount(this.totalPrice);
-            this.ticketPriceText = formatAmount(this.totalPrice);
-            this.feeText = formatAmount(0);
+                    calculateTotalPrice(safeBookingSeats(booking)),
+                    formatAmount(calculateTotalPrice(safeBookingSeats(booking))),
+                    formatAmount(calculateTotalPrice(safeBookingSeats(booking))),
+                    formatAmount(0),
 
-            this.userId = booking.getUser().getId();
-            this.userName = booking.getUser().getUsername();
-            this.userEmail = booking.getUser().getEmail();
+                    calculateTotalPrice(safeBookingSeats(booking)),
+                    formatAmount(calculateTotalPrice(safeBookingSeats(booking))),
 
-            this.userPhone = booking.getUser().getPhone();
+                    0,
+                    formatPoint(0),
+
+                    calculateTotalPrice(safeBookingSeats(booking)),
+                    formatAmount(calculateTotalPrice(safeBookingSeats(booking))),
+
+                    getUserPoint(booking),
+                    formatPoint(getUserPoint(booking)),
+
+                    usablePoint == null ? 0 : usablePoint,
+                    formatPoint(usablePoint == null ? 0 : usablePoint),
+
+                    booking.getUser().getId(),
+                    booking.getUser().getUsername(),
+                    booking.getUser().getEmail(),
+                    booking.getUser().getPhone()
+            );
         }
     }
 
     /**
      * 예매에 포함된 좌석 1개 DTO
      */
-    @Getter
-    public static class SeatDTO {
-        private Integer seatId;
-        private String seatNumber;
-        private String rowName;
-        private String seatNo;
+    public record SeatDTO(
+            Integer seatId,
+            String seatNumber,
+            String rowName,
+            String seatNo,
 
-        private String grade;
-        private String gradeName;
-        private String gradeClass;
+            String grade,
+            String gradeName,
+            String gradeClass,
 
-        private Integer price;
-        private String priceText;
-
+            Integer price,
+            String priceText
+    ) {
         public SeatDTO(BookingSeat bookingSeat) {
-            Seat seat = bookingSeat.getSeat();
+            this(
+                    bookingSeat.getSeat().getId(),
+                    bookingSeat.getSeat().getSeatNumber(),
+                    parseSeatRowName(bookingSeat.getSeat().getSeatNumber()),
+                    parseSeatNo(bookingSeat.getSeat().getSeatNumber()),
 
-            String seatNumber = seat.getSeatNumber();
-            String grade = seat.getGrade().name();
+                    bookingSeat.getSeat().getGrade().name(),
+                    formatGradeName(bookingSeat.getSeat().getGrade().name()),
+                    bookingSeat.getSeat().getGrade().name().toLowerCase(),
 
-            this.seatId = seat.getId();
-            this.seatNumber = seatNumber;
-            this.rowName = parseSeatRowName(seatNumber);
-            this.seatNo = parseSeatNo(seatNumber);
-
-            this.grade = grade;
-            this.gradeName = formatGradeName(grade);
-            this.gradeClass = grade.toLowerCase();
-
-            this.price = bookingSeat.getPrice();
-            this.priceText = formatAmount(bookingSeat.getPrice());
+                    bookingSeat.getPrice(),
+                    formatAmount(bookingSeat.getPrice())
+            );
         }
     }
 
-    @Data
-    public static class PrepareDTO {
-        private String paymentId;
-        private String orderName;
-        private Integer amount;
-        private String storeId;
-        private String channelKey;
+    /**
+     * 결제 준비 응답 DTO
+     *
+     * amount는 포인트 차감 후 실제 포트원 결제창에 넘길 금액.
+     */
+    @Builder
+    public record PrepareDTO(
+            String paymentId,
+            String orderName,
 
-        @Builder
-        public PrepareDTO(String paymentId, String orderName, Integer amount, String storeId, String channelKey) {
-            this.paymentId = paymentId;
-            this.orderName = orderName;
-            this.amount = amount;
-            this.storeId = storeId;
-            this.channelKey = channelKey;
+            Integer originalAmount,
+            String originalAmountText,
+
+            Integer usedPoint,
+            String usedPointText,
+
+            // 실제 결제 금액
+            Integer amount,
+            String amountText,
+
+            String storeId,
+            String channelKey
+    ) {
+        public PrepareDTO(Payment payment,
+                          String orderName,
+                          String storeId,
+                          String channelKey) {
+            this(
+                    payment.getPaymentId(),
+                    orderName,
+
+                    safeAmount(payment.getOriginalAmount()),
+                    formatAmount(payment.getOriginalAmount()),
+
+                    safeAmount(payment.getUsedPoint()),
+                    formatPoint(payment.getUsedPoint()),
+
+                    safeAmount(payment.getAmount()),
+                    formatAmount(payment.getAmount()),
+
+                    storeId,
+                    channelKey
+            );
         }
 
         /**
          * 기존 코드 호환용 생성자
          *
-         * 기존 PaymentService에서
+         * 기존 코드에서
          * new PaymentResponse.PrepareDTO(paymentId, amount, storeId, channelKey)
-         * 형태로 쓰고 있다면 그대로 컴파일되게 하기 위함.
+         * 형태로 쓰고 있으면 임시로 컴파일되게 하기 위한 생성자.
          */
-        public PrepareDTO(String paymentId, Integer amount, String storeId, String channelKey) {
-            this.paymentId = paymentId;
-            this.orderName = "CatchCatch 좌석 예매";
-            this.amount = amount;
-            this.storeId = storeId;
-            this.channelKey = channelKey;
+        public PrepareDTO(String paymentId,
+                          Integer amount,
+                          String storeId,
+                          String channelKey) {
+            this(
+                    paymentId,
+                    "CatchCatch 좌석 예매",
+
+                    safeAmount(amount),
+                    formatAmount(amount),
+
+                    0,
+                    formatPoint(0),
+
+                    safeAmount(amount),
+                    formatAmount(amount),
+
+                    storeId,
+                    channelKey
+            );
         }
     }
 
-    @Getter
-    public static class CompleteDTO {
-        private Integer paymentPk;
-        private String paymentId;
-        private String bookingNumber;
-        private Integer amount;
-        private String amountText;
-        private PaymentStatus status;
-        private String statusLabel;
+    /**
+     * 결제 완료 응답 DTO
+     */
+    public record CompleteDTO(
+            Integer paymentPk,
+            String paymentId,
+            String bookingNumber,
 
+            Integer originalAmount,
+            String originalAmountText,
+
+            Integer usedPoint,
+            String usedPointText,
+
+            // 실제 결제 금액
+            Integer amount,
+            String amountText,
+
+            PaymentStatus status,
+            String statusLabel
+    ) {
         public CompleteDTO(Payment payment) {
-            this.paymentPk = payment.getId();
-            this.paymentId = payment.getPaymentId();
-            this.bookingNumber = payment.getBooking().getBookingNumber();
-            this.amount = payment.getAmount();
-            this.amountText = formatAmount(payment.getAmount());
-            this.status = payment.getStatus();
-            this.statusLabel = toStatusLabel(payment.getStatus());
+            this(
+                    payment.getId(),
+                    payment.getPaymentId(),
+                    payment.getBooking().getBookingNumber(),
+
+                    safeAmount(payment.getOriginalAmount()),
+                    formatAmount(payment.getOriginalAmount()),
+
+                    safeAmount(payment.getUsedPoint()),
+                    formatPoint(payment.getUsedPoint()),
+
+                    safeAmount(payment.getAmount()),
+                    formatAmount(payment.getAmount()),
+
+                    payment.getStatus(),
+                    toStatusLabel(payment.getStatus())
+            );
         }
     }
 
-    // 포트원 단건조회 API 응답
+    /**
+     * 포트원 단건조회 API 응답
+     *
+     * 이건 외부 API JSON 역직렬화용이라 record보다 class 유지 추천.
+     */
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class PortOnePayment {
         private String status; // READY, PAID, FAILED, CANCELLED
-        private String id; // 우리 서버에서 생성한 주문 번호
+        private String id;     // 우리 서버에서 생성한 주문 번호
         private String pgTxId; // PG 거래 번호
         private Amount amount;
 
         @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Amount {
             private Integer total;
             private Integer taxFree;
@@ -334,11 +420,38 @@ public class PaymentResponse {
     }
 
     private static List<BookingSeat> safeBookingSeats(Booking booking) {
-        if (booking.getBookingSeats() == null) {
+        if (booking == null || booking.getBookingSeats() == null) {
             return List.of();
         }
 
         return booking.getBookingSeats();
+    }
+
+    private static List<SeatDTO> toSeatDTOList(Booking booking) {
+        return safeBookingSeats(booking).stream()
+                .sorted(Comparator.comparing(bs -> bs.getSeat().getSeatNumber()))
+                .map(SeatDTO::new)
+                .toList();
+    }
+
+    private static String getConcertTitle(Booking booking) {
+        if (booking == null || booking.getConcertSession() == null) {
+            return "";
+        }
+
+        return booking.getConcertSession()
+                .getConcert()
+                .getTitle();
+    }
+
+    private static String getSessionDateText(Booking booking) {
+        if (booking == null || booking.getConcertSession() == null) {
+            return "";
+        }
+
+        return booking.getConcertSession().getSessionDate()
+                + " "
+                + booking.getConcertSession().getSessionTime();
     }
 
     private static Integer calculateTotalPrice(List<BookingSeat> bookingSeats) {
@@ -362,12 +475,32 @@ public class PaymentResponse {
                 .collect(Collectors.joining(", "));
     }
 
+    private static Integer safeAmount(Integer amount) {
+        return amount == null ? 0 : amount;
+    }
+
     private static String formatAmount(Integer amount) {
         if (amount == null) {
             return "0원";
         }
 
         return String.format("%,d원", amount);
+    }
+
+    private static String formatPoint(Integer point) {
+        if (point == null) {
+            return "0P";
+        }
+
+        return String.format("%,dP", point);
+    }
+
+    private static String formatBlankText(String value) {
+        if (value == null || value.isBlank()) {
+            return "-";
+        }
+
+        return value;
     }
 
     private static String formatTimestampSecond(Timestamp timestamp) {
@@ -435,5 +568,13 @@ public class PaymentResponse {
         }
 
         return grade + "석";
+    }
+
+    private static Integer getUserPoint(Booking booking) {
+        if (booking == null || booking.getUser() == null || booking.getUser().getPoint() == null) {
+            return 0;
+        }
+
+        return booking.getUser().getPoint();
     }
 }
