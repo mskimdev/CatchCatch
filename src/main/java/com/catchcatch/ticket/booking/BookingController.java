@@ -3,6 +3,7 @@ package com.catchcatch.ticket.booking;
 import com.catchcatch.ticket.booking.dto.BookingRequest;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
 import com.catchcatch.ticket.core.util.Define;
+import com.catchcatch.ticket.queue.QueueService;
 import com.catchcatch.ticket.user.dto.SessionUser;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class BookingController {
 
     // todo 추후 머스테치에 화면전환 시 이전으로 돌아가면 안되게 설정할 필요가 있음.
     private final BookingService bookingService;
+    private final QueueService queueService;
 
     // 예매 정보 진입
     @PostMapping("/start")
@@ -84,6 +86,10 @@ public class BookingController {
 
         Integer concertId = getSessionInteger(session, "bookingConcertId");
         Integer sessionId = getSessionInteger(session, "bookingSessionId");
+
+        if (!queueService.hasEnteredAccess(sessionId, sessionUser.getId())) {
+            return "redirect:/queue/wait?sessionId=" + sessionId;
+        }
 
         BookingResponse.SeatFormDTO seat = bookingService.findSeatForm(sessionId);
 
