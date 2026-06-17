@@ -11,6 +11,11 @@
             <div class="container-fluid">
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800">대시보드</h1>
+                    <div class="btn-group" role="group" aria-label="기간 선택">
+                        <a href="/admin?period=TODAY" class="btn btn-sm {{#summary.periodIsToday}}btn-primary{{/summary.periodIsToday}}{{^summary.periodIsToday}}btn-outline-primary{{/summary.periodIsToday}}">오늘</a>
+                        <a href="/admin?period=WEEK" class="btn btn-sm {{#summary.periodIsWeek}}btn-primary{{/summary.periodIsWeek}}{{^summary.periodIsWeek}}btn-outline-primary{{/summary.periodIsWeek}}">최근 7일</a>
+                        <a href="/admin?period=MONTH" class="btn btn-sm {{#summary.periodIsMonth}}btn-primary{{/summary.periodIsMonth}}{{^summary.periodIsMonth}}btn-outline-primary{{/summary.periodIsMonth}}">최근 30일</a>
+                    </div>
                 </div>
 
                 <div class="row">
@@ -32,8 +37,8 @@
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">오늘 예매 완료(건)</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">8,421</div>
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">예매 완료(건) / 매출</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{summary.bookingCount}}건 · {{summary.totalSalesAmountFormatted}}원</div>
                                     </div>
                                     <div class="col-auto"><i class="fas fa-ticket-alt fa-2x text-gray-300"></i></div>
                                 </div>
@@ -41,17 +46,17 @@
                         </div>
                     </div>
                     <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-info shadow h-100 py-2">
+                        <a href="/admin/concerts?status=COMING_SOON" class="card border-left-info shadow h-100 py-2 text-decoration-none text-reset d-block">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-info text-uppercase mb-1">오픈 예정 콘서트(개)</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">3</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{summary.comingSoonConcertCount}}</div>
                                     </div>
                                     <div class="col-auto"><i class="fas fa-calendar-alt fa-2x text-gray-300"></i></div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                     <div class="col-xl-3 col-md-6 mb-4">
                         <div class="card border-left-warning shadow h-100 py-2">
@@ -77,12 +82,27 @@
                     </div>
                     <div class="col-xl-4 col-lg-5">
                         <div class="card shadow mb-4">
-                            <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">공연 예매율 현황</h6></div>
+                            <a href="/admin/concert-sales-rates" class="card-header py-3 d-block text-decoration-none">
+                                <h6 class="m-0 font-weight-bold text-primary">공연 예매율 현황 <i class="fas fa-chevron-right fa-xs ml-1"></i></h6>
+                            </a>
                             <div class="card-body">
-                                <h4 class="small font-weight-bold">아이유 콘서트 <span class="float-right">95%</span></h4>
-                                <div class="progress mb-4"><div class="progress-bar bg-danger" style="width: 95%"></div></div>
-                                <h4 class="small font-weight-bold">싸이 흠뻑쇼 <span class="float-right">70%</span></h4>
-                                <div class="progress mb-4"><div class="progress-bar bg-warning" style="width: 70%"></div></div>
+                                {{#summary.concertSalesRates}}
+                                <a href="/admin/concerts/{{concertId}}" class="text-decoration-none text-reset">
+                                    <h4 class="small font-weight-bold">{{title}} <span class="float-right">{{salesRate}}%</span></h4>
+                                    <div class="progress mb-2"><div class="progress-bar {{progressBarClass}}" style="width: {{salesRate}}%"></div></div>
+                                </a>
+                                <div class="pl-3 mb-3">
+                                    {{#gradeSalesRates}}
+                                    <div class="d-flex justify-content-between text-gray-600" style="font-size: 12px;">
+                                        <span>{{grade}}</span>
+                                        <span>{{soldCount}} / {{totalCount}} ({{salesRate}}%)</span>
+                                    </div>
+                                    {{/gradeSalesRates}}
+                                </div>
+                                {{/summary.concertSalesRates}}
+                                {{^summary.concertSalesRates}}
+                                <p class="text-gray-500 small mb-0">등록된 공연 좌석 데이터가 없습니다.</p>
+                                {{/summary.concertSalesRates}}
                             </div>
                         </div>
                     </div>

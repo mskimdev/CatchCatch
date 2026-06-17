@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.concert.controller;
 
+import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
 import com.catchcatch.ticket.concert.service.AdminConcertService;
 import com.catchcatch.ticket.venue.Venue;
@@ -23,10 +24,17 @@ public class AdminConcertController {
 
     // 1. 공연 목록 페이지 조회 (화면)
     @GetMapping
-    public String getAllConcerts(Model model) {
-        List<AdminConcertRequest.ListResponseDTO> response = adminConcertService.getAllConcerts();
+    public String getAllConcerts(
+            @RequestParam(value = "status", required = false) ConcertStatus status,
+            Model model
+    ) {
+        List<AdminConcertRequest.ListResponseDTO> response = status == null
+                ? adminConcertService.getAllConcerts()
+                : adminConcertService.getConcertsByStatus(status);
+
         model.addAttribute("pageTitle", "공연 목록 관리");
         model.addAttribute("concerts", response);
+        model.addAttribute("isFilteredByComingSoon", status == ConcertStatus.COMING_SOON);
         return "admin/concert/list";
     }
 

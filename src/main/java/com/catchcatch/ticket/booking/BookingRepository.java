@@ -28,6 +28,28 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
      * expiresAt < now
      */
     List<Booking> findByStatusAndExpiresAtBefore(Status status, Timestamp now);
+
+    /**
+     * 대시보드 - 특정 기간에 결제 완료된 예매 수
+     */
+    long countByStatusAndPaidAtBetween(Status status, Timestamp from, Timestamp to);
+
+    /**
+     * 대시보드 - 특정 기간 결제 완료 매출 합계 (totalAmount 합)
+     *
+     * 결제 건이 없으면 null이 반환되므로 서비스 계층에서 0으로 보정한다.
+     */
+    @Query("""
+            select sum(b.totalAmount)
+            from Booking b
+            where b.status = :status
+              and b.paidAt between :from and :to
+            """)
+    Long sumTotalAmountByStatusAndPaidAtBetween(
+            @Param("status") Status status,
+            @Param("from") Timestamp from,
+            @Param("to") Timestamp to
+    );
 //
 //    /**
 //     * 특정 회차 + 상태 기준 예매 목록 조회

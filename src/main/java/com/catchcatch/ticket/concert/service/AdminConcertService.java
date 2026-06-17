@@ -47,6 +47,16 @@ public class AdminConcertService {
                 .collect(Collectors.toList());
     }
 
+    // 공연 목록 - 상태 필터 (예: 대시보드의 "오픈 예정 콘서트" 카드에서 진입)
+    @Transactional(readOnly = true)
+    public List<AdminConcertRequest.ListResponseDTO> getConcertsByStatus(ConcertStatus status) {
+        List<Concert> concerts = concertRepository.findAllWithSessionsAndVenueByStatus(status);
+
+        return concerts.stream()
+                .map(AdminConcertRequest.ListResponseDTO::from)
+                .collect(Collectors.toList());
+    }
+
     // 공연 상세 정보
     @Transactional(readOnly = true)
     public AdminConcertRequest.DetailResponseDTO getDetail(Integer id) {
