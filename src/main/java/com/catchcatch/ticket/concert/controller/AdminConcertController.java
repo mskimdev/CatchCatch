@@ -4,6 +4,7 @@ import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
 import com.catchcatch.ticket.concert.service.AdminConcertService;
 import com.catchcatch.ticket.venue.Venue;
 import com.catchcatch.ticket.venue.VenueRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -48,14 +49,12 @@ public class AdminConcertController {
 
     // 4. 공연 등록 기능 (폼 전송 유지 정책 반영)
     @PostMapping("/create")
-    public String createConcert(@ModelAttribute AdminConcertRequest.CreateRequestDTO dto,
-                                RedirectAttributes rttr) { //
+    public String createConcert(
+            @Valid @ModelAttribute AdminConcertRequest.CreateRequestDTO dto,
+            RedirectAttributes rttr) {
 
         adminConcertService.createConcert(dto);
-
-        // 💡 리다이렉트 되는 페이지에 딱 한 번만 전달되는 1회성 데이터 (Flash Attribute)
         rttr.addFlashAttribute("successMsg", "새 공연이 성공적으로 등록되었습니다.");
-
         return "redirect:/admin/concerts";
     }
 
