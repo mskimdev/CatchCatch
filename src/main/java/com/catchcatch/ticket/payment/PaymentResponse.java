@@ -29,6 +29,9 @@ public class PaymentResponse {
             Integer originalAmount,
             String originalAmountText,
 
+            Integer ticketFee,
+            String ticketFeeText,
+
             Integer usedPoint,
             String usedPointText,
 
@@ -63,6 +66,9 @@ public class PaymentResponse {
 
                     safeAmount(payment.getOriginalAmount()),
                     formatAmount(payment.getOriginalAmount()),
+
+                    safeAmount(payment.getTicketFee()),
+                    formatAmount(payment.getTicketFee()),
 
                     safeAmount(payment.getUsedPoint()),
                     formatPoint(payment.getUsedPoint()),
@@ -102,6 +108,9 @@ public class PaymentResponse {
             Integer originalAmount,
             String originalAmountText,
 
+            Integer ticketFee,
+            String ticketFeeText,
+
             Integer usedPoint,
             String usedPointText,
 
@@ -130,6 +139,9 @@ public class PaymentResponse {
 
                     safeAmount(payment.getOriginalAmount()),
                     formatAmount(payment.getOriginalAmount()),
+
+                    safeAmount(payment.getTicketFee()),
+                    formatAmount(payment.getTicketFee()),
 
                     safeAmount(payment.getUsedPoint()),
                     formatPoint(payment.getUsedPoint()),
@@ -173,13 +185,11 @@ public class PaymentResponse {
             Integer seatCount,
             String seatText,
 
-            Integer totalPrice,
-            String totalPriceText,
-            String ticketPriceText,
-            String feeText,
-
             Integer originalAmount,
             String originalAmountText,
+
+            Integer ticketFee,
+            String ticketFeeText,
 
             Integer usedPoint,
             String usedPointText,
@@ -198,7 +208,7 @@ public class PaymentResponse {
             String userEmail,
             String userPhone
     ) {
-        public FormDTO(Booking booking, Integer usablePoint) {
+        public FormDTO(Booking booking, Integer usablePoint, Integer ticketFee) {
             this(
                     booking.getId(),
                     booking.getBookingNumber(),
@@ -221,11 +231,9 @@ public class PaymentResponse {
 
                     calculateTotalPrice(safeBookingSeats(booking)),
                     formatAmount(calculateTotalPrice(safeBookingSeats(booking))),
-                    formatAmount(calculateTotalPrice(safeBookingSeats(booking))),
-                    formatAmount(0),
 
-                    calculateTotalPrice(safeBookingSeats(booking)),
-                    formatAmount(calculateTotalPrice(safeBookingSeats(booking))),
+                    ticketFee,
+                    formatAmount(ticketFee),
 
                     0,
                     formatPoint(0),
@@ -285,13 +293,15 @@ public class PaymentResponse {
      *
      * amount는 포인트 차감 후 실제 포트원 결제창에 넘길 금액.
      */
-    @Builder
     public record PrepareDTO(
             String paymentId,
             String orderName,
 
             Integer originalAmount,
             String originalAmountText,
+
+            Integer ticketFee,
+            String ticketFeeText,
 
             Integer usedPoint,
             String usedPointText,
@@ -314,40 +324,14 @@ public class PaymentResponse {
                     safeAmount(payment.getOriginalAmount()),
                     formatAmount(payment.getOriginalAmount()),
 
+                    safeAmount(payment.getTicketFee()),
+                    formatAmount(payment.getTicketFee()),
+
                     safeAmount(payment.getUsedPoint()),
                     formatPoint(payment.getUsedPoint()),
 
                     safeAmount(payment.getAmount()),
                     formatAmount(payment.getAmount()),
-
-                    storeId,
-                    channelKey
-            );
-        }
-
-        /**
-         * 기존 코드 호환용 생성자
-         *
-         * 기존 코드에서
-         * new PaymentResponse.PrepareDTO(paymentId, amount, storeId, channelKey)
-         * 형태로 쓰고 있으면 임시로 컴파일되게 하기 위한 생성자.
-         */
-        public PrepareDTO(String paymentId,
-                          Integer amount,
-                          String storeId,
-                          String channelKey) {
-            this(
-                    paymentId,
-                    "CatchCatch 좌석 예매",
-
-                    safeAmount(amount),
-                    formatAmount(amount),
-
-                    0,
-                    formatPoint(0),
-
-                    safeAmount(amount),
-                    formatAmount(amount),
 
                     storeId,
                     channelKey
@@ -365,6 +349,9 @@ public class PaymentResponse {
 
             Integer originalAmount,
             String originalAmountText,
+
+            Integer ticketFee,
+            String ticketFeeText,
 
             Integer usedPoint,
             String usedPointText,
@@ -384,6 +371,9 @@ public class PaymentResponse {
 
                     safeAmount(payment.getOriginalAmount()),
                     formatAmount(payment.getOriginalAmount()),
+
+                    safeAmount(payment.getTicketFee()),
+                    formatAmount(payment.getTicketFee()),
 
                     safeAmount(payment.getUsedPoint()),
                     formatPoint(payment.getUsedPoint()),

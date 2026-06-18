@@ -78,9 +78,11 @@ public class PaymentService {
             throw new BadRequestException("예매 좌석 정보가 없습니다.");
         }
 
+        Integer ticketFee = PaymentPolicy.calculateTicketFee(booking);
+
         Integer usablePoint = pointService.getUsablePoint(userId);
 
-        return new PaymentResponse.FormDTO(booking, usablePoint);
+        return new PaymentResponse.FormDTO(booking, usablePoint, ticketFee);
     }
 
     /**
@@ -157,8 +159,9 @@ public class PaymentService {
         }
 
         Integer originalAmount = calculatePaymentAmount(booking);
-        Integer usedPoint = reqDTO.usedPointValue();
+        Integer ticketFee = PaymentPolicy.calculateTicketFee(booking);
 
+        Integer usedPoint = reqDTO.usedPointValue();
         pointService.expireUserPoint(user);
 
         if (usedPoint > user.getPoint()) {
@@ -171,7 +174,7 @@ public class PaymentService {
 
         validateUsedPoint(user, originalAmount, usedPoint);
 
-        Integer amount = originalAmount - usedPoint;
+        Integer amount = originalAmount + ticketFee - usedPoint;
 
         String method = reqDTO.method();
 
@@ -192,19 +195,17 @@ public class PaymentService {
                 existingPayment.changePrepareInfo(
                         method,
                         originalAmount,
+                        ticketFee,
                         usedPoint,
                         amount
                 );
 
-                return PaymentResponse.PrepareDTO.builder()
-                        .paymentId(existingPayment.getPaymentId())
-                        .orderName(orderName)
-                        .originalAmount(existingPayment.getOriginalAmount())
-                        .usedPoint(existingPayment.getUsedPoint())
-                        .amount(existingPayment.getAmount())
-                        .storeId(storeId)
-                        .channelKey(selectedChannelKey)
-                        .build();
+                return new PaymentResponse.PrepareDTO(
+                        existingPayment,
+                        orderName,
+                        storeId,
+                        selectedChannelKey
+                        );
             }
 
             throw new BadRequestException("이미 결제가 처리된 예매입니다.");
@@ -220,6 +221,7 @@ public class PaymentService {
                 .booking(booking)
                 .paymentId(paymentId)
                 .originalAmount(originalAmount)
+                .ticketFee(ticketFee)
                 .usedPoint(usedPoint)
                 .amount(amount)
                 .method(method)
@@ -227,15 +229,12 @@ public class PaymentService {
 
         Payment savedPayment = paymentRepository.save(payment);
 
-        return PaymentResponse.PrepareDTO.builder()
-                .paymentId(savedPayment.getPaymentId())
-                .orderName(orderName)
-                .originalAmount(savedPayment.getOriginalAmount())
-                .usedPoint(savedPayment.getUsedPoint())
-                .amount(savedPayment.getAmount())
-                .storeId(storeId)
-                .channelKey(selectedChannelKey)
-                .build();
+        return new PaymentResponse.PrepareDTO(
+                savedPayment,
+                orderName,
+                storeId,
+                selectedChannelKey
+        );
     }
 
     /**
