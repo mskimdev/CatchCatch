@@ -12,7 +12,7 @@
     --seatmap-red: #ef4444;
     --seatmap-amber: #f59e0b;
     --seatmap-shadow: 0 16px 42px rgba(15, 23, 42, 0.12);
-    --seatmap-header-height: 58px;
+    --seatmap-header-height: 64px;
 }
 
 * {
@@ -57,8 +57,8 @@ button:disabled {
 }
 
 /* =========================================================
-   Seatmap 공통 3단 레이아웃
-   left side / center canvas / right side
+   Seatmap common layout
+   stage css에서 grid-template-columns를 페이지별로 덮어쓴다.
 ========================================================= */
 
 .seatmap-app,
@@ -76,7 +76,7 @@ button:disabled {
 }
 
 .seatmap-workspace--stage1 {
-    grid-template-columns: 360px minmax(0, 1fr) 300px;
+    grid-template-columns: 360px minmax(0, 1fr);
 }
 
 .seatmap-workspace--stage2 {
@@ -115,9 +115,9 @@ button:disabled {
     position: relative;
     min-width: 0;
     overflow: auto;
-    background:
-        radial-gradient(circle, #dbeafe 1px, transparent 1.1px) 0 0 / 20px 20px,
-        #ffffff;
+    background-color: #ffffff;
+    background-image: radial-gradient(circle, #dbeafe 1px, transparent 1.1px);
+    background-size: 20px 20px;
 }
 
 /* =========================================================
@@ -132,7 +132,7 @@ button:disabled {
     margin-bottom: 12px;
     padding: 13px;
     border: 1px solid var(--seatmap-line);
-    border-radius: 16px;
+    border-radius: 10px;
     background: #ffffff;
 }
 
@@ -156,7 +156,7 @@ button:disabled {
 .seatmap-help {
     margin-top: 10px;
     padding: 10px;
-    border-radius: 11px;
+    border-radius: 8px;
     background: var(--seatmap-soft);
     color: var(--seatmap-muted);
     font-size: 12px;
@@ -180,10 +180,12 @@ input,
 select,
 textarea {
     width: 100%;
+    min-width: 0;
     border: 1px solid var(--seatmap-line);
-    border-radius: 9px;
+    border-radius: 6px;
     outline: 0;
     background: #f8fafc;
+    color: var(--seatmap-ink);
     font-weight: 800;
 }
 
@@ -225,12 +227,12 @@ input[type="range"] {
 
 .row,
 .field-grid--two {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
 .row.three,
 .field-grid--three {
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .btn,
@@ -238,7 +240,7 @@ input[type="range"] {
     width: 100%;
     min-height: 39px;
     border: 1px solid var(--seatmap-line);
-    border-radius: 10px;
+    border-radius: 6px;
     background: #ffffff;
     color: #334155;
     font-size: 12px;
@@ -302,15 +304,15 @@ input[type="range"] {
 }
 
 .tabs {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .seatmap-workspace--stage2 .part-nav {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .seatmap-workspace--stage3 .part-nav {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .tab,
@@ -318,7 +320,7 @@ input[type="range"] {
 .part-nav__button {
     min-height: 38px;
     border: 1px solid var(--seatmap-line);
-    border-radius: 10px;
+    border-radius: 6px;
     background: #ffffff;
     color: #475569;
     font-size: 12px;
@@ -352,7 +354,7 @@ input[type="range"] {
     background: #ffffff;
     border: 1px solid var(--seatmap-line);
     border-bottom: 0;
-    border-radius: 16px 16px 0 0;
+    border-radius: 10px 10px 0 0;
     padding: 0 14px;
     color: var(--seatmap-muted);
     font-size: 11px;
@@ -415,7 +417,7 @@ input[type="range"] {
     align-items: center;
     gap: 8px;
     border: 1px solid var(--seatmap-line);
-    border-radius: 10px;
+    border-radius: 7px;
     padding: 8px;
     background: #ffffff;
     font-size: 11px;
@@ -453,14 +455,14 @@ input[type="range"] {
 
 .stats {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 8px;
 }
 
 .stat {
     padding: 10px;
     border: 1px solid var(--seatmap-line);
-    border-radius: 12px;
+    border-radius: 8px;
     background: #f8fafc;
 }
 
@@ -488,7 +490,7 @@ input[type="range"] {
     font-size: 11px;
     color: #475569;
     border: 1px solid var(--seatmap-line);
-    border-radius: 9px;
+    border-radius: 7px;
     padding: 7px;
     background: #f8fafc;
 }
@@ -506,7 +508,7 @@ input[type="range"] {
     overflow: auto;
     background: #0f172a;
     color: #dbeafe;
-    border-radius: 10px;
+    border-radius: 7px;
     padding: 10px;
     font-size: 10px;
     line-height: 1.45;
@@ -522,7 +524,7 @@ input[type="range"] {
     height: auto;
     display: block;
     border: 1px solid #edf2f7;
-    border-radius: 10px;
+    border-radius: 7px;
     background: #f7f7f7;
 }
 
@@ -540,7 +542,7 @@ input[type="range"] {
     bottom: 22px;
     z-index: 100;
     padding: 12px 15px;
-    border-radius: 12px;
+    border-radius: 8px;
     background: #111827;
     color: #ffffff;
     font-size: 12px;

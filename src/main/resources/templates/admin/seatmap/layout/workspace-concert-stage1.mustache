@@ -1,0 +1,164 @@
+<aside class="seatmap-side seatmap-side--left">
+
+    <div class="seatmap-step-list">
+
+        <!-- Part 1 -->
+        <section id="part1" class="seatmap-step is-active" data-step="1">
+            <button type="button" class="seatmap-step__header active" id="tab1">
+                <span class="seatmap-step__check" data-step="1"></span>
+
+                <span class="seatmap-step__text">
+                    <b>파트 1</b>
+                    <small>자르기</small>
+                </span>
+
+                <span class="seatmap-step__status">진행중</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active">
+                        <button type="button" class="btn btn--dark" id="cropStart">범위 드래그 시작</button>
+                        <button type="button" class="btn" id="cropApply" disabled>선택 범위로 자르기</button>
+                        <button type="button" class="btn btn--primary" id="go2">다음: 색상 추출</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Part 2 -->
+        <section id="part2" class="seatmap-step" data-step="2">
+            <button type="button" class="seatmap-step__header" id="tab2">
+                <span class="seatmap-step__check" data-step="2"></span>
+
+                <span class="seatmap-step__text">
+                    <b>파트 2</b>
+                    <small>색상 선택 추출</small>
+                </span>
+
+                <span class="seatmap-step__status">대기</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active">
+                        <div id="samples"></div>
+
+                        <div class="row">
+                            <div>
+                                <label for="tol">색상 허용 범위</label>
+                                <input type="range" id="tol" min="5" max="120" value="45">
+                            </div>
+                            <div>
+                                <label for="alpha">도형 표시 강도</label>
+                                <input type="range" id="alpha" min="0" max="100" value="55">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div>
+                                <label for="shapeColor">도형색</label>
+                                <input type="color" id="shapeColor" value="#d9d9d9">
+                            </div>
+                            <div>
+                                <label for="bgColor">배경색</label>
+                                <input type="color" id="bgColor" value="#f7f7f7">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div>
+                                <label for="hole">숫자/구멍 메우기</label>
+                                <input type="number" id="hole" value="140">
+                            </div>
+                            <div>
+                                <label for="viewMode">보기</label>
+                                <select id="viewMode">
+                                    <option value="mix">원본+미리보기</option>
+                                    <option value="clean">미리보기만</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <button type="button" class="btn" id="clearSamples">색상 초기화</button>
+                            <button type="button" class="btn" id="restoreOriginal">원본 복구</button>
+                        </div>
+
+                        <button type="button" class="btn btn--primary" id="go3">다음: 다듬기</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Part 3 -->
+        <section id="part3" class="seatmap-step" data-step="3">
+            <button type="button" class="seatmap-step__header" id="tab3">
+                <span class="seatmap-step__check" data-step="3"></span>
+
+                <span class="seatmap-step__text">
+                    <b>파트 3</b>
+                    <small>다듬기</small>
+                </span>
+
+                <span class="seatmap-step__status">대기</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active box--tool">
+
+                        <!-- 1순위: 선/조각 제거 -->
+                        <div class="tool-block tool-block--priority">
+                            <div class="tool-block__head">
+                                <strong>선/조각 정리</strong>
+                                <small>잘게 남은 선과 찌꺼기를 먼저 제거합니다.</small>
+                            </div>
+
+                            <div class="tool-action-row">
+                                <button type="button" class="btn btn--cleanup" id="cleanup">작은 선/조각 자동 제거</button>
+                                <button type="button" class="btn btn--ghost" id="restoreExtract">추출본 복구</button>
+                            </div>
+
+                            <div class="tool-field">
+                                <label for="cleanupArea">작은 조각 제거 기준</label>
+                                <input type="number" id="cleanupArea" value="180">
+                            </div>
+                        </div>
+
+                        <!-- 2순위: 수동 다듬기 -->
+                        <div class="tool-block">
+                            <div class="tool-block__head">
+                                <strong>수동 다듬기</strong>
+                                <small>지우개/브러쉬 버튼은 다시 누르면 종료됩니다.</small>
+                            </div>
+
+                            <div class="tool-toggle-grid">
+                                <button type="button" class="btn btn--tool-mode btn--eraser" id="eraser">지우개</button>
+                                <button type="button" class="btn btn--tool-mode btn--brush" id="rectFill">브러쉬 채우기</button>
+                            </div>
+
+                            <div class="tool-field">
+                                <label for="eraserSize">지우개/브러쉬 크기</label>
+                                <input type="range" id="eraserSize" min="4" max="80" value="18">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn--next-stage" id="toStage3">다음: Stage2 이동</button>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- 파트별 설명 -->
+    <div class="seatmap-side-guide" id="stage1Guide">
+        도면 영역만 남기고 제목, 범례, 여백은 제거하세요.
+    </div>
+
+</aside>

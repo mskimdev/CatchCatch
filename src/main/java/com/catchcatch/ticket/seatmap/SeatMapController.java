@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin/seatmap")
@@ -16,15 +15,11 @@ public class SeatMapController {
 
     private final SeatMapService seatMapService;
 
-    // 메인 화면 진입
     @GetMapping("/main")
     public String startSeatMap() {
         return "admin/seatmap/main";
     }
 
-    /**
-     * 콘서트 좌석
-     */
     @GetMapping("/concert/stage1")
     public String startConcertStage1(Model model) {
         model.addAttribute("seatmapTitle", "Concert Stage1");
@@ -56,24 +51,29 @@ public class SeatMapController {
         model.addAttribute("seatmapTitle", "Concert Stage3");
         model.addAttribute("seatmapStep", "3");
         model.addAttribute("showTempSave", true);
-        model.addAttribute("tempSaveButtonId", "saveJsonTop");
+        model.addAttribute("tempSaveButtonId", "saveStage3Top");
         model.addAttribute("prevUrl", "/admin/seatmap/concert/stage2");
-        model.addAttribute("nextUrl", "");
-        model.addAttribute("nextLabel", "");
+        model.addAttribute("nextUrl", "/admin/seatmap/concert/stage4");
+        model.addAttribute("nextLabel", "Stage4");
 
         return "admin/seatmap/concert-stage3";
     }
 
-    /**
-     * 소극장 좌석
-     */
-    // todo 아직 미완성
+    @GetMapping("/concert/stage4")
+    public String startConcertStage4(Model model) {
+        model.addAttribute("seatmapTitle", "Concert Stage4");
+        model.addAttribute("seatmapStep", "4");
+        model.addAttribute("showTempSave", true);
+        model.addAttribute("tempSaveButtonId", "saveAllJsonTop");
+        model.addAttribute("prevUrl", "/admin/seatmap/concert/stage3");
+        model.addAttribute("nextUrl", "");
+        model.addAttribute("nextLabel", "");
 
-    /**
-     * Stage3 좌석 JSON 파일 저장
-     */
+        return "admin/seatmap/concert-stage4";
+    }
+
     @ResponseBody
-    @PostMapping("json/save")
+    @PostMapping("/json/save")
     public ResponseEntity<Map<String, String>> saveSeatMapJson(
             @RequestBody SeatMapRequest.SaveDTO req
     ) {

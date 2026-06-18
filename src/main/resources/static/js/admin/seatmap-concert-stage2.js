@@ -1,4 +1,3 @@
-// stage2 js
 (() => {
 
 
@@ -49,6 +48,12 @@
   let editMode = false;
   let editAction = "move";
   let finalMapUrl = null;
+  let baseScale = 1;
+  let zoomScale = 1;
+  let zoomToolOn = false;
+  let zoomDragging = false;
+  let zoomStartX = 0;
+  let zoomStartScale = 1;
 
   const palette = [
     "#ff7a1a",
@@ -110,6 +115,37 @@
       y: ((e.clientY - r.top) * canvas.height) / r.height,
     };
   }
+  function applyCanvasScale() {
+    if (!W || !H) return;
+
+    const scale = baseScale * zoomScale;
+    const cssW = W * scale;
+    const cssH = H * scale;
+
+    base.style.width = overlay.style.width = cssW + "px";
+    base.style.height = overlay.style.height = cssH + "px";
+
+    const canvasBox = $("canvasBox");
+    if (canvasBox) {
+      canvasBox.style.width = cssW + "px";
+      canvasBox.style.height = cssH + "px";
+    }
+
+    const zoomValue = $("zoomValue");
+    if (zoomValue) {
+      zoomValue.textContent = Math.round(zoomScale * 100) + "%";
+    }
+
+    const zoomTool = $("zoomTool");
+    if (zoomTool) {
+      zoomTool.classList.toggle("is-active", zoomToolOn);
+    }
+
+    if (canvasBox) {
+      canvasBox.classList.toggle("is-zooming", zoomToolOn);
+    }
+  }
+
   function setupCanvas(w, h) {
     W = w;
     H = h;
@@ -119,14 +155,34 @@
     });
     cleanCanvas.width = w;
     cleanCanvas.height = h;
-    const scale = Math.min(1, 1120 / w, 720 / h);
-    base.style.width = overlay.style.width = w * scale + "px";
-    base.style.height = overlay.style.height = h * scale + "px";
-    $("canvasBox").style.width = w * scale + "px";
-    $("canvasBox").style.height = h * scale + "px";
-    $("canvasSize").textContent = w + " × " + h;
+
+    baseScale = Math.min(1, 1120 / w, 720 / h);
+    zoomScale = 1;
+    applyCanvasScale();
+
+    const canvasSize = $("canvasSize");
+    if (canvasSize) {
+      canvasSize.textContent = w + " × " + h;
+    }
     preview.width = w;
     preview.height = h;
+  }
+
+  function setZoom(nextZoom) {
+    zoomScale = Math.max(0.25, Math.min(4, nextZoom));
+    applyCanvasScale();
+  }
+
+  function zoomIn() {
+    setZoom(zoomScale * 1.15);
+  }
+
+  function zoomOut() {
+    setZoom(zoomScale / 1.15);
+  }
+
+  function resetZoom() {
+    setZoom(1);
   }
 
   // ============================================================
@@ -1934,27 +1990,39 @@
       overviewImage: finalMapUrl,
       updatedAt: new Date().toISOString(),
     };
-    $("jsonPreview").textContent = JSON.stringify(data, null, 2).slice(0, 4500);
+    const jsonPreview = $("jsonPreview");
+    if (jsonPreview) {
+      jsonPreview.textContent = JSON.stringify(data, null, 2).slice(0, 4500);
+    }
+
     return data;
   }
 
   // ============================================================
   // 9. 전체 화면 갱신 / 파트 전환 / 저장
   // ============================================================
+  function setCanvasTitle(text) {
+    const canvasTitle = $("canvasTitle");
+    if (canvasTitle) {
+      canvasTitle.textContent = text;
+    }
+  }
+
   function renderAll() {
     if (part === 1) {
-      $("canvasTitle").textContent = "파트1 · 회색 도형 구역 추출";
+      setCanvasTitle("파트1 · 회색 도형 구역 추출");
       drawPart1();
     } else if (part === 2) {
-      $("canvasTitle").textContent = "파트2 · 구역 안 회색 도형 오토 면 생성";
+      setCanvasTitle("파트2 · 구역 안 회색 도형 오토 면 생성");
       drawButtonPart();
     } else if (part === 3) {
-      $("canvasTitle").textContent = "파트3 · 선택 구역 꼭짓점 보정";
+      setCanvasTitle("파트3 · 선택 구역 꼭짓점 보정");
       drawButtonPart();
     } else {
-      $("canvasTitle").textContent = "파트4 · 예매용 컬러 구역도";
+      setCanvasTitle("파트4 · 예매용 컬러 구역도");
       drawPart2();
     }
+
     renderSectionList("sectionList1");
     renderSectionList("sectionListButton");
     renderSectionList("sectionListFix");
@@ -1966,14 +2034,57 @@
 
   function setPart(n) {
     part = n;
-    $("partBtn1").classList.toggle("active", n === 1);
-    $("partBtn2").classList.toggle("active", n === 2);
-    $("partBtn3").classList.toggle("active", n === 3);
-    $("partBtn4").classList.toggle("active", n === 4);
-    $("part1Panel").classList.toggle("hidden", n !== 1);
-    $("part2Panel").classList.toggle("hidden", n !== 2);
-    $("part3Panel").classList.toggle("hidden", n !== 3);
-    $("part4Panel").classList.toggle("hidden", n !== 4);
+
+    const completedParts = [];
+    for (let step = 1; step < n; step += 1) {
+      completedParts.push(step);
+    }
+
+    if (window.SeatmapWorkspace && typeof window.SeatmapWorkspace.setActivePart === "function") {
+      window.SeatmapWorkspace.setActivePart(n, completedParts);
+    } else {
+      [1, 2, 3, 4].forEach((step) => {
+        const panel = $("part" + step + "Panel");
+        const btn = $("partBtn" + step);
+
+        if (!panel || !btn) return;
+
+        const active = step === n;
+        const done = step < n;
+
+        panel.classList.remove("hidden");
+        panel.classList.toggle("is-active", active);
+        panel.classList.toggle("is-done", done);
+        btn.classList.toggle("active", active);
+      });
+    }
+
+    [1, 2, 3, 4].forEach((step) => {
+      const panel = $("part" + step + "Panel");
+      const btn = $("partBtn" + step);
+
+      if (!panel || !btn) return;
+
+      const active = step === n;
+      const done = step < n;
+
+      panel.classList.remove("hidden");
+      panel.classList.toggle("is-active", active);
+      panel.classList.toggle("is-done", done);
+      btn.classList.toggle("active", active);
+
+      const status = panel.querySelector(".seatmap-step__status");
+      if (status) {
+        if (active) {
+          status.textContent = "진행중";
+        } else if (done) {
+          status.textContent = "완료";
+        } else {
+          status.textContent = "대기";
+        }
+      }
+    });
+
     renderAll();
   }
 
@@ -2041,7 +2152,7 @@
       } catch (e) {}
     }
 
-    renderAll();
+    setPart(part);
   }
 
   // ============================================================
@@ -2352,6 +2463,14 @@
   // 13. 캔버스 포인터 이벤트
   // ============================================================
   overlay.onpointerdown = (e) => {
+    if (zoomToolOn) {
+      zoomDragging = true;
+      zoomStartX = e.clientX;
+      zoomStartScale = zoomScale;
+      e.preventDefault();
+      return;
+    }
+
     const p = posOn(overlay, e);
     if (part === 4) {
       const hit = [...sections]
@@ -2437,6 +2556,12 @@
   };
 
   window.addEventListener("pointermove", (e) => {
+    if (zoomDragging) {
+      const deltaX = e.clientX - zoomStartX;
+      setZoom(zoomStartScale + deltaX / 260);
+      return;
+    }
+
     if (cornerDrag) {
       const p = posOn(overlay, e);
       cornerDrag.sec.buttonPolygon[cornerDrag.index] = { x: p.x, y: p.y };
@@ -2453,6 +2578,11 @@
   });
 
   window.addEventListener("pointerup", () => {
+    if (zoomDragging) {
+      zoomDragging = false;
+      return;
+    }
+
     if (cornerDrag) {
       cornerDrag = null;
       return;
@@ -2491,6 +2621,38 @@
     manualMode = false;
     renderAll();
   });
+
+  // ============================================================
+  // 14. Stage1 패턴 공용 작업 도구
+  // ============================================================
+  if ($("zoomTool")) {
+    $("zoomTool").onclick = () => {
+      zoomToolOn = !zoomToolOn;
+      applyCanvasScale();
+      toast(zoomToolOn ? "확대 도구: 오른쪽 드래그 확대 / 왼쪽 드래그 축소" : "확대 도구 OFF");
+    };
+  }
+
+  if ($("zoomReset")) {
+    $("zoomReset").onclick = resetZoom;
+  }
+
+  if ($("canvasBox")) {
+    $("canvasBox").addEventListener("wheel", (e) => {
+      if (!zoomToolOn && !e.ctrlKey) return;
+      e.preventDefault();
+      if (e.deltaY < 0) zoomIn();
+      else zoomOut();
+    }, { passive: false });
+  }
+
+  if ($("undoAction")) {
+    $("undoAction").onclick = () => toast("Stage2 이전 작업 기록은 아직 연결하지 않았습니다.");
+  }
+
+  if ($("redoAction")) {
+    $("redoAction").onclick = () => toast("Stage2 다음 작업 기록은 아직 연결하지 않았습니다.");
+  }
 
   init();
 })();

@@ -1,0 +1,368 @@
+<aside class="seatmap-side seatmap-side--left">
+    <div class="seatmap-step-list">
+
+        <!-- Part 1 -->
+        <section id="part1Panel" class="seatmap-step is-active" data-step="1">
+            <button type="button" class="seatmap-step__header active" id="partBtn1">
+                <span class="seatmap-step__check" data-step="1"></span>
+
+                <span class="seatmap-step__text">
+                        <b>파트 1</b>
+                        <small>구역 추출 / 도형화</small>
+                    </span>
+
+                <span class="seatmap-step__status">진행중</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active">
+                        <button type="button" class="btn amber" id="autoAnalyzeBtn">자동 구역 분석</button>
+
+                        <div class="row">
+                            <button type="button" class="btn" id="manualSectionBtn">수동 구역 추가</button>
+                            <button type="button" class="btn red" id="deleteSectionBtn">선택 삭제</button>
+                        </div>
+                    </div>
+
+                    <div class="hidden" aria-hidden="true">
+                        <input type="color" id="shapeColor" value="#d9d9d9" />
+                        <input type="color" id="bgColor" value="#f7f7f7" />
+                        <input type="range" id="shapeTol" min="8" max="80" value="34" />
+                        <input type="number" id="minArea" value="120" />
+                        <input type="range" id="simplify" min="1" max="18" value="7" />
+                        <input type="range" id="snap" min="0" max="16" value="5" />
+                        <button id="recalcPolygonBtn" type="button"></button>
+                    </div>
+
+                    <div class="box">
+                        <h3>구역 목록</h3>
+                        <div class="section-list" id="sectionList1"></div>
+                    </div>
+
+                    <div class="box">
+                        <button type="button" class="btn primary" id="goPart2Btn">다음: 점-선-면 생성</button>
+                    </div>
+                </div>
+
+                <div class="seatmap-step__desc">
+                    자동 분석으로 구역 후보를 뽑고, 빠진 구역은 캔버스에서 회색 도형을 클릭해서 추가합니다.
+                </div>
+            </div>
+        </section>
+
+        <!-- Part 2 -->
+        <section id="part2Panel" class="seatmap-step" data-step="2">
+            <button type="button" class="seatmap-step__header" id="partBtn2">
+                <span class="seatmap-step__check" data-step="2"></span>
+
+                <span class="seatmap-step__text">
+                        <b>파트 2</b>
+                        <small>오토 면 생성</small>
+                    </span>
+
+                <span class="seatmap-step__status">대기</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active">
+                        <button type="button" class="btn green" id="makeAllButtonsBtn">전체 회색 도형 면 자동 생성</button>
+                        <button type="button" class="btn dark" id="makeSelectedButtonBtn">선택 구역 면 자동 재생성</button>
+
+                        <div class="hidden" aria-hidden="true">
+                            <button id="useOriginalPolygonBtn" type="button"></button>
+                            <button id="pointModeBtn" type="button"></button>
+                            <button id="finishPointBtn" type="button"></button>
+                            <button id="cancelPointBtn" type="button"></button>
+                            <button id="straightenSelectedBtn" type="button"></button>
+                            <input type="range" id="buttonSimplify" min="1" max="18" value="2" />
+                            <input type="number" id="minEdgeLen" value="2" />
+                            <input type="number" id="buttonStroke" value="3" />
+                            <select id="showButtonHandles">
+                                <option value="on">표시</option>
+                                <option value="off">숨김</option>
+                            </select>
+                            <input type="number" id="buttonSnap" value="0" />
+                            <input type="number" id="maxButtonPoints" value="32" />
+                        </div>
+                    </div>
+
+                    <div class="box">
+                        <h3>구역 목록</h3>
+                        <div class="section-list" id="sectionListButton"></div>
+                    </div>
+
+                    <div class="box">
+                        <button type="button" class="btn primary" id="goPart3Btn">다음: 선택 구역 보정</button>
+                    </div>
+                </div>
+
+                <div class="seatmap-step__desc">
+                    파트1에서 잡은 점선 구역은 범위로만 사용합니다. 그 안에 있는 회색 픽셀의 외곽선만 이어서 점 → 선 → 면으로 자동 생성합니다.
+                </div>
+            </div>
+        </section>
+
+        <!-- Part 3 -->
+        <section id="part3Panel" class="seatmap-step" data-step="3">
+            <button type="button" class="seatmap-step__header" id="partBtn3">
+                <span class="seatmap-step__check" data-step="3"></span>
+
+                <span class="seatmap-step__text">
+                        <b>파트 3</b>
+                        <small>선택 구역 보정</small>
+                    </span>
+
+                <span class="seatmap-step__status">대기</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active">
+                        <div class="row">
+                            <button type="button" class="btn" id="editModeBtn">꼭짓점 편집 OFF</button>
+                            <button type="button" class="btn amber" id="doneEditBtn">보정 완료</button>
+                        </div>
+                        <div class="row">
+                            <button type="button" class="btn" id="movePointBtn">점 이동</button>
+                            <button type="button" class="btn" id="addPointBtn">점 추가</button>
+                        </div>
+                        <button type="button" class="btn red" id="deletePointBtn">점 삭제</button>
+                    </div>
+
+                    <div class="box">
+                        <h3>선택 구역 빠른 처리</h3>
+                        <button type="button" class="btn dark" id="makeSelectedButtonBtnFix">선택 구역 자동 재생성</button>
+                        <button type="button" class="btn" id="useExtractedAsFaceBtn">점선 범위를 면으로 사용</button>
+                        <div class="help">
+                            자동 재생성이 또 이상하면 점선 범위를 임시 면으로 쓰고 꼭짓점을 직접 고치면 됩니다.
+                        </div>
+                    </div>
+
+                    <div class="box">
+                        <h3>구역 목록</h3>
+                        <div class="section-list" id="sectionListFix"></div>
+                    </div>
+
+                    <div class="box">
+                        <button type="button" class="btn primary" id="goPart4Btn">다음: 컬러 구역도 생성</button>
+                    </div>
+                </div>
+
+                <div class="seatmap-step__desc" id="editHelp">
+                    파트2 자동 생성 결과에서 이상한 구역만 선택해서 고치세요. 편집 ON 후 점 이동/추가/삭제로 외곽선을 보정합니다.
+                </div>
+            </div>
+        </section>
+
+        <!-- Part 4 -->
+        <section id="part4Panel" class="seatmap-step" data-step="4">
+            <button type="button" class="seatmap-step__header" id="partBtn4">
+                <span class="seatmap-step__check" data-step="4"></span>
+
+                <span class="seatmap-step__text">
+                        <b>파트 4</b>
+                        <small>컬러 구역도 생성</small>
+                    </span>
+
+                <span class="seatmap-step__status">대기</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active">
+                        <h3>색상별 가격 설정</h3>
+                        <div class="row">
+                            <div>
+                                <label>색상 그룹</label>
+                                <select id="colorRuleSelect"></select>
+                            </div>
+                            <div>
+                                <label>렌더 색상</label>
+                                <input type="color" id="ruleColorInput" value="#ff7a1a" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div>
+                                <label>등급</label>
+                                <input id="ruleGradeInput" value="일반석" />
+                            </div>
+                            <div>
+                                <label>가격</label>
+                                <input id="rulePriceInput" value="132000" />
+                            </div>
+                        </div>
+                        <button type="button" class="btn green" id="applyColorRuleBtn">해당 색상 그룹 일괄 변경</button>
+                        <button type="button" class="btn" id="addColorRuleBtn">색상 추가</button>
+                        <div class="section-list" id="colorRuleList" style="margin-top: 10px; max-height: 150px"></div>
+                    </div>
+
+                    <div class="box">
+                        <h3>단일 구역 변경</h3>
+                        <div class="row">
+                            <div>
+                                <label>층</label>
+                                <input id="floorInput" value="1층" />
+                            </div>
+                            <div>
+                                <label>구역명</label>
+                                <input id="nameInput" value="구역 1" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div>
+                                <label>색상 규칙</label>
+                                <select id="singleRuleSelect"></select>
+                            </div>
+                            <div>
+                                <label>표시 라벨</label>
+                                <input id="labelInput" value="1" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div>
+                                <label>등급</label>
+                                <input id="gradeInput" value="일반석" />
+                            </div>
+                            <div>
+                                <label>가격</label>
+                                <input id="priceInput" value="132000" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div>
+                                <label>렌더 색상</label>
+                                <input type="color" id="renderColorInput" value="#f78bb8" />
+                            </div>
+                            <div>
+                                <label>적용 대상</label>
+                                <input value="선택 구역만" disabled />
+                            </div>
+                        </div>
+                        <button type="button" class="btn dark" id="applySectionBtn">선택 구역만 변경</button>
+                    </div>
+
+                    <div class="box">
+                        <h3>컬러 도면 옵션</h3>
+                        <div class="row">
+                            <div>
+                                <label>배경</label>
+                                <input type="color" id="mapBg" value="#f7f7f7" />
+                            </div>
+                            <div>
+                                <label>테두리 두께</label>
+                                <input type="number" id="strokeWidth" value="5" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div>
+                                <label>글자 크기</label>
+                                <input type="number" id="labelSize" value="15" />
+                            </div>
+                            <div>
+                                <label>라벨 표시</label>
+                                <select id="showLabels">
+                                    <option value="on">표시</option>
+                                    <option value="off">숨김</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div>
+                                <label>원본 가이드</label>
+                                <select id="guideMode">
+                                    <option value="off">숨김</option>
+                                    <option value="on">연하게 표시</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>무대 표시</label>
+                                <select id="stageMode">
+                                    <option value="simple">간단 표시</option>
+                                    <option value="off">숨김</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="button" class="btn primary" id="renderColorMapBtn">컬러 구역도 다시 생성</button>
+                        <button type="button" class="btn green" id="saveStage2Btn">Stage2 저장</button>
+                    </div>
+
+                    <div class="box">
+                        <h3>구역 목록</h3>
+                        <div class="section-list" id="sectionList2"></div>
+                    </div>
+                </div>
+
+                <div class="seatmap-step__desc">
+                    색상 그룹별로 등급과 가격을 관리합니다. 같은 색상 그룹에 속한 구역은 한 번에 변경하고, 필요한 경우 선택 구역만 따로 수정합니다.
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <div class="box">
+        <h3>스테이지 이동</h3>
+        <div class="row">
+            <button type="button" class="btn" id="backStage1Btn">Stage1 이동</button>
+            <button type="button" class="btn green" id="toStage3Btn">Stage3 이동</button>
+        </div>
+        <button type="button" class="btn red" id="resetStage2Btn">Stage2 초기화</button>
+    </div>
+</aside>
+
+<!-- 가운데: 메인 캔버스 + 공용 작업 도구 -->
+<main class="seatmap-main">
+
+    <div class="seatmap-command-bar" aria-label="공용 작업 명령">
+        <button type="button" class="seatmap-command-btn" id="undoAction" title="이전 작업 Ctrl+Z">
+            ↶ 이전
+        </button>
+
+        <button type="button" class="seatmap-command-btn" id="redoAction" title="다음 작업 Ctrl+Y">
+            ↷ 다음
+        </button>
+
+        <button type="button" class="seatmap-command-btn" id="zoomTool" title="오른쪽 드래그 확대 / 왼쪽 드래그 축소">
+            🔍 확대
+        </button>
+
+        <button type="button" class="seatmap-command-btn" id="zoomReset" title="확대 초기화">
+            100%
+        </button>
+
+        <span class="seatmap-zoom-value" id="zoomValue">100%</span>
+    </div>
+
+    <div class="canvas-wrap">
+        <!-- JS 호환용. 화면에는 표시하지 않음 -->
+        <span id="canvasTitle" class="sr-only">구역 도형화 도면</span>
+        <span id="canvasSize" class="sr-only">-</span>
+        <div class="canvas-box" id="canvasBox">
+            <canvas class="base" id="baseCanvas"></canvas>
+            <canvas id="overlayCanvas"></canvas>
+        </div>
+    </div>
+</main>
+
+<!-- 오른쪽: 미리보기 -->
+<aside class="seatmap-side seatmap-side--right">
+    <div class="minimap">
+        <h3>원본 미니맵</h3>
+        <img id="miniImg" alt="원본 미니맵" />
+        <div class="help">
+            색상 그룹은 원본 색상 기준으로 추정됩니다.
+        </div>
+    </div>
+
+    <div class="preview-card">
+        <h3>예매용 컬러 도면</h3>
+        <canvas id="previewCanvas"></canvas>
+        <div class="legend" id="legend"></div>
+    </div>
+</aside>

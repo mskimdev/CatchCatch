@@ -1,4 +1,3 @@
-// stage1 js
 (() => {
     "use strict";
 
@@ -8,10 +7,13 @@
         IMAGE_META: "concert_imageMeta",
     };
 
-    // 다음 스테이지 이동
     const PAGE_URL = {
         STAGE2: "/admin/seatmap/concert/stage2",
     };
+
+    const HISTORY_LIMIT = 30;
+    const MIN_ZOOM = 0.25;
+    const MAX_ZOOM = 4;
 
     const dom = {};
     const state = {
@@ -24,6 +26,7 @@
         lastExtractUrl: null,
 
         part: 1,
+        completedParts: new Set(),
         samples: [],
 
         cropMode: false,
@@ -37,12 +40,29 @@
         filling: false,
 
         lastPointerPos: null,
+
+        baseDisplayScale: 1,
+        zoomScale: 1,
+        zoomMode: false,
+        zoomDragging: false,
+        zoomStartX: 0,
+        zoomStartScale: 1,
+
+        history: [],
+        historyIndex: -1,
+        isApplyingHistory: false,
+        changedDuringDrag: false,
     };
 
     let canvas;
     let overlay;
     let ctx;
     let overlayCtx;
+    let loupeCanvas;
+    let loupeCtx;
+
+    const sourceCanvas = document.createElement("canvas");
+    const sourceCtx = sourceCanvas.getContext("2d", { willReadFrequently: true });
 
     const cleanCanvas = document.createElement("canvas");
     const cleanCtx = cleanCanvas.getContext("2d", { willReadFrequently: true });
@@ -52,11 +72,15 @@
     function init() {
         cacheDom();
         bindEvents();
+        initializeWorkspaceSteps();
+        renderPartGuide(state.part);
+        updateHistoryButtons();
+        updateZoomView();
 
         state.originalUrl = localStorage.getItem(STORAGE_KEYS.ORIGINAL_IMAGE);
-        state.workingUrl = localStorage.getItem(STORAGE_KEYS.CLEAN_IMAGE) || state.originalUrl;
-        state.cleanUrl = state.workingUrl;
-        state.lastExtractUrl = state.workingUrl;
+        state.workingUrl = state.originalUrl;
+        state.cleanUrl = localStorage.getItem(STORAGE_KEYS.CLEAN_IMAGE) || state.workingUrl;
+        state.lastExtractUrl = state.cleanUrl;
 
         if (!state.originalUrl) {
             showToast("메인에서 이미지를 업로드하세요");
@@ -64,11 +88,16 @@
             return;
         }
 
-        loadImage(state.workingUrl, (image) => {
-            setupCanvas(image.naturalWidth, image.naturalHeight);
-            cleanCtx.drawImage(image, 0, 0, state.width, state.height);
-            render();
-            renderSamples();
+        loadImage(state.workingUrl, (sourceImage) => {
+            setupCanvas(sourceImage.naturalWidth, sourceImage.naturalHeight);
+            drawImageToSourceCanvas(sourceImage);
+
+            loadImage(state.cleanUrl, (cleanImage) => {
+                drawImageToCleanCanvas(cleanImage);
+                render();
+                renderSamples();
+                pushHistory("초기 상태");
+            });
         });
     }
 
@@ -76,7 +105,10 @@
         canvas = document.getElementById("canvas");
         overlay = document.getElementById("overlay");
         ctx = canvas.getContext("2d", { willReadFrequently: true });
-        overlayCtx = overlay.getContext("2d");
+        overlayCtx = overlay.getContext("2d", { willReadFrequently: true });
+
+        loupeCanvas = document.getElementById("loupeCanvas");
+        loupeCtx = loupeCanvas ? loupeCanvas.getContext("2d", { willReadFrequently: true }) : null;
 
         [
             "box",
@@ -85,12 +117,25 @@
             "toast",
             "eraserCursor",
 
+            "undoAction",
+            "redoAction",
+            "zoomTool",
+            "zoomReset",
+            "zoomValue",
+
+            "colorLoupe",
+            "loupeChip",
+            "loupeHex",
+            "loupeRgb",
+            "loupePoint",
+
             "tab1",
             "tab2",
             "tab3",
             "part1",
             "part2",
             "part3",
+            "stage1Guide",
 
             "cropStart",
             "cropApply",
@@ -108,14 +153,11 @@
             "restoreOriginal",
 
             "eraser",
-            "stopEraser",
             "rectFill",
-            "stopRectFill",
             "eraserSize",
             "cleanupArea",
             "cleanup",
             "restoreExtract",
-            "saveClean",
             "toStage3",
         ].forEach((id) => {
             dom[id] = document.getElementById(id);
@@ -123,50 +165,69 @@
     }
 
     function bindEvents() {
-        dom.tab1.addEventListener("click", () => showPart(1));
-        dom.tab2.addEventListener("click", () => showPart(2));
-        dom.tab3.addEventListener("click", () => showPart(3));
+        bindIfExists("tab1", "click", () => showPart(1));
+        bindIfExists("tab2", "click", () => showPart(2));
+        bindIfExists("tab3", "click", () => showPart(3));
 
-        dom.go2.addEventListener("click", () => showPart(2));
-        dom.go3.addEventListener("click", () => showPart(3));
+        bindIfExists("go2", "click", () => moveNextPart(1, 2));
+        bindIfExists("go3", "click", () => moveNextPart(2, 3));
 
-        dom.cropStart.addEventListener("click", startCropMode);
-        dom.cropApply.addEventListener("click", applyCrop);
+        bindIfExists("cropStart", "click", startCropMode);
+        bindIfExists("cropApply", "click", applyCrop);
 
         overlay.addEventListener("pointerdown", handlePointerDown);
         overlay.addEventListener("pointerleave", handlePointerLeave);
         overlay.addEventListener("pointerenter", handlePointerEnter);
+        overlay.addEventListener("pointermove", handleOverlayPointerMove);
 
         window.addEventListener("pointermove", handlePointerMove);
         window.addEventListener("pointerup", handlePointerUp);
 
         ["tol", "alpha", "shapeColor", "bgColor", "hole", "viewMode"].forEach((id) => {
-            dom[id].addEventListener("input", extractSelectedColors);
-        });
-
-        dom.clearSamples.addEventListener("click", clearSamples);
-        dom.restoreOriginal.addEventListener("click", restoreOriginalPreview);
-
-        dom.eraser.addEventListener("click", enableEraserMode);
-        dom.stopEraser.addEventListener("click", disableEraserMode);
-
-        dom.rectFill.addEventListener("click", enableFillMode);
-        dom.stopRectFill.addEventListener("click", disableFillMode);
-
-        dom.eraserSize.addEventListener("input", () => {
-            if (state.part === 3 && state.lastPointerPos) {
-                updateToolCursor(state.lastPointerPos);
+            if (!dom[id]) {
+                return;
             }
+
+            dom[id].addEventListener("input", () => extractSelectedColors());
+            dom[id].addEventListener("change", () => extractSelectedColors({ recordHistory: true }));
         });
 
-        dom.cleanup.addEventListener("click", removeSmallFragments);
-        dom.restoreExtract.addEventListener("click", restoreLastExtract);
-        dom.saveClean.addEventListener("click", saveStage1);
-        dom.toStage3.addEventListener("click", moveToStage2);
+        bindIfExists("clearSamples", "click", clearSamples);
+        bindIfExists("restoreOriginal", "click", restoreOriginalPreview);
+
+        bindIfExists("eraser", "click", toggleEraserMode);
+        bindIfExists("rectFill", "click", toggleFillMode);
+
+        if (dom.eraserSize) {
+            dom.eraserSize.addEventListener("input", () => {
+                if (state.part === 3 && state.lastPointerPos) {
+                    updateToolCursor(state.lastPointerPos);
+                }
+            });
+        }
+
+        bindIfExists("cleanup", "click", removeSmallFragments);
+        bindIfExists("restoreExtract", "click", restoreLastExtract);
+        bindIfExists("toStage3", "click", moveToStage2);
+
+        bindIfExists("undoAction", "click", undoHistory);
+        bindIfExists("redoAction", "click", redoHistory);
+        bindIfExists("zoomTool", "click", toggleZoomMode);
+        bindIfExists("zoomReset", "click", resetZoom);
+
+        document.addEventListener("keydown", handleCommandShortcut);
+    }
+
+    function bindIfExists(id, eventName, handler) {
+        if (!dom[id]) {
+            return;
+        }
+
+        dom[id].addEventListener(eventName, handler);
     }
 
     /* =========================
-       Canvas Render
+       Canvas Setup / Render
     ========================= */
 
     function setupCanvas(width, height) {
@@ -177,12 +238,23 @@
         canvas.height = height;
         overlay.width = width;
         overlay.height = height;
+        sourceCanvas.width = width;
+        sourceCanvas.height = height;
         cleanCanvas.width = width;
         cleanCanvas.height = height;
 
-        const scale = Math.min(1, 1120 / width, 720 / height);
-        const displayWidth = `${width * scale}px`;
-        const displayHeight = `${height * scale}px`;
+        state.baseDisplayScale = Math.min(1, 1120 / width, 720 / height);
+        applyCanvasDisplayScale();
+
+        if (dom.size) {
+            dom.size.textContent = `${width} × ${height}`;
+        }
+    }
+
+    function applyCanvasDisplayScale() {
+        const scale = state.baseDisplayScale * state.zoomScale;
+        const displayWidth = `${state.width * scale}px`;
+        const displayHeight = `${state.height * scale}px`;
 
         canvas.style.width = displayWidth;
         canvas.style.height = displayHeight;
@@ -191,30 +263,42 @@
 
         dom.box.style.width = displayWidth;
         dom.box.style.height = displayHeight;
-        dom.size.textContent = `${width} × ${height}`;
+
+        updateZoomView();
+    }
+
+    function drawImageToSourceCanvas(image) {
+        sourceCtx.clearRect(0, 0, state.width, state.height);
+        sourceCtx.drawImage(image, 0, 0, state.width, state.height);
+    }
+
+    function drawImageToCleanCanvas(image) {
+        cleanCtx.clearRect(0, 0, state.width, state.height);
+        cleanCtx.drawImage(image, 0, 0, state.width, state.height);
+        state.cleanUrl = cleanCanvas.toDataURL("image/png");
     }
 
     function render() {
         clearCanvas();
+        hideColorLoupeIfInvalid();
 
-        if (state.part === 1 || isMixedPreviewMode()) {
-            drawImageToMainCanvas(state.workingUrl, () => {
-                if (state.part === 2) {
-                    drawPreviewOverlay();
-                }
-
-                if (state.part === 1) {
-                    drawCropGuide();
-                }
-            });
+        if (state.part === 1) {
+            ctx.drawImage(sourceCanvas, 0, 0);
+            drawCropGuide();
             return;
         }
 
-        drawImageToMainCanvas(state.cleanUrl, () => {
-            if (state.part === 3 && isToolModeActive() && state.lastPointerPos) {
-                updateToolCursor(state.lastPointerPos);
-            }
-        });
+        if (state.part === 2 && isMixedPreviewMode()) {
+            ctx.drawImage(sourceCanvas, 0, 0);
+            drawPreviewOverlay();
+            return;
+        }
+
+        ctx.drawImage(cleanCanvas, 0, 0);
+
+        if (state.part === 3 && isToolModeActive() && state.lastPointerPos) {
+            updateToolCursor(state.lastPointerPos);
+        }
     }
 
     function clearCanvas() {
@@ -222,63 +306,46 @@
         overlayCtx.clearRect(0, 0, state.width, state.height);
     }
 
-    function drawImageToMainCanvas(url, callback) {
-        if (!url) {
-            return;
-        }
-
-        loadImage(url, (image) => {
-            ctx.clearRect(0, 0, state.width, state.height);
-            ctx.drawImage(image, 0, 0, state.width, state.height);
-
-            if (typeof callback === "function") {
-                callback();
-            }
-        });
-    }
-
     function drawPreviewOverlay() {
         if (!state.cleanUrl) {
             return;
         }
 
-        loadImage(state.cleanUrl, (image) => {
-            const preview = createCanvas(state.width, state.height);
-            const previewCtx = preview.getContext("2d", { willReadFrequently: true });
+        const preview = createCanvas(state.width, state.height);
+        const previewCtx = preview.getContext("2d", { willReadFrequently: true });
 
-            previewCtx.drawImage(image, 0, 0, state.width, state.height);
+        previewCtx.drawImage(cleanCanvas, 0, 0);
 
-            const imageData = previewCtx.getImageData(0, 0, state.width, state.height);
-            const data = imageData.data;
-            const shapeColor = hexToRgb(dom.shapeColor.value);
-            const alpha = Math.round((getNumber(dom.alpha, 55) / 100) * 255);
+        const imageData = previewCtx.getImageData(0, 0, state.width, state.height);
+        const data = imageData.data;
+        const shapeColor = hexToRgb(dom.shapeColor.value);
+        const alpha = Math.round((getNumber(dom.alpha, 55) / 100) * 255);
 
-            for (let i = 0; i < data.length; i += 4) {
-                const pixel = {
-                    r: data[i],
-                    g: data[i + 1],
-                    b: data[i + 2],
-                };
+        for (let i = 0; i < data.length; i += 4) {
+            const pixel = {
+                r: data[i],
+                g: data[i + 1],
+                b: data[i + 2],
+            };
 
-                if (colorDistance(pixel, shapeColor) <= 18) {
-                    data[i] = shapeColor.r;
-                    data[i + 1] = shapeColor.g;
-                    data[i + 2] = shapeColor.b;
-                    data[i + 3] = alpha;
-                } else {
-                    data[i + 3] = 0;
-                }
+            if (colorDistance(pixel, shapeColor) <= 18) {
+                data[i] = shapeColor.r;
+                data[i + 1] = shapeColor.g;
+                data[i + 2] = shapeColor.b;
+                data[i + 3] = alpha;
+            } else {
+                data[i + 3] = 0;
             }
+        }
 
-            previewCtx.putImageData(imageData, 0, 0);
+        previewCtx.putImageData(imageData, 0, 0);
 
-            overlayCtx.clearRect(0, 0, state.width, state.height);
-            overlayCtx.drawImage(preview, 0, 0);
-        });
+        overlayCtx.clearRect(0, 0, state.width, state.height);
+        overlayCtx.drawImage(preview, 0, 0);
     }
 
     function isMixedPreviewMode() {
-        return state.part === 2 && dom.viewMode.value === "mix";
+        return state.part === 2 && dom.viewMode && dom.viewMode.value === "mix";
     }
 
     /* =========================
@@ -286,20 +353,78 @@
     ========================= */
 
     function showPart(partNumber) {
+        completePreviousParts(partNumber);
+
         state.part = partNumber;
+        syncWorkspacePartState();
+        renderPartGuide(partNumber);
 
-        [1, 2, 3].forEach((number) => {
-            dom[`tab${number}`].classList.toggle("active", number === partNumber);
-            dom[`part${number}`].classList.toggle("hidden", number !== partNumber);
-        });
+        if (dom.title) {
+            dom.title.textContent = getPartTitle(partNumber);
+        }
 
-        dom.title.textContent = getPartTitle(partNumber);
+        if (partNumber !== 2) {
+            hideColorLoupe();
+        }
 
         if (partNumber !== 3) {
             hideToolCursor();
         }
 
         render();
+    }
+
+    function moveNextPart(currentPart, nextPart) {
+        state.completedParts.add(currentPart);
+        showPart(nextPart);
+    }
+
+    function completePreviousParts(partNumber) {
+        for (let number = 1; number < partNumber; number += 1) {
+            state.completedParts.add(number);
+        }
+    }
+
+    function syncWorkspacePartState() {
+        [1, 2, 3].forEach((number) => {
+            const part = dom[`part${number}`];
+            const tab = dom[`tab${number}`];
+
+            if (!part || !tab) {
+                return;
+            }
+
+            const isActive = number === state.part;
+            const isDone = state.completedParts.has(number);
+
+            part.classList.remove("hidden");
+            part.classList.toggle("is-active", isActive);
+            part.classList.toggle("is-done", isDone);
+
+            tab.classList.toggle("active", isActive);
+
+            const status = part.querySelector(".seatmap-step__status");
+
+            if (status) {
+                if (isActive) {
+                    status.textContent = isDone ? "완료진행중" : "진행중";
+                } else if (isDone) {
+                    status.textContent = "완료";
+                } else {
+                    status.textContent = "대기";
+                }
+            }
+        });
+    }
+
+    function initializeWorkspaceSteps() {
+        [1, 2, 3].forEach((number) => {
+            if (dom[`part${number}`]) {
+                dom[`part${number}`].classList.remove("hidden");
+            }
+        });
+
+        syncWorkspacePartState();
     }
 
     function getPartTitle(partNumber) {
@@ -314,12 +439,213 @@
         return "추출본 다듬기";
     }
 
+    function renderPartGuide(partNumber) {
+        if (!dom.stage1Guide) {
+            return;
+        }
+
+        const guideText = {
+            1: "도면 영역만 남기고 제목, 범례, 여백은 제거하세요.",
+            2: "가운데 이미지를 움직이면 픽셀 확대경과 색상 정보가 표시됩니다. 클릭하면 해당 색상이 추출 목록에 추가됩니다.",
+            3: "먼저 작은 선/조각을 자동 제거하고, 남는 부분만 지우개 또는 브러쉬로 수동 보정하세요.",
+        };
+
+        dom.stage1Guide.textContent = guideText[partNumber] || "";
+    }
+
+    /* =========================
+       Common Commands - Zoom
+    ========================= */
+
+    function toggleZoomMode() {
+        state.zoomMode = !state.zoomMode;
+
+        if (state.zoomMode) {
+            disableEraserMode();
+            disableFillMode();
+            state.cropMode = false;
+            hideColorLoupe();
+            showToast("확대 도구: 오른쪽 드래그 확대 / 왼쪽 드래그 축소");
+        }
+
+        updateZoomView();
+    }
+
+    function beginZoomDrag(event) {
+        state.zoomDragging = true;
+        state.zoomStartX = event.clientX;
+        state.zoomStartScale = state.zoomScale;
+        hideColorLoupe();
+    }
+
+    function updateZoomDrag(event) {
+        const deltaX = event.clientX - state.zoomStartX;
+        const nextScale = clamp(state.zoomStartScale + deltaX / 260, MIN_ZOOM, MAX_ZOOM);
+
+        setZoomScale(nextScale);
+    }
+
+    function endZoomDrag() {
+        state.zoomDragging = false;
+    }
+
+    function setZoomScale(scale) {
+        state.zoomScale = clamp(scale, MIN_ZOOM, MAX_ZOOM);
+        applyCanvasDisplayScale();
+    }
+
+    function resetZoom() {
+        setZoomScale(1);
+    }
+
+    function updateZoomView() {
+        if (dom.zoomValue) {
+            dom.zoomValue.textContent = `${Math.round(state.zoomScale * 100)}%`;
+        }
+
+        if (dom.zoomTool) {
+            dom.zoomTool.classList.toggle("is-active", state.zoomMode);
+        }
+
+        if (dom.box) {
+            dom.box.classList.toggle("is-zooming", state.zoomMode);
+        }
+    }
+
+    /* =========================
+       Common Commands - History
+    ========================= */
+
+    function pushHistory(label) {
+        if (state.isApplyingHistory || !state.workingUrl || !state.cleanUrl) {
+            return;
+        }
+
+        const snapshot = {
+            label,
+            width: state.width,
+            height: state.height,
+            workingUrl: state.workingUrl,
+            cleanUrl: state.cleanUrl,
+            lastExtractUrl: state.lastExtractUrl,
+            samples: state.samples.map((sample) => ({ ...sample })),
+            part: state.part,
+            completedParts: Array.from(state.completedParts),
+        };
+
+        state.history = state.history.slice(0, state.historyIndex + 1);
+        state.history.push(snapshot);
+
+        if (state.history.length > HISTORY_LIMIT) {
+            state.history.shift();
+        }
+
+        state.historyIndex = state.history.length - 1;
+        updateHistoryButtons();
+    }
+
+    function undoHistory() {
+        if (state.historyIndex <= 0) {
+            return;
+        }
+
+        state.historyIndex -= 1;
+        applyHistorySnapshot(state.history[state.historyIndex]);
+    }
+
+    function redoHistory() {
+        if (state.historyIndex >= state.history.length - 1) {
+            return;
+        }
+
+        state.historyIndex += 1;
+        applyHistorySnapshot(state.history[state.historyIndex]);
+    }
+
+    function applyHistorySnapshot(snapshot) {
+        if (!snapshot) {
+            return;
+        }
+
+        state.isApplyingHistory = true;
+
+        state.width = snapshot.width;
+        state.height = snapshot.height;
+        state.workingUrl = snapshot.workingUrl;
+        state.cleanUrl = snapshot.cleanUrl;
+        state.lastExtractUrl = snapshot.lastExtractUrl;
+        state.samples = snapshot.samples.map((sample) => ({ ...sample }));
+        state.part = snapshot.part;
+        state.completedParts = new Set(snapshot.completedParts);
+
+        state.cropMode = false;
+        state.cropDraft = null;
+        state.cropRect = null;
+        state.erasing = false;
+        state.filling = false;
+        state.changedDuringDrag = false;
+        hideToolCursor();
+        hideColorLoupe();
+
+        localStorage.setItem(STORAGE_KEYS.ORIGINAL_IMAGE, state.workingUrl);
+
+        loadImage(state.workingUrl, (sourceImage) => {
+            setupCanvas(snapshot.width, snapshot.height);
+            drawImageToSourceCanvas(sourceImage);
+
+            loadImage(state.cleanUrl, (cleanImage) => {
+                drawImageToCleanCanvas(cleanImage);
+                renderSamples();
+                syncWorkspacePartState();
+                renderPartGuide(state.part);
+                render();
+                updateHistoryButtons();
+                state.isApplyingHistory = false;
+            });
+        });
+    }
+
+    function updateHistoryButtons() {
+        if (dom.undoAction) {
+            dom.undoAction.disabled = state.historyIndex <= 0;
+        }
+
+        if (dom.redoAction) {
+            dom.redoAction.disabled = state.historyIndex >= state.history.length - 1;
+        }
+    }
+
+    function handleCommandShortcut(event) {
+        const isCtrl = event.ctrlKey || event.metaKey;
+
+        if (!isCtrl) {
+            return;
+        }
+
+        if (event.key.toLowerCase() === "z" && !event.shiftKey) {
+            event.preventDefault();
+            undoHistory();
+            return;
+        }
+
+        if (event.key.toLowerCase() === "y" || (event.key.toLowerCase() === "z" && event.shiftKey)) {
+            event.preventDefault();
+            redoHistory();
+        }
+    }
+
     /* =========================
        Part 1 - Crop
     ========================= */
 
     function startCropMode() {
         state.cropMode = true;
+        state.cropDraft = null;
+        state.cropRect = null;
+        disableEraserMode();
+        disableFillMode();
+        state.zoomMode = false;
+        updateZoomView();
         showToast("자를 범위를 드래그하세요");
     }
 
@@ -358,7 +684,8 @@
     function applyCrop() {
         const rect = state.cropRect;
 
-        if (!rect) {
+        if (!rect || rect.w <= 5 || rect.h <= 5) {
+            showToast("자를 범위를 먼저 선택하세요");
             return;
         }
 
@@ -366,7 +693,7 @@
         const cropCtx = cropCanvas.getContext("2d");
 
         cropCtx.drawImage(
-            canvas,
+            sourceCanvas,
             rect.x,
             rect.y,
             rect.w,
@@ -382,17 +709,25 @@
 
         loadImage(state.workingUrl, (image) => {
             setupCanvas(image.naturalWidth, image.naturalHeight);
-
-            state.cleanUrl = state.workingUrl;
-            state.lastExtractUrl = state.workingUrl;
-            state.cropRect = null;
-            state.cropDraft = null;
-
+            drawImageToSourceCanvas(image);
             cleanCtx.clearRect(0, 0, state.width, state.height);
             cleanCtx.drawImage(image, 0, 0, state.width, state.height);
 
+            state.cleanUrl = cleanCanvas.toDataURL("image/png");
+            state.lastExtractUrl = state.cleanUrl;
+            state.cropRect = null;
+            state.cropDraft = null;
+            state.cropMode = false;
+            state.samples = [];
+
+            if (dom.cropApply) {
+                dom.cropApply.disabled = true;
+            }
+
+            renderSamples();
             render();
             showToast("자르기 완료");
+            pushHistory("자르기");
         });
     }
 
@@ -401,35 +736,29 @@
     ========================= */
 
     function addColorSample(pointerPos) {
-        loadImage(state.workingUrl, (image) => {
-            const sampleCanvas = createCanvas(state.width, state.height);
-            const sampleCtx = sampleCanvas.getContext("2d", { willReadFrequently: true });
+        const pixel = getSourcePixel(pointerPos.x, pointerPos.y);
 
-            sampleCtx.drawImage(image, 0, 0, state.width, state.height);
+        if (!pixel) {
+            return;
+        }
 
-            const imageData = sampleCtx.getImageData(
-                Math.floor(pointerPos.x),
-                Math.floor(pointerPos.y),
-                1,
-                1
-            );
+        const exists = state.samples.some((sample) => colorDistance(sample, pixel) <= 2);
 
-            const data = imageData.data;
+        if (!exists) {
+            state.samples.push(pixel);
+        }
 
-            state.samples.push({
-                r: data[0],
-                g: data[1],
-                b: data[2],
-            });
-
-            renderSamples();
-            extractSelectedColors();
-        });
+        renderSamples();
+        extractSelectedColors({ recordHistory: true });
     }
 
     function renderSamples() {
+        if (!dom.samples) {
+            return;
+        }
+
         if (!state.samples.length) {
-            dom.samples.innerHTML = '<div class="help">이미지를 클릭해서 남길 색상을 고르세요.</div>';
+            dom.samples.innerHTML = '<div class="help">이미지를 움직이면 확대경이 표시됩니다. 클릭해서 남길 색상을 고르세요.</div>';
             return;
         }
 
@@ -453,82 +782,95 @@
             button.addEventListener("click", () => {
                 state.samples.splice(Number(button.dataset.index), 1);
                 renderSamples();
-                extractSelectedColors();
+                extractSelectedColors({ recordHistory: true });
             });
         });
     }
 
-    function extractSelectedColors() {
-        if (!state.workingUrl) {
+    function extractSelectedColors(options = {}) {
+        if (!state.workingUrl || !state.width || !state.height) {
             return;
         }
 
-        loadImage(state.workingUrl, (image) => {
-            cleanCtx.clearRect(0, 0, state.width, state.height);
-            cleanCtx.drawImage(image, 0, 0, state.width, state.height);
+        cleanCtx.clearRect(0, 0, state.width, state.height);
 
-            const imageData = cleanCtx.getImageData(0, 0, state.width, state.height);
-            const data = imageData.data;
-
-            const tolerance = getNumber(dom.tol, 45);
-            const shapeColor = hexToRgb(dom.shapeColor.value);
-            const backgroundColor = hexToRgb(dom.bgColor.value);
-            const holeArea = getNumber(dom.hole, 0);
-
-            if (state.samples.length) {
-                for (let i = 0; i < data.length; i += 4) {
-                    const pixel = {
-                        r: data[i],
-                        g: data[i + 1],
-                        b: data[i + 2],
-                    };
-
-                    const isSelectedColor = state.samples.some((sample) => {
-                        return colorDistance(pixel, sample) <= tolerance;
-                    });
-
-                    if (isSelectedColor) {
-                        data[i] = shapeColor.r;
-                        data[i + 1] = shapeColor.g;
-                        data[i + 2] = shapeColor.b;
-                        data[i + 3] = 255;
-                    } else {
-                        data[i] = backgroundColor.r;
-                        data[i + 1] = backgroundColor.g;
-                        data[i + 2] = backgroundColor.b;
-                        data[i + 3] = 255;
-                    }
-                }
-
-                fillSmallHoles(imageData, shapeColor, backgroundColor, holeArea);
-            }
-
-            cleanCtx.putImageData(imageData, 0, 0);
-
+        if (!state.samples.length) {
+            cleanCtx.drawImage(sourceCanvas, 0, 0);
             state.cleanUrl = cleanCanvas.toDataURL("image/png");
             state.lastExtractUrl = state.cleanUrl;
-
             render();
-        });
+
+            if (options.recordHistory === true) {
+                pushHistory("색상 초기화");
+            }
+
+            return;
+        }
+
+        const sourceImageData = sourceCtx.getImageData(0, 0, state.width, state.height);
+        const imageData = cleanCtx.createImageData(state.width, state.height);
+        const sourceData = sourceImageData.data;
+        const data = imageData.data;
+
+        const tolerance = getNumber(dom.tol, 45);
+        const shapeColor = hexToRgb(dom.shapeColor.value);
+        const backgroundColor = hexToRgb(dom.bgColor.value);
+        const holeArea = getNumber(dom.hole, 0);
+
+        for (let i = 0; i < sourceData.length; i += 4) {
+            const pixel = {
+                r: sourceData[i],
+                g: sourceData[i + 1],
+                b: sourceData[i + 2],
+            };
+
+            const isSelectedColor = state.samples.some((sample) => {
+                return colorDistance(pixel, sample) <= tolerance;
+            });
+
+            if (isSelectedColor) {
+                data[i] = shapeColor.r;
+                data[i + 1] = shapeColor.g;
+                data[i + 2] = shapeColor.b;
+                data[i + 3] = 255;
+            } else {
+                data[i] = backgroundColor.r;
+                data[i + 1] = backgroundColor.g;
+                data[i + 2] = backgroundColor.b;
+                data[i + 3] = 255;
+            }
+        }
+
+        fillSmallHoles(imageData, shapeColor, backgroundColor, holeArea);
+        cleanCtx.putImageData(imageData, 0, 0);
+
+        state.cleanUrl = cleanCanvas.toDataURL("image/png");
+        state.lastExtractUrl = state.cleanUrl;
+
+        render();
+
+        if (options.recordHistory === true) {
+            pushHistory("색상 추출");
+        }
     }
 
     function clearSamples() {
         state.samples = [];
         renderSamples();
-        extractSelectedColors();
+        extractSelectedColors({ recordHistory: true });
     }
 
     function restoreOriginalPreview() {
         state.samples = [];
         renderSamples();
 
-        state.cleanUrl = state.workingUrl;
+        cleanCtx.clearRect(0, 0, state.width, state.height);
+        cleanCtx.drawImage(sourceCanvas, 0, 0);
+        state.cleanUrl = cleanCanvas.toDataURL("image/png");
+        state.lastExtractUrl = state.cleanUrl;
 
-        loadImage(state.workingUrl, (image) => {
-            cleanCtx.clearRect(0, 0, state.width, state.height);
-            cleanCtx.drawImage(image, 0, 0, state.width, state.height);
-            render();
-        });
+        render();
+        pushHistory("원본 복구");
     }
 
     function fillSmallHoles(imageData, shapeColor, backgroundColor, maxArea) {
@@ -576,32 +918,257 @@
     }
 
     /* =========================
+       Part 2 - Loupe
+    ========================= */
+
+    function updateColorLoupe(event) {
+        if (!shouldShowColorLoupe()) {
+            hideColorLoupe();
+            return;
+        }
+
+        const pointerPos = getCanvasPointer(event);
+        const pixel = getSourcePixel(pointerPos.x, pointerPos.y);
+
+        if (!pixel) {
+            hideColorLoupe();
+            return;
+        }
+
+        drawLoupeCanvas(pointerPos);
+        updateLoupeText(pointerPos, pixel);
+        positionColorLoupe(event);
+
+        dom.colorLoupe.classList.add("is-show");
+        dom.colorLoupe.setAttribute("aria-hidden", "false");
+    }
+
+    function shouldShowColorLoupe() {
+        return (
+            state.part === 2 &&
+            !state.zoomMode &&
+            !state.zoomDragging &&
+            dom.colorLoupe &&
+            loupeCanvas &&
+            loupeCtx &&
+            state.width > 0 &&
+            state.height > 0
+        );
+    }
+
+    function drawLoupeCanvas(pointerPos) {
+        const lensSize = loupeCanvas.width;
+        const zoom = 10;
+        const sampleSize = Math.ceil(lensSize / zoom);
+        const half = Math.floor(sampleSize / 2);
+        const centerX = Math.round(pointerPos.x);
+        const centerY = Math.round(pointerPos.y);
+
+        const sx = clamp(centerX - half, 0, Math.max(0, state.width - sampleSize));
+        const sy = clamp(centerY - half, 0, Math.max(0, state.height - sampleSize));
+
+        loupeCtx.save();
+        loupeCtx.clearRect(0, 0, lensSize, lensSize);
+        loupeCtx.imageSmoothingEnabled = false;
+        loupeCtx.drawImage(sourceCanvas, sx, sy, sampleSize, sampleSize, 0, 0, lensSize, lensSize);
+
+        const cell = lensSize / sampleSize;
+        const targetCellX = centerX - sx;
+        const targetCellY = centerY - sy;
+        const targetX = targetCellX * cell;
+        const targetY = targetCellY * cell;
+        const crossX = targetX + cell / 2;
+        const crossY = targetY + cell / 2;
+
+        loupeCtx.strokeStyle = "rgba(15, 23, 42, 0.16)";
+        loupeCtx.lineWidth = 1;
+
+        for (let i = 1; i < sampleSize; i += 1) {
+            const p = i * cell;
+            loupeCtx.beginPath();
+            loupeCtx.moveTo(p, 0);
+            loupeCtx.lineTo(p, lensSize);
+            loupeCtx.stroke();
+
+            loupeCtx.beginPath();
+            loupeCtx.moveTo(0, p);
+            loupeCtx.lineTo(lensSize, p);
+            loupeCtx.stroke();
+        }
+
+        loupeCtx.strokeStyle = "rgba(17, 24, 39, 0.95)";
+        loupeCtx.lineWidth = 1.5;
+        loupeCtx.beginPath();
+        loupeCtx.moveTo(crossX, 0);
+        loupeCtx.lineTo(crossX, lensSize);
+        loupeCtx.moveTo(0, crossY);
+        loupeCtx.lineTo(lensSize, crossY);
+        loupeCtx.stroke();
+
+        loupeCtx.strokeStyle = "rgba(255, 255, 255, 0.9)";
+        loupeCtx.lineWidth = 1;
+        loupeCtx.strokeRect(targetX + 1, targetY + 1, cell - 2, cell - 2);
+
+        loupeCtx.strokeStyle = "rgba(17, 24, 39, 0.95)";
+        loupeCtx.lineWidth = 1;
+        loupeCtx.strokeRect(targetX + 0.5, targetY + 0.5, cell - 1, cell - 1);
+        loupeCtx.restore();
+    }
+
+    function updateLoupeText(pointerPos, pixel) {
+        const hex = rgbToHex(pixel).toUpperCase();
+        const x = Math.floor(pointerPos.x);
+        const y = Math.floor(pointerPos.y);
+
+        if (dom.loupeChip) {
+            dom.loupeChip.style.background = hex;
+        }
+
+        if (dom.loupeHex) {
+            dom.loupeHex.textContent = hex;
+        }
+
+        if (dom.loupeRgb) {
+            dom.loupeRgb.textContent = `RGB ${pixel.r}, ${pixel.g}, ${pixel.b}`;
+        }
+
+        if (dom.loupePoint) {
+            dom.loupePoint.textContent = `X ${x}, Y ${y}`;
+        }
+    }
+
+    function positionColorLoupe(event) {
+        const boxRect = dom.box.getBoundingClientRect();
+        const localX = event.clientX - boxRect.left;
+        const localY = event.clientY - boxRect.top;
+
+        const loupeWidth = 168;
+        const loupeHeight = 205;
+        let x = localX + 18;
+        let y = localY + 18;
+
+        if (x + loupeWidth > boxRect.width) {
+            x = localX - loupeWidth - 18;
+        }
+
+        if (y + loupeHeight > boxRect.height) {
+            y = localY - loupeHeight - 18;
+        }
+
+        x = clamp(x, 8, Math.max(8, boxRect.width - loupeWidth - 8));
+        y = clamp(y, 8, Math.max(8, boxRect.height - loupeHeight - 8));
+
+        dom.colorLoupe.style.transform = `translate(${x}px, ${y}px)`;
+    }
+
+    function hideColorLoupeIfInvalid() {
+        if (state.part !== 2 || state.zoomMode) {
+            hideColorLoupe();
+        }
+    }
+
+    function hideColorLoupe() {
+        if (!dom.colorLoupe) {
+            return;
+        }
+
+        dom.colorLoupe.classList.remove("is-show");
+        dom.colorLoupe.setAttribute("aria-hidden", "true");
+    }
+
+    function getSourcePixel(x, y) {
+        const px = clamp(Math.floor(x), 0, Math.max(0, state.width - 1));
+        const py = clamp(Math.floor(y), 0, Math.max(0, state.height - 1));
+
+        if (!state.width || !state.height) {
+            return null;
+        }
+
+        const imageData = sourceCtx.getImageData(px, py, 1, 1);
+        const data = imageData.data;
+
+        return {
+            r: data[0],
+            g: data[1],
+            b: data[2],
+        };
+    }
+
+    /* =========================
        Part 3 - Clean
     ========================= */
+
+    function toggleEraserMode() {
+        if (state.eraserMode) {
+            disableEraserMode();
+            showToast("지우개 모드 종료");
+            return;
+        }
+
+        enableEraserMode();
+    }
+
+    function toggleFillMode() {
+        if (state.fillMode) {
+            disableFillMode();
+            showToast("브러쉬 채우기 모드 종료");
+            return;
+        }
+
+        enableFillMode();
+    }
+
+    function syncToolButtons() {
+        if (dom.eraser) {
+            dom.eraser.classList.toggle("is-active", state.eraserMode);
+        }
+
+        if (dom.rectFill) {
+            dom.rectFill.classList.toggle("is-active", state.fillMode);
+        }
+    }
 
     function enableEraserMode() {
         state.eraserMode = true;
         state.fillMode = false;
-        dom.box.classList.add("is-erasing");
-        showToast("지우개 모드: 원형 커서 크기만큼 지워집니다");
+        state.erasing = false;
+        state.filling = false;
+        state.zoomMode = false;
+        hideColorLoupe();
+        updateZoomView();
+        syncToolButtons();
+
+        if (dom.box) {
+            dom.box.classList.add("is-erasing");
+        }
+
+        showToast("지우개 모드: 다시 누르면 종료됩니다");
     }
 
     function disableEraserMode() {
         state.eraserMode = false;
         state.erasing = false;
+        syncToolButtons();
         hideToolCursor();
     }
 
     function enableFillMode() {
         state.fillMode = true;
         state.eraserMode = false;
+        state.erasing = false;
+        state.filling = false;
+        state.zoomMode = false;
+        hideColorLoupe();
+        updateZoomView();
+        syncToolButtons();
         hideToolCursor();
-        showToast("브러쉬 채우기 모드: 빈 부분을 드래그해서 칠하세요");
+        showToast("브러쉬 채우기 모드: 다시 누르면 종료됩니다");
     }
 
     function disableFillMode() {
         state.fillMode = false;
         state.filling = false;
+        syncToolButtons();
         hideToolCursor();
         render();
     }
@@ -618,6 +1185,7 @@
         cleanCtx.restore();
 
         state.cleanUrl = cleanCanvas.toDataURL("image/png");
+        state.changedDuringDrag = true;
         render();
     }
 
@@ -634,11 +1202,14 @@
 
         state.cleanUrl = cleanCanvas.toDataURL("image/png");
         state.lastExtractUrl = state.cleanUrl;
-
+        state.changedDuringDrag = true;
         render();
     }
 
     function removeSmallFragments() {
+        disableEraserMode();
+        disableFillMode();
+
         const shapeColor = hexToRgb(dom.shapeColor.value);
         const backgroundColor = hexToRgb(dom.bgColor.value);
         const minArea = getNumber(dom.cleanupArea, 180);
@@ -687,15 +1258,23 @@
         state.cleanUrl = cleanCanvas.toDataURL("image/png");
         render();
         showToast("자동 제거 완료");
+        pushHistory("작은 조각 제거");
     }
 
     function restoreLastExtract() {
-        state.cleanUrl = state.lastExtractUrl;
+        disableEraserMode();
+        disableFillMode();
 
-        loadImage(state.cleanUrl, (image) => {
+        if (!state.lastExtractUrl) {
+            return;
+        }
+
+        loadImage(state.lastExtractUrl, (image) => {
             cleanCtx.clearRect(0, 0, state.width, state.height);
             cleanCtx.drawImage(image, 0, 0, state.width, state.height);
+            state.cleanUrl = cleanCanvas.toDataURL("image/png");
             render();
+            pushHistory("추출본 복구");
         });
     }
 
@@ -709,7 +1288,10 @@
             })
         );
 
-        showToast("Stage1 저장 완료");
+        state.completedParts.add(3);
+        syncWorkspacePartState();
+
+        showToast("Stage1 자동 저장 완료");
     }
 
     function moveToStage2() {
@@ -722,6 +1304,11 @@
     ========================= */
 
     function handlePointerDown(event) {
+        if (state.zoomMode) {
+            beginZoomDrag(event);
+            return;
+        }
+
         const pointerPos = getCanvasPointer(event);
 
         if (state.part === 1 && state.cropMode) {
@@ -738,12 +1325,14 @@
 
         if (state.part === 2) {
             addColorSample(pointerPos);
+            updateColorLoupe(event);
             return;
         }
 
         if (state.part === 3 && state.eraserMode) {
             updateToolCursor(pointerPos);
             state.erasing = true;
+            state.changedDuringDrag = false;
             eraseAt(pointerPos);
             return;
         }
@@ -751,11 +1340,23 @@
         if (state.part === 3 && state.fillMode) {
             updateToolCursor(pointerPos);
             state.filling = true;
+            state.changedDuringDrag = false;
             fillAt(pointerPos);
         }
     }
 
+    function handleOverlayPointerMove(event) {
+        if (state.part === 2 && !state.zoomMode && !state.zoomDragging) {
+            updateColorLoupe(event);
+        }
+    }
+
     function handlePointerMove(event) {
+        if (state.zoomDragging) {
+            updateZoomDrag(event);
+            return;
+        }
+
         const pointerPos = getCanvasPointer(event);
 
         if (state.cropDraft) {
@@ -776,6 +1377,11 @@
     }
 
     function handlePointerUp() {
+        if (state.zoomDragging) {
+            endZoomDrag();
+            return;
+        }
+
         if (state.cropDraft) {
             state.cropRect = {
                 x: state.cropDraft.x,
@@ -786,21 +1392,39 @@
 
             state.cropDraft = null;
             state.cropMode = false;
-            dom.cropApply.disabled = !(state.cropRect.w > 5 && state.cropRect.h > 5);
+
+            if (dom.cropApply) {
+                dom.cropApply.disabled = !(state.cropRect.w > 5 && state.cropRect.h > 5);
+            }
+
             drawCropGuide();
         }
 
+        const didBrushWork = state.changedDuringDrag;
+        const brushLabel = state.erasing ? "지우개" : state.filling ? "브러쉬 채우기" : "";
+
         state.erasing = false;
         state.filling = false;
+        state.changedDuringDrag = false;
+
+        if (didBrushWork) {
+            pushHistory(brushLabel);
+        }
     }
 
     function handlePointerLeave() {
+        hideColorLoupe();
+
         if (state.part === 3 && isToolModeActive() && !state.erasing && !state.filling) {
             hideToolCursor();
         }
     }
 
     function handlePointerEnter(event) {
+        if (state.part === 2) {
+            updateColorLoupe(event);
+        }
+
         if (state.part === 3 && isToolModeActive()) {
             updateToolCursor(getCanvasPointer(event));
         }
@@ -810,8 +1434,8 @@
         const rect = overlay.getBoundingClientRect();
 
         return {
-            x: (event.clientX - rect.left) * overlay.width / rect.width,
-            y: (event.clientY - rect.top) * overlay.height / rect.height,
+            x: clamp((event.clientX - rect.left) * overlay.width / rect.width, 0, state.width - 1),
+            y: clamp((event.clientY - rect.top) * overlay.height / rect.height, 0, state.height - 1),
         };
     }
 
@@ -841,6 +1465,10 @@
     }
 
     function hideToolCursor() {
+        if (!dom.eraserCursor || !dom.box) {
+            return;
+        }
+
         dom.eraserCursor.style.display = "none";
         dom.box.classList.remove("is-erasing");
         state.lastPointerPos = null;
@@ -905,6 +1533,7 @@
         const image = new Image();
 
         image.onload = () => callback(image);
+        image.onerror = () => showToast("이미지를 불러오지 못했습니다");
         image.src = url;
     }
 
@@ -916,6 +1545,10 @@
     }
 
     function getNumber(element, fallback) {
+        if (!element) {
+            return fallback;
+        }
+
         const value = Number(element.value);
         return Number.isFinite(value) ? value : fallback;
     }
@@ -938,7 +1571,15 @@
         return Math.hypot(a.r - b.r, a.g - b.g, a.b - b.b);
     }
 
+    function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
     function showToast(message) {
+        if (!dom.toast) {
+            return;
+        }
+
         dom.toast.textContent = message;
         dom.toast.classList.add("show");
 
