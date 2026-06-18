@@ -37,7 +37,7 @@ public class PaymentRequest {
     ){
         public void validate() {
             if(this.paymentId == null || this.paymentId.isBlank()) {
-                throw new BadRequestException("결제 변호가 필요합니다.");
+                throw new BadRequestException("결제 번호가 필요합니다.");
             }
         }
     }

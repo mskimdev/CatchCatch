@@ -116,7 +116,7 @@ public class BookingService {
         }
 
         // 결제 없이 예매 완료 처리
-        booking.completePayment();
+        // booking.completePayment();
 
         Booking savedBooking = bookingRepository.save(booking);
 
