@@ -2,6 +2,7 @@
 package com.catchcatch.ticket.venue;
 
 import com.catchcatch.ticket.core.util.Resp;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -30,6 +31,8 @@ public class VenueController {
         model.addAttribute("searchLabel", "공연장");
         model.addAttribute("searchPlaceholder", "공연장명을 검색해보세요");
 
+        model.addAttribute("fileList", venueService.getSeatMapFiles());
+
         return "admin/venue/venue-save";
     }
 
@@ -41,12 +44,14 @@ public class VenueController {
         model.addAttribute("venue", venue);
         model.addAttribute("pageTitle", "공연장 수정");
 
+        model.addAttribute("fileList", venueService.getSeatMapFiles());
+
         return "admin/venue/venue-edit";
     }
 
     // 관리자 공연장 등록 처리
     @PostMapping("/admin/venues/save")
-    public String venueSaveProc(VenueRequest.SaveDTO dto) {
+    public String venueSaveProc(@Valid @ModelAttribute VenueRequest.SaveDTO dto) {
         venueService.save(dto);
         return "redirect:/admin/venues";
     }
@@ -58,6 +63,7 @@ public class VenueController {
         return Resp.ok("삭제되었습니다.");
     }
 
+    // 공연장 수정 처리
     @PutMapping("/api/venues/{id}")
     public ResponseEntity<?> updateVenue(
             @PathVariable Integer id,

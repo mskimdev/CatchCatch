@@ -4,18 +4,21 @@ import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.core.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
-import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class VenueService {
@@ -27,42 +30,23 @@ public class VenueService {
     public void save(VenueRequest.SaveDTO dto) {
         dto.validate();
 
-        // 1. 파일 저장 로직
-        String savedFilePath = saveFile(dto.getSeatMapFile());
-
-        // 2. 경로와 함께 엔티티 생성 및 저장
-        Venue venue = dto.toEntity(savedFilePath);
+        Venue venue = dto.toEntity(dto.getSeatMapFilePath());
         venueRepository.save(venue);
     }
 
-    // 파일 저장을 처리하는 내부 메서드
-    private String saveFile(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            return null;
-        }
+    public List<String> getSeatMapFiles() {
+        String dirPath = System.getProperty("user.dir") + "/src/main/resources/static/json/seatmap/";
+        File folder = new File(dirPath);
+        File[] files = folder.listFiles((dir, name) -> name.endsWith(".json"));
 
-        try {
-            // 원본 파일명에 UUID를 붙여서 중복 방지
-            String originalFilename = file.getOriginalFilename();
-            String uuidFilename = UUID.randomUUID().toString() + "_" + originalFilename;
-
-            // 실제 물리적 저장 경로 (기존 콘서트 포스터 이미지 업로드 원리와 동일)
-            String saveDir = "src/main/resources/static/json/seatmap/";
-            Path dirPath = Paths.get(saveDir);
-
-            if (!Files.exists(dirPath)) {
-                Files.createDirectories(dirPath);
+        List<String> filePaths = new ArrayList<>();
+        if (files != null) {
+            for (File file : files) {
+                // 웹 접근 경로 생성
+                filePaths.add("/json/seatmap/" + file.getName());
             }
-
-            Path filePath = dirPath.resolve(uuidFilename);
-            file.transferTo(filePath.toFile()); // 물리적 파일 저장
-
-            // DB에 저장할 웹 접근 경로 리턴
-            return "/json/seatmap/" + uuidFilename;
-
-        } catch (IOException e) {
-            throw new RuntimeException("파일 업로드 중 오류가 발생했습니다.", e);
         }
+        return filePaths;
     }
 
     // 전체 조회
