@@ -31,4 +31,32 @@ public interface QueueRepository extends JpaRepository<WaitingQueue, Integer> {
     @Query("select distinct w.concertSessionId from WaitingQueue w where w.status = 'WAITING'")
     List<Integer> findDistinctWaitingConcertSessionIds();
 
+    @Query("""
+            select count(w) from WaitingQueue w
+            where w.concertSessionId = :sessionId
+            and w.status in ('READY', 'ENTERED')
+            """)
+    long countActiveBySession(@Param("sessionId") Integer sessionId);
+
+    @Query("select count(w) from WaitingQueue w where w.status = 'WAITING'")
+    long countTotalWaiting();
+
+    @Query("select count(distinct w.concertSessionId) from WaitingQueue w where w.status = 'WAITING'")
+    long countActiveConcertSessions();
+
+    @Query("""
+            select w.concertSessionId as concertSessionId,
+                   cs.concert.title as concertTitle,
+                   cs.round as round,
+                   count(w) as waitingCount
+            from WaitingQueue w
+            join ConcertSession cs on cs.id = w.concertSessionId
+            where w.status = 'WAITING'
+            group by w.concertSessionId, cs.concert.title, cs.round
+            order by count(w) desc
+            """)
+    List<QueueWaitingCountProjection> findWaitingCountsBySession();
+
+
+
 }

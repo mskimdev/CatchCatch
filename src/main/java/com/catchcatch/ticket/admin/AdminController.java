@@ -1,11 +1,13 @@
 package com.catchcatch.ticket.admin;
 
+import com.catchcatch.ticket.queue.QueueStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequiredArgsConstructor
@@ -21,6 +23,7 @@ public class AdminController {
     ) {
         model.addAttribute("pageTitle", "CatchCatch 대시보드");
         model.addAttribute("summary", adminDashboardService.getSummary(period));
+        model.addAttribute("queueStats", adminDashboardService.getQueueStatus());
         return "admin/index";
     }
 
@@ -37,5 +40,13 @@ public class AdminController {
     public String adminUserList(Model model) {
         model.addAttribute("pageTitle", "회원 관리");
         return "admin/user/list";
+    }
+
+    @GetMapping("/api/queue-stats")
+    @ResponseBody
+    public AdminDashboardResponse.QueueStatusDTO queueStats(){
+        return adminDashboardService.getQueueStatus();
+
+
     }
 }
