@@ -136,4 +136,15 @@ public class Seat {
             this.status = SeatStatus.AVAILABLE;
         }
     }
+
+    /**
+     * 결제 완료
+     * HELD -> SOLD
+     */
+    public void cancelSale() {
+        if (this.status != SeatStatus.SOLD) {
+            throw new RuntimeException("환불 가능한 좌석 상태가 아닙니다.");
+        }
+        this.status = SeatStatus.AVAILABLE;
+    }
 }

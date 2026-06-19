@@ -395,6 +395,22 @@ public class PaymentService {
         return body;
     }
 
+
+    /**
+     * 결제 취소 처리
+     * PAID -> CANCELED
+     */
+    @Transactional
+    public void cancel(String paymentId) {
+        Payment payment = findPayment(paymentId);
+
+        if (PaymentStatus.CANCELED == payment.getStatus()) {
+            throw new BadRequestException("이미 취소된 결제입니다.");
+        }
+        payment.cancel();
+    }
+
+
     /**
      * 결제 가격 계산
      *
@@ -410,6 +426,11 @@ public class PaymentService {
                 .stream()
                 .mapToInt(bookingSeat -> bookingSeat.getPrice() == null ? 0 : bookingSeat.getPrice())
                 .sum();
+    }
+
+    private Payment findPayment(String paymentId) {
+        return paymentRepository.findByPaymentId(paymentId)
+                .orElseThrow(() -> new BadRequestException("결제 정보를 찾을 수 없습니다."));
     }
 
 
