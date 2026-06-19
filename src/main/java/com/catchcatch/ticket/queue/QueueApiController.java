@@ -42,6 +42,11 @@ public class QueueApiController {
         return sseEmitterRepository.subscribe("queue:" + concertSessionId);
     }
 
+    @GetMapping(value = "/admin/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter subscribeAdmin(){
+        return sseEmitterRepository.subscribe("admin:queue-stats");
+    }
+
     private SessionUser getSessionUser(HttpSession session) {
         return (SessionUser) session.getAttribute(Define.SESSION_USER);
     }

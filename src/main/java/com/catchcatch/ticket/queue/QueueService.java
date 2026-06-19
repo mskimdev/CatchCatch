@@ -21,6 +21,8 @@ public class QueueService {
     private static final int TOKEN_EXPIRE_MINUTES = 10;
     private static final List<QueueStatus> ACTIVE_STATUSES = List.of(QueueStatus.WAITING, QueueStatus.READY);
 
+    private static final String ADMIN_QUEUE_STATS_KEY = "admin:queue-stats";
+
     private final QueueRepository queueRepository;
     private final UserRepository userRepository;
     private final SseEmitterRepository sseEmitterRepository;
@@ -54,6 +56,7 @@ public class QueueService {
                 .build();
 
         queueRepository.save(queue);
+        sseEmitterRepository.send(ADMIN_QUEUE_STATS_KEY, "queue-stats-updated", "");
 
         return toStatusDTO(queue);
     }
@@ -100,6 +103,7 @@ public class QueueService {
                 .orElseThrow(() -> new BadRequestException("유효하지 않은 입장 정보입니다."));
         validateReadyAndNotExpired(queue);
         queue.entered();
+        sseEmitterRepository.send(ADMIN_QUEUE_STATS_KEY, "queue-stats-updated", "");
     }
 
     private void validateReadyAndNotExpired(WaitingQueue queue) {
@@ -134,7 +138,9 @@ public class QueueService {
             queue.ready(token, expiresAt);
         }
 
+
         sseEmitterRepository.send("queue:" + concertSessionId, "queue-updated", "");
+        sseEmitterRepository.send(ADMIN_QUEUE_STATS_KEY, "queue-stats-updated", "");
     }
 
     /**
@@ -144,6 +150,7 @@ public class QueueService {
     public void expireReadyQueues() {
         queueRepository.findByStatusAndTokenExpiresAtBefore(QueueStatus.READY, now())
                 .forEach(WaitingQueue::expired);
+        sseEmitterRepository.send(ADMIN_QUEUE_STATS_KEY, "queue-stats-updated", "");
     }
 
     private QueueResponse.StatusDTO toStatusDTO(WaitingQueue queue) {

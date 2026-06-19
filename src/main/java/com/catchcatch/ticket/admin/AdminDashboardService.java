@@ -4,6 +4,7 @@ import com.catchcatch.ticket.booking.BookingRepository;
 import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
+import com.catchcatch.ticket.queue.QueueRepository;
 import com.catchcatch.ticket.seat.SeatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AdminDashboardService {
 
     private static final int TOP_CONCERT_COUNT = 5;
@@ -21,8 +23,8 @@ public class AdminDashboardService {
     private final BookingRepository bookingRepository;
     private final ConcertRepository concertRepository;
     private final SeatRepository seatRepository;
+    private final QueueRepository queueRepository;
 
-    @Transactional(readOnly = true)
     public AdminDashboardResponse.SummaryDTO getSummary(String periodParam) {
         DashboardPeriod period = DashboardPeriod.from(periodParam);
         var from = period.startAt();
@@ -49,7 +51,6 @@ public class AdminDashboardService {
     /**
      * 공연 예매율 현황 전용 페이지 - 전체 공연 대상, 개수 제한 없음
      */
-    @Transactional(readOnly = true)
     public List<AdminDashboardResponse.ConcertSalesRateDTO> getAllConcertSalesRates() {
         return seatRepository.findConcertSalesRates()
                 .stream()
@@ -75,6 +76,20 @@ public class AdminDashboardService {
                 .toList();
 
         return new AdminDashboardResponse.ConcertSalesRateDTO(concertId, title, salesRate, gradeSalesRates);
+    }
+
+    public AdminDashboardResponse.QueueStatusDTO getQueueStatus() {
+        long totalWaiting = queueRepository.countTotalWaiting();
+        long activeSessions = queueRepository.countActiveConcertSessions();
+
+        List<AdminDashboardResponse.SessionQueueDTO> sessionQueues =
+                queueRepository.findWaitingCountsBySession()
+                        .stream()
+                        .map( p -> new AdminDashboardResponse.SessionQueueDTO(
+                                p.getConcertSessionId(), p.getConcertTitle(), p.getRound(), p.getWaitingCount()))
+                        .toList();
+
+        return new AdminDashboardResponse.QueueStatusDTO(totalWaiting, activeSessions, sessionQueues);
     }
 
     private int calculateRate(long totalCount, long soldCount) {
