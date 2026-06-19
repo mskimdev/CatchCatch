@@ -62,4 +62,16 @@ public class AdminDashboardResponse {
             long soldCount,
             int salesRate
     ) {}
+
+    public record QueueStatusDTO(
+            long totalWaitingCount,
+            long activeSessionCount,
+            List<SessionQueueDTO> sessionQueues){}
+
+    public record SessionQueueDTO(
+            Integer concertSessionId,
+            String concertTitle,
+            String round,
+            long waitingCount
+    ){}
 }

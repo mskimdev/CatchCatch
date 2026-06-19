@@ -189,7 +189,6 @@ public class PointService {
                 .toList();
     }
 
-
     /**
      * 30일 내 만료 예정 포인트 내역 조회 (중앙 작은 모달창/새 창용)
      */

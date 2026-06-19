@@ -116,7 +116,7 @@ public class BookingService {
         }
 
         // 결제 없이 예매 완료 처리
-        booking.completePayment();
+        // booking.completePayment();
 
         Booking savedBooking = bookingRepository.save(booking);
 
@@ -154,8 +154,7 @@ public class BookingService {
     /**
      * 예매 취소 처리
      *
-     * PENDING 상태라면 임시 점유 좌석을 다시 AVAILABLE로 돌린다.
-     * PAID 상태 취소는 환불 플로우에서 처리하는 것이 좋다.
+     * PAID 좌석을 AVAILABLE로 돌린다.
      */
     @Transactional
     public void cancel(Integer id) {
@@ -169,7 +168,7 @@ public class BookingService {
             throw new BadRequestException("결제 완료된 예매는 환불 절차를 통해 취소해야 합니다.");
         }
 
-        releaseSeats(booking);
+        cancelSoldSeats(booking);
         booking.cancel();
     }
 
@@ -235,6 +234,20 @@ public class BookingService {
 
             if (seat != null) {
                 seat.release();
+            }
+        });
+    }
+
+    private void cancelSoldSeats(Booking booking) {
+        if (booking.getBookingSeats() == null || booking.getBookingSeats().isEmpty()) {
+            return;
+        }
+
+        booking.getBookingSeats().forEach(bookingSeat -> {
+            Seat seat = bookingSeat.getSeat();
+
+            if (seat != null) {
+                seat.cancelSale();
             }
         });
     }

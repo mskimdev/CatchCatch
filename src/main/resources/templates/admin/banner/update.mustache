@@ -1,0 +1,131 @@
+{{> admin/layout/header}}
+
+<div class="container-fluid">
+    <div class="card shadow mb-4" style="max-width: 800px; margin: 0 auto;">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-warning">배너 정보 수정 (ID: {{banner.id}})</h6>
+        </div>
+        <div class="card-body">
+            <form id="bannerUpdateForm" enctype="multipart/form-data">
+                <input type="hidden" id="bannerId" value="{{banner.id}}">
+
+                <div class="form-group mb-4">
+                    <label>배너 이미지 수정 (변경 시에만 첨부)</label>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="imageFile" name="imageFile" accept="image/*" onchange="previewImage(this)">
+                        <label class="custom-file-label" for="imageFile" id="imageFileName">새로운 이미지를 선택하세요</label>
+                    </div>
+                    <div class="mt-3" id="imagePreviewContainer">
+                        <p class="small text-muted mb-1">현재 적용된 이미지:</p>
+                        <img id="imagePreview" src="{{banner.imageUrl}}" alt="미리보기" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-4">
+                        <label for="displayOrder">노출 순서 <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="displayOrder" name="displayOrder" value="{{banner.displayOrder}}" min="1" required>
+                    </div>
+                    <div class="form-group col-md-8">
+                        <label for="title">메인 타이틀 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title" value="{{banner.title}}" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label for="eyebrow">상단 서브 카피 (Eyebrow)</label>
+                        <input type="text" class="form-control" id="eyebrow" name="eyebrow" value="{{banner.eyebrow}}">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="highlight">강조 문구 (Highlight)</label>
+                        <input type="text" class="form-control" id="highlight" name="highlight" value="{{banner.highlight}}">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label for="buttonText">버튼 텍스트</label>
+                        <input type="text" class="form-control" id="buttonText" name="buttonText" value="{{banner.buttonText}}">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="linkUrl">이동 링크 URL</label>
+                        <input type="text" class="form-control" id="linkUrl" name="linkUrl" value="{{banner.linkUrl}}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">배너 상세 설명</label>
+                    <textarea class="form-control" id="description" name="description" rows="3">{{banner.description}}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>노출 활성화 상태</label>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="isActive" name="isActive" value="true" {{#banner.isActive}}checked{{/banner.isActive}}>
+                        <label class="custom-control-label" for="isActive">활성화 (메인 홈 노출)</label>
+                    </div>
+                </div>
+
+                <div class="text-right">
+                    <a href="/admin/banners" class="btn btn-secondary">취소</a>
+                    <button type="button" class="btn btn-warning" onclick="updateBanner()">수정완료</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            document.getElementById('imageFileName').innerText = input.files[0].name;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imagePreview').src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+
+    function updateBanner() {
+        const form = document.getElementById('bannerUpdateForm');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const id = document.getElementById('bannerId').value;
+        const formData = new FormData(form);
+
+        // 체크박스가 꺼져있으면 폼데이터에 누락되므로 강제로 false 주입
+        if(!document.getElementById('isActive').checked) {
+            formData.append('isActive', 'false');
+        }
+
+        CcUI.loading.show();
+
+        // PUT 전송 시 Content-Type 헤더를 비워둬야 브라우저가 자동 세팅합니다.
+        fetch(`/api/admin/banners/${id}`, {
+            method: 'PUT',
+            body: formData
+        })
+        .then(res => {
+            CcUI.loading.hide();
+            if(res.ok) {
+                CcUI.toast('배너 정보가 성공적으로 수정되었습니다.', 'success');
+                setTimeout(() => location.href = '/admin/banners', 1500);
+            } else {
+                CcUI.alert('수정 실패', '데이터 정합성 오류가 발생했습니다.', 'error');
+            }
+        })
+        .catch(err => {
+            CcUI.loading.hide();
+            CcUI.alert('오류 발생', '서버와 통신하는 중 실패했습니다.', 'error');
+        });
+    }
+</script>
+
+{{> admin/layout/footer}}
