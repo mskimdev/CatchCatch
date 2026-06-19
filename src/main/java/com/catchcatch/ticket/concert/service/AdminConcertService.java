@@ -168,10 +168,12 @@ public class AdminConcertService {
             updatePosterUrl = ProfileImageUtil.saveFromBase64(dto.posterImageBase64());
         }
 
-        if (!concert.getVenue().getId().equals(newVenue.getId())){
-            seatService.updateSeatsForChangedVenue(concert,newVenue);
+        // 공연장이 변경되는 경우, 좌석 업데이트 수행
+        if (!concert.getVenue().getId().equals(newVenue.getId())) {
+            seatService.updateSeatsForChangedVenue(concert, newVenue);
         }
-
+        
+        // 마지막에 공연 정보 업데이트 (공연장 포함)
         concert.update(dto, newVenue, updatePosterUrl);
     }
 
