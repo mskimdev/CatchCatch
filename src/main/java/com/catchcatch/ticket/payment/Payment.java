@@ -117,11 +117,11 @@ public class Payment {
      * 결제 취소 처리
      */
     public void cancel() {
-        if (this.status == PaymentStatus.CANCELLED) {
+        if (this.status == PaymentStatus.CANCELED) {
             throw new IllegalStateException("이미 취소된 결제입니다.");
         }
 
-        this.status = PaymentStatus.CANCELLED;
+        this.status = PaymentStatus.CANCELED;
     }
 
     /**

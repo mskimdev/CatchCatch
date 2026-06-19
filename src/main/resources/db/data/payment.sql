@@ -11,7 +11,7 @@ VALUES
     (3, 'pg_test_002', 'catchcatch_3_20250101_002', 130000, 2000, 10000, 132000, 'tosspay', 'PAID', DATEADD('MINUTE', -115, NOW()), DATEADD('HOUR', -2, NOW())),
 
     -- 3. 취소된 결제 (포인트 사용 안 함)
-    (4, 'pg_test_003', 'catchcatch_4_20250101_003', 108000, 2000, 0, 110000, 'card', 'CANCELLED', NULL, DATEADD('HOUR', -3, NOW())),
+    (4, 'pg_test_003', 'catchcatch_4_20250101_003', 108000, 2000, 0, 110000, 'card', 'CANCELED', NULL, DATEADD('HOUR', -3, NOW())),
 
     -- 4. 포인트 2,000점 사용 (200,000 - 2,000 = 198,000)
     (5, 'pg_test_004', 'catchcatch_5_20250101_004', 200000, 2000,2000, 200000, 'kakaopay', 'PAID', DATEADD('MINUTE', -25, NOW()), DATEADD('MINUTE', -30, NOW())),
