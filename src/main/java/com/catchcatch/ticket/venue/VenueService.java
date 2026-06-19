@@ -4,12 +4,21 @@ import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.core.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class VenueService {
@@ -21,8 +30,23 @@ public class VenueService {
     public void save(VenueRequest.SaveDTO dto) {
         dto.validate();
 
-        Venue venue = dto.toEntity();
+        Venue venue = dto.toEntity(dto.getSeatMapFilePath());
         venueRepository.save(venue);
+    }
+
+    public List<String> getSeatMapFiles() {
+        String dirPath = System.getProperty("user.dir") + "/src/main/resources/static/json/seatmap/";
+        File folder = new File(dirPath);
+        File[] files = folder.listFiles((dir, name) -> name.endsWith(".json"));
+
+        List<String> filePaths = new ArrayList<>();
+        if (files != null) {
+            for (File file : files) {
+                // 웹 접근 경로 생성
+                filePaths.add("/json/seatmap/" + file.getName());
+            }
+        }
+        return filePaths;
     }
 
     // 전체 조회
@@ -48,7 +72,7 @@ public class VenueService {
         Venue venue = venueRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공연장입니다."));
 
-        venue.update(dto.getName(), dto.getAddress(), dto.getTotalCapacity());
+        venue.update(dto.getName(), dto.getAddress(), dto.getTotalCapacity(), dto.getSeatMapFilePath());
     }
 
     // 공연장 단건 조회

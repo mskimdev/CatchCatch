@@ -156,23 +156,22 @@ public class AdminConcertService {
     @Transactional
     public void updateConcert(Integer id, AdminConcertRequest.UpdateRequestDTO dto) {
 
-        // 1. 수정할 공연 데이터 조회
         Concert concert = concertRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("수정할 공연을 찾을 수 없습니다. ID: " + id));
 
-        // 2. 새로운 공연장으로 변경되었을 수 있으므로 공연장 조회
         Venue newVenue = venueRepository.findById(dto.venueId())
                 .orElseThrow(() -> new NotFoundException("해당 ID의 공연장을 찾을 수 없습니다."));
 
-        // 1. 기본적으로는 기존 포스터 URL을 유지하도록 세팅
         String updatePosterUrl = dto.posterUrl();
 
-        // 2. 만약 프론트에서 새로운 이미지를 첨부해서 Base64로 보냈다면? 새로 저장하고 경로 교체!
         if (dto.posterImageBase64() != null && !dto.posterImageBase64().isEmpty()) {
             updatePosterUrl = ProfileImageUtil.saveFromBase64(dto.posterImageBase64());
         }
 
-        // 4. 더티 체킹 적용 (엔티티 내부 값 변경)
+        if (!concert.getVenue().getId().equals(newVenue.getId())){
+            seatService.updateSeatsForChangedVenue(concert,newVenue);
+        }
+
         concert.update(dto, newVenue, updatePosterUrl);
     }
 
@@ -231,6 +230,7 @@ public class AdminConcertService {
 
         // 엔티티에 @SQLDelete(sql = "UPDATE concert_session_tb SET is_deleted = true WHERE id = ?") 가 적용되어 있다면
         // 아래 호출 시 자동으로 소프트 딜리트가 수행됩니다.
+        seatService.deleteSeatBySessionId(sessionId);
         concertSessionRepository.delete(session);
     }
 } // end of class
