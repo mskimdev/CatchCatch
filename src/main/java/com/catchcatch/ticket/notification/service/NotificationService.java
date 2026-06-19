@@ -7,9 +7,12 @@ import com.catchcatch.ticket.notification.dto.NotificationResponse;
 import com.catchcatch.ticket.notification.enums.NotificationType;
 import com.catchcatch.ticket.notification.repository.NotificationRepository;
 import com.catchcatch.ticket.user.User;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import java.util.List;
 

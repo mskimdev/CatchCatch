@@ -37,8 +37,9 @@ public class WaitingQueue {
 
     // 대기열 상태 - WAITING, READY, ENTERED, EXPIRED, CANCELLED
     @Builder.Default
-    @Column(name = "status", nullable = false)
-    private String status = "WAITING";
+    @Enumerated(EnumType.STRING)
+    @Column(name="status", nullable = false)
+    private QueueStatus status = QueueStatus.WAITING;
 
     // 순번이 도달했을 때 발급되는 입장 토큰
     @Column(name = "entry_token", unique = true)
@@ -60,4 +61,20 @@ public class WaitingQueue {
     // 대기열 만료 시간
     @Column(name = "expired_at")
     private Timestamp expiredAt;
+
+    public void ready(String entryToken, Timestamp tokenExpiresAt){
+        this.status = QueueStatus.READY;
+        this.entryToken = entryToken;
+        this.tokenExpiresAt = tokenExpiresAt;
+    }
+
+    public void entered(){
+        this.status = QueueStatus.ENTERED;
+        this.enteredAt = new Timestamp(System.currentTimeMillis());
+    }
+
+    public void expired(){
+        this.status = QueueStatus.EXPIRED;
+        this.expiredAt = new Timestamp(System.currentTimeMillis());
+    }
 }

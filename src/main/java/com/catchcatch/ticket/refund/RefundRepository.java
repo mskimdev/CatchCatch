@@ -9,12 +9,12 @@ public interface RefundRepository extends JpaRepository<Refund, Integer> {
     /**
      * 결제 ID로 환불 내역 조회
      */
-    Optional<Refund> findByPayment_Id(Integer paymentId);
+    Optional<Refund> findByPayment_PaymentId(String paymentId);
 
     /**
      * 결제 ID 기준 환불 존재 여부 확인
      */
-    boolean existsByPayment_Id(Integer paymentId);
+    boolean existsByPayment_PaymentId(String paymentId);
 
     /**
      * 예매 ID로 환불 내역 조회
