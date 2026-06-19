@@ -10,6 +10,9 @@ import com.catchcatch.ticket.user.User;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import java.util.List;
 
@@ -21,8 +24,7 @@ public class NotificationService {
     private final NotificationSseService notificationSseService;
 
     @Transactional
-    //문의 답변 알림
-    public void InquiryReplyNotification(Inquiry inquiry) {
+    public void createInquiryReplyNotification(Inquiry inquiry) {
         User user = inquiry.getUser();
 
         Notification notification = Notification.builder()
@@ -47,11 +49,9 @@ public class NotificationService {
                         unreadCount
                 )
         );
-
     }
 
     @Transactional(readOnly = true)
-    //List<Notification>을 List<NotificationResponse.ListDTO>로 변환
     public List<NotificationResponse.ListDTO> findMyNotifications(Integer userId) {
         return notificationRepository.findAllByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
@@ -59,7 +59,7 @@ public class NotificationService {
                 .toList();
     }
 
-    //안읽은 알림 개수 조회
+    @Transactional(readOnly = true)
     public long countUnread(Integer userId) {
         return notificationRepository.countUnreadByUserId(userId);
     }
@@ -71,6 +71,4 @@ public class NotificationService {
 
         notification.markAsRead();
     }
-
-
 }

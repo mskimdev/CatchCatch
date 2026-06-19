@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{#pageTitle}}{{pageTitle}} | {{/pageTitle}}CatchCatch</title>
     <link rel="stylesheet" href="/css/common.css">
+    <script src="/js/core/api.js"></script>
     {{#_csrf}}<meta name="csrf-token" content="{{token}}" data-param="{{parameterName}}">{{/_csrf}}
     {{#sessionUser}}<meta name="session-user-id" content="{{id}}">{{/sessionUser}}
 </head>
@@ -25,6 +26,7 @@
                 <a class="cc-icon-btn" href="/" aria-label="홈">
                     <svg class="cc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10.5V21h14V10.5"/><path d="M9 21v-6h6v6"/></svg>
                 </a>
+                {{> layout/notification-menu}}
                 {{> layout/user-menu}}
             </div>
             {{/backHeader}}
@@ -37,6 +39,7 @@
                 </button>
             </form>
             <div class="cc-header__actions">
+                {{> layout/notification-menu}}
                 {{> layout/user-menu}}
             </div>
             {{/backHeader}}
@@ -84,3 +87,7 @@
         </div>
     </nav>
 </header>
+
+{{#sessionUser}}
+    <script src="/js/notification/notification-sse.js"></script>
+{{/sessionUser}}
