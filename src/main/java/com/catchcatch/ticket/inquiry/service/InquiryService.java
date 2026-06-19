@@ -96,7 +96,7 @@ public class InquiryService {
 
         sendNotification(inquiry, reqDTO.reply());
 
-        notificationService.InquiryReplyNotification(inquiry);
+        notificationService.createInquiryReplyNotification(inquiry);
     }
 
     public long countPending() {
