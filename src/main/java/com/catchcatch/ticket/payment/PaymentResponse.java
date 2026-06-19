@@ -54,7 +54,12 @@ public class PaymentResponse {
             String sessionDateText,
             String seatText,
             Integer seatCount,
-            List<SeatDTO> selectedSeats
+            List<SeatDTO> selectedSeats,
+
+            // 추가: 환불 모달 및 취소 버튼 처리를 위한 필드
+            Boolean isCancelable,
+            Long daysUntilSession,
+            Long daysSincePayment
     ) {
         public DetailDTO(Payment payment) {
             this(
@@ -90,7 +95,12 @@ public class PaymentResponse {
                     getSessionDateText(payment.getBooking()),
                     formatSeatText(safeBookingSeats(payment.getBooking())),
                     safeBookingSeats(payment.getBooking()).size(),
-                    toSeatDTOList(payment.getBooking())
+                    toSeatDTOList(payment.getBooking()),
+
+                    // 추가: 환불 모달 및 취소 버튼 처리를 위한 데이터 바인딩
+                    checkCancelable(payment, calculateDaysUntilSession(payment.getBooking())),
+                    calculateDaysUntilSession(payment.getBooking()),
+                    calculateDaysSincePayment(payment.getPaidAt())
             );
         }
     }
@@ -157,7 +167,7 @@ public class PaymentResponse {
 
                     payment.getStatus() == PaymentStatus.PAID,
                     payment.getStatus() == PaymentStatus.READY,
-                    payment.getStatus() == PaymentStatus.CANCELLED,
+                    payment.getStatus() == PaymentStatus.CANCELED,
                     payment.getStatus() == PaymentStatus.FAILED
             );
         }
@@ -519,7 +529,7 @@ public class PaymentResponse {
         return switch (status) {
             case READY -> "결제대기";
             case PAID -> "결제완료";
-            case CANCELLED -> "결제취소";
+            case CANCELED -> "결제취소";
             case FAILED -> "결제실패";
         };
     }
@@ -566,5 +576,34 @@ public class PaymentResponse {
         }
 
         return booking.getUser().getPoint();
+    }
+
+    // --- 환불 처리를 위한 날짜 및 상태 계산 Helper 메서드 추가 ---
+
+    private static Long calculateDaysUntilSession(Booking booking) {
+        if (booking == null || booking.getConcertSession() == null || booking.getConcertSession().getSessionDate() == null) {
+            return 0L;
+        }
+        try {
+            String dateStr = booking.getConcertSession().getSessionDate().toString();
+            java.time.LocalDate sessionDate = java.time.LocalDate.parse(dateStr);
+            return java.time.temporal.ChronoUnit.DAYS.between(java.time.LocalDate.now(), sessionDate);
+        } catch (Exception e) {
+            return 0L; // 날짜 파싱 실패 시 기본값
+        }
+    }
+
+    private static Long calculateDaysSincePayment(Timestamp paidAt) {
+        if (paidAt == null) return 0L;
+        return java.time.temporal.ChronoUnit.DAYS.between(paidAt.toLocalDateTime().toLocalDate(), java.time.LocalDate.now());
+    }
+
+    private static Boolean checkCancelable(Payment payment, Long daysUntilSession) {
+        // 이미 결제 완료(PAID) 상태가 아니라면 취소 버튼 숨김
+        if (payment == null || payment.getStatus() != PaymentStatus.PAID) {
+            return false;
+        }
+        // 남은 기간이 3일 이하(3, 2, 1, 0...)면 취소 불가, 4일 이상 남았을 때만 버튼 노출
+        return daysUntilSession > 3;
     }
 }

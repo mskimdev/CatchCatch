@@ -25,8 +25,8 @@ public final class PaymentPolicy {
         return ticketFee;
     }
 
-    // 취소 수수료 계산 (originalPrice 기준)
-    public static int calculateCancelFee(int originalPrice, LocalDate concertDate) {
+    // 취소 수수료 계산 (결제액 기준)
+    public static int calculateCancelFee(int finalAmount, LocalDate concertDate) {
         // 공연일까지 남은 날짜에 따라 계산 (자정 기준)
         LocalDate today = LocalDate.now();
         long days = ChronoUnit.DAYS.between(today, concertDate);
@@ -35,13 +35,13 @@ public final class PaymentPolicy {
         if (days > FREE_CANCEL_DAYS) {
             cancelFee = 0;
         } else if (days > 7) {
-            cancelFee = originalPrice * 10;
+            cancelFee = finalAmount * 10;
         } else if (days > 5) {
-            cancelFee = originalPrice * 20;
+            cancelFee = finalAmount * 20;
         } else if (days > 3) {
-            cancelFee = originalPrice * 30;
+            cancelFee = finalAmount * 30;
         } else {
-            cancelFee = originalPrice;
+            cancelFee = finalAmount;
         }
 
         return cancelFee;
