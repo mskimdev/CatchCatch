@@ -463,3 +463,276 @@
         display: none;
     }
 }
+
+
+/* ========================================
+   Stage2 Part3 - Section Numbering
+======================================== */
+
+.seatmap-workspace--stage2 .seatmap-number-status {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.seatmap-workspace--stage2 .seatmap-number-status__item {
+    min-height: 54px;
+    padding: 9px 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    background: #f8fafc;
+    box-sizing: border-box;
+}
+
+.seatmap-workspace--stage2 .seatmap-number-status__item b {
+    display: block;
+    color: #0f172a;
+    font-size: 18px;
+    font-weight: 950;
+    line-height: 1;
+}
+
+.seatmap-workspace--stage2 .seatmap-number-status__item span {
+    display: block;
+    margin-top: 5px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 850;
+}
+
+.seatmap-workspace--stage2 .seatmap-number-status__item.is-ok {
+    border-color: rgba(16, 185, 129, 0.32);
+    background: #ecfdf5;
+}
+
+.seatmap-workspace--stage2 .seatmap-number-status__item.is-warn {
+    border-color: rgba(239, 68, 68, 0.32);
+    background: #fef2f2;
+}
+
+.seatmap-workspace--stage2 .seatmap-number-status__item.is-warn b {
+    color: #dc2626;
+}
+
+
+.seatmap-workspace--stage2 .seatmap-step__system input:disabled {
+    background: #f1f5f9;
+    color: #475569;
+    opacity: 1;
+}
+
+/* ========================================
+   Stage2 Compact Numbering Revision
+======================================== */
+.seatmap-workspace--stage2 .seatmap-step__system--compact {
+    display: grid;
+    gap: 8px;
+}
+
+.seatmap-workspace--stage2 .seatmap-step__system--compact .box,
+.seatmap-workspace--stage2 .seatmap-step__system--compact .box.active {
+    padding: 9px !important;
+    gap: 7px !important;
+}
+
+.seatmap-workspace--stage2 .seatmap-step__system--compact h3 {
+    margin: 0 0 2px;
+    font-size: 12px;
+    font-weight: 950;
+}
+
+.seatmap-workspace--stage2 .seatmap-step__system--compact .btn {
+    height: 34px !important;
+    min-height: 34px !important;
+    font-size: 12px !important;
+}
+
+.seatmap-workspace--stage2 .seatmap-step__system--compact input,
+.seatmap-workspace--stage2 .seatmap-step__system--compact select {
+    height: 32px !important;
+}
+
+.seatmap-workspace--stage2 .seatmap-number-status {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.seatmap-workspace--stage2 .seatmap-number-status__item {
+    min-height: 46px;
+    padding: 7px 8px;
+}
+
+.seatmap-workspace--stage2 .seatmap-number-status__item b {
+    font-size: 16px;
+}
+
+.seatmap-workspace--stage2 .seatmap-stage-move-box {
+    padding: 10px;
+}
+
+/* Stage2 compact helper */
+.seatmap-workspace--stage2 .seatmap-mode-help {
+    padding: 8px 9px;
+    border-radius: 6px;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.45;
+}
+
+.seatmap-workspace--stage2 .seatmap-subtle-btn {
+    border-color: #cbd5e1 !important;
+    background: #f8fafc !important;
+    color: #475569 !important;
+}
+
+
+/* Stage2 구역 목록은 작업용 선택 리스트라서 부가 정보는 숨기고 compact하게 표시 */
+.seatmap-workspace--stage2 .section-list .sec-row {
+    min-height: 42px;
+    padding: 8px 10px;
+}
+
+.seatmap-workspace--stage2 .section-list .sec-row strong {
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.seatmap-workspace--stage2 .section-list .sec-row span {
+    display: none !important;
+}
+
+/* Stage2 Part1 simplified selected action */
+.seatmap-workspace--stage2 .seatmap-selected-action {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 104px;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid #fecaca;
+    border-radius: 7px;
+    background: #fff7f7;
+}
+
+.seatmap-workspace--stage2 .seatmap-selected-action.hidden {
+    display: none !important;
+}
+
+.seatmap-workspace--stage2 .seatmap-selected-action__text {
+    min-width: 0;
+    color: #991b1b;
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.seatmap-workspace--stage2 .seatmap-selected-action .btn {
+    height: 34px !important;
+    min-height: 34px !important;
+    font-size: 12px !important;
+}
+
+/* Stage2 Part1 visible operation guide */
+.seatmap-workspace--stage2 .seatmap-part1-guide {
+    display: grid;
+    gap: 3px;
+    padding: 8px 9px;
+    border: 1px solid #e9d5ff;
+    border-radius: 7px;
+    background: #faf5ff;
+    color: #6b21a8;
+    font-size: 11px;
+    font-weight: 850;
+    line-height: 1.35;
+}
+
+.seatmap-workspace--stage2 .seatmap-part1-guide b {
+    color: #581c87;
+    font-size: 11px;
+    font-weight: 950;
+}
+
+.seatmap-workspace--stage2 .seatmap-selected-action__body {
+    min-width: 0;
+}
+
+.seatmap-workspace--stage2 .seatmap-selected-action__hint {
+    margin-top: 2px;
+    color: #b91c1c;
+    font-size: 10px;
+    font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   Stage2 final compact fixes
+========================================================= */
+.seatmap-workspace--stage2 .seatmap-step,
+.seatmap-workspace--stage2 .seatmap-step__body,
+.seatmap-workspace--stage2 .seatmap-step__system,
+.seatmap-workspace--stage2 .seatmap-step__system .box {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.seatmap-workspace--stage2 .seatmap-step__body {
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.seatmap-workspace--stage2 .seatmap-step.is-active .seatmap-step__body {
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.seatmap-workspace--stage2 .btn,
+.seatmap-workspace--stage2 .button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.seatmap-workspace--stage2 .seatmap-mode-help,
+.seatmap-workspace--stage2 .seatmap-part1-guide,
+.seatmap-workspace--stage2 .seatmap-selected-action {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.seatmap-workspace--stage2 .seatmap-step__system--compact .box {
+    padding: 9px !important;
+}
+
+.seatmap-workspace--stage2 .seatmap-number-status {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+}
+
+.seatmap-workspace--stage2 .seatmap-number-status__item {
+    min-width: 0;
+    padding: 8px;
+}
+
+.seatmap-workspace--stage2 .seatmap-number-status__item b {
+    font-size: 16px;
+}
+
+.seatmap-workspace--stage2 .seatmap-stage-move-box {
+    display: none !important;
+}
+

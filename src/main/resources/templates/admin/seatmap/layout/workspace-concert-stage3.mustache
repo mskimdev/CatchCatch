@@ -18,19 +18,15 @@
                         <label for="baseSectionSelect">기준 구역</label>
                         <select id="baseSectionSelect"></select>
 
-                        <div class="field-grid field-grid--two">
+                        <div class="field-grid field-grid--one">
                             <div>
-                                <label for="baseRows">세로 좌석 수</label>
-                                <input type="number" id="baseRows" value="5" min="1">
-                            </div>
-                            <div>
-                                <label for="baseCols">가로 좌석 수</label>
+                                <label for="baseCols">기준 가로 좌석 수</label>
                                 <input type="number" id="baseCols" value="10" min="1">
                             </div>
                         </div>
 
                         <div class="field-grid field-grid--two">
-                            <button type="button" class="btn btn--dark" id="applyBaseOne">기준 구역만 생성</button>
+                            <button type="button" class="btn btn--dark" id="applyBaseOne">선택 구역 초안 생성</button>
                             <button type="button" class="btn btn--green" id="applyBaseAll">전체 구역 자동 추정</button>
                         </div>
                     </div>
@@ -90,6 +86,6 @@
     </div>
 
     <div class="seatmap-side-guide" id="stage3Guide">
-        미니맵에서 기준 구역을 클릭하고 좌석 수를 입력한 뒤 전체 구역을 자동 추정하세요.
+        미니맵에서 기준 구역을 클릭하고 기준 가로 좌석 수만 입력한 뒤 전체 구역을 자동 추정하세요.
     </div>
 </aside>

@@ -5,6 +5,8 @@
         ORIGINAL_IMAGE: "concert_originalImage",
         CLEAN_IMAGE: "concert_cleanImage",
         IMAGE_META: "concert_imageMeta",
+        SIMPLIFY_BASE_IMAGE: "concert_simplifyBaseImage",
+        STAGE1_SETTINGS: "concert_stage1Settings",
     };
 
     const PAGE_URL = {
@@ -14,6 +16,7 @@
     const HISTORY_LIMIT = 30;
     const MIN_ZOOM = 0.25;
     const MAX_ZOOM = 4;
+    const FIXED_BACKGROUND_COLOR = "#f7f7f7";
 
     const dom = {};
     const state = {
@@ -24,6 +27,9 @@
         workingUrl: null,
         cleanUrl: null,
         lastExtractUrl: null,
+
+        simplifyBaseUrl: null,
+        simplifiedUrl: null,
 
         part: 1,
         completedParts: new Set(),
@@ -48,6 +54,14 @@
         zoomStartX: 0,
         zoomStartScale: 1,
 
+        rotationMode: false,
+        rotationDragging: false,
+        rotationBaseUrl: null,
+        rotationStartX: 0,
+        rotationStartDeg: 0,
+        rotationDeg: 0,
+        rotationMoved: false,
+
         history: [],
         historyIndex: -1,
         isApplyingHistory: false,
@@ -71,20 +85,26 @@
 
     function init() {
         cacheDom();
+        applySavedStage1Settings();
         bindEvents();
+        syncHoleValue();
         initializeWorkspaceSteps();
         renderPartGuide(state.part);
         updateHistoryButtons();
         updateZoomView();
+        updateRotationView();
 
         state.originalUrl = localStorage.getItem(STORAGE_KEYS.ORIGINAL_IMAGE);
         state.workingUrl = state.originalUrl;
+        state.rotationBaseUrl = state.workingUrl;
+        state.simplifyBaseUrl = localStorage.getItem(STORAGE_KEYS.SIMPLIFY_BASE_IMAGE);
         state.cleanUrl = localStorage.getItem(STORAGE_KEYS.CLEAN_IMAGE) || state.workingUrl;
         state.lastExtractUrl = state.cleanUrl;
 
         if (!state.originalUrl) {
             showToast("메인에서 이미지를 업로드하세요");
             renderSamples();
+            updateSimplifyInfo("적용 전");
             return;
         }
 
@@ -96,6 +116,7 @@
                 drawImageToCleanCanvas(cleanImage);
                 render();
                 renderSamples();
+                updateSimplifyInfo("적용 전");
                 pushHistory("초기 상태");
             });
         });
@@ -120,6 +141,8 @@
             "undoAction",
             "redoAction",
             "zoomTool",
+            "rotateTool",
+            "rotateValue",
             "zoomReset",
             "zoomValue",
 
@@ -132,25 +155,37 @@
             "tab1",
             "tab2",
             "tab3",
+            "tab4",
             "part1",
             "part2",
             "part3",
+            "part4",
             "stage1Guide",
 
             "cropStart",
             "cropApply",
             "go2",
             "go3",
+            "go4",
+
+            "simplifyScale",
+            "simplifyStep",
+            "simplifyApply",
+            "simplifyReset",
+            "simplifyInfo",
 
             "samples",
             "tol",
             "alpha",
             "shapeColor",
-            "bgColor",
+            "backgroundColor",
+            "clearRemoveSamples",
+            "removeSamplesClear",
             "hole",
+            "holeValue",
             "viewMode",
-            "clearSamples",
             "restoreOriginal",
+            "invertExtract",
 
             "eraser",
             "rectFill",
@@ -168,12 +203,17 @@
         bindIfExists("tab1", "click", () => showPart(1));
         bindIfExists("tab2", "click", () => showPart(2));
         bindIfExists("tab3", "click", () => showPart(3));
+        bindIfExists("tab4", "click", () => showPart(4));
 
         bindIfExists("go2", "click", () => moveNextPart(1, 2));
         bindIfExists("go3", "click", () => moveNextPart(2, 3));
+        bindIfExists("go4", "click", () => moveNextPart(3, 4));
 
         bindIfExists("cropStart", "click", startCropMode);
         bindIfExists("cropApply", "click", applyCrop);
+
+        bindIfExists("simplifyApply", "click", applyImageSimplify);
+        bindIfExists("simplifyReset", "click", resetImageSimplify);
 
         overlay.addEventListener("pointerdown", handlePointerDown);
         overlay.addEventListener("pointerleave", handlePointerLeave);
@@ -183,24 +223,39 @@
         window.addEventListener("pointermove", handlePointerMove);
         window.addEventListener("pointerup", handlePointerUp);
 
-        ["tol", "alpha", "shapeColor", "bgColor", "hole", "viewMode"].forEach((id) => {
+        ["tol", "alpha", "shapeColor", "backgroundColor", "hole", "viewMode"].forEach((id) => {
             if (!dom[id]) {
                 return;
             }
 
-            dom[id].addEventListener("input", () => extractSelectedColors());
-            dom[id].addEventListener("change", () => extractSelectedColors({ recordHistory: true }));
+            dom[id].addEventListener("input", () => {
+                if (id === "hole") {
+                    syncHoleValue();
+                }
+
+                extractSelectedColors();
+            });
+
+            dom[id].addEventListener("change", () => {
+                if (id === "hole") {
+                    syncHoleValue();
+                }
+
+                extractSelectedColors({ recordHistory: true });
+            });
         });
 
-        bindIfExists("clearSamples", "click", clearSamples);
         bindIfExists("restoreOriginal", "click", restoreOriginalPreview);
+        bindIfExists("invertExtract", "click", invertExtractedMask);
+        bindIfExists("clearRemoveSamples", "click", clearRemoveSamples);
+        bindIfExists("removeSamplesClear", "click", clearRemoveSamples);
 
         bindIfExists("eraser", "click", toggleEraserMode);
         bindIfExists("rectFill", "click", toggleFillMode);
 
         if (dom.eraserSize) {
             dom.eraserSize.addEventListener("input", () => {
-                if (state.part === 3 && state.lastPointerPos) {
+                if (state.part === 4 && state.lastPointerPos) {
                     updateToolCursor(state.lastPointerPos);
                 }
             });
@@ -213,6 +268,7 @@
         bindIfExists("undoAction", "click", undoHistory);
         bindIfExists("redoAction", "click", redoHistory);
         bindIfExists("zoomTool", "click", toggleZoomMode);
+        bindIfExists("rotateTool", "click", toggleRotationMode);
         bindIfExists("zoomReset", "click", resetZoom);
 
         document.addEventListener("keydown", handleCommandShortcut);
@@ -225,10 +281,6 @@
 
         dom[id].addEventListener(eventName, handler);
     }
-
-    /* =========================
-       Canvas Setup / Render
-    ========================= */
 
     function setupCanvas(width, height) {
         state.width = width;
@@ -265,6 +317,7 @@
         dom.box.style.height = displayHeight;
 
         updateZoomView();
+        updateRotationView();
     }
 
     function drawImageToSourceCanvas(image) {
@@ -288,7 +341,16 @@
             return;
         }
 
-        if (state.part === 2 && isMixedPreviewMode()) {
+        if (state.part === 2) {
+            ctx.drawImage(sourceCanvas, 0, 0);
+            drawRemoveSampleMarkers();
+            if (state.lastPointerPos) {
+                updateRemoveColorCursor(state.lastPointerPos);
+            }
+            return;
+        }
+
+        if (state.part === 3 && isMixedPreviewMode()) {
             ctx.drawImage(sourceCanvas, 0, 0);
             drawPreviewOverlay();
             return;
@@ -296,7 +358,7 @@
 
         ctx.drawImage(cleanCanvas, 0, 0);
 
-        if (state.part === 3 && isToolModeActive() && state.lastPointerPos) {
+        if (state.part === 4 && isToolModeActive() && state.lastPointerPos) {
             updateToolCursor(state.lastPointerPos);
         }
     }
@@ -318,8 +380,8 @@
 
         const imageData = previewCtx.getImageData(0, 0, state.width, state.height);
         const data = imageData.data;
-        const shapeColor = hexToRgb(dom.shapeColor.value);
-        const alpha = Math.round((getNumber(dom.alpha, 55) / 100) * 255);
+        const shapeColor = getShapeColorRgb();
+        const alpha = Math.round((getNumber(dom.alpha, 100) / 100) * 255);
 
         for (let i = 0; i < data.length; i += 4) {
             const pixel = {
@@ -345,12 +407,8 @@
     }
 
     function isMixedPreviewMode() {
-        return state.part === 2 && dom.viewMode && dom.viewMode.value === "mix";
+        return state.part === 3 && dom.viewMode && dom.viewMode.value === "mix";
     }
-
-    /* =========================
-       Part Tabs
-    ========================= */
 
     function showPart(partNumber) {
         completePreviousParts(partNumber);
@@ -363,11 +421,11 @@
             dom.title.textContent = getPartTitle(partNumber);
         }
 
-        if (partNumber !== 2) {
+        if (partNumber !== 2 && partNumber !== 3) {
             hideColorLoupe();
         }
 
-        if (partNumber !== 3) {
+        if (partNumber !== 2 && partNumber !== 4) {
             hideToolCursor();
         }
 
@@ -386,7 +444,7 @@
     }
 
     function syncWorkspacePartState() {
-        [1, 2, 3].forEach((number) => {
+        [1, 2, 3, 4].forEach((number) => {
             const part = dom[`part${number}`];
             const tab = dom[`tab${number}`];
 
@@ -418,7 +476,7 @@
     }
 
     function initializeWorkspaceSteps() {
-        [1, 2, 3].forEach((number) => {
+        [1, 2, 3, 4].forEach((number) => {
             if (dom[`part${number}`]) {
                 dom[`part${number}`].classList.remove("hidden");
             }
@@ -429,11 +487,15 @@
 
     function getPartTitle(partNumber) {
         if (partNumber === 1) {
-            return "원본 / 자르기";
+            return "원본 / 방향 / 자르기";
         }
 
         if (partNumber === 2) {
-            return "원본 + 추출 미리보기";
+            return "제거 색상 선택";
+        }
+
+        if (partNumber === 3) {
+            return "제거 결과 확인";
         }
 
         return "추출본 다듬기";
@@ -445,22 +507,24 @@
         }
 
         const guideText = {
-            1: "도면 영역만 남기고 제목, 범례, 여백은 제거하세요.",
-            2: "가운데 이미지를 움직이면 픽셀 확대경과 색상 정보가 표시됩니다. 클릭하면 해당 색상이 추출 목록에 추가됩니다.",
-            3: "먼저 작은 선/조각을 자동 제거하고, 남는 부분만 지우개 또는 브러쉬로 수동 보정하세요.",
+            1: "상단 회전 도구로 STAGE가 위쪽을 향하도록 방향을 맞춘 뒤, 도면 영역만 남기고 제목, 범례, 여백은 제거하세요.",
+            2: "가운데 이미지에서 흰색, 검은색, 회색, 글자, 무대처럼 필요 없는 색을 클릭하세요. 선택한 색은 배경색으로 제거됩니다.",
+            3: "제거 결과를 확인하세요. 선택한 색은 배경색, 남은 영역은 도형색으로 정리됩니다.",
+            4: "먼저 작은 선/조각을 자동 제거하고, 남는 부분만 지우개 또는 브러쉬로 수동 보정하세요.",
         };
 
         dom.stage1Guide.textContent = guideText[partNumber] || "";
     }
 
-    /* =========================
-       Common Commands - Zoom
-    ========================= */
-
     function toggleZoomMode() {
         state.zoomMode = !state.zoomMode;
 
         if (state.zoomMode) {
+            state.rotationMode = false;
+            state.rotationDragging = false;
+            clearRotationPreviewTransform();
+            updateRotationView();
+
             disableEraserMode();
             disableFillMode();
             state.cropMode = false;
@@ -512,9 +576,204 @@
         }
     }
 
-    /* =========================
-       Common Commands - History
-    ========================= */
+    function toggleRotationMode() {
+        state.rotationMode = !state.rotationMode;
+
+        if (state.rotationMode) {
+            if (state.part !== 1) {
+                showPart(1);
+            }
+
+            state.zoomMode = false;
+            state.cropMode = false;
+            state.cropDraft = null;
+            state.cropRect = null;
+
+            disableEraserMode();
+            disableFillMode();
+            hideColorLoupe();
+
+            if (dom.cropApply) {
+                dom.cropApply.disabled = true;
+            }
+
+            showToast("회전 모드: 이미지를 누른 채 좌우로 드래그하세요");
+        } else {
+            clearRotationPreviewTransform();
+            state.rotationDragging = false;
+            state.rotationMoved = false;
+            state.rotationDeg = 0;
+        }
+
+        updateRotationView();
+        updateZoomView();
+        render();
+    }
+
+    function beginRotationDrag(event) {
+        if (!state.workingUrl) {
+            return;
+        }
+
+        clearRotationPreviewTransform();
+
+        state.rotationDragging = true;
+        state.rotationMoved = false;
+        state.rotationBaseUrl = state.workingUrl;
+        state.rotationStartX = event.clientX;
+        state.rotationStartDeg = 0;
+        state.rotationDeg = 0;
+
+        hideColorLoupe();
+        hideToolCursor();
+
+        updateRotationView();
+    }
+
+    function updateRotationDrag(event) {
+        const deltaX = event.clientX - state.rotationStartX;
+        const nextDegree = clampRotation(Math.round((state.rotationStartDeg + deltaX / 4) * 10) / 10);
+
+        if (nextDegree === state.rotationDeg) {
+            return;
+        }
+
+        state.rotationMoved = true;
+        state.rotationDeg = nextDegree;
+
+        syncRotateValue();
+        applyRotationPreviewTransform();
+    }
+
+    function endRotationDrag() {
+        state.rotationDragging = false;
+
+        if (!state.rotationMoved || state.rotationDeg === 0) {
+            clearRotationPreviewTransform();
+
+            state.rotationDeg = 0;
+            state.rotationMoved = false;
+
+            syncRotateValue();
+            updateRotationView();
+            render();
+            return;
+        }
+
+        commitRotationOnce();
+    }
+
+    function applyRotationPreviewTransform() {
+        const transformValue = `rotate(${state.rotationDeg}deg)`;
+
+        canvas.style.transformOrigin = "center center";
+        overlay.style.transformOrigin = "center center";
+
+        canvas.style.transform = transformValue;
+        overlay.style.transform = transformValue;
+
+        if (dom.box) {
+            dom.box.style.overflow = "visible";
+        }
+    }
+
+    function clearRotationPreviewTransform() {
+        canvas.style.transform = "";
+        overlay.style.transform = "";
+        canvas.style.transformOrigin = "";
+        overlay.style.transformOrigin = "";
+
+        if (dom.box) {
+            dom.box.style.overflow = "";
+        }
+    }
+
+    function commitRotationOnce() {
+        const baseUrl = state.rotationBaseUrl;
+        const degree = state.rotationDeg;
+
+        clearRotationPreviewTransform();
+
+        if (!baseUrl) {
+            state.rotationDeg = 0;
+            state.rotationMoved = false;
+            syncRotateValue();
+            updateRotationView();
+            return;
+        }
+
+        loadImage(baseUrl, (image) => {
+            const baseCanvas = createCanvas(image.naturalWidth, image.naturalHeight);
+            const baseCtx = baseCanvas.getContext("2d", { willReadFrequently: true });
+
+            baseCtx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
+            baseCtx.drawImage(image, 0, 0);
+
+            const rotatedCanvas = rotateCanvasByDegree(baseCanvas, degree);
+
+            replaceWorkingImageFromCanvas(rotatedCanvas, {
+                keepSimplifyBase: false,
+            });
+
+            state.rotationBaseUrl = state.workingUrl;
+            state.rotationDeg = 0;
+            state.rotationMoved = false;
+
+            syncRotateValue();
+            updateRotationView();
+
+            pushHistory("이미지 회전");
+            showToast("회전 적용 완료");
+        });
+    }
+
+    function updateRotationView() {
+        if (dom.rotateTool) {
+            dom.rotateTool.classList.toggle("is-active", state.rotationMode);
+            dom.rotateTool.classList.toggle("is-rotate-active", state.rotationMode);
+        }
+
+        if (dom.box) {
+            dom.box.classList.toggle("is-rotating", state.rotationMode);
+            dom.box.classList.toggle("is-rotate-dragging", state.rotationDragging);
+        }
+
+        syncRotateValue();
+    }
+
+    function syncRotateValue() {
+        if (!dom.rotateValue) {
+            return;
+        }
+
+        dom.rotateValue.textContent = `${state.rotationDeg}°`;
+    }
+
+    function rotateCanvasByDegree(source, degree) {
+        const radian = degree * Math.PI / 180;
+        const sin = Math.abs(Math.sin(radian));
+        const cos = Math.abs(Math.cos(radian));
+
+        const nextWidth = Math.ceil(source.width * cos + source.height * sin);
+        const nextHeight = Math.ceil(source.width * sin + source.height * cos);
+
+        const result = createCanvas(nextWidth, nextHeight);
+        const resultCtx = result.getContext("2d", { willReadFrequently: true });
+
+        resultCtx.save();
+        resultCtx.fillStyle = FIXED_BACKGROUND_COLOR;
+        resultCtx.fillRect(0, 0, nextWidth, nextHeight);
+        resultCtx.translate(nextWidth / 2, nextHeight / 2);
+        resultCtx.rotate(radian);
+        resultCtx.drawImage(source, -source.width / 2, -source.height / 2);
+        resultCtx.restore();
+
+        return result;
+    }
+
+    function clampRotation(degree) {
+        return Math.max(-180, Math.min(180, degree));
+    }
 
     function pushHistory(label) {
         if (state.isApplyingHistory || !state.workingUrl || !state.cleanUrl) {
@@ -528,6 +787,8 @@
             workingUrl: state.workingUrl,
             cleanUrl: state.cleanUrl,
             lastExtractUrl: state.lastExtractUrl,
+            simplifyBaseUrl: state.simplifyBaseUrl,
+            simplifiedUrl: state.simplifiedUrl,
             samples: state.samples.map((sample) => ({ ...sample })),
             part: state.part,
             completedParts: Array.from(state.completedParts),
@@ -574,6 +835,8 @@
         state.workingUrl = snapshot.workingUrl;
         state.cleanUrl = snapshot.cleanUrl;
         state.lastExtractUrl = snapshot.lastExtractUrl;
+        state.simplifyBaseUrl = snapshot.simplifyBaseUrl || null;
+        state.simplifiedUrl = snapshot.simplifiedUrl || null;
         state.samples = snapshot.samples.map((sample) => ({ ...sample }));
         state.part = snapshot.part;
         state.completedParts = new Set(snapshot.completedParts);
@@ -583,11 +846,23 @@
         state.cropRect = null;
         state.erasing = false;
         state.filling = false;
+        state.zoomDragging = false;
+        state.rotationDragging = false;
+        state.rotationDeg = 0;
+        state.rotationMoved = false;
         state.changedDuringDrag = false;
+
+        clearRotationPreviewTransform();
         hideToolCursor();
         hideColorLoupe();
 
         localStorage.setItem(STORAGE_KEYS.ORIGINAL_IMAGE, state.workingUrl);
+
+        if (state.simplifyBaseUrl) {
+            localStorage.setItem(STORAGE_KEYS.SIMPLIFY_BASE_IMAGE, state.simplifyBaseUrl);
+        } else {
+            localStorage.removeItem(STORAGE_KEYS.SIMPLIFY_BASE_IMAGE);
+        }
 
         loadImage(state.workingUrl, (sourceImage) => {
             setupCanvas(snapshot.width, snapshot.height);
@@ -598,6 +873,8 @@
                 renderSamples();
                 syncWorkspacePartState();
                 renderPartGuide(state.part);
+                updateRotationView();
+                updateSimplifyInfo(state.simplifyBaseUrl ? "이전 보정 상태" : "적용 전");
                 render();
                 updateHistoryButtons();
                 state.isApplyingHistory = false;
@@ -634,10 +911,6 @@
         }
     }
 
-    /* =========================
-       Part 1 - Crop
-    ========================= */
-
     function startCropMode() {
         state.cropMode = true;
         state.cropDraft = null;
@@ -645,7 +918,10 @@
         disableEraserMode();
         disableFillMode();
         state.zoomMode = false;
+        state.rotationMode = false;
+        clearRotationPreviewTransform();
         updateZoomView();
+        updateRotationView();
         showToast("자를 범위를 드래그하세요");
     }
 
@@ -704,36 +980,150 @@
             cropCanvas.height
         );
 
-        state.workingUrl = cropCanvas.toDataURL("image/png");
-        localStorage.setItem(STORAGE_KEYS.ORIGINAL_IMAGE, state.workingUrl);
+        replaceWorkingImageFromCanvas(cropCanvas, {
+            keepSimplifyBase: false,
+        });
 
-        loadImage(state.workingUrl, (image) => {
-            setupCanvas(image.naturalWidth, image.naturalHeight);
-            drawImageToSourceCanvas(image);
-            cleanCtx.clearRect(0, 0, state.width, state.height);
-            cleanCtx.drawImage(image, 0, 0, state.width, state.height);
+        state.rotationBaseUrl = state.workingUrl;
+        state.simplifyBaseUrl = null;
+        state.simplifiedUrl = null;
+        localStorage.removeItem(STORAGE_KEYS.SIMPLIFY_BASE_IMAGE);
 
-            state.cleanUrl = cleanCanvas.toDataURL("image/png");
-            state.lastExtractUrl = state.cleanUrl;
-            state.cropRect = null;
-            state.cropDraft = null;
-            state.cropMode = false;
-            state.samples = [];
+        updateSimplifyInfo("적용 전");
+        showToast("자르기 완료");
+        pushHistory("자르기");
+    }
 
-            if (dom.cropApply) {
-                dom.cropApply.disabled = true;
-            }
+    function applyImageSimplify() {
+        if (!state.workingUrl || !state.width || !state.height) {
+            showToast("적용할 이미지가 없습니다");
+            return;
+        }
 
-            renderSamples();
-            render();
-            showToast("자르기 완료");
-            pushHistory("자르기");
+        if (!state.simplifyBaseUrl) {
+            state.simplifyBaseUrl = state.workingUrl;
+            localStorage.setItem(STORAGE_KEYS.SIMPLIFY_BASE_IMAGE, state.simplifyBaseUrl);
+        }
+
+        const scale = getNumber(dom.simplifyScale, 2);
+        const step = getNumber(dom.simplifyStep, 16);
+
+        loadImage(state.simplifyBaseUrl, (image) => {
+            const nextWidth = Math.max(1, Math.round(image.naturalWidth * scale));
+            const nextHeight = Math.max(1, Math.round(image.naturalHeight * scale));
+
+            const nextCanvas = createCanvas(nextWidth, nextHeight);
+            const nextCtx = nextCanvas.getContext("2d", { willReadFrequently: true });
+
+            nextCtx.imageSmoothingEnabled = false;
+            nextCtx.clearRect(0, 0, nextWidth, nextHeight);
+            nextCtx.drawImage(image, 0, 0, nextWidth, nextHeight);
+
+            simplifyCanvasColors(nextCanvas, step);
+            replaceWorkingImageFromCanvas(nextCanvas, {
+                keepSimplifyBase: true,
+            });
+
+            state.simplifiedUrl = state.workingUrl;
+            updateSimplifyInfo(`${image.naturalWidth}×${image.naturalHeight} → ${nextWidth}×${nextHeight}, 색상 단순화 ${step} 적용`);
+            showToast("확대 + 색상 단순화 완료");
+            pushHistory("확대 + 색상 단순화");
         });
     }
 
-    /* =========================
-       Part 2 - Color Extract
-    ========================= */
+    function resetImageSimplify() {
+        const baseUrl = state.simplifyBaseUrl || localStorage.getItem(STORAGE_KEYS.SIMPLIFY_BASE_IMAGE);
+
+        if (!baseUrl) {
+            showToast("복구할 이미지가 없습니다");
+            return;
+        }
+
+        loadImage(baseUrl, (image) => {
+            const baseCanvas = createCanvas(image.naturalWidth, image.naturalHeight);
+            const baseCtx = baseCanvas.getContext("2d", { willReadFrequently: true });
+
+            baseCtx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
+            baseCtx.drawImage(image, 0, 0);
+
+            replaceWorkingImageFromCanvas(baseCanvas, {
+                keepSimplifyBase: false,
+            });
+
+            state.simplifyBaseUrl = null;
+            state.simplifiedUrl = null;
+            localStorage.removeItem(STORAGE_KEYS.SIMPLIFY_BASE_IMAGE);
+
+            updateSimplifyInfo("단순화 전으로 복구됨");
+            showToast("단순화 전으로 복구 완료");
+            pushHistory("단순화 복구");
+        });
+    }
+
+    function simplifyCanvasColors(targetCanvas, step) {
+        const targetCtx = targetCanvas.getContext("2d", { willReadFrequently: true });
+        const imageData = targetCtx.getImageData(0, 0, targetCanvas.width, targetCanvas.height);
+        const data = imageData.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+            data[i] = quantizeColorValue(data[i], step);
+            data[i + 1] = quantizeColorValue(data[i + 1], step);
+            data[i + 2] = quantizeColorValue(data[i + 2], step);
+            data[i + 3] = 255;
+        }
+
+        targetCtx.putImageData(imageData, 0, 0);
+    }
+
+    function quantizeColorValue(value, step) {
+        return clamp(Math.round(value / step) * step, 0, 255);
+    }
+
+    function updateSimplifyInfo(text) {
+        if (!dom.simplifyInfo) {
+            return;
+        }
+
+        dom.simplifyInfo.textContent = text;
+    }
+
+    function replaceWorkingImageFromCanvas(nextCanvas, options = {}) {
+        state.workingUrl = nextCanvas.toDataURL("image/png");
+        state.originalUrl = state.workingUrl;
+
+        localStorage.setItem(STORAGE_KEYS.ORIGINAL_IMAGE, state.workingUrl);
+
+        setupCanvas(nextCanvas.width, nextCanvas.height);
+
+        sourceCtx.clearRect(0, 0, state.width, state.height);
+        sourceCtx.drawImage(nextCanvas, 0, 0, state.width, state.height);
+
+        cleanCtx.clearRect(0, 0, state.width, state.height);
+        cleanCtx.drawImage(nextCanvas, 0, 0, state.width, state.height);
+
+        state.cleanUrl = cleanCanvas.toDataURL("image/png");
+        state.lastExtractUrl = state.cleanUrl;
+        state.samples = [];
+
+        state.cropMode = false;
+        state.cropDraft = null;
+        state.cropRect = null;
+
+        if (options.keepSimplifyBase !== true) {
+            state.simplifyBaseUrl = null;
+            state.simplifiedUrl = null;
+            localStorage.removeItem(STORAGE_KEYS.SIMPLIFY_BASE_IMAGE);
+        }
+
+        if (dom.cropApply) {
+            dom.cropApply.disabled = true;
+        }
+
+        overlayCtx.clearRect(0, 0, state.width, state.height);
+
+        renderSamples();
+        render();
+    }
 
     function addColorSample(pointerPos) {
         const pixel = getSourcePixel(pointerPos.x, pointerPos.y);
@@ -758,7 +1148,7 @@
         }
 
         if (!state.samples.length) {
-            dom.samples.innerHTML = '<div class="help">이미지를 움직이면 확대경이 표시됩니다. 클릭해서 남길 색상을 고르세요.</div>';
+            dom.samples.innerHTML = '<div class="help">이미지에서 제거할 색상을 클릭하세요. 흰색, 검은색, 회색, 글자색, 무대색을 먼저 찍으면 됩니다.</div>';
             return;
         }
 
@@ -801,7 +1191,7 @@
             render();
 
             if (options.recordHistory === true) {
-                pushHistory("색상 초기화");
+                pushHistory("제거 색상 초기화");
             }
 
             return;
@@ -813,8 +1203,8 @@
         const data = imageData.data;
 
         const tolerance = getNumber(dom.tol, 45);
-        const shapeColor = hexToRgb(dom.shapeColor.value);
-        const backgroundColor = hexToRgb(dom.bgColor.value);
+        const shapeColor = getShapeColorRgb();
+        const backgroundColor = getBackgroundColorRgb();
         const holeArea = getNumber(dom.hole, 0);
 
         for (let i = 0; i < sourceData.length; i += 4) {
@@ -824,19 +1214,19 @@
                 b: sourceData[i + 2],
             };
 
-            const isSelectedColor = state.samples.some((sample) => {
+            const shouldRemove = state.samples.some((sample) => {
                 return colorDistance(pixel, sample) <= tolerance;
             });
 
-            if (isSelectedColor) {
-                data[i] = shapeColor.r;
-                data[i + 1] = shapeColor.g;
-                data[i + 2] = shapeColor.b;
-                data[i + 3] = 255;
-            } else {
+            if (shouldRemove) {
                 data[i] = backgroundColor.r;
                 data[i + 1] = backgroundColor.g;
                 data[i + 2] = backgroundColor.b;
+                data[i + 3] = 255;
+            } else {
+                data[i] = shapeColor.r;
+                data[i + 1] = shapeColor.g;
+                data[i + 2] = shapeColor.b;
                 data[i + 3] = 255;
             }
         }
@@ -850,14 +1240,8 @@
         render();
 
         if (options.recordHistory === true) {
-            pushHistory("색상 추출");
+            pushHistory("제거 색상 추출");
         }
-    }
-
-    function clearSamples() {
-        state.samples = [];
-        renderSamples();
-        extractSelectedColors({ recordHistory: true });
     }
 
     function restoreOriginalPreview() {
@@ -871,6 +1255,49 @@
 
         render();
         pushHistory("원본 복구");
+    }
+
+    function invertExtractedMask() {
+        if (!state.width || !state.height) {
+            return;
+        }
+
+        const shapeColor = getShapeColorRgb();
+        const backgroundColor = getBackgroundColorRgb();
+        const imageData = cleanCtx.getImageData(0, 0, state.width, state.height);
+        const data = imageData.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+            const pixel = {
+                r: data[i],
+                g: data[i + 1],
+                b: data[i + 2],
+            };
+
+            const shapeDistance = colorDistance(pixel, shapeColor);
+            const backgroundDistance = colorDistance(pixel, backgroundColor);
+
+            if (shapeDistance <= backgroundDistance) {
+                data[i] = backgroundColor.r;
+                data[i + 1] = backgroundColor.g;
+                data[i + 2] = backgroundColor.b;
+                data[i + 3] = 255;
+            } else {
+                data[i] = shapeColor.r;
+                data[i + 1] = shapeColor.g;
+                data[i + 2] = shapeColor.b;
+                data[i + 3] = 255;
+            }
+        }
+
+        cleanCtx.putImageData(imageData, 0, 0);
+
+        state.cleanUrl = cleanCanvas.toDataURL("image/png");
+        state.lastExtractUrl = state.cleanUrl;
+
+        render();
+        pushHistory("추출 반전");
+        showToast("추출 결과 반전 완료");
     }
 
     function fillSmallHoles(imageData, shapeColor, backgroundColor, maxArea) {
@@ -917,10 +1344,6 @@
         }
     }
 
-    /* =========================
-       Part 2 - Loupe
-    ========================= */
-
     function updateColorLoupe(event) {
         if (!shouldShowColorLoupe()) {
             hideColorLoupe();
@@ -945,9 +1368,11 @@
 
     function shouldShowColorLoupe() {
         return (
-            state.part === 2 &&
+            (state.part === 2 || state.part === 3) &&
             !state.zoomMode &&
             !state.zoomDragging &&
+            !state.rotationMode &&
+            !state.rotationDragging &&
             dom.colorLoupe &&
             loupeCanvas &&
             loupeCtx &&
@@ -1062,7 +1487,7 @@
     }
 
     function hideColorLoupeIfInvalid() {
-        if (state.part !== 2 || state.zoomMode) {
+        if ((state.part !== 2 && state.part !== 3) || state.zoomMode || state.rotationMode) {
             hideColorLoupe();
         }
     }
@@ -1093,10 +1518,6 @@
             b: data[2],
         };
     }
-
-    /* =========================
-       Part 3 - Clean
-    ========================= */
 
     function toggleEraserMode() {
         if (state.eraserMode) {
@@ -1134,8 +1555,11 @@
         state.erasing = false;
         state.filling = false;
         state.zoomMode = false;
+        state.rotationMode = false;
+        clearRotationPreviewTransform();
         hideColorLoupe();
         updateZoomView();
+        updateRotationView();
         syncToolButtons();
 
         if (dom.box) {
@@ -1158,8 +1582,11 @@
         state.erasing = false;
         state.filling = false;
         state.zoomMode = false;
+        state.rotationMode = false;
+        clearRotationPreviewTransform();
         hideColorLoupe();
         updateZoomView();
+        updateRotationView();
         syncToolButtons();
         hideToolCursor();
         showToast("브러쉬 채우기 모드: 다시 누르면 종료됩니다");
@@ -1175,7 +1602,7 @@
 
     function eraseAt(pointerPos) {
         const size = getNumber(dom.eraserSize, 18);
-        const backgroundColor = dom.bgColor.value;
+        const backgroundColor = getBackgroundColorHex();
 
         cleanCtx.save();
         cleanCtx.fillStyle = backgroundColor;
@@ -1191,7 +1618,7 @@
 
     function fillAt(pointerPos) {
         const size = getNumber(dom.eraserSize, 18);
-        const shapeColor = dom.shapeColor.value;
+        const shapeColor = getShapeColorHex();
 
         cleanCtx.save();
         cleanCtx.fillStyle = shapeColor;
@@ -1210,8 +1637,8 @@
         disableEraserMode();
         disableFillMode();
 
-        const shapeColor = hexToRgb(dom.shapeColor.value);
-        const backgroundColor = hexToRgb(dom.bgColor.value);
+        const shapeColor = getShapeColorRgb();
+        const backgroundColor = getBackgroundColorRgb();
         const minArea = getNumber(dom.cleanupArea, 180);
 
         const imageData = cleanCtx.getImageData(0, 0, state.width, state.height);
@@ -1279,31 +1706,44 @@
     }
 
     function saveStage1() {
+        saveStage1Settings();
+
         localStorage.setItem(STORAGE_KEYS.CLEAN_IMAGE, state.cleanUrl);
         localStorage.setItem(
             STORAGE_KEYS.IMAGE_META,
             JSON.stringify({
                 width: state.width,
                 height: state.height,
+                mode: "remove-colors",
+                shapeColor: getShapeColorHex(),
+                backgroundColor: getBackgroundColorHex(),
             })
         );
 
-        state.completedParts.add(3);
+        state.completedParts.add(4);
         syncWorkspacePartState();
 
         showToast("Stage1 자동 저장 완료");
     }
 
     function moveToStage2() {
+        if (!state.samples.length) {
+            showPart(2);
+            showToast("먼저 제거할 색상을 1개 이상 선택하세요");
+            return;
+        }
+
+        extractSelectedColors();
         saveStage1();
         window.location.href = PAGE_URL.STAGE2;
     }
 
-    /* =========================
-       Pointer Events
-    ========================= */
-
     function handlePointerDown(event) {
+        if (state.rotationMode) {
+            beginRotationDrag(event);
+            return;
+        }
+
         if (state.zoomMode) {
             beginZoomDrag(event);
             return;
@@ -1325,11 +1765,17 @@
 
         if (state.part === 2) {
             addColorSample(pointerPos);
+            updateRemoveColorCursor(pointerPos);
             updateColorLoupe(event);
             return;
         }
 
-        if (state.part === 3 && state.eraserMode) {
+        if (state.part === 3) {
+            updateColorLoupe(event);
+            return;
+        }
+
+        if (state.part === 4 && state.eraserMode) {
             updateToolCursor(pointerPos);
             state.erasing = true;
             state.changedDuringDrag = false;
@@ -1337,7 +1783,7 @@
             return;
         }
 
-        if (state.part === 3 && state.fillMode) {
+        if (state.part === 4 && state.fillMode) {
             updateToolCursor(pointerPos);
             state.filling = true;
             state.changedDuringDrag = false;
@@ -1346,12 +1792,21 @@
     }
 
     function handleOverlayPointerMove(event) {
-        if (state.part === 2 && !state.zoomMode && !state.zoomDragging) {
+        if ((state.part === 2 || state.part === 3) && !state.zoomMode && !state.zoomDragging && !state.rotationMode && !state.rotationDragging) {
+            const pointerPos = getCanvasPointer(event);
+            if (state.part === 2) {
+                updateRemoveColorCursor(pointerPos);
+            }
             updateColorLoupe(event);
         }
     }
 
     function handlePointerMove(event) {
+        if (state.rotationDragging) {
+            updateRotationDrag(event);
+            return;
+        }
+
         if (state.zoomDragging) {
             updateZoomDrag(event);
             return;
@@ -1363,7 +1818,11 @@
             updateCropDraft(pointerPos);
         }
 
-        if (state.part === 3 && isToolModeActive()) {
+        if (state.part === 2) {
+            updateRemoveColorCursor(pointerPos);
+        }
+
+        if (state.part === 4 && isToolModeActive()) {
             updateToolCursor(pointerPos);
         }
 
@@ -1377,6 +1836,11 @@
     }
 
     function handlePointerUp() {
+        if (state.rotationDragging) {
+            endRotationDrag();
+            return;
+        }
+
         if (state.zoomDragging) {
             endZoomDrag();
             return;
@@ -1415,17 +1879,25 @@
     function handlePointerLeave() {
         hideColorLoupe();
 
-        if (state.part === 3 && isToolModeActive() && !state.erasing && !state.filling) {
+        if (state.part === 2) {
+            hideToolCursor();
+        }
+
+        if (state.part === 4 && isToolModeActive() && !state.erasing && !state.filling) {
             hideToolCursor();
         }
     }
 
     function handlePointerEnter(event) {
-        if (state.part === 2) {
+        if (state.part === 2 || state.part === 3) {
             updateColorLoupe(event);
         }
 
-        if (state.part === 3 && isToolModeActive()) {
+        if (state.part === 2) {
+            updateRemoveColorCursor(getCanvasPointer(event));
+        }
+
+        if (state.part === 4 && isToolModeActive()) {
             updateToolCursor(getCanvasPointer(event));
         }
     }
@@ -1443,10 +1915,50 @@
         return state.eraserMode || state.fillMode;
     }
 
+    function drawRemoveSampleMarkers() {
+        if (!state.samples.length || !overlayCtx) {
+            return;
+        }
+
+        overlayCtx.save();
+        overlayCtx.font = "bold 12px Arial";
+        overlayCtx.textAlign = "left";
+        overlayCtx.textBaseline = "top";
+        overlayCtx.fillStyle = "rgba(239, 68, 68, 0.92)";
+        overlayCtx.fillText(`제거 색상 ${state.samples.length}개 선택됨`, 12, 12);
+        overlayCtx.restore();
+    }
+
+    function updateRemoveColorCursor(pointerPos) {
+        state.lastPointerPos = pointerPos;
+
+        if (state.part !== 2 || !dom.eraserCursor || !dom.box) {
+            return;
+        }
+
+        const size = 28;
+        const scale = parseFloat(canvas.style.width) / state.width || 1;
+        const cursorSize = size * scale;
+
+        dom.eraserCursor.style.display = "block";
+        dom.eraserCursor.style.borderColor = "#ef4444";
+        dom.eraserCursor.style.width = `${cursorSize}px`;
+        dom.eraserCursor.style.height = `${cursorSize}px`;
+        dom.eraserCursor.style.transform = `translate(${pointerPos.x * scale - cursorSize / 2}px, ${pointerPos.y * scale - cursorSize / 2}px)`;
+        dom.box.classList.add("is-erasing");
+    }
+
+    function clearRemoveSamples() {
+        state.samples = [];
+        renderSamples();
+        extractSelectedColors({ recordHistory: true });
+        showToast("제거 색상 목록을 비웠습니다");
+    }
+
     function updateToolCursor(pointerPos) {
         state.lastPointerPos = pointerPos;
 
-        if (!(state.part === 3 && isToolModeActive())) {
+        if (!(state.part === 4 && isToolModeActive())) {
             hideToolCursor();
             return;
         }
@@ -1473,10 +1985,6 @@
         dom.box.classList.remove("is-erasing");
         state.lastPointerPos = null;
     }
-
-    /* =========================
-       Shared Algorithms
-    ========================= */
 
     function collectConnectedArea(startIndex, visited, predicate) {
         const queue = [startIndex];
@@ -1525,10 +2033,6 @@
         }
     }
 
-    /* =========================
-       Utils
-    ========================= */
-
     function loadImage(url, callback) {
         const image = new Image();
 
@@ -1542,6 +2046,114 @@
         target.width = width;
         target.height = height;
         return target;
+    }
+
+    function syncHoleValue() {
+        if (!dom.hole || !dom.holeValue) {
+            return;
+        }
+
+        dom.holeValue.textContent = dom.hole.value;
+    }
+
+    function normalizeHexColor(value, fallback = "#000000") {
+        const color = String(value || fallback).trim();
+
+        if (/^#[0-9a-fA-F]{6}$/.test(color)) {
+            return color.toLowerCase();
+        }
+
+        if (/^#[0-9a-fA-F]{3}$/.test(color)) {
+            return (
+                "#" +
+                color
+                    .slice(1)
+                    .split("")
+                    .map((value) => value + value)
+                    .join("")
+            ).toLowerCase();
+        }
+
+        return fallback.toLowerCase();
+    }
+
+    function getShapeColorHex() {
+        return normalizeHexColor(dom.shapeColor?.value || "#000000", "#000000");
+    }
+
+    function getShapeColorRgb() {
+        return hexToRgb(getShapeColorHex());
+    }
+
+    function getBackgroundColorHex() {
+        return normalizeHexColor(dom.backgroundColor?.value || FIXED_BACKGROUND_COLOR, FIXED_BACKGROUND_COLOR);
+    }
+
+    function getBackgroundColorRgb() {
+        return hexToRgb(getBackgroundColorHex());
+    }
+
+    function readStage1Settings() {
+        try {
+            const value = localStorage.getItem(STORAGE_KEYS.STAGE1_SETTINGS);
+            return value ? JSON.parse(value) : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function applySavedStage1Settings() {
+        const settings = readStage1Settings();
+
+        if (!settings) {
+            return;
+        }
+
+        if (dom.shapeColor && settings.shapeColor) {
+            dom.shapeColor.value = normalizeHexColor(settings.shapeColor, "#000000");
+        }
+
+        if (dom.backgroundColor && settings.backgroundColor) {
+            dom.backgroundColor.value = normalizeHexColor(settings.backgroundColor, FIXED_BACKGROUND_COLOR);
+        }
+
+        if (dom.tol && Number.isFinite(Number(settings.tolerance))) {
+            dom.tol.value = settings.tolerance;
+        }
+
+        if (dom.alpha && Number.isFinite(Number(settings.alpha))) {
+            dom.alpha.value = settings.alpha;
+        }
+
+        if (dom.hole && Number.isFinite(Number(settings.hole))) {
+            dom.hole.value = settings.hole;
+        }
+
+        if (Array.isArray(settings.removeSamples)) {
+            state.samples = settings.removeSamples
+                .map((value) => hexToRgb(normalizeHexColor(value, "#000000")))
+                .filter((value) => Number.isFinite(value.r) && Number.isFinite(value.g) && Number.isFinite(value.b));
+        }
+    }
+
+    function getStage1Settings() {
+        return {
+            mode: "remove-colors",
+            shapeColor: getShapeColorHex(),
+            backgroundColor: getBackgroundColorHex(),
+            removeSamples: state.samples.map((sample) => rgbToHex(sample)),
+            tolerance: getNumber(dom.tol, 45),
+            alpha: getNumber(dom.alpha, 100),
+            hole: getNumber(dom.hole, 0),
+            updatedAt: new Date().toISOString(),
+        };
+    }
+
+    function saveStage1Settings() {
+        localStorage.setItem(
+            STORAGE_KEYS.STAGE1_SETTINGS,
+            JSON.stringify(getStage1Settings())
+        );
     }
 
     function getNumber(element, fallback) {

@@ -8,7 +8,6 @@
 
     {{> admin/seatmap/layout/workspace-concert-stage1}}
 
-    <!-- 가운데: 메인 캔버스 + 공용 작업 도구 -->
     <main class="seatmap-main">
 
         <div class="seatmap-command-bar" aria-label="공용 작업 명령">
@@ -24,6 +23,12 @@
                 🔍 확대
             </button>
 
+            <button type="button" class="seatmap-command-btn" id="rotateTool" title="마우스를 누른 채 좌우로 드래그하면 이미지가 회전됩니다">
+                ⟳ 회전
+            </button>
+
+            <span class="seatmap-rotate-value" id="rotateValue">0°</span>
+
             <button type="button" class="seatmap-command-btn" id="zoomReset" title="확대 초기화">
                 100%
             </button>
@@ -33,7 +38,7 @@
 
         <div class="canvas-wrap">
             <div class="canvas-head">
-                <span id="title">원본 / 자르기</span>
+                <span id="title">원본 / 방향 / 자르기</span>
                 <span id="size">-</span>
             </div>
 
@@ -42,7 +47,6 @@
                 <canvas id="overlay"></canvas>
                 <div id="eraserCursor" class="eraser-cursor"></div>
 
-                <!-- Part2 색상 선택 확대경 -->
                 <div class="color-loupe" id="colorLoupe" aria-hidden="true">
                     <div class="color-loupe__lens">
                         <canvas id="loupeCanvas" width="132" height="132"></canvas>

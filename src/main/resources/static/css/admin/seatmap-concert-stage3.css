@@ -114,7 +114,7 @@
 
 .stage3-editor-card {
     z-index: 3;
-    margin-top: -34px;
+    margin-top: -70px;
 }
 
 .stage3-card-head {
@@ -142,7 +142,7 @@
 
 .stage3-mini-frame {
     position: relative;
-    height: 310px;
+    height: 360px;
     overflow: hidden;
     background: #ffffff;
     transition: height 0.16s ease, box-shadow 0.16s ease;
@@ -154,7 +154,7 @@
 }
 
 .stage3-map-card:hover .stage3-mini-frame {
-    height: 500px;
+    height: 560px;
     box-shadow: inset 0 0 0 1px rgba(124, 58, 237, 0.16);
 }
 
@@ -551,4 +551,13 @@
     font-size: 12px;
     font-weight: 800;
     line-height: 1.5;
+}
+
+#seatOverlay {
+    cursor: default;
+    pointer-events: auto;
+}
+
+.stage3-seat-editor.is-rotating #seatOverlay {
+    cursor: grabbing;
 }
