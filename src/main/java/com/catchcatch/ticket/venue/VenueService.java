@@ -5,17 +5,15 @@ import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.core.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 @Slf4j
@@ -35,16 +33,19 @@ public class VenueService {
     }
 
     public List<String> getSeatMapFiles() {
-        String dirPath = System.getProperty("user.dir") + "/src/main/resources/static/json/seatmap/";
-        File folder = new File(dirPath);
-        File[] files = folder.listFiles((dir, name) -> name.endsWith(".json"));
-
         List<String> filePaths = new ArrayList<>();
-        if (files != null) {
-            for (File file : files) {
-                // 웹 접근 경로 생성
-                filePaths.add("/json/seatmap/" + file.getName());
+        try {
+            ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+            Resource[] resources = resolver.getResources("classpath:static/json/seatmap/*.json");
+            
+            for (Resource resource : resources) {
+                String filename = resource.getFilename();
+                if (filename != null) {
+                    filePaths.add("/json/seatmap/" + filename);
+                }
             }
+        } catch (IOException e) {
+            log.error("Failed to load seatmap files from classpath", e);
         }
         return filePaths;
     }

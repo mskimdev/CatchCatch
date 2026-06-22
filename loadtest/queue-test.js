@@ -8,7 +8,7 @@ export const options = {
     scenarios: {
         queue_entry: {
             executor: 'per-vu-iterations',
-            vus: 200,
+            vus: 5000,
             iterations: 1,
             maxDuration: '5m',
         },
@@ -17,7 +17,7 @@ export const options = {
 
 export default function () {
     const userIndex = __VU;
-    const email = `loadtest${userIndex}@test.com`;
+    const email = `loadgen${userIndex}@test.com`;
     const password = 'ssar1234';
 
     const loginRes = http.post(

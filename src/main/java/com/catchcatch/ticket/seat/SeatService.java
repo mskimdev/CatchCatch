@@ -8,6 +8,8 @@ import com.catchcatch.ticket.venue.Venue;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -286,13 +288,13 @@ public class SeatService {
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
-        String absolutePath = System.getProperty("user.dir") + "/src/main/resources/static" + filePath;
 
+        // filePath = /json/seatmap/... → static/json/seatmap/...
+        String resourcePath = "static" + filePath;
         List<SeatRequest.SeatJsonDTO> jsonSeats;
         try {
-            File jsonFile = new File(absolutePath);
-            jsonSeats = objectMapper.readValue(jsonFile, new TypeReference<>() {
-            });
+            Resource resource = new ClassPathResource(resourcePath);
+            jsonSeats = objectMapper.readValue(resource.getInputStream(), new TypeReference<>() {});
         } catch (Exception e) {
             e.printStackTrace();
             throw new BadRequestException("새로운 도면 JSON 파일을 파싱하는 중 오류가 발생했습니다.");

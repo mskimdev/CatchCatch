@@ -3,6 +3,7 @@ package com.catchcatch.ticket.concert.controller;
 import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
 import com.catchcatch.ticket.concert.service.AdminConcertService;
+import com.catchcatch.ticket.systemlog.AdminLog;
 import com.catchcatch.ticket.venue.Venue;
 import com.catchcatch.ticket.venue.VenueRepository;
 import jakarta.validation.Valid;
@@ -56,12 +57,14 @@ public class AdminConcertController {
     }
 
     // 4. 공연 등록 기능 (폼 전송 유지 정책 반영)
+    @AdminLog("공연 등록 (#{#dto.title})")
     @PostMapping("/create")
     public String createConcert(
             @Valid @ModelAttribute AdminConcertRequest.CreateRequestDTO dto,
             RedirectAttributes rttr) {
 
         adminConcertService.createConcert(dto);
+
         rttr.addFlashAttribute("successMsg", "새 공연이 성공적으로 등록되었습니다.");
         return "redirect:/admin/concerts";
     }

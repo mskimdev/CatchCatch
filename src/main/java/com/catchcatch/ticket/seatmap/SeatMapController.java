@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.seatmap;
 
+import com.catchcatch.ticket.systemlog.AdminLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -51,6 +52,7 @@ public class SeatMapController {
     /**
      * Stage3 좌석 JSON 파일 저장
      */
+    @AdminLog("좌석 배치도 JSON 저장")
     @ResponseBody
     @PostMapping("json/save")
     public ResponseEntity<Map<String, String>> saveSeatMapJson(

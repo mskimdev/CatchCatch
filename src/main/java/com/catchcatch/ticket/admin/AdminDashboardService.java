@@ -4,12 +4,16 @@ import com.catchcatch.ticket.booking.BookingRepository;
 import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
+import com.catchcatch.ticket.core.log.InMemoryErrorLogAppender;
 import com.catchcatch.ticket.queue.QueueRepository;
 import com.catchcatch.ticket.seat.SeatRepository;
+import com.catchcatch.ticket.systemlog.SystemLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
@@ -24,6 +28,7 @@ public class AdminDashboardService {
     private final ConcertRepository concertRepository;
     private final SeatRepository seatRepository;
     private final QueueRepository queueRepository;
+    private final SystemLogService systemLogService;
 
     public AdminDashboardResponse.SummaryDTO getSummary(String periodParam) {
         DashboardPeriod period = DashboardPeriod.from(periodParam);
@@ -94,5 +99,26 @@ public class AdminDashboardService {
 
     private int calculateRate(long totalCount, long soldCount) {
         return totalCount == 0 ? 0 : (int) Math.round(soldCount * 100.0 / totalCount);
+    }
+
+    // 운영(관리자 활동) 로그 - DB에 영구 저장된 이력
+    public List<AdminDashboardResponse.OperationLogDTO> getOperationLogs() {
+        return systemLogService.findRecentLogs()
+                .stream()
+                .map(AdminDashboardResponse.OperationLogDTO::new)
+                .toList();
+    }
+
+    // 시스템 에러 - 메모리 버퍼에만 보관되는 휘발성 로그
+    public AdminDashboardResponse.SystemErrorStatsDTO getSystemErrorStats() {
+        Timestamp oneHourAgo = Timestamp.valueOf(LocalDateTime.now().minusHours(1));
+        long recentErrorCount = InMemoryErrorLogAppender.countSince(oneHourAgo);
+
+        List<AdminDashboardResponse.SystemErrorLogDTO> recentErrors = InMemoryErrorLogAppender.recentLogs()
+                .stream()
+                .map(e -> new AdminDashboardResponse.SystemErrorLogDTO(e.level(), e.message(), e.occurredAt()))
+                .toList();
+
+        return new AdminDashboardResponse.SystemErrorStatsDTO(recentErrorCount, recentErrors);
     }
 }
