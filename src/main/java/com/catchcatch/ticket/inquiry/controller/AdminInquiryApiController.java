@@ -4,6 +4,7 @@ import com.catchcatch.ticket.core.util.Resp;
 import com.catchcatch.ticket.inquiry.dto.InquiryRequest;
 import com.catchcatch.ticket.inquiry.service.InquiryService;
 import com.catchcatch.ticket.operationlog.AdminLog;
+import com.catchcatch.ticket.operationlog.OperationLogLevel;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,5 +22,12 @@ public class AdminInquiryApiController {
     public ResponseEntity<?> reply(@PathVariable Integer id, @RequestBody @Valid InquiryRequest.ReplyDTO reqDTO){
         inquiryService.reply(id, reqDTO);
         return Resp.ok(null);
+    }
+
+    @AdminLog(value = "문의 삭제 (id=#{#id})", level = OperationLogLevel.WARN)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable Integer id) {
+        inquiryService.deleteForAdmin(id);
+        return Resp.ok("문의가 삭제되었습니다.");
     }
 }

@@ -160,14 +160,6 @@ public class BookingService {
     public void cancel(Integer id) {
         Booking booking = findBooking(id);
 
-        if (Status.CANCELED.equals(booking.getStatus())) {
-            throw new BadRequestException("이미 취소된 예매입니다.");
-        }
-
-        if (Status.PAID.equals(booking.getStatus())) {
-            throw new BadRequestException("결제 완료된 예매는 환불 절차를 통해 취소해야 합니다.");
-        }
-
         cancelSoldSeats(booking);
         booking.cancel();
     }
