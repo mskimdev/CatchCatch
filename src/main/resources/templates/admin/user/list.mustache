@@ -25,6 +25,9 @@
                                     <th>회원ID</th>
                                     <th>아이디</th>
                                     <th>이메일</th>
+                                    <th>전화번호</th>
+                                    <th>포인트</th>
+                                    <th>권한</th>
                                     <th>가입일</th>
                                     <th>상태</th>
                                     <th>관리</th>
@@ -36,24 +39,70 @@
                                         <td>{{id}}</td>
                                         <td>{{username}}</td>
                                         <td>{{email}}</td>
+                                        <td>{{phone}}</td>
+                                        <td>{{point}}</td>
+                                        <td>{{role}}</td>
                                         <td>{{createdAt}}</td>
                                         <td>
                                             {{#isActive}}
                                                 <span class="badge badge-primary">정상</span>
                                             {{/isActive}}
                                             {{^isActive}}
-                                                <span class="badge badge-warning">정지</span>
+                                                <span class="badge badge-secondary">탈퇴</span>
                                             {{/isActive}}
                                         </td>
                                         <td>
-                                            <button class="btn btn-outline-warning btn-sm" onclick="toggleStatus({{id}})">상태변경</button>
-                                            <button class="btn btn-outline-danger btn-sm" onclick="deleteUser({{id}})">탈퇴</button>
+                                            {{#isActive}}
+                                                <button type="button" class="btn btn-outline-primary btn-sm js-edit-user"
+                                                        data-id="{{id}}" data-username="{{username}}" data-email="{{email}}"
+                                                        data-phone="{{phone}}" data-point="{{point}}">수정</button>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteUser({{id}})">탈퇴</button>
+                                            {{/isActive}}
+                                            {{^isActive}}
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" disabled>처리 완료</button>
+                                            {{/isActive}}
                                         </td>
                                     </tr>
                                 {{/users}}
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="userEditModal" tabindex="-1" role="dialog" aria-labelledby="userEditModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="userEditModalLabel">회원 정보 수정</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="닫기"><span aria-hidden="true">&times;</span></button>
+                        </div>
+                        <form id="userEditForm">
+                            <div class="modal-body">
+                                <input type="hidden" id="editUserId">
+                                <div class="form-group">
+                                    <label for="editUsername">아이디</label>
+                                    <input type="text" class="form-control" id="editUsername" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editEmail">이메일</label>
+                                    <input type="email" class="form-control" id="editEmail" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editPhone">전화번호</label>
+                                    <input type="text" class="form-control" id="editPhone">
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label for="editPoint">포인트</label>
+                                    <input type="number" class="form-control" id="editPoint" min="0" required>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                                <button type="submit" class="btn btn-primary">저장</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -67,20 +116,62 @@
                 $('#userTable').DataTable({
                     "language": { "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Korean.json" }
                 });
+
+                $('.js-edit-user').on('click', function() {
+                    const user = this.dataset;
+                    $('#editUserId').val(user.id);
+                    $('#editUsername').val(user.username);
+                    $('#editEmail').val(user.email);
+                    $('#editPhone').val(user.phone);
+                    $('#editPoint').val(user.point);
+                    $('#userEditModal').modal('show');
+                });
+
+                $('#userEditForm').on('submit', updateUser);
             });
 
-            function toggleStatus(id) {
-                if(confirm("회원 상태를 변경하시겠습니까?")) {
-                    // 추후 POST /admin/users/{id}/status 호출
-                    console.log("Toggle Status ID: " + id);
+            async function updateUser(event) {
+                event.preventDefault();
+                const id = $('#editUserId').val();
+                const payload = {
+                    username: $('#editUsername').val().trim(),
+                    email: $('#editEmail').val().trim(),
+                    phone: $('#editPhone').val().trim(),
+                    point: Number($('#editPoint').val())
+                };
+
+                CcUI.loading.show('회원 정보를 수정하고 있습니다...');
+                const { res, data } = await apiPut('/admin/api/users/' + id, payload);
+                CcUI.loading.hide();
+
+                if (!res || !res.ok) {
+                    CcUI.alert(data?.message || '회원 정보 수정에 실패했습니다.', 'error');
+                    return;
                 }
+
+                $('#userEditModal').modal('hide');
+                CcUI.alert('회원 정보가 수정되었습니다.', 'success', () => location.reload());
             }
 
             function deleteUser(id) {
-                if(confirm("정말 강제 탈퇴 처리하시겠습니까?")) {
-                    // 추후 DELETE /admin/users/{id} 호출
-                    console.log("Delete User ID: " + id);
-                }
+                CcUI.confirm({
+                    title: '회원 탈퇴 처리',
+                    text: '탈퇴 처리 후에는 해당 계정으로 다시 로그인할 수 없습니다.',
+                    confirmText: '탈퇴 처리',
+                    danger: true,
+                    onConfirm: async function() {
+                        CcUI.loading.show('탈퇴 처리 중입니다...');
+                        const { res, data } = await apiDelete('/admin/api/users/' + id);
+                        CcUI.loading.hide();
+
+                        if (!res || !res.ok) {
+                            CcUI.alert(data?.message || '회원 탈퇴 처리에 실패했습니다.', 'error');
+                            return;
+                        }
+
+                        CcUI.alert('회원이 탈퇴 처리되었습니다.', 'success', () => location.reload());
+                    }
+                });
             }
         </script>
     </div>

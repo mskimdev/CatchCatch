@@ -1,88 +1,132 @@
 {{> admin/layout/header}}
 
-<div class="container-fluid">
+<body id="page-top">
+<div id="wrapper">
+    {{> admin/layout/sidebar}}
 
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">배너 관리</h1>
-        <a href="/admin/banners/create" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-            <i class="fas fa-plus fa-sm text-white-50"></i> 새 배너 등록
-        </a>
-    </div>
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            {{> admin/layout/topbar}}
 
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">메인 페이지 배너 목록</h6>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                    <thead>
-                    <tr>
-                        <th>순서</th>
-                        <th>이미지(썸네일)</th>
-                        <th>메인 타이틀</th>
-                        <th>연결 링크</th>
-                        <th>상태</th>
-                        <th>관리</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {{#banners}}
-                        <tr>
-                            <td class="align-middle text-center">{{displayOrder}}</td>
-                            <td class="align-middle text-center">
-                                <img src="{{imageUrl}}" alt="배너 이미지" style="height: 50px; width: auto; object-fit: contain; border-radius: 4px;">
-                            </td>
-                            <td class="align-middle">
-                                <strong>{{title}}</strong><br>
-                                <small class="text-muted">{{eyebrow}} | {{highlight}}</small>
-                            </td>
-                            <td class="align-middle"><a href="{{linkUrl}}" target="_blank">{{linkUrl}}</a></td>
-                            <td class="align-middle text-center">
-                                {{#isActive}}
-                                    <span class="badge badge-success">활성 (노출중)</span>
-                                {{/isActive}}
-                                {{^isActive}}
-                                    <span class="badge badge-secondary">비활성 (숨김)</span>
-                                {{/isActive}}
-                            </td>
-                            <td class="align-middle text-center">
-                                <a href="/admin/banners/{{id}}/update" class="btn btn-warning btn-sm">수정</a>
-                                <button type="button" class="btn btn-danger btn-sm" onclick="deleteBanner({{id}})">삭제</button>
-                            </td>
-                        </tr>
-                    {{/banners}}
-                    {{^banners}}
-                        <tr>
-                            <td colspan="6" class="text-center">등록된 배너가 없습니다.</td>
-                        </tr>
-                    {{/banners}}
-                    </tbody>
-                </table>
+            <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h1 class="h3 mb-1 text-gray-800">배너 관리</h1>
+                        <p class="mb-0 text-muted small">메인 홈에 노출되는 프로모션 배너와 순서를 관리합니다.</p>
+                    </div>
+                    <a href="/admin/banners/create" class="btn btn-sm btn-primary shadow-sm mt-3 mt-sm-0">
+                        <i class="fas fa-plus fa-sm mr-1 text-white-50"></i>새 배너 등록
+                    </a>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-xl-4 col-md-6 mb-3 mb-xl-0">
+                        <div class="card admin-banner-summary shadow-sm h-100 py-3">
+                            <div class="card-body py-0 d-flex align-items-center justify-content-between">
+                                <div><div class="admin-banner-summary__label mb-2">전체 배너</div><div class="admin-banner-summary__value">{{bannerCount}}</div></div>
+                                <i class="fas fa-images fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-6 mb-3 mb-xl-0">
+                        <div class="card admin-banner-summary admin-banner-summary--active shadow-sm h-100 py-3">
+                            <div class="card-body py-0 d-flex align-items-center justify-content-between">
+                                <div><div class="admin-banner-summary__label mb-2">현재 노출</div><div class="admin-banner-summary__value">{{activeCount}}</div></div>
+                                <i class="fas fa-eye fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-6">
+                        <div class="card admin-banner-summary admin-banner-summary--inactive shadow-sm h-100 py-3">
+                            <div class="card-body py-0 d-flex align-items-center justify-content-between">
+                                <div><div class="admin-banner-summary__label mb-2">비노출</div><div class="admin-banner-summary__value">{{inactiveCount}}</div></div>
+                                <i class="fas fa-eye-slash fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">메인 배너 목록</h6>
+                        <small class="text-muted"><i class="fas fa-sort-amount-down mr-1"></i>노출 순서 기준</small>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" width="100%" cellspacing="0">
+                                <thead class="thead-light">
+                                <tr>
+                                    <th class="text-center border-0">순서</th>
+                                    <th class="border-0">배너 미리보기</th>
+                                    <th class="border-0">노출 문구</th>
+                                    <th class="border-0">연결</th>
+                                    <th class="text-center border-0">상태</th>
+                                    <th class="text-center border-0">관리</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#banners}}
+                                    <tr>
+                                        <td class="align-middle text-center"><span class="admin-banner-order">{{displayOrder}}</span></td>
+                                        <td class="align-middle">
+                                            <div class="admin-banner-thumb"><img src="{{imageUrl}}" alt="{{title}} 배너"></div>
+                                        </td>
+                                        <td class="align-middle admin-banner-copy">
+                                            <div class="admin-banner-copy__eyebrow mb-1">{{eyebrow}}</div>
+                                            <div class="admin-banner-copy__title mb-1">{{title}}</div>
+                                            <div class="admin-banner-copy__highlight">{{highlight}}</div>
+                                        </td>
+                                        <td class="align-middle">
+                                            <div class="small font-weight-bold text-gray-800 mb-1">{{buttonText}}</div>
+                                            <a class="small text-truncate d-inline-block" style="max-width: 180px" href="{{linkUrl}}" target="_blank" rel="noopener" title="{{linkUrl}}">
+                                                <i class="fas fa-link mr-1"></i>{{linkUrl}}
+                                            </a>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            {{#isActive}}<span class="badge badge-success px-2 py-1"><i class="fas fa-circle mr-1" style="font-size: 6px"></i>노출 중</span>{{/isActive}}
+                                            {{^isActive}}<span class="badge badge-secondary px-2 py-1">비노출</span>{{/isActive}}
+                                        </td>
+                                        <td class="align-middle text-center text-nowrap">
+                                            <a href="/admin/banners/{{id}}/update" class="btn btn-sm btn-outline-primary" title="수정"><i class="fas fa-pen"></i></a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger ml-1" onclick="deleteBanner({{id}})" title="삭제"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                {{/banners}}
+                                {{^banners}}
+                                    <tr><td colspan="6" class="text-center py-5"><i class="fas fa-image fa-2x text-gray-300 mb-3 d-block"></i><div class="text-gray-600 font-weight-bold">등록된 배너가 없습니다.</div><small class="text-muted">새 배너를 등록해 메인 화면을 구성해보세요.</small></td></tr>
+                                {{/banners}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+        {{> admin/layout/footer}}
     </div>
-
 </div>
+
 <script>
     function deleteBanner(bannerId) {
-        // 값을 콤마로 나열하지 않고, { } 객체 안에 Key: Value 형태로 묶어서 전달합니다!
         CcUI.confirm({
-            title: '정말 이 배너를 삭제하시겠습니까?',
-            text: '삭제된 데이터는 복구할 수 없습니다.',
-            danger: true, // 확인 버튼을 빨간색으로 만들어주는 팀 커스텀 옵션
+            title: '배너를 삭제하시겠습니까?',
+            text: '삭제한 배너는 복구할 수 없습니다.',
+            confirmText: '삭제',
+            danger: true,
             onConfirm: async () => {
-                // apiDelete 호출
-                const response = await apiDelete(`/api/admin/banners/${bannerId}`);
+                CcUI.loading.show('배너를 삭제하고 있습니다...');
+                const { res, data } = await apiDelete(`/api/admin/banners/${bannerId}`);
+                CcUI.loading.hide();
 
-                // 성공 시 새로고침
-                if (response) {
-                    CcUI.toast('배너가 성공적으로 삭제되었습니다.', 'success');
-                    setTimeout(() => location.reload(), 1000);
+                if (!res || !res.ok) {
+                    CcUI.alert(data?.message || data?.msg || '배너 삭제에 실패했습니다.', 'error');
+                    return;
                 }
+                CcUI.toast('배너가 삭제되었습니다.');
+                setTimeout(() => location.reload(), 700);
             }
         });
     }
 </script>
-
-{{> admin/layout/footer}}
+</body>
+</html>

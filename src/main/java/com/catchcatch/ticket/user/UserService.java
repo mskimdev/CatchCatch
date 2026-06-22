@@ -89,6 +89,10 @@ public class UserService {
         User user = userRepository.findByEmail(reqDTO.email())
                 .orElseThrow(() -> new BadRequestException("이메일 또는 비밀번호가 올바르지 않습니다."));
 
+        if (user.isDeleted()) {
+            throw new BadRequestException("탈퇴 처리된 회원입니다.");
+        }
+
         if (!passwordEncoder.matches(reqDTO.password(), user.getPassword())) {
             throw new BadRequestException("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
@@ -130,14 +134,22 @@ public class UserService {
                 .getClient(provider)
                 .getUserInfo(code);
 
-        return userRepository
+        User user = userRepository
                 .findByOauthProviderAndOauthId(userInfo.getProvider(), userInfo.getOauthId())
-                .orElseGet(() -> User.builder()
-                        .oauthProvider(userInfo.getProvider())
-                        .oauthId(userInfo.getOauthId())
-                        .email(userInfo.getEmail())
-                        .build()
-                );
+                .orElse(null);
+
+        if (user != null) {
+            if (user.isDeleted()) {
+                throw new BadRequestException("탈퇴 처리된 회원입니다.");
+            }
+            return user;
+        }
+
+        return User.builder()
+                .oauthProvider(userInfo.getProvider())
+                .oauthId(userInfo.getOauthId())
+                .email(userInfo.getEmail())
+                .build();
     }
 
     public List<Concert> findLikedConcertsByUser(Integer userId) {

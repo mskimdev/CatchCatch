@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.booking;
 
+import com.catchcatch.ticket.operationlog.AdminLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,6 +24,7 @@ public class AdminBookingController {
         return "admin/booking/list";
     }
 
+    @AdminLog("예매 취소 (id=#{#id})")
     @PostMapping("/{id}/cancel")
     public String cancelBooking(@PathVariable Integer id, RedirectAttributes rttr) {
         adminBookingService.cancelBooking(id);
