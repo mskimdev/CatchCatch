@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.admin;
 
+import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
@@ -74,4 +75,21 @@ public class AdminDashboardResponse {
             String round,
             long waitingCount
     ){}
+
+    public record SystemErrorStatsDTO(
+            long recentErrorCount,
+            List<SystemErrorLogDTO> recentErrors
+    ){}
+
+    public record SystemErrorLogDTO(
+            String level,
+            String message,
+            Timestamp occurredAt,
+            boolean isError,
+            boolean isWarn
+    ) {
+        public SystemErrorLogDTO(String level, String message, Timestamp occurredAt) {
+            this(level, message, occurredAt, "ERROR".equals(level), "WARN".equals(level));
+        }
+    }
 }

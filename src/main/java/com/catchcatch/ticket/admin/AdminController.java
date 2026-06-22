@@ -24,6 +24,8 @@ public class AdminController {
         model.addAttribute("pageTitle", "CatchCatch 대시보드");
         model.addAttribute("summary", adminDashboardService.getSummary(period));
         model.addAttribute("queueStats", adminDashboardService.getQueueStatus());
+        model.addAttribute("operationLogs", adminDashboardService.getOperationLogs());
+        model.addAttribute("systemErrorStats", adminDashboardService.getSystemErrorStats());
         return "admin/index";
     }
 
