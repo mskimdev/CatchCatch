@@ -29,14 +29,14 @@ public interface NotificationRepository extends JpaRepository<Notification, Inte
     long countUnreadByUserId(@Param("userId") Integer userId);
 
     // 특정 유저의 특정 알림 조회
-//    @Query("""
-//            select n
-//            from Notification n
-//            where n.id = :id
-//            and n.user.id = :userId
-//            """)
-//    Optional<Notification> findByIdAndUserId(
-//            @Param("id") Integer id,
-//            @Param("userId") Integer userId
-//    );
+    @Query("""
+            select n
+            from Notification n
+            where n.id = :id
+            and n.user.id = :userId
+            """)
+    Optional<Notification> findByIdAndUserId(
+            @Param("id") Integer id,
+            @Param("userId") Integer userId
+    );
 }

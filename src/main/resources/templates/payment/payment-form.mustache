@@ -152,16 +152,16 @@
             <div class="cc-price-box__row">
                 <span>티켓 금액</span>
                 <b>
-                    {{#payment.ticketPriceText}}{{payment.ticketPriceText}}{{/payment.ticketPriceText}}
-                    {{^payment.ticketPriceText}}308,000원{{/payment.ticketPriceText}}
+                    {{#payment.originalAmountText}}{{payment.originalAmountText}}{{/payment.originalAmountText}}
+                    {{^payment.originalAmountText}}308,000원{{/payment.originalAmountText}}
                 </b>
             </div>
 
             <div class="cc-price-box__row">
                 <span>예매 수수료</span>
                 <b>
-                    {{#payment.feeText}}{{payment.feeText}}{{/payment.feeText}}
-                    {{^payment.feeText}}0원{{/payment.feeText}}
+                    {{#payment.ticketFeeText}}{{payment.ticketFeeText}}{{/payment.ticketFeeText}}
+                    {{^payment.ticketFeeText}}0원{{/payment.ticketFeeText}}
                 </b>
             </div>
 
@@ -190,7 +190,8 @@
                            inputmode="numeric"
                            autocomplete="off"
                            data-user-point="{{payment.userPoint}}"
-                           data-original-amount="{{payment.totalPrice}}">
+                           data-original-amount="{{payment.originalAmount}}"
+                           data-ticket-fee="{{payment.ticketFee}}">
 
                     <button type="button" id="btnUseMaxPoint">
                         최대
@@ -206,8 +207,8 @@
             <div class="cc-payment-total">
                 <span>최종 결제 금액</span>
                 <strong class="cc-total__price" id="finalAmountText">
-                    {{#payment.totalPriceText}}{{payment.totalPriceText}}{{/payment.totalPriceText}}
-                    {{^payment.totalPriceText}}308,000원{{/payment.totalPriceText}}
+                    {{#payment.amountText}}{{payment.amountText}}{{/payment.amountText}}
+                    {{^payment.amountText}}308,000원{{/payment.amountText}}
                 </strong>
             </div>
 

@@ -275,6 +275,7 @@ function initPointUse() {
 
     const userPoint = toSafeNumber(usedPointInput.dataset.userPoint);
     const originalAmount = toSafeNumber(usedPointInput.dataset.originalAmount);
+    const ticketFee = toSafeNumber(usedPointInput.dataset.ticketFee);
     const maxUsablePoint = Math.min(userPoint, originalAmount);
 
     usedPointInput.max = maxUsablePoint;
@@ -292,7 +293,7 @@ function initPointUse() {
 
         usedPointInput.value = usedPoint;
 
-        const finalAmount = originalAmount - usedPoint;
+        const finalAmount = originalAmount +ticketFee - usedPoint;
 
         usedPointText.textContent = "-" + formatPoint(usedPoint);
         finalAmountText.textContent = formatWon(finalAmount);

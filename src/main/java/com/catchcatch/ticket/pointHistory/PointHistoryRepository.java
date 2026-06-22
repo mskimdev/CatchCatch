@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.point;
 
+import com.catchcatch.ticket.payment.Payment;
 import com.catchcatch.ticket.pointHistory.PointHistory;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 public interface PointHistoryRepository extends JpaRepository<PointHistory, Integer> {
 
@@ -95,4 +97,12 @@ public interface PointHistoryRepository extends JpaRepository<PointHistory, Inte
             @Param("now") Timestamp now,
             @Param("thirtyDaysLater") Timestamp thirtyDaysLater
     );
+
+    @Query("""
+    select ph
+    from PointHistory ph
+    where ph.payment = :payment
+      and ph.type = PointHistoryType.USE
+""")
+    List<PointHistory> findUseHistoryByPayment(@Param("payment") Payment payment);
 }

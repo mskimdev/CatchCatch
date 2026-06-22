@@ -113,6 +113,30 @@
 
     </div>
 </div>
-
+<!-- 환불 모달 (body 끝 부분에 위치) -->
+<div id="refundModal" class="cc-modal-overlay" style="display: none;">
+    <div class="cc-modal-content">
+        <div class="cc-modal-header">
+            <h3>결제 취소 및 환불</h3>
+        </div>
+        <div class="cc-modal-body">
+            <div class="cc-refund-info-box">
+                <p><strong>공연 남은 기간:</strong> <span class="cc-highlight">{{payment.daysUntilSession}}일</span></p>
+                <p><strong>결제 경과일:</strong> {{payment.daysSincePayment}}일</p>
+            </div>
+            <form id="refundForm">
+                <input type="hidden" id="targetPaymentId" value="{{payment.paymentId}}">
+                <div class="cc-form-group">
+                    <label for="refundReason">취소 사유</label>
+                    <textarea id="refundReason" name="reason" rows="3" placeholder="취소 사유를 입력해주세요" required></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="cc-modal-footer">
+            <button type="button" class="btn btn-outline" id="btnCancelRefund">닫기</button>
+            <button type="button" class="btn btn-danger" id="btnSubmitRefund">환불 확정하기</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
