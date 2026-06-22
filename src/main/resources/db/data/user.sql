@@ -38,7 +38,7 @@ VALUES
     ('ssar',
      '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK',
      'ssar@naver.com',
-     '010-1234-5678',
+     '010-5729-1754',
      NULL, 'LOCAL', 'USER', 0 , NOW(), false);
 
 -- ================

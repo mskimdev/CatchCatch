@@ -2,6 +2,7 @@ package com.catchcatch.ticket.pointHistory;
 
 import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.eventhistory.EventHistory;
+import com.catchcatch.ticket.notification.service.NotificationDispatcher;
 import com.catchcatch.ticket.payment.Payment;
 import com.catchcatch.ticket.payment.PaymentResponse;
 import com.catchcatch.ticket.user.User;
@@ -20,6 +21,7 @@ import java.util.List;
 public class PointService {
 
     private final com.catchcatch.ticket.point.PointHistoryRepository pointHistoryRepository;
+    private final NotificationDispatcher notificationDispatcher;
 
     /**
      * 이벤트 참여 포인트 적립
@@ -57,6 +59,8 @@ public class PointService {
                 .build();
 
         pointHistoryRepository.save(pointHistory);
+
+        notificationDispatcher.dispatchPointEarned(user, rewardPoint);
 
         return user.getPoint();
     }
@@ -167,6 +171,7 @@ public class PointService {
 
         if (totalExpiredAmount > 0) {
             user.usePoint(totalExpiredAmount);
+            notificationDispatcher.dispatchPointExpired(user, totalExpiredAmount);
         }
     }
 

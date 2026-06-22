@@ -2,6 +2,7 @@ package com.catchcatch.ticket.refund;
 
 import com.catchcatch.ticket.booking.BookingService;
 import com.catchcatch.ticket.core.exception.BadRequestException;
+import com.catchcatch.ticket.notification.service.NotificationDispatcher;
 import com.catchcatch.ticket.payment.*;
 import com.catchcatch.ticket.pointHistory.PointHistory;
 import com.catchcatch.ticket.pointHistory.PointHistoryType;
@@ -22,6 +23,7 @@ public class RefundService {
     private final BookingService bookingService;
     private final com.catchcatch.ticket.point.PointHistoryRepository pointHistoryRepository;
     private final PortOneService portOneService;
+    private final NotificationDispatcher notificationDispatcher;
 
     /**
      * 환불 처리
@@ -117,6 +119,8 @@ public class RefundService {
                 .build();
 
         Refund savedRefund = refundRepository.save(refund);
+
+        notificationDispatcher.dispatchBookingCanceled(payment.getBooking());
 
         return new RefundResponse.DetailDTO(savedRefund, actualRefundedPoint);
 

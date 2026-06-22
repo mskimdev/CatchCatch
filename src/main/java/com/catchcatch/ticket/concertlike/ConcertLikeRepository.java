@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.concertlike;
 
+import com.catchcatch.ticket.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,4 +29,8 @@ public interface ConcertLikeRepository extends JpaRepository<ConcertLike, Intege
             ORDER BY cl.createdAt DESC
             """)
     List<ConcertLike> findAllWithConcertByUserId(@Param("userId") Integer userId);
+
+    // 특정 공연을 찜한 유저 목록 (예매 오픈 알림 발송용)
+    @Query("SELECT cl.user FROM ConcertLike cl WHERE cl.concert.id = :concertId")
+    List<User> findUsersByConcertId(@Param("concertId") Integer concertId);
 }

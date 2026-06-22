@@ -26,13 +26,21 @@
         </div>
 
         <div class="cc-notification-dropdown__tabs">
-            <button type="button" class="active">알림</button>
-            <button type="button" disabled>대화</button>
+            <button type="button" class="active" data-tab="notification">알림</button>
+            <button type="button" data-tab="chat">대화</button>
         </div>
 
-        <div class="cc-notification-dropdown__filters">
-            <button type="button" class="active">전체</button>
-            <button type="button">1:1 문의</button>
+        <div class="cc-notification-dropdown__filters" data-tab-panel="notification">
+            <button type="button" class="active" data-filter="ALL">전체</button>
+            <button type="button" data-filter="BOOKING_CONFIRMED">예매완료</button>
+            <button type="button" data-filter="BOOKING_CANCELED">예매취소</button>
+            <button type="button" data-filter="POINT_EARNED,POINT_EXPIRED">포인트</button>
+            <button type="button" data-filter="CONCERT_OPENED">공연오픈</button>
+            <button type="button" data-filter="INQUIRY_REPLY">1:1 문의</button>
+        </div>
+
+        <div class="cc-notification-dropdown__filters" data-tab-panel="chat" style="display:none;">
+            <button type="button" class="active" data-filter="CHAT_REPLY">1:1 채팅</button>
         </div>
 
         <div id="notification-list" class="cc-notification-dropdown__list">
