@@ -32,8 +32,16 @@
 
                             <div class="row">
                                 <div class="col-md-4 form-group">
-                                    <label>공연장 ID</label>
-                                    <input type="number" name="venueId" class="form-control" value="1" required>
+                                    <label>공연장 선택</label>
+                                    <select name="venueId" class="form-control">
+                                        {{#venueList}}
+                                            <option value="{{id}}">{{name}}</option>
+                                        {{/venueList}}
+                                        {{^venueList}}
+                                            <option value="1">올림픽공원 체조경기장 (기본값)</option>
+                                            <option value="2">KSPO DOME</option>
+                                        {{/venueList}}
+                                    </select>
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label>장르</label>
