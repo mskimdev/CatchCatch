@@ -10,6 +10,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.common.TemplateParserContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
@@ -21,7 +22,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @RequiredArgsConstructor
 public class AdminLogAspect {
 
-    private static final String UNKNOWN_ACTOR = "알 수 없음";
+    private static final String UNKNOWN_ACTOR = "Unknown";
 
     private final SystemLogService systemLogService;
     private final ExpressionParser expressionParser = new SpelExpressionParser();
@@ -44,7 +45,7 @@ public class AdminLogAspect {
         for (int i = 0; i < paramNames.length; i++) {
             context.setVariable(paramNames[i], args[i]);
         }
-        return expressionParser.parseExpression(template, new org.springframework.expression.common.TemplateParserContext())
+        return expressionParser.parseExpression(template, new TemplateParserContext())
                 .getValue(context, String.class);
     }
 
