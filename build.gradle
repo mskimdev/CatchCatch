@@ -29,6 +29,11 @@ dependencies {
     // AOP (운영 로그 등)
     implementation 'org.springframework.boot:spring-boot-starter-aop'
 
+    // Redis (대기열)
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    // 로컬 개발 전용: 별도 Redis 서버 설치 없이 앱 기동 시 자동으로 내장 Redis 실행
+    implementation 'com.github.codemonstur:embedded-redis:1.4.3'
+
     // CoolSMS
     implementation 'com.solapi:sdk:1.0.3'
 
