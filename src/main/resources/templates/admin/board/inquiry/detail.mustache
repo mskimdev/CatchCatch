@@ -50,9 +50,15 @@
                 <!-- 페이지 제목 -->
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800">문의 답변</h1>
-                    <a href="/admin/boards/inquiry" class="btn btn-sm btn-secondary shadow-sm">
-                        <i class="fas fa-list fa-sm"></i> 목록으로
-                    </a>
+                    <div>
+                        <button type="button" class="btn btn-sm btn-outline-danger shadow-sm mr-1"
+                                onclick="deleteInquiry({{#inquiry}}{{id}}{{/inquiry}})">
+                            <i class="fas fa-trash fa-sm"></i> 문의 삭제
+                        </button>
+                        <a href="/admin/boards/inquiry" class="btn btn-sm btn-secondary shadow-sm">
+                            <i class="fas fa-list fa-sm"></i> 목록으로
+                        </a>
+                    </div>
                 </div>
 
                 {{#inquiry}}
@@ -214,6 +220,28 @@
             if (sessionStorage.getItem('replySuccess')) {
                 sessionStorage.removeItem('replySuccess');
                 CcUI.toast('답변이 등록되었습니다.');
+            }
+
+            function deleteInquiry(id) {
+                CcUI.confirm({
+                    title: '문의를 삭제하시겠습니까?',
+                    text: '삭제된 문의와 답변은 복구할 수 없습니다.',
+                    confirmText: '삭제',
+                    danger: true,
+                    onConfirm: async () => {
+                        CcUI.loading.show('문의를 삭제하고 있습니다...');
+                        const { res, data } = await apiDelete(`/api/admin/boards/inquiry/${id}`);
+                        CcUI.loading.hide();
+
+                        if (!res || !res.ok) {
+                            CcUI.alert(data?.message || data?.msg || '문의 삭제 중 오류가 발생했습니다.', 'error');
+                            return;
+                        }
+
+                        sessionStorage.setItem('inquiryDeleteSuccess', '1');
+                        location.href = '/admin/boards/inquiry';
+                    }
+                });
             }
 </script>
     </div>

@@ -2,6 +2,7 @@ package com.catchcatch.ticket.refund;
 
 import com.catchcatch.ticket.booking.BookingService;
 import com.catchcatch.ticket.core.exception.BadRequestException;
+import com.catchcatch.ticket.notification.service.NotificationDispatcher;
 import com.catchcatch.ticket.payment.*;
 import com.catchcatch.ticket.pointHistory.PointHistory;
 import com.catchcatch.ticket.pointHistory.PointHistoryType;
@@ -22,6 +23,7 @@ public class RefundService {
     private final BookingService bookingService;
     private final com.catchcatch.ticket.point.PointHistoryRepository pointHistoryRepository;
     private final PortOneService portOneService;
+    private final NotificationDispatcher notificationDispatcher;
 
     /**
      * 환불 처리
@@ -48,20 +50,20 @@ public class RefundService {
         int pgPaidAmount = payment.getAmount(); // 포트원 실결제한 금액
         int usedPoint = payment.getUsedPoint() != null ? payment.getUsedPoint() : 0; // 사용한 포인트
 
-        // 1. 우선 현금 결제액에서 수수료를 차감합니다.
+        // 1. 현금 결제액에서 수수료를 차감
         int refundAmount = pgPaidAmount - cancelFee;
-        int refundPointTarget = usedPoint; // 환불해 줄 포인트 대상 금액
+        int refundPoint = usedPoint; // 환불해 줄 포인트 대상 금액
 
         // 2. [예외 처리] 만약 수수료가 너무 비싸서 현금 환불액이 마이너스가 된다면?
         if (refundAmount < 0) {
             // 모자란 수수료만큼을 포인트 환불액에서 깎아냅니다.
-            refundPointTarget += refundAmount; // refundAmount가 음수이므로 더하면 차감됩니다.
+            refundPoint += refundAmount; // refundAmount가 음수이므로 더하면 차감됩니다.
             refundAmount = 0; // 현금 환불액은 최소 0원
         }
 
         // 포인트 환불 최종 하한선 보장
-        if (refundPointTarget < 0) {
-            refundPointTarget = 0;
+        if (refundPoint < 0) {
+            refundPoint = 0;
         }
 
         // 3. 포트원 환불 진행 (refundAmount 만큼 취소 요청)
@@ -78,15 +80,15 @@ public class RefundService {
 
     // 4. 포인트 환불 진행 (refundPointTarget 만큼 반복문 돌며 만료일 체크 후 적립)
         int actualRefundedPoint = 0;
-        if (usedPoint > 0 && refundPointTarget > 0) {
+        if (usedPoint > 0 && refundPoint > 0) {
             List<PointHistory> useHistories = pointHistoryRepository.findUseHistoryByPayment(payment);
             Timestamp now = new Timestamp(System.currentTimeMillis());
 
             for (PointHistory useHistory : useHistories) {
-                if (refundPointTarget <= 0) break;
+                if (refundPoint <= 0) break;
 
                 int historyUsedAmount = Math.abs(useHistory.getAmount());
-                int restoreAmount = Math.min(historyUsedAmount, refundPointTarget);
+                int restoreAmount = Math.min(historyUsedAmount, refundPoint);
 
                 // 만료일이 아직 안 지났다면 포인트 부활 및 유저 잔액 합산
                 if (useHistory.getExpiredAt() != null && useHistory.getExpiredAt().after(now)) {
@@ -104,7 +106,7 @@ public class RefundService {
                     payment.getBooking().getUser().addPoint(restoreAmount); // 유저 지갑에 충전
                     actualRefundedPoint += restoreAmount;
                 }
-                refundPointTarget -= restoreAmount;
+                refundPoint -= restoreAmount;
             }
         }
 
@@ -117,6 +119,8 @@ public class RefundService {
                 .build();
 
         Refund savedRefund = refundRepository.save(refund);
+
+        notificationDispatcher.dispatchBookingCanceled(payment.getBooking());
 
         return new RefundResponse.DetailDTO(savedRefund, actualRefundedPoint);
 

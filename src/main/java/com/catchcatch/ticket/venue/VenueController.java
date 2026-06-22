@@ -2,6 +2,7 @@
 package com.catchcatch.ticket.venue;
 
 import com.catchcatch.ticket.core.util.Resp;
+import com.catchcatch.ticket.operationlog.AdminLog;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -50,6 +51,7 @@ public class VenueController {
     }
 
     // 관리자 공연장 등록 처리
+    @AdminLog("공연장 등록 (#{#dto.name})")
     @PostMapping("/admin/venues/save")
     public String venueSaveProc(@Valid @ModelAttribute VenueRequest.SaveDTO dto) {
         venueService.save(dto);
@@ -57,6 +59,7 @@ public class VenueController {
     }
 
     // 관리자 공연장 삭제 처리
+    @AdminLog("공연장 삭제 (id=#{#id})")
     @DeleteMapping("/api/venues/{id}")
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         venueService.deleteById(id);
@@ -64,6 +67,7 @@ public class VenueController {
     }
 
     // 공연장 수정 처리
+    @AdminLog("공연장 수정 (id=#{#id})")
     @PutMapping("/api/venues/{id}")
     public ResponseEntity<?> updateVenue(
             @PathVariable Integer id,

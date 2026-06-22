@@ -1,6 +1,6 @@
 package com.catchcatch.ticket.booking;
 
-import com.catchcatch.ticket.systemlog.AdminLog;
+import com.catchcatch.ticket.operationlog.AdminLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

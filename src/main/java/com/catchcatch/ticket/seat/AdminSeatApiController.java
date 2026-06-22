@@ -2,7 +2,7 @@ package com.catchcatch.ticket.seat;
 
 import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.core.util.Resp;
-import com.catchcatch.ticket.systemlog.AdminLog;
+import com.catchcatch.ticket.operationlog.AdminLog;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

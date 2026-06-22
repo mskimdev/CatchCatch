@@ -1,11 +1,11 @@
-package com.catchcatch.ticket.notification;
+package com.catchcatch.ticket.notification.sender;
 
 import lombok.Builder;
 import lombok.Getter;
 
 @Builder
 @Getter
-public class NotificationMessage {
+public class MessagePayload {
     private String to;
     private String subject;
     private String content;

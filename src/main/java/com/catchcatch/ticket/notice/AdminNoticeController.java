@@ -2,7 +2,7 @@ package com.catchcatch.ticket.notice;
 
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.Resp;
-import com.catchcatch.ticket.systemlog.AdminLog;
+import com.catchcatch.ticket.operationlog.AdminLog;
 import com.catchcatch.ticket.user.dto.SessionUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

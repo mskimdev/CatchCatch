@@ -97,16 +97,23 @@
             자세한 내용은 취소/환불 안내를 확인해주세요.
         </div>
 
+        <div style="background: #f4f4f4; padding: 10px; margin-bottom: 10px; font-size: 12px;">
+            데이터 확인: <br>
+            결제상태: {{payment.statusLabel}} (원래 상태값: {{payment.status}}) <br>
+            공연까지 남은 일수: {{payment.daysUntilSession}}일 <br>
+            결제후 경과일수: {{payment.daysSincePayment}}일
+        </div>
+
         <div class="button-area">
             <button type="button" class="btn btn-outline" onclick="window.print()">인쇄</button>
 
-            {{#payment.canRefund}}
+            {{#payment.cancelable}}
                 <button type="button"
                         class="btn btn-danger"
-                        onclick="location.href='/refunds/new?paymentId={{payment.id}}'">
-                환불 신청
+                        onclick="document.getElementById('refundModal').style.display='flex'">
+                    환불 신청
                 </button>
-            {{/payment.canRefund}}
+            {{/payment.cancelable}}
 
             <button type="button" class="btn btn-primary" onclick="window.close()">닫기</button>
         </div>
@@ -133,10 +140,64 @@
             </form>
         </div>
         <div class="cc-modal-footer">
-            <button type="button" class="btn btn-outline" id="btnCancelRefund">닫기</button>
+            <button type="button" class="btn btn-outline" id="btnCancelRefund"
+                    onclick="document.getElementById('refundModal').style.display='none'">닫기</button>
             <button type="button" class="btn btn-danger" id="btnSubmitRefund">환불 확정하기</button>
         </div>
     </div>
 </div>
 </body>
 </html>
+<script>
+    document.getElementById('btnSubmitRefund').addEventListener('click', function() {
+        const paymentId = document.getElementById('targetPaymentId').value;
+        const reason = document.getElementById('refundReason').value;
+
+        if (!reason.trim()) {
+            alert('취소 사유를 입력해주세요.');
+            return;
+        }
+
+        // 서버로 보낼 데이터 (예: 부분 환불액을 10000원으로 고정하거나, input을 만들어 유동적으로 변경 가능)
+        const requestData = {
+            paymentId: paymentId,
+            amount: 10000, // 👈 실제 서비스에서는 사용자가 입력한 금액이나 티켓 환불 규정 금액 계산값 대입
+            reason: reason
+        };
+
+        // 로딩 표시 및 버튼 비활성화
+        this.disabled = true;
+        this.innerText = '처리 중...';
+
+        // 백엔드 컨트롤러 호출
+        fetch(`/api/payments/${paymentId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('환불 처리가 성공적으로 완료되었습니다.');
+                window.close(); // 성공 시 팝업창 닫기
+                if (window.opener) {
+                    window.opener.location.reload(); // 부모 창(마이페이지 등) 새로고침
+                }
+            } else {
+                response.text().then(errorMessage => {
+                    alert('환불 실패: ' + errorMessage);
+                });
+                // 버튼 원상복구
+                this.disabled = false;
+                this.innerText = '환불 확정하기';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('네트워크 오류가 발생했습니다.');
+            this.disabled = false;
+            this.innerText = '환불 확정하기';
+        });
+    });
+</script>

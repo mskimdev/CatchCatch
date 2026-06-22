@@ -65,7 +65,7 @@ public class GlobalExceptionHandler {
 
         // API 요청은 JSON, 일반 요청은 SweetAlert2 페이지 반환
         String uri = request.getRequestURI();
-        if (uri.startsWith("/api/")) {
+        if (uri.startsWith("/api/") || uri.startsWith("/admin/api/")) {
             return "{\"message\":\"" + message.replace("\"", "\\\"") + "\"}";
         }
 

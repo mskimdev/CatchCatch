@@ -1,4 +1,4 @@
-package com.catchcatch.ticket.systemlog;
+package com.catchcatch.ticket.operationlog;
 
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.user.dto.SessionUser;
@@ -24,7 +24,7 @@ public class AdminLogAspect {
 
     private static final String UNKNOWN_ACTOR = "Unknown";
 
-    private final SystemLogService systemLogService;
+    private final OperationLogService operationLogService;
     private final ExpressionParser expressionParser = new SpelExpressionParser();
 
     @Around("@annotation(adminLog)")
@@ -33,7 +33,7 @@ public class AdminLogAspect {
 
         String actor = resolveActor();
         String detail = resolveMessage(joinPoint, adminLog.value());
-        systemLogService.log(adminLog.level(), actor, "관리자 '" + actor + "' " + detail);
+        operationLogService.log(adminLog.level(), actor, "관리자 '" + actor + "' " + detail);
 
         return result;
     }

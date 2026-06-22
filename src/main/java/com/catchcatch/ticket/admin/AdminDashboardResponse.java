@@ -1,7 +1,7 @@
 package com.catchcatch.ticket.admin;
 
 import com.catchcatch.ticket.core.util.DateUtil;
-import com.catchcatch.ticket.systemlog.SystemLog;
+import com.catchcatch.ticket.operationlog.OperationLog;
 
 import java.sql.Timestamp;
 import java.text.NumberFormat;
@@ -102,12 +102,12 @@ public class AdminDashboardResponse {
             String message,
             String createdAt
     ) {
-        public OperationLogDTO(SystemLog systemLog) {
+        public OperationLogDTO(OperationLog operationLog) {
             this(
-                    systemLog.getLevel().name(),
-                    systemLog.getActor(),
-                    systemLog.getMessage(),
-                    DateUtil.formatDateTime(systemLog.getCreatedAt())
+                    operationLog.getLevel().name(),
+                    operationLog.getActor(),
+                    operationLog.getMessage(),
+                    DateUtil.formatDateTime(operationLog.getCreatedAt())
             );
         }
     }

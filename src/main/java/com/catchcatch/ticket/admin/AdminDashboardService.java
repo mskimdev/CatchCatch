@@ -6,8 +6,8 @@ import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.core.log.InMemoryErrorLogAppender;
 import com.catchcatch.ticket.queue.QueueRepository;
+import com.catchcatch.ticket.operationlog.OperationLogService;
 import com.catchcatch.ticket.seat.SeatRepository;
-import com.catchcatch.ticket.systemlog.SystemLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +28,7 @@ public class AdminDashboardService {
     private final ConcertRepository concertRepository;
     private final SeatRepository seatRepository;
     private final QueueRepository queueRepository;
-    private final SystemLogService systemLogService;
+    private final OperationLogService operationLogService;
 
     public AdminDashboardResponse.SummaryDTO getSummary(String periodParam) {
         DashboardPeriod period = DashboardPeriod.from(periodParam);
@@ -103,7 +103,7 @@ public class AdminDashboardService {
 
     // 운영(관리자 활동) 로그 - DB에 영구 저장된 이력
     public List<AdminDashboardResponse.OperationLogDTO> getOperationLogs() {
-        return systemLogService.findRecentLogs()
+        return operationLogService.findRecentLogs()
                 .stream()
                 .map(AdminDashboardResponse.OperationLogDTO::new)
                 .toList();
