@@ -31,10 +31,12 @@ public class SeatJdbcRepository {
                 ps.setString(3,seat.getSectionName());
                 ps.setString(4, seat.getSeatRow());
                 ps.setInt(5, seat.getSeatCol());
-                ps.setString(6, seat.getSeatNumber());
-                ps.setString(7, seat.getGrade().name());
-                ps.setInt(8, seat.getPrice());
-                ps.setString(9, seat.getStatus().name());
+                ps.setInt(6, seat.getXLabel());
+                ps.setInt(7, seat.getYLabel());
+                ps.setString(8, seat.getSeatNumber());
+                ps.setString(9, seat.getGrade().name());
+                ps.setInt(10, seat.getPrice());
+                ps.setString(11, seat.getStatus().name());
             }
 
             @Override
