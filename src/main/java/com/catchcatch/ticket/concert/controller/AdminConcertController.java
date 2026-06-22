@@ -3,10 +3,7 @@ package com.catchcatch.ticket.concert.controller;
 import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
 import com.catchcatch.ticket.concert.service.AdminConcertService;
-import com.catchcatch.ticket.core.util.Define;
-import com.catchcatch.ticket.systemlog.SystemLogLevel;
-import com.catchcatch.ticket.systemlog.SystemLogService;
-import com.catchcatch.ticket.user.dto.SessionUser;
+import com.catchcatch.ticket.systemlog.AdminLog;
 import com.catchcatch.ticket.venue.Venue;
 import com.catchcatch.ticket.venue.VenueRepository;
 import jakarta.validation.Valid;
@@ -25,7 +22,6 @@ public class AdminConcertController {
 
     private final AdminConcertService adminConcertService;
     private final VenueRepository venueRepository;
-    private final SystemLogService systemLogService;
 
     // 1. 공연 목록 페이지 조회 (화면)
     @GetMapping
@@ -61,16 +57,13 @@ public class AdminConcertController {
     }
 
     // 4. 공연 등록 기능 (폼 전송 유지 정책 반영)
+    @AdminLog("공연 등록 (#{#dto.title})")
     @PostMapping("/create")
     public String createConcert(
             @Valid @ModelAttribute AdminConcertRequest.CreateRequestDTO dto,
-            @SessionAttribute(name = Define.SESSION_USER, required = false) SessionUser sessionUser,
             RedirectAttributes rttr) {
 
         adminConcertService.createConcert(dto);
-
-        String actor = sessionUser != null ? sessionUser.getUsername() : "알 수 없음";
-        systemLogService.log(SystemLogLevel.INFO, actor, "관리자 '" + actor + "' 공연 등록 (" + dto.title() + ")");
 
         rttr.addFlashAttribute("successMsg", "새 공연이 성공적으로 등록되었습니다.");
         return "redirect:/admin/concerts";

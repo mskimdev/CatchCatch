@@ -2,6 +2,7 @@ package com.catchcatch.ticket.seat;
 
 import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.core.util.Resp;
+import com.catchcatch.ticket.systemlog.AdminLog;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ public class AdminSeatApiController {
     // description = "그리드 에디터에서 파싱된 JSON 배열을 받아
     // Batch Insert를 수행합니다.")
 
+    @AdminLog("회차 좌석 일괄 생성 (sessionId=#{#sessionId})")
     @PostMapping
     public ResponseEntity<Resp<String>> setupSessionSeats(
             @PathVariable Integer sessionId){

@@ -54,4 +54,4 @@ SELECT
     'loadgen' || x || '@test.com',
     '010-0000-0000',
     NULL, 'LOCAL', 'USER', 0, NOW(), false
-FROM SYSTEM_RANGE(1, 30000) AS t(x);
+FROM SYSTEM_RANGE(1, 5000) AS t(x);

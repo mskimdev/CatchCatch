@@ -7,7 +7,6 @@ import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.core.log.InMemoryErrorLogAppender;
 import com.catchcatch.ticket.queue.QueueRepository;
 import com.catchcatch.ticket.seat.SeatRepository;
-import com.catchcatch.ticket.systemlog.SystemLog;
 import com.catchcatch.ticket.systemlog.SystemLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -103,8 +102,11 @@ public class AdminDashboardService {
     }
 
     // 운영(관리자 활동) 로그 - DB에 영구 저장된 이력
-    public List<SystemLog> getOperationLogs() {
-        return systemLogService.findRecentLogs();
+    public List<AdminDashboardResponse.OperationLogDTO> getOperationLogs() {
+        return systemLogService.findRecentLogs()
+                .stream()
+                .map(AdminDashboardResponse.OperationLogDTO::new)
+                .toList();
     }
 
     // 시스템 에러 - 메모리 버퍼에만 보관되는 휘발성 로그
