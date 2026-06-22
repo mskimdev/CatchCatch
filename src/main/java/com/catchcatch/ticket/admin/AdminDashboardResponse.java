@@ -1,5 +1,9 @@
 package com.catchcatch.ticket.admin;
 
+import com.catchcatch.ticket.core.util.DateUtil;
+import com.catchcatch.ticket.operationlog.OperationLog;
+
+import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
@@ -74,4 +78,37 @@ public class AdminDashboardResponse {
             String round,
             long waitingCount
     ){}
+
+    public record SystemErrorStatsDTO(
+            long recentErrorCount,
+            List<SystemErrorLogDTO> recentErrors
+    ){}
+
+    public record SystemErrorLogDTO(
+            String level,
+            String message,
+            String occurredAt,
+            boolean isError,
+            boolean isWarn
+    ) {
+        public SystemErrorLogDTO(String level, String message, Timestamp occurredAt) {
+            this(level, message, DateUtil.formatDateTime(occurredAt), "ERROR".equals(level), "WARN".equals(level));
+        }
+    }
+
+    public record OperationLogDTO(
+            String level,
+            String actor,
+            String message,
+            String createdAt
+    ) {
+        public OperationLogDTO(OperationLog operationLog) {
+            this(
+                    operationLog.getLevel().name(),
+                    operationLog.getActor(),
+                    operationLog.getMessage(),
+                    DateUtil.formatDateTime(operationLog.getCreatedAt())
+            );
+        }
+    }
 }

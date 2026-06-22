@@ -26,6 +26,9 @@ dependencies {
     // WebSocket
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
+    // AOP (운영 로그 등)
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
     // CoolSMS
     implementation 'com.solapi:sdk:1.0.3'
 

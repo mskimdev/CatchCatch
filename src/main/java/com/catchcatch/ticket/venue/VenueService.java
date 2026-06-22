@@ -4,12 +4,19 @@ import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.core.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class VenueService {
@@ -21,8 +28,26 @@ public class VenueService {
     public void save(VenueRequest.SaveDTO dto) {
         dto.validate();
 
-        Venue venue = dto.toEntity();
+        Venue venue = dto.toEntity(dto.getSeatMapFilePath());
         venueRepository.save(venue);
+    }
+
+    public List<String> getSeatMapFiles() {
+        List<String> filePaths = new ArrayList<>();
+        try {
+            ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+            Resource[] resources = resolver.getResources("classpath:static/json/seatmap/*.json");
+            
+            for (Resource resource : resources) {
+                String filename = resource.getFilename();
+                if (filename != null) {
+                    filePaths.add("/json/seatmap/" + filename);
+                }
+            }
+        } catch (IOException e) {
+            log.error("Failed to load seatmap files from classpath", e);
+        }
+        return filePaths;
     }
 
     // 전체 조회
@@ -48,7 +73,7 @@ public class VenueService {
         Venue venue = venueRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공연장입니다."));
 
-        venue.update(dto.getName(), dto.getAddress(), dto.getTotalCapacity());
+        venue.update(dto.getName(), dto.getAddress(), dto.getTotalCapacity(), dto.getSeatMapFilePath());
     }
 
     // 공연장 단건 조회
