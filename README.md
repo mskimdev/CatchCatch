@@ -118,6 +118,31 @@ cp .env.example .env
 
 ### 3. 대기열 부하 테스트
 
+k6는 npm 패키지가 아닌 별도 CLI 도구이므로 OS 패키지 매니저로 설치해야 합니다.
+
+```bash
+# macOS
+brew install k6
+
+# Windows (Chocolatey)
+choco install k6
+
+# Linux (Debian/Ubuntu)
+sudo gpg -k
+sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+sudo apt-get update
+sudo apt-get install k6
+```
+
+설치 없이 Docker로 바로 실행할 수도 있습니다 (macOS는 `BASE_URL`을 `http://host.docker.internal:8080`으로 변경 필요).
+
+```bash
+docker run --rm -i --network host grafana/k6 run - < loadtest/queue-test.js
+```
+
+설치 후 실행:
+
 ```bash
 k6 run loadtest/queue-test.js
 ```
