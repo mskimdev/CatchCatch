@@ -50,11 +50,18 @@ public class Seat {
 
     //x축
     @Column(name = "x_label",nullable = false)
-    private Integer xLabel;
+    private Double xLabel;
 
     //y축
     @Column(name = "y_label",nullable = false)
-    private Integer yLabel;
+    private Double yLabel;
+
+    // 사이즈
+    @Column(name = "seat_size",nullable = false)
+    private Double seatSize;
+
+    @Column(name = "seat_angle",nullable = false)
+    private Double seatAngle;
 
 
     /**
@@ -85,7 +92,8 @@ public class Seat {
     @Builder
     public Seat(ConcertSession concertSession, Integer floor, String sectionName,
                 String seatRow, Integer seatCol, String seatNumber,
-                SeatGrade grade, Integer price, SeatStatus status, Integer xLabel, Integer yLabel) {
+                SeatGrade grade, Integer price, SeatStatus status,
+                Double xLabel, Double yLabel, Double seatSize, Double seatAngle) {
         this.concertSession = concertSession;
         this.floor = floor;
         this.sectionName = sectionName;
@@ -97,6 +105,8 @@ public class Seat {
         this.status = status != null ? status : SeatStatus.AVAILABLE;
         this.xLabel = xLabel;
         this.yLabel = yLabel;
+        this.seatSize = seatSize;
+        this.seatAngle = seatAngle;
     }
 
     /**
