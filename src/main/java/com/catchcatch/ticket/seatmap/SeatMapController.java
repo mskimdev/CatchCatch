@@ -1,6 +1,6 @@
 package com.catchcatch.ticket.seatmap;
 
-import com.catchcatch.ticket.systemlog.AdminLog;
+import com.catchcatch.ticket.operationlog.AdminLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;

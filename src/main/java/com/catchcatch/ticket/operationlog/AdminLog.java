@@ -1,4 +1,4 @@
-package com.catchcatch.ticket.systemlog;
+package com.catchcatch.ticket.operationlog;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -10,5 +10,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AdminLog {
     String value();
-    SystemLogLevel level() default SystemLogLevel.INFO;
+    OperationLogLevel level() default OperationLogLevel.INFO;
 }

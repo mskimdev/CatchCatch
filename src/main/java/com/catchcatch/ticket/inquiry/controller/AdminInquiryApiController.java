@@ -3,7 +3,7 @@ package com.catchcatch.ticket.inquiry.controller;
 import com.catchcatch.ticket.core.util.Resp;
 import com.catchcatch.ticket.inquiry.dto.InquiryRequest;
 import com.catchcatch.ticket.inquiry.service.InquiryService;
-import com.catchcatch.ticket.systemlog.AdminLog;
+import com.catchcatch.ticket.operationlog.AdminLog;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

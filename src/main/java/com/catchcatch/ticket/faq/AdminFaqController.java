@@ -4,6 +4,7 @@ import com.catchcatch.ticket.core.util.Resp;
 import com.catchcatch.ticket.inquiry.Inquiry;
 import com.catchcatch.ticket.inquiry.dto.InquiryResponse;
 import com.catchcatch.ticket.inquiry.service.InquiryService;
+import com.catchcatch.ticket.operationlog.AdminLog;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +42,7 @@ public class AdminFaqController {
 
 
     // 관리자 FAQ 등록 처리
+    @AdminLog("FAQ 등록 (#{#req.question})")
     @PostMapping("/admin/boards/faq/save")
     public String faqSave(@Valid FaqRequest.SaveDTO req) {
         faqService.save(req);
@@ -87,6 +89,7 @@ public class AdminFaqController {
     }
 
     //faq 삭제 처리
+    @AdminLog("FAQ 삭제 (id=#{#id})")
     @DeleteMapping("/api/faqs/{id}")
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         faqService.deleteById(id);
@@ -94,6 +97,7 @@ public class AdminFaqController {
     }
 
     // FAQ 수정 처리
+    @AdminLog("FAQ 수정 (id=#{#id})")
     @PutMapping("/api/faqs/{id}")
     public ResponseEntity<?> put(@PathVariable Integer id,
                                  @RequestBody FaqRequest.UpdateDTO req) {

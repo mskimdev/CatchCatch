@@ -1,4 +1,4 @@
-package com.catchcatch.ticket.systemlog;
+package com.catchcatch.ticket.operationlog;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,18 +17,18 @@ import java.sql.Timestamp;
 
 @Getter
 @Entity
-@Table(name = "system_log_tb")
+@Table(name = "operation_log_tb")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class SystemLog {
+public class OperationLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Enumerated(EnumType.STRING)
-    private SystemLogLevel level;
+    private OperationLogLevel level;
 
 
     private String actor;

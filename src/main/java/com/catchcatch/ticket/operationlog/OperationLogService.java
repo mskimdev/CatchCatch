@@ -1,4 +1,4 @@
-package com.catchcatch.ticket.systemlog;
+package com.catchcatch.ticket.operationlog;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -9,25 +9,25 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class SystemLogService {
+public class OperationLogService {
 
     private static final int RECENT_LOG_LIMIT = 20;
 
-    private final SystemLogRepository systemLogRepository;
+    private final OperationLogRepository operationLogRepository;
 
     @Transactional
-    public void log(SystemLogLevel level, String actor, String message) {
-        SystemLog systemLog = SystemLog.builder()
+    public void log(OperationLogLevel level, String actor, String message) {
+        OperationLog operationLog = OperationLog.builder()
                 .level(level)
                 .actor(actor)
                 .message(message)
                 .build();
 
-        systemLogRepository.save(systemLog);
+        operationLogRepository.save(operationLog);
     }
 
     @Transactional(readOnly = true)
-    public List<SystemLog> findRecentLogs() {
-        return systemLogRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, RECENT_LOG_LIMIT));
+    public List<OperationLog> findRecentLogs() {
+        return operationLogRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, RECENT_LOG_LIMIT));
     }
 }
