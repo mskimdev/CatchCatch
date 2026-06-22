@@ -6,7 +6,6 @@ import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.core.util.ProfileImageUtil;
-import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.seat.SeatJdbcRepository;
 import com.catchcatch.ticket.seat.SeatService;
 import com.catchcatch.ticket.session.ConcertSession;
@@ -42,6 +41,16 @@ public class AdminConcertService {
         List<Concert> concerts = concertRepository.findAllWithSessionsAndVenue();
 
         // 2. DTO로 변환
+        return concerts.stream()
+                .map(AdminConcertRequest.ListResponseDTO::from)
+                .collect(Collectors.toList());
+    }
+
+    // 공연 목록 - 상태 필터 (예: 대시보드의 "오픈 예정 콘서트" 카드에서 진입)
+    @Transactional(readOnly = true)
+    public List<AdminConcertRequest.ListResponseDTO> getConcertsByStatus(ConcertStatus status) {
+        List<Concert> concerts = concertRepository.findAllWithSessionsAndVenueByStatus(status);
+
         return concerts.stream()
                 .map(AdminConcertRequest.ListResponseDTO::from)
                 .collect(Collectors.toList());

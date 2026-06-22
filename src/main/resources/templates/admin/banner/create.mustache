@@ -1,0 +1,129 @@
+{{> admin/layout/header}}
+
+<div class="container-fluid">
+    <div class="card shadow mb-4" style="max-width: 800px; margin: 0 auto;">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">새 홈 배너 등록</h6>
+        </div>
+        <div class="card-body">
+            <form id="bannerForm" enctype="multipart/form-data">
+
+                <div class="form-group mb-4">
+                    <label>배너 이미지 등록 <span class="text-danger">*</span></label>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="imageFile" name="imageFile" accept="image/*" required onchange="previewImage(this)">
+                        <label class="custom-file-label" for="imageFile" id="imageFileName">이미지 파일을 선택하세요 (가로형 권장)</label>
+                    </div>
+                    <div class="mt-3 d-none" id="imagePreviewContainer">
+                        <img id="imagePreview" src="" alt="미리보기" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px;">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-4">
+                        <label for="displayOrder">노출 순서 <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="displayOrder" name="displayOrder" value="1" min="1" required>
+                    </div>
+                    <div class="form-group col-md-8">
+                        <label for="title">메인 타이틀 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title" placeholder="EX) 2026 악뮤 전국투어 콘서트" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label for="eyebrow">상단 서브 카피 (Eyebrow)</label>
+                        <input type="text" class="form-control" id="eyebrow" name="eyebrow" placeholder="EX) CATCHCATCH EXCLUSIVE">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="highlight">강조 문구 (Highlight)</label>
+                        <input type="text" class="form-control" id="highlight" name="highlight" placeholder="EX) 단독 오픈 결정!">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label for="buttonText">버튼 텍스트</label>
+                        <input type="text" class="form-control" id="buttonText" name="buttonText" placeholder="EX) 예매하기">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="linkUrl">이동 링크 URL</label>
+                        <input type="text" class="form-control" id="linkUrl" name="linkUrl" placeholder="EX) /concerts/1">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">배너 상세 설명</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" placeholder="배너에 들어갈 상세 홍보 문구를 입력하세요."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>노출 활성화 상태</label>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="isActive" name="isActive" value="true" checked>
+                        <label class="custom-control-label" for="isActive">활성화 (메인 홈 노출)</label>
+                    </div>
+                </div>
+
+                <div class="text-right">
+                    <a href="/admin/banners" class="btn btn-secondary">취소</a>
+                    <button type="button" class="btn btn-primary" onclick="submitBanner()">등록하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            // 커스텀 라벨 파일명 변경
+            document.getElementById('imageFileName').innerText = input.files[0].name;
+
+            // 미리보기 세팅
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imagePreview').src = e.target.result;
+                document.getElementById('imagePreviewContainer').classList.remove('d-none');
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function submitBanner() {
+        const form = document.getElementById('bannerForm');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const formData = new FormData(form);
+
+        // 체크박스가 꺼져있으면 폼데이터에 아예 안담기므로 강제로 false 주입
+        if(!document.getElementById('isActive').checked) {
+            formData.append('isActive', 'false');
+        }
+
+        CcUI.loading.show();
+
+        fetch('/api/admin/banners', {
+            method: 'POST',
+            body: formData // Content-Type 헤더는 브라우저가 boundary와 함께 자동 세팅하게 생략해야 함!
+        })
+        .then(res => {
+            CcUI.loading.hide();
+            if(res.ok) {
+                CcUI.toast('새로운 배너가 성공적으로 등록되었습니다.', 'success');
+                setTimeout(() => location.href = '/admin/banners', 1500);
+            } else {
+                CcUI.alert('등록 실패', '입력한 데이터를 다시 확인해 주세요.', 'error');
+            }
+        })
+        .catch(err => {
+            CcUI.loading.hide();
+            CcUI.alert('오류 발생', '통신 중 에러가 발생했습니다.', 'error');
+        });
+    }
+</script>
+
+{{> admin/layout/footer}}

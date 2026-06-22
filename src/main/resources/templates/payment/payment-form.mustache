@@ -151,18 +151,64 @@
 
             <div class="cc-price-box__row">
                 <span>티켓 금액</span>
-                <b>{{#payment.ticketPriceText}}{{payment.ticketPriceText}}{{/payment.ticketPriceText}}{{^payment.ticketPriceText}}308,000원{{/payment.ticketPriceText}}</b>
+                <b>
+                    {{#payment.originalAmountText}}{{payment.originalAmountText}}{{/payment.originalAmountText}}
+                    {{^payment.originalAmountText}}308,000원{{/payment.originalAmountText}}
+                </b>
             </div>
 
             <div class="cc-price-box__row">
                 <span>예매 수수료</span>
-                <b>{{#payment.feeText}}{{payment.feeText}}{{/payment.feeText}}{{^payment.feeText}}0원{{/payment.feeText}}</b>
+                <b>
+                    {{#payment.ticketFeeText}}{{payment.ticketFeeText}}{{/payment.ticketFeeText}}
+                    {{^payment.ticketFeeText}}0원{{/payment.ticketFeeText}}
+                </b>
+            </div>
+
+            <div class="cc-price-box__row">
+                <span>보유 포인트</span>
+                <b>
+                    {{#payment.userPointText}}{{payment.userPointText}}{{/payment.userPointText}}
+                    {{^payment.userPointText}}0P{{/payment.userPointText}}
+                </b>
+            </div>
+
+            <div class="cc-point-use">
+                <div class="cc-point-use__head">
+                    <label for="usedPointInput">사용 포인트</label>
+                    <span>최대 사용 가능: <b id="maxPointText">{{payment.usablePointText}}</b></span>
+                </div>
+
+                <div class="cc-point-control">
+                    <input type="number"
+                           id="usedPointInput"
+                           name="usedPoint"
+                           form="paymentForm"
+                           min="0"
+                           step="100"
+                           value="0"
+                           inputmode="numeric"
+                           autocomplete="off"
+                           data-user-point="{{payment.userPoint}}"
+                           data-original-amount="{{payment.originalAmount}}"
+                           data-ticket-fee="{{payment.ticketFee}}">
+
+                    <button type="button" id="btnUseMaxPoint">
+                        최대
+                    </button>
+                </div>
+            </div>
+
+            <div class="cc-price-box__row cc-price-box__row--point">
+                <span>포인트 사용</span>
+                <b id="usedPointText">-0P</b>
             </div>
 
             <div class="cc-payment-total">
                 <span>최종 결제 금액</span>
-                <strong class="cc-total__price">
-                    {{#payment.totalPriceText}}{{payment.totalPriceText}}{{/payment.totalPriceText}}{{^payment.totalPriceText}}308,000원{{/payment.totalPriceText}}
+                <strong class="cc-total__price" id="finalAmountText">
+                    {{#payment.amountText}}{{payment.amountText}}{{/payment.amountText}}
+                    {{^payment.amountText}}308,000원{{/payment.amountText}}
                 </strong>
             </div>
 

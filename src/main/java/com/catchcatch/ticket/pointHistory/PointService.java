@@ -189,7 +189,6 @@ public class PointService {
                 .toList();
     }
 
-
     /**
      * 30일 내 만료 예정 포인트 내역 조회 (중앙 작은 모달창/새 창용)
      */
@@ -209,6 +208,17 @@ public class PointService {
                 .stream()
                 .map(PointResponse.ExpiringDTO::new)
                 .toList();
+    }
+
+
+    @Transactional(readOnly = true)
+    public Integer getUsablePoint(Integer userId) {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
+        return pointHistoryRepository.findUsablePointGroups(userId, now)
+                .stream()
+                .mapToInt(PointHistory::getBalance)
+                .sum();
     }
 
 

@@ -47,7 +47,9 @@
                                         </td>
                                         <td>
                                             {{^isCancelled}}
-                                                <button class="btn btn-danger btn-sm" onclick="cancelBooking({{bookingId}})">예매 취소</button>
+                                                <form action="/admin/bookings/{{bookingId}}/cancel" method="post" onsubmit="return confirm('정말로 이 예매를 취소하시겠습니까?');">
+                                                    <button type="submit" class="btn btn-danger btn-sm">예매 취소</button>
+                                                </form>
                                             {{/isCancelled}}
                                         </td>
                                     </tr>
@@ -70,13 +72,6 @@
                     "language": { "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Korean.json" }
                 });
             });
-
-            function cancelBooking(id) {
-                if(confirm("정말로 이 예매를 취소하시겠습니까?")) {
-                    alert(id + "번 예매가 취소 처리되었습니다.");
-                    // 추후 POST /admin/bookings/{id}/cancel 호출
-                }
-            }
         </script>
     </div>
 </div>

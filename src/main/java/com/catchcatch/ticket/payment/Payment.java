@@ -44,6 +44,18 @@ public class Payment {
     @Column(name = "pg_tx_id", length = 100)
     private String pgTxId;
 
+    // 오리지널 가격 (originalAmount)
+    @Column(name = "original_amount", nullable = false)
+    private Integer originalAmount;
+
+    // 티켓 수수료
+    @Column(name = "ticket_fee", nullable = false)
+    private Integer ticketFee;
+
+    // 사용한 포인트 (usedPoint)
+    @Column(name = "used_point", nullable = false)
+    private Integer usedPoint;
+
     // 최종 결제 금액
     @Column(nullable = false)
     private Integer amount;
@@ -73,14 +85,19 @@ public class Payment {
     public Payment(
             Booking booking,
             String paymentId,
+            Integer originalAmount,
+            Integer ticketFee,
+            Integer usedPoint,
             Integer amount,
             String method
     ) {
         this.booking = booking;
         this.paymentId = paymentId;
+        this.originalAmount = originalAmount;
+        this.ticketFee = ticketFee;
+        this.usedPoint = usedPoint;
         this.amount = amount;
         this.method = method;
-        this.status = PaymentStatus.READY;
     }
 
     /**
@@ -100,11 +117,11 @@ public class Payment {
      * 결제 취소 처리
      */
     public void cancel() {
-        if (this.status == PaymentStatus.CANCELLED) {
+        if (this.status == PaymentStatus.CANCELED) {
             throw new IllegalStateException("이미 취소된 결제입니다.");
         }
 
-        this.status = PaymentStatus.CANCELLED;
+        this.status = PaymentStatus.CANCELED;
     }
 
     /**
@@ -121,5 +138,17 @@ public class Payment {
         }
 
         this.method = method;
+    }
+
+    public void changePrepareInfo(String method,
+                                  Integer originalAmount,
+                                  Integer ticketFee,
+                                  Integer usedPoint,
+                                  Integer amount) {
+        this.method = method;
+        this.originalAmount = originalAmount;
+        this.ticketFee = ticketFee;
+        this.usedPoint = usedPoint == null ? 0 : usedPoint;
+        this.amount = amount;
     }
 }

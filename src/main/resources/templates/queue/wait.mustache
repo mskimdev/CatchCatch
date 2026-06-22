@@ -1,0 +1,31 @@
+{{> layout/header-booking}}
+
+<main class="cc-main cc-queue-page">
+    <div class="cc-queue-container">
+        <section class="cc-queue-card">
+            <p class="cc-queue-label">대기열 안내</p>
+            <h1>예매 대기 중입니다</h1>
+            <p class="cc-queue-desc">접속자가 많아 순서대로 입장을 안내하고 있습니다.<br>잠시만 기다려주세요.</p>
+
+            <div class="cc-queue-status">
+                <div class="cc-queue-status__item">
+                    <span class="cc-queue-status__label">내 순번</span>
+                    <span class="cc-queue-status__value" id="cc-queue-number">-</span>
+                </div>
+                <div class="cc-queue-status__item">
+                    <span class="cc-queue-status__label">남은 대기 인원</span>
+                    <span class="cc-queue-status__value" id="cc-queue-waiting-ahead">-</span>
+                </div>
+            </div>
+
+            <p class="cc-queue-message" id="cc-queue-message">대기열에 연결 중입니다...</p>
+        </section>
+    </div>
+</main>
+
+<input type="hidden" id="cc-queue-id" value="{{queueId}}">
+<input type="hidden" id="cc-queue-session-id" value="{{sessionId}}">
+
+{{> layout/footer}}
+
+<script src="/js/queue/wait.js"></script>

@@ -6,6 +6,9 @@ import com.catchcatch.ticket.booking.dto.BookingRequest;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.core.exception.BadRequestException;
+import com.catchcatch.ticket.core.exception.NotFoundException;
+import com.catchcatch.ticket.payment.Payment;
+import com.catchcatch.ticket.payment.PaymentRepository;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.seat.SeatRepository;
 import com.catchcatch.ticket.seat.SeatStatus;
@@ -35,6 +38,7 @@ public class BookingService {
     private final BookingSeatRepository bookingSeatRepository;
     private final ConcertSessionRepository concertSessionRepository;
     private final UserRepository userRepository;
+    private final PaymentRepository paymentRepository;
 
     /**
      * 예매 생성
@@ -112,7 +116,7 @@ public class BookingService {
         }
 
         // 결제 없이 예매 완료 처리
-        booking.completePayment();
+        // booking.completePayment();
 
         Booking savedBooking = bookingRepository.save(booking);
 
@@ -150,8 +154,7 @@ public class BookingService {
     /**
      * 예매 취소 처리
      *
-     * PENDING 상태라면 임시 점유 좌석을 다시 AVAILABLE로 돌린다.
-     * PAID 상태 취소는 환불 플로우에서 처리하는 것이 좋다.
+     * PAID 좌석을 AVAILABLE로 돌린다.
      */
     @Transactional
     public void cancel(Integer id) {
@@ -165,7 +168,7 @@ public class BookingService {
             throw new BadRequestException("결제 완료된 예매는 환불 절차를 통해 취소해야 합니다.");
         }
 
-        releaseSeats(booking);
+        cancelSoldSeats(booking);
         booking.cancel();
     }
 
@@ -231,6 +234,20 @@ public class BookingService {
 
             if (seat != null) {
                 seat.release();
+            }
+        });
+    }
+
+    private void cancelSoldSeats(Booking booking) {
+        if (booking.getBookingSeats() == null || booking.getBookingSeats().isEmpty()) {
+            return;
+        }
+
+        booking.getBookingSeats().forEach(bookingSeat -> {
+            Seat seat = bookingSeat.getSeat();
+
+            if (seat != null) {
+                seat.cancelSale();
             }
         });
     }
@@ -306,5 +323,21 @@ public class BookingService {
                 .orElseThrow(() -> new BadRequestException("예매 정보를 찾을 수 없습니다."));
 
         return new BookingResponse.CompleteDTO(booking);
+    }
+
+    /**
+     * 결제 완료 화면 정보 조회
+     */
+    @Transactional(readOnly = true)
+    public BookingResponse.CompleteDTO findCompleteByPaymentId(String paymentId) {
+        // 1. paymentId로 결제 데이터를 먼저 찾습니다. (Booking 정보가 함께 묶여서 나옴)
+        Payment payment = paymentRepository.findByPaymentId(paymentId)
+                .orElseThrow(() -> new NotFoundException("결제 내역을 찾을 수 없습니다."));
+
+        // 2. 결제 엔티티 안에 들어있는 Booking 엔티티를 꺼냄
+        Booking booking = payment.getBooking();
+
+        // 3. 기존에 사용하시던 DTO 생성 로직에 booking과 payment 데이터를 넣어서 리턴
+        return new BookingResponse.CompleteDTO(booking, payment);
     }
 }

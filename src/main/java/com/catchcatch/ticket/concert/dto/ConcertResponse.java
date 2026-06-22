@@ -59,25 +59,7 @@ public class ConcertResponse {
         }
     } // end of ListDTO
 
-    public record BannerDTO(
-            String imageUrl,
-            String eyebrow,
-            String title,
-            String highlight,
-            String description,
-            String linkUrl,
-            String buttonText
-    ) {
-        public BannerDTO(String imageUrl,
-                         String eyebrow,
-                         String title,
-                         String highlight,
-                         String description,
-                         Integer concertId) {
-            this(imageUrl, eyebrow, title, highlight, description, "concerts/" + concertId, "예매하기");
 
-        }
-    } // end of BannerDTO
 
     // ==========================================
     // 2. 상세 페이지(Detail)용 DTO

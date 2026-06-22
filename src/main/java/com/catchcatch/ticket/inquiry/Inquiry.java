@@ -58,4 +58,9 @@ public class Inquiry {
 
     @CreationTimestamp
     private Timestamp createdAt;
+
+    public void reply(String reply) {
+        this.reply = reply;
+        this.status = InquiryStatus.RESOLVED;
+    }
 }
