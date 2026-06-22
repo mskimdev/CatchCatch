@@ -7,6 +7,7 @@ public class NotificationResponse {
 
     public record ListDTO(
             Integer id,
+            String type,
             String title,
             String content,
             String targetUrl,
@@ -16,6 +17,7 @@ public class NotificationResponse {
         public ListDTO(Notification notification) {
             this(
                     notification.getId(),
+                    notification.getType().name(),
                     notification.getTitle(),
                     notification.getContent(),
                     notification.getTargetUrl(),

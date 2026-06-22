@@ -2,16 +2,12 @@ package com.catchcatch.ticket.inquiry.service;
 
 import com.catchcatch.ticket.core.exception.ForbiddenException;
 import com.catchcatch.ticket.core.exception.NotFoundException;
-import com.catchcatch.ticket.core.util.HtmlUtil;
 import com.catchcatch.ticket.inquiry.Inquiry;
 import com.catchcatch.ticket.inquiry.dto.InquiryRequest;
 import com.catchcatch.ticket.inquiry.dto.InquiryResponse;
 import com.catchcatch.ticket.inquiry.enums.InquiryStatus;
 import com.catchcatch.ticket.inquiry.repository.InquiryRepository;
-import com.catchcatch.ticket.notification.sender.EmailSender;
-import com.catchcatch.ticket.notification.NotificationMessage;
-import com.catchcatch.ticket.notification.sender.SmsSender;
-import com.catchcatch.ticket.notification.service.NotificationService;
+import com.catchcatch.ticket.notification.service.NotificationDispatcher;
 import com.catchcatch.ticket.user.User;
 import com.catchcatch.ticket.user.UserRepository;
 import jakarta.validation.Valid;
@@ -29,9 +25,7 @@ public class InquiryService {
     private final InquiryRepository inquiryRepository;
 
     private final UserRepository userRepository;
-    private final EmailSender emailSender;
-    private final SmsSender smsSender;
-    private final NotificationService notificationService;
+    private final NotificationDispatcher notificationDispatcher;
 
     @Transactional
     public void save(InquiryRequest.SaveDTO req, Integer userId) {
@@ -94,42 +88,11 @@ public class InquiryService {
 
         inquiry.reply(reqDTO.reply());
 
-        sendNotification(inquiry, reqDTO.reply());
-
-        notificationService.createInquiryReplyNotification(inquiry);
+        notificationDispatcher.dispatchInquiryReply(inquiry, reqDTO.reply());
     }
 
     public long countPending() {
         return inquiryRepository.countByStatus(InquiryStatus.PENDING);
-    }
-
-    private void sendNotification(Inquiry inquiry, String reply) {
-        User user = inquiry.getUser();
-
-        if (inquiry.isNotifySms()) {
-            String smsContent = String.format(
-                    "[CatchCatch] %s님, 1:1 문의 답변이 등록되었습니다.\n\n문의: %s\n\n자세한 내용은 홈페이지에서 확인해 주세요.",
-                    user.getUsername(), inquiry.getTitle()
-            );
-            smsSender.send(NotificationMessage.builder()
-                    .to(user.getPhone())
-                    .content(smsContent)
-                    .build());
-        }
-
-        if (inquiry.isNotifyEmail()) {
-            String content = HtmlUtil.load("static/html/mail/inquiry-reply.html")
-                    .replace("{{username}}", user.getUsername())
-                    .replace("{{title}}", inquiry.getTitle())
-                    .replace("{{reply}}", reply);
-
-            emailSender.send(NotificationMessage.builder()
-                    .to(user.getEmail())
-                    .subject("[CatchCatch] 1:1 문의 답변이 등록되었습니다")
-                    .content(content)
-                    .html(true)
-                    .build());
-        }
     }
 
 }
