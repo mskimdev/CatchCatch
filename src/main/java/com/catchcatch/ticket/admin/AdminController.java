@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class AdminController {
 
     private final AdminDashboardService adminDashboardService;
+    private final AdminUserService adminUserService;
 
     @GetMapping({"", "/"})
     public String adminDashboard(
@@ -39,6 +40,7 @@ public class AdminController {
     @GetMapping("/users")
     public String adminUserList(Model model) {
         model.addAttribute("pageTitle", "회원 관리");
+        model.addAttribute("users", adminUserService.findAll());
         return "admin/user/list";
     }
 
