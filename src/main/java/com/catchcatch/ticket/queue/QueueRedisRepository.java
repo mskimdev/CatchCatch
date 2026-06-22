@@ -89,12 +89,26 @@ public class QueueRedisRepository {
 
         redisTemplate.opsForValue().set(QueueRedisKeys.ready(sessionId, userId), entryToken, ttl);
         redisTemplate.opsForValue().set(QueueRedisKeys.tokenLookup(entryToken), sessionId + ":" + userId, ttl);
+        redisTemplate.opsForSet().add(QueueRedisKeys.readySet(sessionId), userId.toString());
 
         return entryToken;
     }
 
     public boolean isReady(Integer sessionId, Integer userId) {
         return Boolean.TRUE.equals(redisTemplate.hasKey(QueueRedisKeys.ready(sessionId, userId)));
+    }
+
+    // ready 키가 TTL로 자연 만료된 경우를 정리한다. 스케줄러(안전망)가 주기적으로 호출.
+    // readySet은 TTL을 못 걸기 때문에, 실제 ready 키가 살아있는지 직접 검증해 정리한다.
+    public void pruneExpiredReady(Integer sessionId) {
+        Set<String> userIds = redisTemplate.opsForSet().members(QueueRedisKeys.readySet(sessionId));
+        if (userIds == null) return;
+
+        for (String userId : userIds) {
+            if (!isReady(sessionId, Integer.parseInt(userId))) {
+                redisTemplate.opsForSet().remove(QueueRedisKeys.readySet(sessionId), userId);
+            }
+        }
     }
 
     public Optional<String> getReadyToken(Integer sessionId, Integer userId) {
@@ -114,9 +128,15 @@ public class QueueRedisRepository {
     // READY 상태 해제 (ENTERED로 전환할 때 또는 만료 처리할 때 호출)
     public void clearReady(Integer sessionId, Integer userId, String entryToken) {
         redisTemplate.delete(QueueRedisKeys.ready(sessionId, userId));
+        redisTemplate.opsForSet().remove(QueueRedisKeys.readySet(sessionId), userId.toString());
         if (entryToken != null) {
             redisTemplate.delete(QueueRedisKeys.tokenLookup(entryToken));
         }
+    }
+
+    public long countReadyBySession(Integer sessionId) {
+        Long size = redisTemplate.opsForSet().size(QueueRedisKeys.readySet(sessionId));
+        return size == null ? 0 : size;
     }
 
     // ---------- ENTERED ----------
@@ -131,9 +151,8 @@ public class QueueRedisRepository {
     }
 
     // READY + ENTERED 합산 (스케줄러의 capacity 계산용)
-    public long countActiveBySession(Integer sessionId, Integer userId) {
-        long readyCount = isReady(sessionId, userId) ? 1 : 0;
-        return readyCount; // 개별 유저 단위 체크는 호출부에서 누적
+    public long countActiveBySession(Integer sessionId) {
+        return countReadyBySession(sessionId) + countEnteredBySession(sessionId);
     }
 
     public long countEnteredBySession(Integer sessionId) {
