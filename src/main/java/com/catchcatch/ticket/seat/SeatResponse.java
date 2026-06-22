@@ -15,6 +15,9 @@ public class SeatResponse {
         private SeatStatus status;
         private Boolean selectable;
         private Boolean soldOut;
+        public Integer xLabel;
+        public Integer yLabel;
+
 
         public SeatDTO(Seat seat) {
             this.id = seat.getId();
@@ -23,6 +26,8 @@ public class SeatResponse {
             this.grade = seat.getGrade();
             this.price = seat.getPrice();
             this.status = seat.getStatus();
+            this.xLabel = seat.getXLabel();
+            this.yLabel = seat.getYLabel();
 
             this.selectable = seat.getStatus() == SeatStatus.AVAILABLE;
             this.soldOut = seat.getStatus() == SeatStatus.SOLD;

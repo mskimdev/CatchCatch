@@ -168,8 +168,7 @@ public class SeatService {
      */
 
     @Transactional
-    public void createSeatsFromJson(Integer sessionId)
-    {
+    public void createSeatsFromJson(Integer sessionId) {
         ConcertSession session = concertSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("해당 회차를 찾을 수 없습니다."));
 
@@ -177,7 +176,7 @@ public class SeatService {
         Venue venue = concert.getVenue();
 
         String filePath = venue.getSeatMapFilePath();
-        if (filePath == null || filePath.isBlank()){
+        if (filePath == null || filePath.isBlank()) {
             throw new BadRequestException("해당 공연장에 등록된 좌석 도면(JSON)이 없습니다.");
         }
 
@@ -185,10 +184,11 @@ public class SeatService {
         String absolutePath = System.getProperty("user.dir") + "/src/main/resources/static" + venue.getSeatMapFilePath();
         List<SeatRequest.SeatJsonDTO> jsonSeats = null;
 
-        try{
+        try {
             java.io.File jsonFile = new File(absolutePath);
-             jsonSeats = objectMapper.readValue(jsonFile, new TypeReference<>() {});
-        }catch (Exception e){
+            jsonSeats = objectMapper.readValue(jsonFile, new TypeReference<>() {
+            });
+        } catch (Exception e) {
             e.printStackTrace();
             throw new BadRequestException("도면 JSON 파싱 중 오류가 발생했습니다.");
         }
@@ -205,11 +205,13 @@ public class SeatService {
 
             // 3. 파싱
             Integer floor = Integer.parseInt(parts[0]);      // "1" -> 1
-            String sectionName = parts[1];                   // "VIP"
-            String seatRow = parts[2];                       // "A"
-            Integer seatCol = Integer.parseInt(parts[3]);    // "1" -> 1
+            String sectionName = parts[1];
+            String seatRow = parts[2];
+            Integer seatCol = Integer.parseInt(parts[3]);
+            Integer xLabel = Integer.parseInt(parts[4]);
+            Integer yLabel = Integer.parseInt(parts[5]);
 
-            String fullSeatNumber = floor + "층 " + sectionName + "구역 " + seatRow + "열 " + seatCol + "번";
+            String fullSeatNumber = floor + "층 " + sectionName + "구역 " + seatRow + "열 " + seatCol + "번 " + xLabel + "x축 " + yLabel + "y축 ";
 
             // 5. 등급 및 가격, 상태 세팅
             SeatGrade grade = SeatGrade.valueOf(dto.getGrade());
@@ -227,6 +229,8 @@ public class SeatService {
                     .grade(grade)
                     .price(price)
                     .status(status)
+                    .xLabel(xLabel)
+                    .yLabel(yLabel)
                     .build());
         }
 
@@ -238,11 +242,11 @@ public class SeatService {
      * 관리자: 특정 회차의 좌석 일괄 삭제
      */
     @Transactional
-    public void deleteSeatBySessionId(Integer sessionId){
-        boolean hasSoldSeats = seatRepository.existsByConcertSession_IdAndStatus(sessionId,SeatStatus.SOLD);
-        boolean hasHeldSeats = seatRepository.existsByConcertSession_IdAndStatus(sessionId,SeatStatus.HELD);
+    public void deleteSeatBySessionId(Integer sessionId) {
+        boolean hasSoldSeats = seatRepository.existsByConcertSession_IdAndStatus(sessionId, SeatStatus.SOLD);
+        boolean hasHeldSeats = seatRepository.existsByConcertSession_IdAndStatus(sessionId, SeatStatus.HELD);
 
-        if (hasSoldSeats || hasHeldSeats){
+        if (hasSoldSeats || hasHeldSeats) {
             throw new BadRequestException("이미 예매가 진행중이거나 결제된 좌석이 있어 초기화 할 수 업습니다.");
         }
 
@@ -287,7 +291,8 @@ public class SeatService {
         List<SeatRequest.SeatJsonDTO> jsonSeats;
         try {
             File jsonFile = new File(absolutePath);
-            jsonSeats = objectMapper.readValue(jsonFile, new TypeReference<>() {});
+            jsonSeats = objectMapper.readValue(jsonFile, new TypeReference<>() {
+            });
         } catch (Exception e) {
             e.printStackTrace();
             throw new BadRequestException("새로운 도면 JSON 파일을 파싱하는 중 오류가 발생했습니다.");
