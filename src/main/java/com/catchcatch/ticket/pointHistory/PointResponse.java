@@ -31,7 +31,7 @@ public class PointResponse {
                 case EARN -> "적립";
                 case USE -> "사용";
                 case EXPIRE -> "만료";
-                default -> "기타";
+                case REFUND -> "반환";
             };
         }
 
