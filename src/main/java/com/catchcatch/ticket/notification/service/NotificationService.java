@@ -66,4 +66,9 @@ public class NotificationService {
 
         notification.markAsRead();
     }
+
+    @Transactional
+    public void deleteInquiryNotifications(Integer inquiryId) {
+        notificationRepository.deleteAllByTargetUrl("/support/inquiries/" + inquiryId);
+    }
 }

@@ -8,6 +8,7 @@ import com.catchcatch.ticket.inquiry.dto.InquiryResponse;
 import com.catchcatch.ticket.inquiry.enums.InquiryStatus;
 import com.catchcatch.ticket.inquiry.repository.InquiryRepository;
 import com.catchcatch.ticket.notification.service.NotificationDispatcher;
+import com.catchcatch.ticket.notification.service.NotificationService;
 import com.catchcatch.ticket.user.User;
 import com.catchcatch.ticket.user.UserRepository;
 import jakarta.validation.Valid;
@@ -26,6 +27,7 @@ public class InquiryService {
 
     private final UserRepository userRepository;
     private final NotificationDispatcher notificationDispatcher;
+    private final NotificationService notificationService;
 
     @Transactional
     public void save(InquiryRequest.SaveDTO req, Integer userId) {
@@ -93,6 +95,15 @@ public class InquiryService {
 
     public long countPending() {
         return inquiryRepository.countByStatus(InquiryStatus.PENDING);
+    }
+
+    @Transactional
+    public void deleteForAdmin(Integer id) {
+        Inquiry inquiry = inquiryRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("문의를 찾을 수 없습니다."));
+
+        notificationService.deleteInquiryNotifications(id);
+        inquiryRepository.delete(inquiry);
     }
 
 }
