@@ -10,6 +10,8 @@ import java.util.Optional;
 
 public interface NotificationRepository extends JpaRepository<Notification, Integer> {
 
+    void deleteAllByTargetUrl(String targetUrl);
+
     // 특정 유저의 알림 목록 최신순 조회
     @Query("""
             select n
