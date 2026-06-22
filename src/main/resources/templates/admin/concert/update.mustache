@@ -22,11 +22,13 @@
                             <div class="row">
                                 <div class="col-md-6 form-group">
                                     <label>공연 제목</label>
-                                    <input type="text" name="title" class="form-control" value="{{concert.title}}" required>
+                                    <input type="text" name="title" class="form-control" value="{{concert.title}}"
+                                           required>
                                 </div>
                                 <div class="col-md-6 form-group">
                                     <label>아티스트</label>
-                                    <input type="text" name="artist" class="form-control" value="{{concert.artist}}" required>
+                                    <input type="text" name="artist" class="form-control" value="{{concert.artist}}"
+                                           required>
                                 </div>
                             </div>
 
@@ -45,7 +47,8 @@
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label>장르</label>
-                                    <input type="text" name="genre" class="form-control" value="{{concert.genre}}" required>
+                                    <input type="text" name="genre" class="form-control" value="{{concert.genre}}"
+                                           required>
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label>카테고리</label>
@@ -59,19 +62,23 @@
                             <div class="row">
                                 <div class="col-md-3 form-group">
                                     <label>VIP석 가격</label>
-                                    <input type="number" name="priceVip" class="form-control" value="{{concert.priceVip}}" min="0" required>
+                                    <input type="number" name="priceVip" class="form-control"
+                                           value="{{concert.priceVip}}" min="0" required>
                                 </div>
                                 <div class="col-md-3 form-group">
                                     <label>R석 가격</label>
-                                    <input type="number" name="priceR" class="form-control" value="{{concert.priceR}}" min="0" required>
+                                    <input type="number" name="priceR" class="form-control" value="{{concert.priceR}}"
+                                           min="0" required>
                                 </div>
                                 <div class="col-md-3 form-group">
                                     <label>S석 가격</label>
-                                    <input type="number" name="priceS" class="form-control" value="{{concert.priceS}}" min="0" required>
+                                    <input type="number" name="priceS" class="form-control" value="{{concert.priceS}}"
+                                           min="0" required>
                                 </div>
                                 <div class="col-md-3 form-group">
                                     <label>A석 가격</label>
-                                    <input type="number" name="priceA" class="form-control" value="{{concert.priceA}}" min="0" required>
+                                    <input type="number" name="priceA" class="form-control" value="{{concert.priceA}}"
+                                           min="0" required>
                                 </div>
                             </div>
 
@@ -81,15 +88,18 @@
                             <div class="row">
                                 <div class="col-md-3 form-group">
                                     <label>티켓 오픈일</label>
-                                    <input type="datetime-local" name="ticketOpenDate" class="form-control" value="{{concert.ticketOpenDate}}" required>
+                                    <input type="datetime-local" name="ticketOpenDate" class="form-control"
+                                           value="{{concert.ticketOpenDate}}" required>
                                 </div>
                                 <div class="col-md-3 form-group">
                                     <label>시작일</label>
-                                    <input type="date" name="startDate" class="form-control" value="{{concert.startDate}}" required>
+                                    <input type="date" name="startDate" class="form-control"
+                                           value="{{concert.startDate}}" required>
                                 </div>
                                 <div class="col-md-3 form-group">
                                     <label>종료일</label>
-                                    <input type="date" name="endDate" class="form-control" value="{{concert.endDate}}" required>
+                                    <input type="date" name="endDate" class="form-control" value="{{concert.endDate}}"
+                                           required>
                                 </div>
                                 <div class="col-md-3 form-group">
                                     <label>공연 상태</label>
@@ -105,11 +115,13 @@
                             <div class="row">
                                 <div class="col-md-3 form-group">
                                     <label>관람 시간</label>
-                                    <input type="text" name="runtime" class="form-control" value="{{concert.runtime}}" required>
+                                    <input type="text" name="runtime" class="form-control" value="{{concert.runtime}}"
+                                           required>
                                 </div>
                                 <div class="col-md-3 form-group">
                                     <label>관람 등급</label>
-                                    <input type="text" name="ageLimit" class="form-control" value="{{concert.ageLimit}}" required>
+                                    <input type="text" name="ageLimit" class="form-control" value="{{concert.ageLimit}}"
+                                           required>
                                 </div>
                                 <div class="col-md-3 form-group">
                                     <label>주최/주관</label>
@@ -125,21 +137,25 @@
 
                             <div class="form-group">
                                 <label>메인 상세 타이틀</label>
-                                <input type="text" name="detailTitle" class="form-control" value="{{concert.description}}" required>
+                                <input type="text" name="detailTitle" class="form-control"
+                                       value="{{concert.description}}" required>
                             </div>
                             <div class="form-group">
                                 <label>상세 설명 1</label>
-                                <textarea name="detailDescription1" class="form-control" rows="3" required>{{concert.detailDescription1}}</textarea>
+                                <textarea name="detailDescription1" class="form-control" rows="3"
+                                          required>{{concert.detailDescription1}}</textarea>
                             </div>
                             <div class="form-group">
                                 <label>상세 설명 2</label>
-                                <textarea name="detailDescription2" class="form-control" rows="3" required>{{concert.detailDescription2}}</textarea>
+                                <textarea name="detailDescription2" class="form-control" rows="3"
+                                          required>{{concert.detailDescription2}}</textarea>
                             </div>
 
                             <div class="form-group mt-4">
                                 <label>포스터 이미지 (변경할 경우만 선택)</label>
                                 <div class="custom-file">
-                                    <input type="file" name="posterImage" class="custom-file-input" id="posterUpdateFile" accept="image/*">
+                                    <input type="file" name="posterImage" class="custom-file-input"
+                                           id="posterUpdateFile" accept="image/*">
                                     <label class="custom-file-label" for="posterUpdateFile">새 이미지를 선택하세요</label>
                                 </div>
                             </div>
@@ -156,83 +172,91 @@
                 <script>
                     const concertId = {{concert.id}};
 
-                    document.getElementById('posterUpdateFile').addEventListener('change', function (e) {
-                        var fileName = document.getElementById("posterUpdateFile").files[0].name;
-                        var nextSibling = e.target.nextElementSibling;
-                        if (nextSibling) {
-                            nextSibling.innerText = fileName;
-                        }
-                    });
-
-                    // 파일을 Base64로 변환해주는 헬퍼 함수
-                    function fileToBase64(file) {
-                        return new Promise((resolve, reject) => {
-                            const reader = new FileReader();
-                            reader.readAsDataURL(file);
-                            reader.onload = () => resolve(reader.result);
-                            reader.onerror = error => reject(error);
-                        });
-                    }
-
-                    document.getElementById('concertUpdateForm').addEventListener('submit', async function (e) {
+                    // 1) 회차 추가 처리 (POST)
+                    document.getElementById('addSessionForm').addEventListener('submit', async function (e) {
                         e.preventDefault();
-
-                        if (!confirm("공연 정보를 수정하시겠습니까?")) return;
-
                         const form = e.target;
-
-                        // reqDTO에 가격 4개 추가
                         const reqDTO = {
-                            title: form.title.value,
-                            artist: form.artist.value,
-                            venueId: parseInt(form.venueId.value),
-                            genre: form.genre.value,
-                            category: form.category.value,
-
-                            priceVip: parseInt(form.priceVip.value) || 0,
-                            priceR: parseInt(form.priceR.value) || 0,
-                            priceS: parseInt(form.priceS.value) || 0,
-                            priceA: parseInt(form.priceA.value) || 0,
-
-                            ticketOpenDate: form.ticketOpenDate.value,
-                            startDate: form.startDate.value,
-                            endDate: form.endDate.value,
-                            runtime: form.runtime.value,
-                            ageLimit: form.ageLimit.value,
-                            organizer: form.organizer.value,
-                            contact: form.contact.value,
-                            detailTitle: form.detailTitle.value,
-                            description: form.detailTitle.value,
-                            detailDescription1: form.detailDescription1.value,
-                            detailDescription2: form.detailDescription2.value,
-                            concertStatus: form.concertStatus.value
+                            round: parseInt(form.round.value),
+                            sessionDate: form.sessionDate.value,
+                            sessionTime: form.sessionTime.value
                         };
 
-                        const posterInput = form.posterImage;
-                        if (posterInput && posterInput.files.length > 0) {
-                            reqDTO.posterImageBase64 = await fileToBase64(posterInput.files[0]);
-                        }
-
-                        CcUI.loading.show();
-
                         try {
-                            let { res, data } = await apiPut(`/api/concert/${concertId}`, reqDTO);
+                            let { res, data } = await apiPost(`/api/concert/${concertId}/sessions`, reqDTO);
 
                             if (res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
-                                CcUI.toast("공연 정보가 성공적으로 수정되었습니다.");
-                                setTimeout(() => {
-                                    location.href = `/admin/concerts/${concertId}`;
-                                }, 1500);
+                                // 성공 알림은 토스트로 가볍게 띄움
+                                CcUI.toast('회차가 성공적으로 추가되었습니다.');
+                                // 토스트가 보일 수 있도록 약간의 딜레이 후 새로고침
+                                setTimeout(() => window.location.reload(), 1500);
                             } else {
-                                CcUI.alert("수정 실패: " + (data && data.msg ? data.msg : "알 수 없는 오류"));
+                                // 실패 메시지는 사용자가 확실히 인지하도록 alert 창 띄움
+                                CcUI.alert('회차 추가에 실패했습니다: ' + (data && data.msg ? data.msg : '알 수 없는 오류'));
                             }
                         } catch (error) {
-                            console.error("수정 요청 중 오류 발생:", error);
-                            CcUI.alert("서버와 통신 중 오류가 발생했습니다.");
-                        } finally {
-                            CcUI.loading.hide();
+                            console.error('회차 추가 통신 에러:', error);
+                            CcUI.alert('서버와 통신에 실패했습니다.');
                         }
                     });
+
+                    // 2) 수정 모달 띄우기 함수 (기존 데이터 세팅)
+                    function openEditModal(sessionId, round, sessionDate, sessionTime) {
+                        document.getElementById('editSessionId').value = sessionId;
+                        document.getElementById('editRound').value = round;
+                        document.getElementById('editSessionDate').value = sessionDate;
+                        document.getElementById('editSessionTime').value = sessionTime;
+                        $('#editSessionModal').modal('show');
+                    }
+
+                    // 3) 회차 수정 처리 (PUT)
+                    document.getElementById('editSessionForm').addEventListener('submit', async function (e) {
+                        e.preventDefault();
+                        const sessionId = document.getElementById('editSessionId').value;
+                        const reqDTO = {
+                            round: parseInt(document.getElementById('editRound').value),
+                            sessionDate: document.getElementById('editSessionDate').value,
+                            sessionTime: document.getElementById('editSessionTime').value
+                        };
+
+                        try {
+                            let { res, data } = await apiPut(`/api/concert/${concertId}/sessions/${sessionId}`, reqDTO);
+
+                            if (res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
+                                CcUI.toast('성공적으로 수정되었습니다.');
+                                setTimeout(() => window.location.reload(), 1500);
+                            } else {
+                                CcUI.alert('회차 수정에 실패했습니다: ' + (data && data.msg ? data.msg : '알 수 없는 오류'));
+                            }
+                        } catch (error) {
+                            console.error('회차 수정 통신 에러:', error);
+                            CcUI.alert('서버와 통신에 실패했습니다.');
+                        }
+                    });
+
+                    // 4) 회차 논리 삭제 처리 (DELETE)
+                    function deleteSession(sessionId) {
+                        // 기존 if (confirm('...')) 패턴을 CcUI.confirm으로 대체
+                        CcUI.confirm({
+                            text: '이 회차를 정말 삭제하시겠습니까? (소프트딜리트)',
+                            danger: true, // 확인 버튼을 빨간색으로 변경
+                            onConfirm: async () => { // onConfirm을 async로 선언하여 API 호출을 바로 await
+                                try {
+                                    let { res, data } = await apiDelete(`/api/concert/${concertId}/sessions/${sessionId}`);
+
+                                    if (res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
+                                        CcUI.toast('성공적으로 삭제되었습니다.');
+                                        setTimeout(() => window.location.reload(), 1500);
+                                    } else {
+                                        CcUI.alert('삭제에 실패했습니다: ' + (data && data.msg ? data.msg : '알 수 없는 오류'));
+                                    }
+                                } catch (error) {
+                                    console.error('회차 삭제 통신 에러:', error);
+                                    CcUI.alert('서버와 통신에 실패했습니다.');
+                                }
+                            }
+                        });
+                    }
                 </script>
             </div>
         </div>
