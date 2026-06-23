@@ -121,14 +121,41 @@
             .replace(/-/g, "");
     }
 
+    function seatGradeCode(section, seat) {
+        return cleanCode(seat.grade || section.grade || "일반석", "일반석");
+    }
+
+    function seatStatusCode(seat) {
+        return cleanCode(seat.status || SEAT_STATUS.AVAILABLE, SEAT_STATUS.AVAILABLE);
+    }
+
+    function seatSizeValue(seat) {
+        const w = Number(seat.w || seat.width || seat.size || 0);
+        const h = Number(seat.h || seat.height || seat.size || 0);
+
+        if (w && h) {
+            return roundNumber(Math.max(w, h));
+        }
+
+        return roundNumber(w || h || 0);
+    }
+
+    function seatAngleValue(seat) {
+        return roundNumber(seat.angle || 0);
+    }
+
     function makeSeatId(section, seat) {
         return [
             floorCode(section),
             sectionCode(section),
-            cleanIdPart(seat.col),
             cleanIdPart(seat.row),
+            cleanIdPart(seat.col),
+            cleanIdPart(seatGradeCode(section, seat)),
+            cleanIdPart(seatStatusCode(seat)),
             cleanIdPart(roundNumber(seat.x)),
             cleanIdPart(roundNumber(seat.y)),
+            cleanIdPart(seatSizeValue(seat)),
+            cleanIdPart(seatAngleValue(seat)),
         ].join("-");
     }
 

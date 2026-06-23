@@ -863,7 +863,9 @@
     line-height: 1.35;
 }
 
-#eraserCursor {
+/* Stage1 Part2 제거 색상 선택 커서 보정 */
+#eraserCursor,
+.eraser-cursor {
     position: absolute;
     left: 0;
     top: 0;
@@ -874,4 +876,261 @@
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.18);
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.75);
+}
+
+.canvas-box.is-erasing #overlay {
+    cursor: none;
+}
+
+#removeSamples .sample,
+#samples .sample {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+#removeSamples .sample span,
+#samples .sample span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+#removeSamples .sample i,
+#samples .sample i {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 1px solid rgba(15, 23, 42, 0.2);
+    flex: 0 0 auto;
+}
+
+/* Stage1 Part2 제거 색상 선택 + 사이드 패널 넘침 보정 */
+.seatmap-workspace--stage1 .seatmap-side,
+.seatmap-workspace--stage1 .seatmap-step,
+.seatmap-workspace--stage1 .seatmap-step__body,
+.seatmap-workspace--stage1 .seatmap-step__system,
+.seatmap-workspace--stage1 .box,
+.seatmap-workspace--stage1 .simplify-panel,
+.seatmap-workspace--stage1 .tool-block {
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.seatmap-workspace--stage1 .seatmap-step__body,
+.seatmap-workspace--stage1 .seatmap-step__system,
+.seatmap-workspace--stage1 .box,
+.seatmap-workspace--stage1 .simplify-panel {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.seatmap-workspace--stage1 .box {
+    padding-left: 14px;
+    padding-right: 14px;
+}
+
+.seatmap-workspace--stage1 .row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 100%;
+}
+
+.seatmap-workspace--stage1 .row.row--single {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.seatmap-workspace--stage1 .row > div,
+.seatmap-workspace--stage1 .tool-field {
+    min-width: 0;
+}
+
+.seatmap-workspace--stage1 input,
+.seatmap-workspace--stage1 select,
+.seatmap-workspace--stage1 button,
+.seatmap-workspace--stage1 .btn {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.seatmap-workspace--stage1 .btn {
+    width: 100%;
+    white-space: normal;
+}
+
+.seatmap-workspace--stage1 input[type="range"] {
+    width: 100%;
+}
+
+.seatmap-workspace--stage1 input[type="color"] {
+    width: 100%;
+    height: 38px;
+    padding: 2px;
+}
+
+#removeSamples,
+#samples {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+#removeSamples .sample,
+#samples .sample {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 6px;
+    padding: 8px 10px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.82);
+    box-sizing: border-box;
+}
+
+#removeSamples .sample span,
+#samples .sample span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#removeSamples .sample i,
+#samples .sample i {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 1px solid rgba(15, 23, 42, 0.2);
+    flex: 0 0 auto;
+}
+
+#removeSamples .sample button,
+#samples .sample button {
+    width: 26px;
+    height: 26px;
+    flex: 0 0 auto;
+    padding: 0;
+}
+
+#eraserCursor,
+.eraser-cursor {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: none;
+    pointer-events: none;
+    z-index: 30;
+    border: 2px solid #111827;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.75);
+}
+
+.canvas-box.is-erasing #overlay {
+    cursor: none;
+}
+
+/* =========================================================
+   Stage1 Part2 - Part3 색상 선택 UI와 동일한 형태
+========================================================= */
+
+.seatmap-workspace--stage1 #part2 .box {
+    overflow: hidden;
+}
+
+.seatmap-workspace--stage1 #removeSamples {
+    display: grid;
+    gap: 8px;
+    max-height: 128px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+    margin-bottom: 10px;
+}
+
+.seatmap-workspace--stage1 #removeSamples .help {
+    margin-top: 0;
+}
+
+.seatmap-workspace--stage1 #removeSamples .sample {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 28px;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1px solid var(--seatmap-line);
+    border-radius: 6px;
+    background: #ffffff;
+}
+
+.seatmap-workspace--stage1 #removeSamples .sample span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    overflow: hidden;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 950;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.seatmap-workspace--stage1 #removeSamples .sample i {
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    border: 1px solid rgba(15, 23, 42, 0.18);
+    border-radius: 5px;
+}
+
+.seatmap-workspace--stage1 #removeSamples .sample button {
+    width: 28px;
+    height: 28px;
+    min-height: 28px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #ef4444;
+    font-size: 15px;
+    font-weight: 950;
+}
+
+.seatmap-workspace--stage1 #part2 .row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.seatmap-workspace--stage1 #part2 .row > div,
+.seatmap-workspace--stage1 #part2 .row > button {
+    min-width: 0;
+}
+
+.seatmap-workspace--stage1 #part2 .row > .btn + .btn {
+    margin-top: 0;
+}
+
+.seatmap-workspace--stage1 #part2 input[type="color"] {
+    height: 34px;
+    padding: 3px;
+}
+
+.seatmap-workspace--stage1 #part2 > .seatmap-step__body,
+.seatmap-workspace--stage1 #part2 .seatmap-step__system,
+.seatmap-workspace--stage1 #part2 .box {
+    max-width: 100%;
+    min-width: 0;
 }

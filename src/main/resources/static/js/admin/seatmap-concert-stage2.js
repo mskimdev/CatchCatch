@@ -12,6 +12,12 @@
     // 다음 스테이지
     stage3: appRoot?.dataset.stage3Url || "/admin/seatmap/concert/stage3",
   };
+  const STAGE1_SETTINGS_KEY = "concert_stage1Settings";
+  const IMAGE_META_KEY = "concert_imageMeta";
+  const STAGE2_BACKGROUND_COLOR = "#ffffff";
+  const STAGE2_SHAPE_COLOR = "#d9d9d9";
+  let stage1Settings = readStage1Settings();
+
   const base = $("baseCanvas");
   const overlay = $("overlayCanvas");
   const bctx = base.getContext("2d", { willReadFrequently: true });
@@ -110,6 +116,139 @@
         )
         .join("")
     );
+  }
+
+  function normalizeHexColor(value, fallback = "#000000") {
+    const color = String(value || fallback).trim();
+
+    if (/^#[0-9a-fA-F]{6}$/.test(color)) return color.toLowerCase();
+
+    if (/^#[0-9a-fA-F]{3}$/.test(color)) {
+      return (
+        "#" +
+        color
+          .slice(1)
+          .split("")
+          .map((v) => v + v)
+          .join("")
+      ).toLowerCase();
+    }
+
+    return fallback.toLowerCase();
+  }
+
+  function readJsonStorage(key) {
+    try {
+      const value = localStorage.getItem(key);
+      return value ? JSON.parse(value) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function readStage1Settings() {
+    const settings = readJsonStorage(STAGE1_SETTINGS_KEY);
+    const meta = readJsonStorage(IMAGE_META_KEY);
+
+    return {
+      shapeColor: normalizeHexColor(
+        settings?.shapeColor || meta?.shapeColor || "#000000",
+        "#000000",
+      ),
+      backgroundColor: normalizeHexColor(
+        settings?.backgroundColor || meta?.backgroundColor || "#f7f7f7",
+        "#f7f7f7",
+      ),
+      mode: settings?.mode || meta?.mode || "",
+    };
+  }
+
+  function getStage1ShapeColor() {
+    return normalizeHexColor(
+      stage1Settings?.shapeColor || $("shapeColor")?.value || "#000000",
+      "#000000",
+    );
+  }
+
+  function getStage1BackgroundColor() {
+    return normalizeHexColor(
+      stage1Settings?.backgroundColor || $("bgColor")?.value || "#f7f7f7",
+      "#f7f7f7",
+    );
+  }
+
+  function isBlackLikeHex(hex) {
+    const c = hexToRgb(normalizeHexColor(hex, "#000000"));
+    const max = Math.max(c.r, c.g, c.b);
+    const min = Math.min(c.r, c.g, c.b);
+    const avg = (c.r + c.g + c.b) / 3;
+
+    return max <= 80 || (max - min <= 24 && avg <= 135);
+  }
+
+  function getRenderColorFromStage1Shape() {
+    const shapeColor = getStage1ShapeColor();
+
+    if (isBlackLikeHex(shapeColor)) return STAGE2_SHAPE_COLOR;
+
+    return shapeColor;
+  }
+
+  function getStage2ShapeColor() {
+    return STAGE2_SHAPE_COLOR;
+  }
+
+  function getStage2BackgroundColor() {
+    return STAGE2_BACKGROUND_COLOR;
+  }
+
+  function normalizeStage1CleanImageForStage2() {
+    if (!W || !H) return;
+
+    const imageData = cleanCtx.getImageData(0, 0, W, H);
+    const data = imageData.data;
+    const sourceBg = hexToRgb(getStage1BackgroundColor());
+    const targetBg = hexToRgb(STAGE2_BACKGROUND_COLOR);
+    const targetShape = hexToRgb(STAGE2_SHAPE_COLOR);
+
+    for (let i = 0; i < data.length; i += 4) {
+      const pixel = { r: data[i], g: data[i + 1], b: data[i + 2] };
+      const isBackground = dist(pixel, sourceBg) <= 42;
+
+      if (isBackground) {
+        data[i] = targetBg.r;
+        data[i + 1] = targetBg.g;
+        data[i + 2] = targetBg.b;
+        data[i + 3] = 255;
+      } else {
+        data[i] = targetShape.r;
+        data[i + 1] = targetShape.g;
+        data[i + 2] = targetShape.b;
+        data[i + 3] = 255;
+      }
+    }
+
+    cleanCtx.putImageData(imageData, 0, 0);
+  }
+
+  function normalizeStage2SectionColors() {
+    sections.forEach((sec) => {
+      sec.sourceColor = STAGE2_SHAPE_COLOR;
+      sec.stage2ShapeColor = STAGE2_SHAPE_COLOR;
+      sec.backgroundColor = STAGE2_BACKGROUND_COLOR;
+      sec.renderColor = STAGE2_SHAPE_COLOR;
+      sec.sourceGroup = 1;
+      sec.ruleKey = "stage2-gray-shape";
+      sec.sectionGroupKey = "source-1";
+      sec.sectionGroupName = "색상 그룹 1";
+    });
+  }
+
+  function applyStage1SettingsToInputs() {
+    stage1Settings = readStage1Settings();
+
+    if ($("shapeColor")) $("shapeColor").value = STAGE2_SHAPE_COLOR;
+    if ($("bgColor")) $("bgColor").value = STAGE2_BACKGROUND_COLOR;
   }
   function dist(a, b) {
     return Math.hypot(a.r - b.r, a.g - b.g, a.b - b.b);
@@ -713,19 +852,11 @@
 
     if (c.a < 20) return false;
 
-    const shape = hexToRgb($("shapeColor")?.value || "#d9d9d9");
-    const bg = hexToRgb($("bgColor")?.value || "#f7f7f7");
-    const max = Math.max(c.r, c.g, c.b);
-    const min = Math.min(c.r, c.g, c.b);
-    const sat = max - min;
-    const bright = (c.r + c.g + c.b) / 3;
+    const shape = hexToRgb(getStage2ShapeColor());
+    const bg = hexToRgb(getStage2BackgroundColor());
 
     if (dist(c, bg) < 28) return false;
-    if (bright > 242) return false;
-
-    if (dist(c, shape) <= 54) return true;
-
-    return sat <= 24 && bright >= 145 && bright <= 228;
+    return dist(c, shape) <= 54;
   }
 
   function grayCellsInsideSection(sec) {
@@ -1768,73 +1899,34 @@
   }
 
   function isShapePixel(data, idx) {
-    const shape = hexToRgb($("shapeColor").value);
-    const bg = hexToRgb($("bgColor").value);
-    const tol = +$("shapeTol").value || 34;
+    const shape = hexToRgb(getStage2ShapeColor());
+    const bg = hexToRgb(getStage2BackgroundColor());
+    const tol = +$("shapeTol")?.value || 34;
     const c = getPixel(data, idx);
+
     if (c.a < 20) return false;
     if (dist(c, bg) < tol + 6) return false;
+
     return dist(c, shape) <= tol;
   }
 
   function dominantSourceColor(cells, bbox) {
-    let sourceData = null;
-    if (
-      originalImageLoaded &&
-      originalCanvas.width === W &&
-      originalCanvas.height === H
-    ) {
-      sourceData = originalCtx.getImageData(0, 0, W, H).data;
+    const color = hexToRgb(STAGE2_SHAPE_COLOR);
+
+    if (!colorGroups.length) {
+      colorGroups.push({ id: 1, color });
     }
-    if (!sourceData) {
-      return { color: { r: 210, g: 210, b: 210 }, group: 0 };
-    }
-    const buckets = {};
-    const step = Math.max(1, Math.floor(cells.length / 900));
-    for (let i = 0; i < cells.length; i += step) {
-      const idx = cells[i];
-      const k = idx * 4;
-      const r = sourceData[k],
-        g = sourceData[k + 1],
-        b = sourceData[k + 2],
-        a = sourceData[k + 3];
-      if (a < 20) continue;
-      const max = Math.max(r, g, b),
-        min = Math.min(r, g, b),
-        sum = r + g + b;
-      if (sum > 690 || sum < 120 || max - min < 18) continue;
-      const key = `${Math.round(r / 24)}_${Math.round(g / 24)}_${Math.round(b / 24)}`;
-      const bucket =
-        buckets[key] || (buckets[key] = { count: 0, r: 0, g: 0, b: 0 });
-      bucket.count++;
-      bucket.r += r;
-      bucket.g += g;
-      bucket.b += b;
-    }
-    let best = null;
-    for (const k in buckets) {
-      if (!best || buckets[k].count > best.count) best = buckets[k];
-    }
-    if (!best) return { color: { r: 210, g: 210, b: 210 }, group: 0 };
-    const color = {
-      r: best.r / best.count,
-      g: best.g / best.count,
-      b: best.b / best.count,
+
+    return {
+      color,
+      rawColor: hexToRgb(getStage1ShapeColor()),
+      group: 1,
+      autoGray: true,
     };
-    let groupIndex = colorGroups.findIndex((g) => dist(g.color, color) < 55);
-    if (groupIndex < 0) {
-      colorGroups.push({ id: colorGroups.length + 1, color });
-      groupIndex = colorGroups.length - 1;
-    }
-    return { color, group: groupIndex + 1 };
   }
 
   function makeSection(cells, bbox, namePrefix = "구역") {
     const polygon = polygonFromCells(cells, bbox);
-    const source = dominantSourceColor(cells, bbox);
-    const renderColor = source.group
-      ? palette[(source.group - 1) % palette.length]
-      : "#d9d9d9";
     const id = "sec" + nextId++;
 
     return {
@@ -1846,12 +1938,15 @@
       label: "",
       grade: "일반석",
       price: 132000,
-      sourceColor: rgbToHex(source.color),
-      sourceGroup: source.group || 0,
-      ruleKey: source.group
-        ? "source-" + source.group
-        : "color-" + renderColor.toLowerCase(),
-      renderColor,
+      sourceColor: STAGE2_SHAPE_COLOR,
+      rawSourceColor: getStage1ShapeColor(),
+      stage1ShapeColor: getStage1ShapeColor(),
+      stage2ShapeColor: STAGE2_SHAPE_COLOR,
+      backgroundColor: STAGE2_BACKGROUND_COLOR,
+      autoGray: true,
+      sourceGroup: 1,
+      ruleKey: "stage2-gray-shape",
+      renderColor: STAGE2_SHAPE_COLOR,
       polygon,
       bbox: bboxOf(polygon),
       area: polygonArea(polygon),
@@ -2901,6 +2996,10 @@
         grade: s.grade || "일반석",
         price: parseInt(s.price, 10) || 132000,
         sourceColor: s.sourceColor,
+        rawSourceColor: s.rawSourceColor || s.sourceColor,
+        stage1ShapeColor: s.stage1ShapeColor || getStage1ShapeColor(),
+        backgroundColor: s.backgroundColor || getStage1BackgroundColor(),
+        autoGray: !!s.autoGray,
         sourceGroup: s.sourceGroup,
         ruleKey: ruleKeyForSection(s),
         renderColor: s.renderColor,
@@ -3233,6 +3332,8 @@
   // 10. 초기화
   // ============================================================
   async function init() {
+    applyStage1SettingsToInputs();
+
     if (!cleanUrl) {
       toast("Stage1 도면이 없습니다. Stage1로 이동합니다.");
       setTimeout(() => (location.href = ROUTES.stage1), 800);
@@ -3243,6 +3344,7 @@
     setupCanvas(cleanImg.naturalWidth, cleanImg.naturalHeight);
     cleanCtx.clearRect(0, 0, W, H);
     cleanCtx.drawImage(cleanImg, 0, 0, W, H);
+    normalizeStage1CleanImageForStage2();
     cleanImageLoaded = true;
 
     try {
@@ -3277,6 +3379,7 @@
               Math.max(m, parseInt(String(s.id).replace(/\D/g, "")) || 0),
             0,
           ) + 1;
+        normalizeStage2SectionColors();
         normalizeAllSections();
         selectedId = sections[0]?.id || null;
         fillForm(getSelected());

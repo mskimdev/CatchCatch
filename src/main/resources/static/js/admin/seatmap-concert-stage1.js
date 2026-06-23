@@ -34,6 +34,8 @@
         part: 1,
         completedParts: new Set(),
         samples: [],
+        removeSamples: [],
+        removeBaseUrl: null,
 
         cropMode: false,
         cropDraft: null,
@@ -93,6 +95,8 @@
         updateHistoryButtons();
         updateZoomView();
         updateRotationView();
+        renderRemoveSamples();
+        renderSamples();
 
         state.originalUrl = localStorage.getItem(STORAGE_KEYS.ORIGINAL_IMAGE);
         state.workingUrl = state.originalUrl;
@@ -103,7 +107,6 @@
 
         if (!state.originalUrl) {
             showToast("메인에서 이미지를 업로드하세요");
-            renderSamples();
             updateSimplifyInfo("적용 전");
             return;
         }
@@ -115,7 +118,6 @@
             loadImage(state.cleanUrl, (cleanImage) => {
                 drawImageToCleanCanvas(cleanImage);
                 render();
-                renderSamples();
                 updateSimplifyInfo("적용 전");
                 pushHistory("초기 상태");
             });
@@ -174,13 +176,16 @@
             "simplifyReset",
             "simplifyInfo",
 
+            "removeSamples",
+            "removeTol",
+            "backgroundColor",
+            "clearRemoveSamples",
+            "restoreRemoveBase",
+
             "samples",
             "tol",
             "alpha",
             "shapeColor",
-            "backgroundColor",
-            "clearRemoveSamples",
-            "removeSamplesClear",
             "hole",
             "holeValue",
             "viewMode",
@@ -215,6 +220,21 @@
         bindIfExists("simplifyApply", "click", applyImageSimplify);
         bindIfExists("simplifyReset", "click", resetImageSimplify);
 
+        bindIfExists("clearRemoveSamples", "click", clearRemoveSamples);
+        bindIfExists("restoreRemoveBase", "click", restoreRemoveBaseImage);
+
+        ["removeTol", "backgroundColor"].forEach((id) => {
+            if (!dom[id]) return;
+
+            dom[id].addEventListener("input", () => {
+                applyRemoveSelectedColors();
+            });
+
+            dom[id].addEventListener("change", () => {
+                applyRemoveSelectedColors({ recordHistory: true });
+            });
+        });
+
         overlay.addEventListener("pointerdown", handlePointerDown);
         overlay.addEventListener("pointerleave", handlePointerLeave);
         overlay.addEventListener("pointerenter", handlePointerEnter);
@@ -223,40 +243,31 @@
         window.addEventListener("pointermove", handlePointerMove);
         window.addEventListener("pointerup", handlePointerUp);
 
-        ["tol", "alpha", "shapeColor", "backgroundColor", "hole", "viewMode"].forEach((id) => {
-            if (!dom[id]) {
-                return;
-            }
+        ["tol", "alpha", "shapeColor", "hole", "viewMode"].forEach((id) => {
+            if (!dom[id]) return;
 
             dom[id].addEventListener("input", () => {
-                if (id === "hole") {
-                    syncHoleValue();
-                }
-
+                if (id === "hole") syncHoleValue();
                 extractSelectedColors();
             });
 
             dom[id].addEventListener("change", () => {
-                if (id === "hole") {
-                    syncHoleValue();
-                }
-
+                if (id === "hole") syncHoleValue();
                 extractSelectedColors({ recordHistory: true });
             });
         });
 
         bindIfExists("restoreOriginal", "click", restoreOriginalPreview);
         bindIfExists("invertExtract", "click", invertExtractedMask);
-        bindIfExists("clearRemoveSamples", "click", clearRemoveSamples);
-        bindIfExists("removeSamplesClear", "click", clearRemoveSamples);
 
         bindIfExists("eraser", "click", toggleEraserMode);
         bindIfExists("rectFill", "click", toggleFillMode);
 
         if (dom.eraserSize) {
             dom.eraserSize.addEventListener("input", () => {
-                if (state.part === 4 && state.lastPointerPos) {
-                    updateToolCursor(state.lastPointerPos);
+                if ((state.part === 2 || state.part === 4) && state.lastPointerPos) {
+                    if (state.part === 2) updateRemoveColorCursor(state.lastPointerPos);
+                    else updateToolCursor(state.lastPointerPos);
                 }
             });
         }
@@ -275,10 +286,7 @@
     }
 
     function bindIfExists(id, eventName, handler) {
-        if (!dom[id]) {
-            return;
-        }
-
+        if (!dom[id]) return;
         dom[id].addEventListener(eventName, handler);
     }
 
@@ -298,9 +306,7 @@
         state.baseDisplayScale = Math.min(1, 1120 / width, 720 / height);
         applyCanvasDisplayScale();
 
-        if (dom.size) {
-            dom.size.textContent = `${width} × ${height}`;
-        }
+        if (dom.size) dom.size.textContent = `${width} × ${height}`;
     }
 
     function applyCanvasDisplayScale() {
@@ -323,6 +329,7 @@
     function drawImageToSourceCanvas(image) {
         sourceCtx.clearRect(0, 0, state.width, state.height);
         sourceCtx.drawImage(image, 0, 0, state.width, state.height);
+        state.workingUrl = sourceCanvas.toDataURL("image/png");
     }
 
     function drawImageToCleanCanvas(image) {
@@ -344,9 +351,7 @@
         if (state.part === 2) {
             ctx.drawImage(sourceCanvas, 0, 0);
             drawRemoveSampleMarkers();
-            if (state.lastPointerPos) {
-                updateRemoveColorCursor(state.lastPointerPos);
-            }
+            if (state.lastPointerPos) updateRemoveColorCursor(state.lastPointerPos);
             return;
         }
 
@@ -369,9 +374,7 @@
     }
 
     function drawPreviewOverlay() {
-        if (!state.cleanUrl) {
-            return;
-        }
+        if (!state.cleanUrl) return;
 
         const preview = createCanvas(state.width, state.height);
         const previewCtx = preview.getContext("2d", { willReadFrequently: true });
@@ -384,11 +387,7 @@
         const alpha = Math.round((getNumber(dom.alpha, 100) / 100) * 255);
 
         for (let i = 0; i < data.length; i += 4) {
-            const pixel = {
-                r: data[i],
-                g: data[i + 1],
-                b: data[i + 2],
-            };
+            const pixel = { r: data[i], g: data[i + 1], b: data[i + 2] };
 
             if (colorDistance(pixel, shapeColor) <= 18) {
                 data[i] = shapeColor.r;
@@ -401,7 +400,6 @@
         }
 
         previewCtx.putImageData(imageData, 0, 0);
-
         overlayCtx.clearRect(0, 0, state.width, state.height);
         overlayCtx.drawImage(preview, 0, 0);
     }
@@ -417,17 +415,10 @@
         syncWorkspacePartState();
         renderPartGuide(partNumber);
 
-        if (dom.title) {
-            dom.title.textContent = getPartTitle(partNumber);
-        }
+        if (dom.title) dom.title.textContent = getPartTitle(partNumber);
 
-        if (partNumber !== 2 && partNumber !== 3) {
-            hideColorLoupe();
-        }
-
-        if (partNumber !== 2 && partNumber !== 4) {
-            hideToolCursor();
-        }
+        if (partNumber !== 2 && partNumber !== 3) hideColorLoupe();
+        if (partNumber !== 2 && partNumber !== 4) hideToolCursor();
 
         render();
     }
@@ -448,9 +439,7 @@
             const part = dom[`part${number}`];
             const tab = dom[`tab${number}`];
 
-            if (!part || !tab) {
-                return;
-            }
+            if (!part || !tab) return;
 
             const isActive = number === state.part;
             const isDone = state.completedParts.has(number);
@@ -464,52 +453,35 @@
             const status = part.querySelector(".seatmap-step__status");
 
             if (status) {
-                if (isActive) {
-                    status.textContent = isDone ? "완료진행중" : "진행중";
-                } else if (isDone) {
-                    status.textContent = "완료";
-                } else {
-                    status.textContent = "대기";
-                }
+                if (isActive) status.textContent = isDone ? "완료진행중" : "진행중";
+                else if (isDone) status.textContent = "완료";
+                else status.textContent = "대기";
             }
         });
     }
 
     function initializeWorkspaceSteps() {
         [1, 2, 3, 4].forEach((number) => {
-            if (dom[`part${number}`]) {
-                dom[`part${number}`].classList.remove("hidden");
-            }
+            if (dom[`part${number}`]) dom[`part${number}`].classList.remove("hidden");
         });
 
         syncWorkspacePartState();
     }
 
     function getPartTitle(partNumber) {
-        if (partNumber === 1) {
-            return "원본 / 방향 / 자르기";
-        }
-
-        if (partNumber === 2) {
-            return "제거 색상 선택";
-        }
-
-        if (partNumber === 3) {
-            return "제거 결과 확인";
-        }
-
+        if (partNumber === 1) return "원본 / 방향 / 자르기";
+        if (partNumber === 2) return "불필요 색상 제거";
+        if (partNumber === 3) return "원본 + 추출 미리보기";
         return "추출본 다듬기";
     }
 
     function renderPartGuide(partNumber) {
-        if (!dom.stage1Guide) {
-            return;
-        }
+        if (!dom.stage1Guide) return;
 
         const guideText = {
             1: "상단 회전 도구로 STAGE가 위쪽을 향하도록 방향을 맞춘 뒤, 도면 영역만 남기고 제목, 범례, 여백은 제거하세요.",
-            2: "가운데 이미지에서 흰색, 검은색, 회색, 글자, 무대처럼 필요 없는 색을 클릭하세요. 선택한 색은 배경색으로 제거됩니다.",
-            3: "제거 결과를 확인하세요. 선택한 색은 배경색, 남은 영역은 도형색으로 정리됩니다.",
+            2: "기존 색상 추출처럼 이미지 위에서 클릭하세요. 흰색, 검은색, 회색, 글자, 무대 등 불필요한 색상은 배경색으로 지워집니다.",
+            3: "가운데 이미지를 움직이면 픽셀 확대경과 색상 정보가 표시됩니다. 클릭하면 해당 색상이 추출 목록에 추가됩니다.",
             4: "먼저 작은 선/조각을 자동 제거하고, 남는 부분만 지우개 또는 브러쉬로 수동 보정하세요.",
         };
 
@@ -545,7 +517,6 @@
     function updateZoomDrag(event) {
         const deltaX = event.clientX - state.zoomStartX;
         const nextScale = clamp(state.zoomStartScale + deltaX / 260, MIN_ZOOM, MAX_ZOOM);
-
         setZoomScale(nextScale);
     }
 
@@ -563,26 +534,16 @@
     }
 
     function updateZoomView() {
-        if (dom.zoomValue) {
-            dom.zoomValue.textContent = `${Math.round(state.zoomScale * 100)}%`;
-        }
-
-        if (dom.zoomTool) {
-            dom.zoomTool.classList.toggle("is-active", state.zoomMode);
-        }
-
-        if (dom.box) {
-            dom.box.classList.toggle("is-zooming", state.zoomMode);
-        }
+        if (dom.zoomValue) dom.zoomValue.textContent = `${Math.round(state.zoomScale * 100)}%`;
+        if (dom.zoomTool) dom.zoomTool.classList.toggle("is-active", state.zoomMode);
+        if (dom.box) dom.box.classList.toggle("is-zooming", state.zoomMode);
     }
 
     function toggleRotationMode() {
         state.rotationMode = !state.rotationMode;
 
         if (state.rotationMode) {
-            if (state.part !== 1) {
-                showPart(1);
-            }
+            if (state.part !== 1) showPart(1);
 
             state.zoomMode = false;
             state.cropMode = false;
@@ -593,9 +554,7 @@
             disableFillMode();
             hideColorLoupe();
 
-            if (dom.cropApply) {
-                dom.cropApply.disabled = true;
-            }
+            if (dom.cropApply) dom.cropApply.disabled = true;
 
             showToast("회전 모드: 이미지를 누른 채 좌우로 드래그하세요");
         } else {
@@ -611,9 +570,7 @@
     }
 
     function beginRotationDrag(event) {
-        if (!state.workingUrl) {
-            return;
-        }
+        if (!state.workingUrl) return;
 
         clearRotationPreviewTransform();
 
@@ -634,9 +591,7 @@
         const deltaX = event.clientX - state.rotationStartX;
         const nextDegree = clampRotation(Math.round((state.rotationStartDeg + deltaX / 4) * 10) / 10);
 
-        if (nextDegree === state.rotationDeg) {
-            return;
-        }
+        if (nextDegree === state.rotationDeg) return;
 
         state.rotationMoved = true;
         state.rotationDeg = nextDegree;
@@ -650,10 +605,8 @@
 
         if (!state.rotationMoved || state.rotationDeg === 0) {
             clearRotationPreviewTransform();
-
             state.rotationDeg = 0;
             state.rotationMoved = false;
-
             syncRotateValue();
             updateRotationView();
             render();
@@ -668,13 +621,10 @@
 
         canvas.style.transformOrigin = "center center";
         overlay.style.transformOrigin = "center center";
-
         canvas.style.transform = transformValue;
         overlay.style.transform = transformValue;
 
-        if (dom.box) {
-            dom.box.style.overflow = "visible";
-        }
+        if (dom.box) dom.box.style.overflow = "visible";
     }
 
     function clearRotationPreviewTransform() {
@@ -683,9 +633,7 @@
         canvas.style.transformOrigin = "";
         overlay.style.transformOrigin = "";
 
-        if (dom.box) {
-            dom.box.style.overflow = "";
-        }
+        if (dom.box) dom.box.style.overflow = "";
     }
 
     function commitRotationOnce() {
@@ -711,9 +659,7 @@
 
             const rotatedCanvas = rotateCanvasByDegree(baseCanvas, degree);
 
-            replaceWorkingImageFromCanvas(rotatedCanvas, {
-                keepSimplifyBase: false,
-            });
+            replaceWorkingImageFromCanvas(rotatedCanvas, { keepSimplifyBase: false });
 
             state.rotationBaseUrl = state.workingUrl;
             state.rotationDeg = 0;
@@ -742,10 +688,7 @@
     }
 
     function syncRotateValue() {
-        if (!dom.rotateValue) {
-            return;
-        }
-
+        if (!dom.rotateValue) return;
         dom.rotateValue.textContent = `${state.rotationDeg}°`;
     }
 
@@ -761,7 +704,7 @@
         const resultCtx = result.getContext("2d", { willReadFrequently: true });
 
         resultCtx.save();
-        resultCtx.fillStyle = FIXED_BACKGROUND_COLOR;
+        resultCtx.fillStyle = getBackgroundColorHex();
         resultCtx.fillRect(0, 0, nextWidth, nextHeight);
         resultCtx.translate(nextWidth / 2, nextHeight / 2);
         resultCtx.rotate(radian);
@@ -776,9 +719,7 @@
     }
 
     function pushHistory(label) {
-        if (state.isApplyingHistory || !state.workingUrl || !state.cleanUrl) {
-            return;
-        }
+        if (state.isApplyingHistory || !state.workingUrl || !state.cleanUrl) return;
 
         const snapshot = {
             label,
@@ -789,6 +730,8 @@
             lastExtractUrl: state.lastExtractUrl,
             simplifyBaseUrl: state.simplifyBaseUrl,
             simplifiedUrl: state.simplifiedUrl,
+            removeBaseUrl: state.removeBaseUrl,
+            removeSamples: state.removeSamples.map((sample) => ({ ...sample })),
             samples: state.samples.map((sample) => ({ ...sample })),
             part: state.part,
             completedParts: Array.from(state.completedParts),
@@ -797,36 +740,26 @@
         state.history = state.history.slice(0, state.historyIndex + 1);
         state.history.push(snapshot);
 
-        if (state.history.length > HISTORY_LIMIT) {
-            state.history.shift();
-        }
+        if (state.history.length > HISTORY_LIMIT) state.history.shift();
 
         state.historyIndex = state.history.length - 1;
         updateHistoryButtons();
     }
 
     function undoHistory() {
-        if (state.historyIndex <= 0) {
-            return;
-        }
-
+        if (state.historyIndex <= 0) return;
         state.historyIndex -= 1;
         applyHistorySnapshot(state.history[state.historyIndex]);
     }
 
     function redoHistory() {
-        if (state.historyIndex >= state.history.length - 1) {
-            return;
-        }
-
+        if (state.historyIndex >= state.history.length - 1) return;
         state.historyIndex += 1;
         applyHistorySnapshot(state.history[state.historyIndex]);
     }
 
     function applyHistorySnapshot(snapshot) {
-        if (!snapshot) {
-            return;
-        }
+        if (!snapshot) return;
 
         state.isApplyingHistory = true;
 
@@ -837,7 +770,9 @@
         state.lastExtractUrl = snapshot.lastExtractUrl;
         state.simplifyBaseUrl = snapshot.simplifyBaseUrl || null;
         state.simplifiedUrl = snapshot.simplifiedUrl || null;
-        state.samples = snapshot.samples.map((sample) => ({ ...sample }));
+        state.removeBaseUrl = snapshot.removeBaseUrl || null;
+        state.removeSamples = (snapshot.removeSamples || []).map((sample) => ({ ...sample }));
+        state.samples = (snapshot.samples || []).map((sample) => ({ ...sample }));
         state.part = snapshot.part;
         state.completedParts = new Set(snapshot.completedParts);
 
@@ -870,6 +805,7 @@
 
             loadImage(state.cleanUrl, (cleanImage) => {
                 drawImageToCleanCanvas(cleanImage);
+                renderRemoveSamples();
                 renderSamples();
                 syncWorkspacePartState();
                 renderPartGuide(state.part);
@@ -883,21 +819,13 @@
     }
 
     function updateHistoryButtons() {
-        if (dom.undoAction) {
-            dom.undoAction.disabled = state.historyIndex <= 0;
-        }
-
-        if (dom.redoAction) {
-            dom.redoAction.disabled = state.historyIndex >= state.history.length - 1;
-        }
+        if (dom.undoAction) dom.undoAction.disabled = state.historyIndex <= 0;
+        if (dom.redoAction) dom.redoAction.disabled = state.historyIndex >= state.history.length - 1;
     }
 
     function handleCommandShortcut(event) {
         const isCtrl = event.ctrlKey || event.metaKey;
-
-        if (!isCtrl) {
-            return;
-        }
+        if (!isCtrl) return;
 
         if (event.key.toLowerCase() === "z" && !event.shiftKey) {
             event.preventDefault();
@@ -926,9 +854,7 @@
     }
 
     function updateCropDraft(pointerPos) {
-        if (!state.cropDraft) {
-            return;
-        }
+        if (!state.cropDraft) return;
 
         state.cropDraft.x = Math.min(state.cropDraft.startX, pointerPos.x);
         state.cropDraft.y = Math.min(state.cropDraft.startY, pointerPos.y);
@@ -942,10 +868,7 @@
         overlayCtx.clearRect(0, 0, state.width, state.height);
 
         const rect = state.cropDraft || state.cropRect;
-
-        if (!rect) {
-            return;
-        }
+        if (!rect) return;
 
         overlayCtx.save();
         overlayCtx.fillStyle = "rgba(124, 58, 237, 0.08)";
@@ -968,27 +891,20 @@
         const cropCanvas = createCanvas(Math.round(rect.w), Math.round(rect.h));
         const cropCtx = cropCanvas.getContext("2d");
 
-        cropCtx.drawImage(
-            sourceCanvas,
-            rect.x,
-            rect.y,
-            rect.w,
-            rect.h,
-            0,
-            0,
-            cropCanvas.width,
-            cropCanvas.height
-        );
+        cropCtx.drawImage(sourceCanvas, rect.x, rect.y, rect.w, rect.h, 0, 0, cropCanvas.width, cropCanvas.height);
 
-        replaceWorkingImageFromCanvas(cropCanvas, {
-            keepSimplifyBase: false,
-        });
+        replaceWorkingImageFromCanvas(cropCanvas, { keepSimplifyBase: false });
 
         state.rotationBaseUrl = state.workingUrl;
         state.simplifyBaseUrl = null;
         state.simplifiedUrl = null;
+        state.removeBaseUrl = null;
+        state.removeSamples = [];
+        state.samples = [];
         localStorage.removeItem(STORAGE_KEYS.SIMPLIFY_BASE_IMAGE);
 
+        renderRemoveSamples();
+        renderSamples();
         updateSimplifyInfo("적용 전");
         showToast("자르기 완료");
         pushHistory("자르기");
@@ -1020,9 +936,7 @@
             nextCtx.drawImage(image, 0, 0, nextWidth, nextHeight);
 
             simplifyCanvasColors(nextCanvas, step);
-            replaceWorkingImageFromCanvas(nextCanvas, {
-                keepSimplifyBase: true,
-            });
+            replaceWorkingImageFromCanvas(nextCanvas, { keepSimplifyBase: true });
 
             state.simplifiedUrl = state.workingUrl;
             updateSimplifyInfo(`${image.naturalWidth}×${image.naturalHeight} → ${nextWidth}×${nextHeight}, 색상 단순화 ${step} 적용`);
@@ -1046,14 +960,17 @@
             baseCtx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
             baseCtx.drawImage(image, 0, 0);
 
-            replaceWorkingImageFromCanvas(baseCanvas, {
-                keepSimplifyBase: false,
-            });
+            replaceWorkingImageFromCanvas(baseCanvas, { keepSimplifyBase: false });
 
             state.simplifyBaseUrl = null;
             state.simplifiedUrl = null;
+            state.removeBaseUrl = null;
+            state.removeSamples = [];
+            state.samples = [];
             localStorage.removeItem(STORAGE_KEYS.SIMPLIFY_BASE_IMAGE);
 
+            renderRemoveSamples();
+            renderSamples();
             updateSimplifyInfo("단순화 전으로 복구됨");
             showToast("단순화 전으로 복구 완료");
             pushHistory("단순화 복구");
@@ -1080,10 +997,7 @@
     }
 
     function updateSimplifyInfo(text) {
-        if (!dom.simplifyInfo) {
-            return;
-        }
-
+        if (!dom.simplifyInfo) return;
         dom.simplifyInfo.textContent = text;
     }
 
@@ -1104,6 +1018,8 @@
         state.cleanUrl = cleanCanvas.toDataURL("image/png");
         state.lastExtractUrl = state.cleanUrl;
         state.samples = [];
+        state.removeSamples = [];
+        state.removeBaseUrl = null;
 
         state.cropMode = false;
         state.cropDraft = null;
@@ -1115,40 +1031,175 @@
             localStorage.removeItem(STORAGE_KEYS.SIMPLIFY_BASE_IMAGE);
         }
 
-        if (dom.cropApply) {
-            dom.cropApply.disabled = true;
-        }
+        if (dom.cropApply) dom.cropApply.disabled = true;
 
         overlayCtx.clearRect(0, 0, state.width, state.height);
 
+        renderRemoveSamples();
         renderSamples();
         render();
     }
 
-    function addColorSample(pointerPos) {
+    function addRemoveColorSample(pointerPos) {
         const pixel = getSourcePixel(pointerPos.x, pointerPos.y);
+        if (!pixel) return;
 
-        if (!pixel) {
+        if (!state.removeBaseUrl) {
+            state.removeBaseUrl = state.workingUrl || sourceCanvas.toDataURL("image/png");
+        }
+
+        const exists = state.removeSamples.some((sample) => colorDistance(sample, pixel) <= 2);
+        if (!exists) state.removeSamples.push(pixel);
+
+        renderRemoveSamples();
+        applyRemoveSelectedColors({ recordHistory: true });
+    }
+
+    function renderRemoveSamples() {
+        if (!dom.removeSamples) return;
+
+        if (!state.removeSamples.length) {
+            dom.removeSamples.innerHTML = '<div class="help">이미지를 클릭해서 제거할 색상을 고르세요. 흰색, 검은색, 회색, 글자색, 무대색처럼 필요 없는 색을 찍으면 됩니다.</div>';
             return;
         }
 
-        const exists = state.samples.some((sample) => colorDistance(sample, pixel) <= 2);
+        dom.removeSamples.innerHTML = state.removeSamples
+            .map((sample, index) => {
+                const color = rgbToHex(sample).toUpperCase();
 
-        if (!exists) {
-            state.samples.push(pixel);
+                return `
+                    <div class="sample">
+                        <span>
+                            <i style="background:${color}"></i>
+                            ${color}
+                        </span>
+                        <button type="button" data-index="${index}" aria-label="제거 색상 삭제">×</button>
+                    </div>
+                `;
+            })
+            .join("");
+
+        dom.removeSamples.querySelectorAll("button").forEach((button) => {
+            button.addEventListener("click", () => {
+                state.removeSamples.splice(Number(button.dataset.index), 1);
+                renderRemoveSamples();
+                applyRemoveSelectedColors({ recordHistory: true });
+            });
+        });
+    }
+
+    function applyRemoveSelectedColors(options = {}) {
+        if (!state.width || !state.height) return;
+
+        if (!state.removeBaseUrl) {
+            state.removeBaseUrl = state.workingUrl || sourceCanvas.toDataURL("image/png");
         }
+
+        loadImage(state.removeBaseUrl, (image) => {
+            const baseCanvas = createCanvas(image.naturalWidth, image.naturalHeight);
+            const baseCtx = baseCanvas.getContext("2d", { willReadFrequently: true });
+
+            baseCtx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
+            baseCtx.drawImage(image, 0, 0, baseCanvas.width, baseCanvas.height);
+
+            if (state.removeSamples.length) {
+                const imageData = baseCtx.getImageData(0, 0, baseCanvas.width, baseCanvas.height);
+                const data = imageData.data;
+                const tolerance = getNumber(dom.removeTol, 45);
+                const backgroundColor = getBackgroundColorRgb();
+
+                for (let i = 0; i < data.length; i += 4) {
+                    const pixel = { r: data[i], g: data[i + 1], b: data[i + 2] };
+                    const shouldRemove = state.removeSamples.some((sample) => colorDistance(pixel, sample) <= tolerance);
+
+                    if (shouldRemove) {
+                        data[i] = backgroundColor.r;
+                        data[i + 1] = backgroundColor.g;
+                        data[i + 2] = backgroundColor.b;
+                        data[i + 3] = 255;
+                    }
+                }
+
+                baseCtx.putImageData(imageData, 0, 0);
+            }
+
+            state.workingUrl = baseCanvas.toDataURL("image/png");
+            state.originalUrl = state.workingUrl;
+            localStorage.setItem(STORAGE_KEYS.ORIGINAL_IMAGE, state.workingUrl);
+
+            setupCanvas(baseCanvas.width, baseCanvas.height);
+            sourceCtx.clearRect(0, 0, state.width, state.height);
+            sourceCtx.drawImage(baseCanvas, 0, 0, state.width, state.height);
+
+            cleanCtx.clearRect(0, 0, state.width, state.height);
+            cleanCtx.drawImage(baseCanvas, 0, 0, state.width, state.height);
+            state.cleanUrl = cleanCanvas.toDataURL("image/png");
+            state.lastExtractUrl = state.cleanUrl;
+
+            state.samples = [];
+            renderSamples();
+            render();
+
+            if (options.recordHistory === true) {
+                pushHistory(state.removeSamples.length ? "불필요 색상 제거" : "제거 색상 초기화");
+            }
+        });
+    }
+
+    function clearRemoveSamples() {
+        state.removeSamples = [];
+        renderRemoveSamples();
+        applyRemoveSelectedColors({ recordHistory: true });
+        showToast("제거 색상 목록을 비웠습니다");
+    }
+
+    function restoreRemoveBaseImage() {
+        if (!state.removeBaseUrl) {
+            showToast("복구할 제거 전 이미지가 없습니다");
+            return;
+        }
+
+        loadImage(state.removeBaseUrl, (image) => {
+            state.workingUrl = state.removeBaseUrl;
+            state.originalUrl = state.workingUrl;
+            localStorage.setItem(STORAGE_KEYS.ORIGINAL_IMAGE, state.workingUrl);
+
+            setupCanvas(image.naturalWidth, image.naturalHeight);
+            sourceCtx.clearRect(0, 0, state.width, state.height);
+            sourceCtx.drawImage(image, 0, 0, state.width, state.height);
+            cleanCtx.clearRect(0, 0, state.width, state.height);
+            cleanCtx.drawImage(image, 0, 0, state.width, state.height);
+
+            state.cleanUrl = cleanCanvas.toDataURL("image/png");
+            state.lastExtractUrl = state.cleanUrl;
+            state.removeSamples = [];
+            state.removeBaseUrl = null;
+            state.samples = [];
+
+            renderRemoveSamples();
+            renderSamples();
+            render();
+            pushHistory("불필요 색상 제거 복구");
+            showToast("제거 전으로 복구 완료");
+        });
+    }
+
+    function addColorSample(pointerPos) {
+        const pixel = getSourcePixel(pointerPos.x, pointerPos.y);
+        if (!pixel) return;
+
+        const exists = state.samples.some((sample) => colorDistance(sample, pixel) <= 2);
+        if (!exists) state.samples.push(pixel);
 
         renderSamples();
         extractSelectedColors({ recordHistory: true });
     }
 
     function renderSamples() {
-        if (!dom.samples) {
-            return;
-        }
+        if (!dom.samples) return;
 
         if (!state.samples.length) {
-            dom.samples.innerHTML = '<div class="help">이미지에서 제거할 색상을 클릭하세요. 흰색, 검은색, 회색, 글자색, 무대색을 먼저 찍으면 됩니다.</div>';
+            dom.samples.innerHTML = '<div class="help">이미지를 움직이면 확대경이 표시됩니다. 클릭해서 남길 색상을 고르세요.</div>';
             return;
         }
 
@@ -1178,9 +1229,7 @@
     }
 
     function extractSelectedColors(options = {}) {
-        if (!state.workingUrl || !state.width || !state.height) {
-            return;
-        }
+        if (!state.workingUrl || !state.width || !state.height) return;
 
         cleanCtx.clearRect(0, 0, state.width, state.height);
 
@@ -1190,10 +1239,7 @@
             state.lastExtractUrl = state.cleanUrl;
             render();
 
-            if (options.recordHistory === true) {
-                pushHistory("제거 색상 초기화");
-            }
-
+            if (options.recordHistory === true) pushHistory("색상 초기화");
             return;
         }
 
@@ -1208,25 +1254,18 @@
         const holeArea = getNumber(dom.hole, 0);
 
         for (let i = 0; i < sourceData.length; i += 4) {
-            const pixel = {
-                r: sourceData[i],
-                g: sourceData[i + 1],
-                b: sourceData[i + 2],
-            };
+            const pixel = { r: sourceData[i], g: sourceData[i + 1], b: sourceData[i + 2] };
+            const isSelectedColor = state.samples.some((sample) => colorDistance(pixel, sample) <= tolerance);
 
-            const shouldRemove = state.samples.some((sample) => {
-                return colorDistance(pixel, sample) <= tolerance;
-            });
-
-            if (shouldRemove) {
-                data[i] = backgroundColor.r;
-                data[i + 1] = backgroundColor.g;
-                data[i + 2] = backgroundColor.b;
-                data[i + 3] = 255;
-            } else {
+            if (isSelectedColor) {
                 data[i] = shapeColor.r;
                 data[i + 1] = shapeColor.g;
                 data[i + 2] = shapeColor.b;
+                data[i + 3] = 255;
+            } else {
+                data[i] = backgroundColor.r;
+                data[i + 1] = backgroundColor.g;
+                data[i + 2] = backgroundColor.b;
                 data[i + 3] = 255;
             }
         }
@@ -1239,9 +1278,7 @@
 
         render();
 
-        if (options.recordHistory === true) {
-            pushHistory("제거 색상 추출");
-        }
+        if (options.recordHistory === true) pushHistory("색상 추출");
     }
 
     function restoreOriginalPreview() {
@@ -1258,9 +1295,7 @@
     }
 
     function invertExtractedMask() {
-        if (!state.width || !state.height) {
-            return;
-        }
+        if (!state.width || !state.height) return;
 
         const shapeColor = getShapeColorRgb();
         const backgroundColor = getBackgroundColorRgb();
@@ -1268,12 +1303,7 @@
         const data = imageData.data;
 
         for (let i = 0; i < data.length; i += 4) {
-            const pixel = {
-                r: data[i],
-                g: data[i + 1],
-                b: data[i + 2],
-            };
-
+            const pixel = { r: data[i], g: data[i + 1], b: data[i + 2] };
             const shapeDistance = colorDistance(pixel, shapeColor);
             const backgroundDistance = colorDistance(pixel, backgroundColor);
 
@@ -1291,7 +1321,6 @@
         }
 
         cleanCtx.putImageData(imageData, 0, 0);
-
         state.cleanUrl = cleanCanvas.toDataURL("image/png");
         state.lastExtractUrl = state.cleanUrl;
 
@@ -1301,26 +1330,18 @@
     }
 
     function fillSmallHoles(imageData, shapeColor, backgroundColor, maxArea) {
-        if (maxArea <= 0) {
-            return;
-        }
+        if (maxArea <= 0) return;
 
         const data = imageData.data;
         const visited = new Uint8Array(state.width * state.height);
 
         const isBackground = (index) => {
             const offset = index * 4;
-
-            return (
-                data[offset] === backgroundColor.r &&
-                data[offset + 1] === backgroundColor.g &&
-                data[offset + 2] === backgroundColor.b
-            );
+            return data[offset] === backgroundColor.r && data[offset + 1] === backgroundColor.g && data[offset + 2] === backgroundColor.b;
         };
 
         const paintShape = (index) => {
             const offset = index * 4;
-
             data[offset] = shapeColor.r;
             data[offset + 1] = shapeColor.g;
             data[offset + 2] = shapeColor.b;
@@ -1331,9 +1352,7 @@
             for (let x = 0; x < state.width; x += 1) {
                 const startIndex = y * state.width + x;
 
-                if (visited[startIndex] || !isBackground(startIndex)) {
-                    continue;
-                }
+                if (visited[startIndex] || !isBackground(startIndex)) continue;
 
                 const result = collectConnectedArea(startIndex, visited, isBackground);
 
@@ -1445,21 +1464,10 @@
         const x = Math.floor(pointerPos.x);
         const y = Math.floor(pointerPos.y);
 
-        if (dom.loupeChip) {
-            dom.loupeChip.style.background = hex;
-        }
-
-        if (dom.loupeHex) {
-            dom.loupeHex.textContent = hex;
-        }
-
-        if (dom.loupeRgb) {
-            dom.loupeRgb.textContent = `RGB ${pixel.r}, ${pixel.g}, ${pixel.b}`;
-        }
-
-        if (dom.loupePoint) {
-            dom.loupePoint.textContent = `X ${x}, Y ${y}`;
-        }
+        if (dom.loupeChip) dom.loupeChip.style.background = hex;
+        if (dom.loupeHex) dom.loupeHex.textContent = hex;
+        if (dom.loupeRgb) dom.loupeRgb.textContent = `RGB ${pixel.r}, ${pixel.g}, ${pixel.b}`;
+        if (dom.loupePoint) dom.loupePoint.textContent = `X ${x}, Y ${y}`;
     }
 
     function positionColorLoupe(event) {
@@ -1472,13 +1480,8 @@
         let x = localX + 18;
         let y = localY + 18;
 
-        if (x + loupeWidth > boxRect.width) {
-            x = localX - loupeWidth - 18;
-        }
-
-        if (y + loupeHeight > boxRect.height) {
-            y = localY - loupeHeight - 18;
-        }
+        if (x + loupeWidth > boxRect.width) x = localX - loupeWidth - 18;
+        if (y + loupeHeight > boxRect.height) y = localY - loupeHeight - 18;
 
         x = clamp(x, 8, Math.max(8, boxRect.width - loupeWidth - 8));
         y = clamp(y, 8, Math.max(8, boxRect.height - loupeHeight - 8));
@@ -1493,10 +1496,7 @@
     }
 
     function hideColorLoupe() {
-        if (!dom.colorLoupe) {
-            return;
-        }
-
+        if (!dom.colorLoupe) return;
         dom.colorLoupe.classList.remove("is-show");
         dom.colorLoupe.setAttribute("aria-hidden", "true");
     }
@@ -1505,18 +1505,12 @@
         const px = clamp(Math.floor(x), 0, Math.max(0, state.width - 1));
         const py = clamp(Math.floor(y), 0, Math.max(0, state.height - 1));
 
-        if (!state.width || !state.height) {
-            return null;
-        }
+        if (!state.width || !state.height) return null;
 
         const imageData = sourceCtx.getImageData(px, py, 1, 1);
         const data = imageData.data;
 
-        return {
-            r: data[0],
-            g: data[1],
-            b: data[2],
-        };
+        return { r: data[0], g: data[1], b: data[2] };
     }
 
     function toggleEraserMode() {
@@ -1540,13 +1534,8 @@
     }
 
     function syncToolButtons() {
-        if (dom.eraser) {
-            dom.eraser.classList.toggle("is-active", state.eraserMode);
-        }
-
-        if (dom.rectFill) {
-            dom.rectFill.classList.toggle("is-active", state.fillMode);
-        }
+        if (dom.eraser) dom.eraser.classList.toggle("is-active", state.eraserMode);
+        if (dom.rectFill) dom.rectFill.classList.toggle("is-active", state.fillMode);
     }
 
     function enableEraserMode() {
@@ -1562,9 +1551,7 @@
         updateRotationView();
         syncToolButtons();
 
-        if (dom.box) {
-            dom.box.classList.add("is-erasing");
-        }
+        if (dom.box) dom.box.classList.add("is-erasing");
 
         showToast("지우개 모드: 다시 누르면 종료됩니다");
     }
@@ -1647,17 +1634,11 @@
 
         const isShape = (index) => {
             const offset = index * 4;
-
-            return (
-                data[offset] === shapeColor.r &&
-                data[offset + 1] === shapeColor.g &&
-                data[offset + 2] === shapeColor.b
-            );
+            return data[offset] === shapeColor.r && data[offset + 1] === shapeColor.g && data[offset + 2] === shapeColor.b;
         };
 
         const paintBackground = (index) => {
             const offset = index * 4;
-
             data[offset] = backgroundColor.r;
             data[offset + 1] = backgroundColor.g;
             data[offset + 2] = backgroundColor.b;
@@ -1668,15 +1649,11 @@
             for (let x = 0; x < state.width; x += 1) {
                 const startIndex = y * state.width + x;
 
-                if (visited[startIndex] || !isShape(startIndex)) {
-                    continue;
-                }
+                if (visited[startIndex] || !isShape(startIndex)) continue;
 
                 const result = collectConnectedArea(startIndex, visited, isShape);
 
-                if (result.cells.length <= minArea) {
-                    result.cells.forEach(paintBackground);
-                }
+                if (result.cells.length <= minArea) result.cells.forEach(paintBackground);
             }
         }
 
@@ -1692,9 +1669,7 @@
         disableEraserMode();
         disableFillMode();
 
-        if (!state.lastExtractUrl) {
-            return;
-        }
+        if (!state.lastExtractUrl) return;
 
         loadImage(state.lastExtractUrl, (image) => {
             cleanCtx.clearRect(0, 0, state.width, state.height);
@@ -1714,7 +1689,7 @@
             JSON.stringify({
                 width: state.width,
                 height: state.height,
-                mode: "remove-colors",
+                mode: "remove-colors-then-extract",
                 shapeColor: getShapeColorHex(),
                 backgroundColor: getBackgroundColorHex(),
             })
@@ -1727,13 +1702,6 @@
     }
 
     function moveToStage2() {
-        if (!state.samples.length) {
-            showPart(2);
-            showToast("먼저 제거할 색상을 1개 이상 선택하세요");
-            return;
-        }
-
-        extractSelectedColors();
         saveStage1();
         window.location.href = PAGE_URL.STAGE2;
     }
@@ -1752,25 +1720,19 @@
         const pointerPos = getCanvasPointer(event);
 
         if (state.part === 1 && state.cropMode) {
-            state.cropDraft = {
-                x: pointerPos.x,
-                y: pointerPos.y,
-                w: 0,
-                h: 0,
-                startX: pointerPos.x,
-                startY: pointerPos.y,
-            };
+            state.cropDraft = { x: pointerPos.x, y: pointerPos.y, w: 0, h: 0, startX: pointerPos.x, startY: pointerPos.y };
             return;
         }
 
         if (state.part === 2) {
-            addColorSample(pointerPos);
+            addRemoveColorSample(pointerPos);
             updateRemoveColorCursor(pointerPos);
             updateColorLoupe(event);
             return;
         }
 
         if (state.part === 3) {
+            addColorSample(pointerPos);
             updateColorLoupe(event);
             return;
         }
@@ -1794,9 +1756,7 @@
     function handleOverlayPointerMove(event) {
         if ((state.part === 2 || state.part === 3) && !state.zoomMode && !state.zoomDragging && !state.rotationMode && !state.rotationDragging) {
             const pointerPos = getCanvasPointer(event);
-            if (state.part === 2) {
-                updateRemoveColorCursor(pointerPos);
-            }
+            if (state.part === 2) updateRemoveColorCursor(pointerPos);
             updateColorLoupe(event);
         }
     }
@@ -1814,25 +1774,11 @@
 
         const pointerPos = getCanvasPointer(event);
 
-        if (state.cropDraft) {
-            updateCropDraft(pointerPos);
-        }
-
-        if (state.part === 2) {
-            updateRemoveColorCursor(pointerPos);
-        }
-
-        if (state.part === 4 && isToolModeActive()) {
-            updateToolCursor(pointerPos);
-        }
-
-        if (state.erasing) {
-            eraseAt(pointerPos);
-        }
-
-        if (state.filling) {
-            fillAt(pointerPos);
-        }
+        if (state.cropDraft) updateCropDraft(pointerPos);
+        if (state.part === 2) updateRemoveColorCursor(pointerPos);
+        if (state.part === 4 && isToolModeActive()) updateToolCursor(pointerPos);
+        if (state.erasing) eraseAt(pointerPos);
+        if (state.filling) fillAt(pointerPos);
     }
 
     function handlePointerUp() {
@@ -1847,20 +1793,11 @@
         }
 
         if (state.cropDraft) {
-            state.cropRect = {
-                x: state.cropDraft.x,
-                y: state.cropDraft.y,
-                w: state.cropDraft.w,
-                h: state.cropDraft.h,
-            };
-
+            state.cropRect = { x: state.cropDraft.x, y: state.cropDraft.y, w: state.cropDraft.w, h: state.cropDraft.h };
             state.cropDraft = null;
             state.cropMode = false;
 
-            if (dom.cropApply) {
-                dom.cropApply.disabled = !(state.cropRect.w > 5 && state.cropRect.h > 5);
-            }
-
+            if (dom.cropApply) dom.cropApply.disabled = !(state.cropRect.w > 5 && state.cropRect.h > 5);
             drawCropGuide();
         }
 
@@ -1871,35 +1808,20 @@
         state.filling = false;
         state.changedDuringDrag = false;
 
-        if (didBrushWork) {
-            pushHistory(brushLabel);
-        }
+        if (didBrushWork) pushHistory(brushLabel);
     }
 
     function handlePointerLeave() {
         hideColorLoupe();
 
-        if (state.part === 2) {
-            hideToolCursor();
-        }
-
-        if (state.part === 4 && isToolModeActive() && !state.erasing && !state.filling) {
-            hideToolCursor();
-        }
+        if (state.part === 2) hideToolCursor();
+        if (state.part === 4 && isToolModeActive() && !state.erasing && !state.filling) hideToolCursor();
     }
 
     function handlePointerEnter(event) {
-        if (state.part === 2 || state.part === 3) {
-            updateColorLoupe(event);
-        }
-
-        if (state.part === 2) {
-            updateRemoveColorCursor(getCanvasPointer(event));
-        }
-
-        if (state.part === 4 && isToolModeActive()) {
-            updateToolCursor(getCanvasPointer(event));
-        }
+        if (state.part === 2 || state.part === 3) updateColorLoupe(event);
+        if (state.part === 2) updateRemoveColorCursor(getCanvasPointer(event));
+        if (state.part === 4 && isToolModeActive()) updateToolCursor(getCanvasPointer(event));
     }
 
     function getCanvasPointer(event) {
@@ -1916,25 +1838,21 @@
     }
 
     function drawRemoveSampleMarkers() {
-        if (!state.samples.length || !overlayCtx) {
-            return;
-        }
+        if (!overlayCtx) return;
 
         overlayCtx.save();
         overlayCtx.font = "bold 12px Arial";
         overlayCtx.textAlign = "left";
         overlayCtx.textBaseline = "top";
-        overlayCtx.fillStyle = "rgba(239, 68, 68, 0.92)";
-        overlayCtx.fillText(`제거 색상 ${state.samples.length}개 선택됨`, 12, 12);
+        overlayCtx.fillStyle = "rgba(239, 68, 68, 0.94)";
+        overlayCtx.fillText(state.removeSamples.length ? `제거 색상 ${state.removeSamples.length}개 선택됨` : "제거할 색상을 클릭하세요", 12, 12);
         overlayCtx.restore();
     }
 
     function updateRemoveColorCursor(pointerPos) {
         state.lastPointerPos = pointerPos;
 
-        if (state.part !== 2 || !dom.eraserCursor || !dom.box) {
-            return;
-        }
+        if (state.part !== 2 || !dom.eraserCursor || !dom.box) return;
 
         const size = 28;
         const scale = parseFloat(canvas.style.width) / state.width || 1;
@@ -1946,13 +1864,6 @@
         dom.eraserCursor.style.height = `${cursorSize}px`;
         dom.eraserCursor.style.transform = `translate(${pointerPos.x * scale - cursorSize / 2}px, ${pointerPos.y * scale - cursorSize / 2}px)`;
         dom.box.classList.add("is-erasing");
-    }
-
-    function clearRemoveSamples() {
-        state.samples = [];
-        renderSamples();
-        extractSelectedColors({ recordHistory: true });
-        showToast("제거 색상 목록을 비웠습니다");
     }
 
     function updateToolCursor(pointerPos) {
@@ -1977,9 +1888,7 @@
     }
 
     function hideToolCursor() {
-        if (!dom.eraserCursor || !dom.box) {
-            return;
-        }
+        if (!dom.eraserCursor || !dom.box) return;
 
         dom.eraserCursor.style.display = "none";
         dom.box.classList.remove("is-erasing");
@@ -1989,7 +1898,6 @@
     function collectConnectedArea(startIndex, visited, predicate) {
         const queue = [startIndex];
         const cells = [];
-
         let head = 0;
         let touchesEdge = false;
 
@@ -2004,9 +1912,7 @@
 
             cells.push(index);
 
-            if (x === 0 || y === 0 || x === state.width - 1 || y === state.height - 1) {
-                touchesEdge = true;
-            }
+            if (x === 0 || y === 0 || x === state.width - 1 || y === state.height - 1) touchesEdge = true;
 
             visitNeighbor(x + 1, y);
             visitNeighbor(x - 1, y);
@@ -2014,15 +1920,10 @@
             visitNeighbor(x, y - 1);
         }
 
-        return {
-            cells,
-            touchesEdge,
-        };
+        return { cells, touchesEdge };
 
         function visitNeighbor(x, y) {
-            if (x < 0 || y < 0 || x >= state.width || y >= state.height) {
-                return;
-            }
+            if (x < 0 || y < 0 || x >= state.width || y >= state.height) return;
 
             const nextIndex = y * state.width + x;
 
@@ -2035,7 +1936,6 @@
 
     function loadImage(url, callback) {
         const image = new Image();
-
         image.onload = () => callback(image);
         image.onerror = () => showToast("이미지를 불러오지 못했습니다");
         image.src = url;
@@ -2049,29 +1949,17 @@
     }
 
     function syncHoleValue() {
-        if (!dom.hole || !dom.holeValue) {
-            return;
-        }
-
+        if (!dom.hole || !dom.holeValue) return;
         dom.holeValue.textContent = dom.hole.value;
     }
 
     function normalizeHexColor(value, fallback = "#000000") {
         const color = String(value || fallback).trim();
 
-        if (/^#[0-9a-fA-F]{6}$/.test(color)) {
-            return color.toLowerCase();
-        }
+        if (/^#[0-9a-fA-F]{6}$/.test(color)) return color.toLowerCase();
 
         if (/^#[0-9a-fA-F]{3}$/.test(color)) {
-            return (
-                "#" +
-                color
-                    .slice(1)
-                    .split("")
-                    .map((value) => value + value)
-                    .join("")
-            ).toLowerCase();
+            return ("#" + color.slice(1).split("").map((value) => value + value).join("")).toLowerCase();
         }
 
         return fallback.toLowerCase();
@@ -2104,33 +1992,24 @@
 
     function applySavedStage1Settings() {
         const settings = readStage1Settings();
+        if (!settings) return;
 
-        if (!settings) {
-            return;
-        }
-
-        if (dom.shapeColor && settings.shapeColor) {
-            dom.shapeColor.value = normalizeHexColor(settings.shapeColor, "#000000");
-        }
-
-        if (dom.backgroundColor && settings.backgroundColor) {
-            dom.backgroundColor.value = normalizeHexColor(settings.backgroundColor, FIXED_BACKGROUND_COLOR);
-        }
-
-        if (dom.tol && Number.isFinite(Number(settings.tolerance))) {
-            dom.tol.value = settings.tolerance;
-        }
-
-        if (dom.alpha && Number.isFinite(Number(settings.alpha))) {
-            dom.alpha.value = settings.alpha;
-        }
-
-        if (dom.hole && Number.isFinite(Number(settings.hole))) {
-            dom.hole.value = settings.hole;
-        }
+        if (dom.shapeColor && settings.shapeColor) dom.shapeColor.value = normalizeHexColor(settings.shapeColor, "#000000");
+        if (dom.backgroundColor && settings.backgroundColor) dom.backgroundColor.value = normalizeHexColor(settings.backgroundColor, FIXED_BACKGROUND_COLOR);
+        if (dom.removeTol && Number.isFinite(Number(settings.removeTolerance))) dom.removeTol.value = settings.removeTolerance;
+        if (dom.tol && Number.isFinite(Number(settings.extractTolerance))) dom.tol.value = settings.extractTolerance;
+        if (dom.tol && Number.isFinite(Number(settings.tolerance))) dom.tol.value = settings.tolerance;
+        if (dom.alpha && Number.isFinite(Number(settings.alpha))) dom.alpha.value = settings.alpha;
+        if (dom.hole && Number.isFinite(Number(settings.hole))) dom.hole.value = settings.hole;
 
         if (Array.isArray(settings.removeSamples)) {
-            state.samples = settings.removeSamples
+            state.removeSamples = settings.removeSamples
+                .map((value) => hexToRgb(normalizeHexColor(value, "#000000")))
+                .filter((value) => Number.isFinite(value.r) && Number.isFinite(value.g) && Number.isFinite(value.b));
+        }
+
+        if (Array.isArray(settings.extractSamples)) {
+            state.samples = settings.extractSamples
                 .map((value) => hexToRgb(normalizeHexColor(value, "#000000")))
                 .filter((value) => Number.isFinite(value.r) && Number.isFinite(value.g) && Number.isFinite(value.b));
         }
@@ -2138,11 +2017,13 @@
 
     function getStage1Settings() {
         return {
-            mode: "remove-colors",
+            mode: "remove-colors-then-extract",
             shapeColor: getShapeColorHex(),
             backgroundColor: getBackgroundColorHex(),
-            removeSamples: state.samples.map((sample) => rgbToHex(sample)),
-            tolerance: getNumber(dom.tol, 45),
+            removeSamples: state.removeSamples.map((sample) => rgbToHex(sample)),
+            extractSamples: state.samples.map((sample) => rgbToHex(sample)),
+            removeTolerance: getNumber(dom.removeTol, 45),
+            extractTolerance: getNumber(dom.tol, 45),
             alpha: getNumber(dom.alpha, 100),
             hole: getNumber(dom.hole, 0),
             updatedAt: new Date().toISOString(),
@@ -2150,32 +2031,27 @@
     }
 
     function saveStage1Settings() {
-        localStorage.setItem(
-            STORAGE_KEYS.STAGE1_SETTINGS,
-            JSON.stringify(getStage1Settings())
-        );
+        localStorage.setItem(STORAGE_KEYS.STAGE1_SETTINGS, JSON.stringify(getStage1Settings()));
     }
 
     function getNumber(element, fallback) {
-        if (!element) {
-            return fallback;
-        }
-
+        if (!element) return fallback;
         const value = Number(element.value);
         return Number.isFinite(value) ? value : fallback;
     }
 
     function hexToRgb(hex) {
+        const value = normalizeHexColor(hex, "#000000");
         return {
-            r: parseInt(hex.slice(1, 3), 16),
-            g: parseInt(hex.slice(3, 5), 16),
-            b: parseInt(hex.slice(5, 7), 16),
+            r: parseInt(value.slice(1, 3), 16),
+            g: parseInt(value.slice(3, 5), 16),
+            b: parseInt(value.slice(5, 7), 16),
         };
     }
 
     function rgbToHex(color) {
         return `#${[color.r, color.g, color.b]
-            .map((value) => value.toString(16).padStart(2, "0"))
+            .map((value) => Math.max(0, Math.min(255, Math.round(value))).toString(16).padStart(2, "0"))
             .join("")}`;
     }
 
@@ -2188,9 +2064,7 @@
     }
 
     function showToast(message) {
-        if (!dom.toast) {
-            return;
-        }
+        if (!dom.toast) return;
 
         dom.toast.textContent = message;
         dom.toast.classList.add("show");
