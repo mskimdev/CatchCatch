@@ -1,154 +1,44 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Concert Stage1 Extract</title>
+{{> admin/seatmap/layout/header}}
 
-    <link rel="stylesheet" href="/css/seatmap-concert-stage1.css">
-</head>
+<link href="/css/admin/seatmap-workspace.css" rel="stylesheet">
+<link href="/css/admin/seatmap-concert-stage1.css" rel="stylesheet">
+
 <body>
-<header class="top">
-    <div class="brand">
-        <span class="logo">▦</span>
-        <span>Concert Stage1</span>
-        <small>단색 도면 추출</small>
-    </div>
+<div class="seatmap-workspace seatmap-workspace--stage1">
 
-    <div class="top-actions">
-        <!-- 필요하면 프로젝트 매핑에 맞게 href만 수정 -->
-        <a class="top-btn" href="/admin/seatmap/main">이전</a>
-        <a class="top-btn top-btn--primary" href="/admin/seatmap/concert/stage2">Stage2</a>
-    </div>
-</header>
+    {{> admin/seatmap/layout/workspace-concert-stage1}}
 
-<div class="work">
-    <aside class="side">
-        <p class="side-title">Stage1 · 파트 분리</p>
+    <main class="seatmap-main">
 
-        <div class="tabs">
-            <button type="button" class="tab active" id="tab1">파트1 자르기</button>
-            <button type="button" class="tab" id="tab2">파트2 색상</button>
-            <button type="button" class="tab" id="tab3">파트3 다듬기</button>
+        <div class="seatmap-command-bar" aria-label="공용 작업 명령">
+            <button type="button" class="seatmap-command-btn" id="undoAction" title="이전 작업 Ctrl+Z">
+                ↶ 이전
+            </button>
+
+            <button type="button" class="seatmap-command-btn" id="redoAction" title="다음 작업 Ctrl+Y">
+                ↷ 다음
+            </button>
+
+            <button type="button" class="seatmap-command-btn" id="zoomTool" title="오른쪽 드래그 확대 / 왼쪽 드래그 축소">
+                🔍 확대
+            </button>
+
+            <button type="button" class="seatmap-command-btn" id="rotateTool" title="마우스를 누른 채 좌우로 드래그하면 이미지가 회전됩니다">
+                ⟳ 회전
+            </button>
+
+            <span class="seatmap-rotate-value" id="rotateValue">0°</span>
+
+            <button type="button" class="seatmap-command-btn" id="zoomReset" title="확대 초기화">
+                100%
+            </button>
+
+            <span class="seatmap-zoom-value" id="zoomValue">100%</span>
         </div>
 
-        <section id="part1">
-            <div class="box active">
-                <h3>파트 1 - 자르기</h3>
-
-                <button type="button" class="btn btn--dark" id="cropStart">범위 드래그 시작</button>
-                <button type="button" class="btn" id="cropApply" disabled>선택 범위로 자르기</button>
-                <button type="button" class="btn btn--primary" id="go2">다음: 색상 추출</button>
-
-                <div class="help">
-                    도면 영역만 남기고 제목/범례/여백은 제거하세요.
-                </div>
-            </div>
-        </section>
-
-        <section id="part2" class="hidden">
-            <div class="box active">
-                <h3>파트 2 - 색상 선택 추출</h3>
-
-                <div class="help">
-                    오른쪽 이미지를 클릭하면 해당 색상이 추가되고 즉시 미리보기에 반영됩니다.
-                    원본은 선명하게 두고 선택된 도형 영역만 위에 덮어 표시합니다.
-                </div>
-
-                <div id="samples"></div>
-
-                <div class="row">
-                    <div>
-                        <label for="tol">색상 허용 범위</label>
-                        <input type="range" id="tol" min="5" max="120" value="45">
-                    </div>
-                    <div>
-                        <label for="alpha">도형 표시 강도</label>
-                        <input type="range" id="alpha" min="0" max="100" value="55">
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div>
-                        <label for="shapeColor">도형색</label>
-                        <input type="color" id="shapeColor" value="#d9d9d9">
-                    </div>
-                    <div>
-                        <label for="bgColor">배경색</label>
-                        <input type="color" id="bgColor" value="#f7f7f7">
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div>
-                        <label for="hole">숫자/구멍 메우기</label>
-                        <input type="number" id="hole" value="140">
-                    </div>
-                    <div>
-                        <label for="viewMode">보기</label>
-                        <select id="viewMode">
-                            <option value="mix">원본+미리보기</option>
-                            <option value="clean">미리보기만</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <button type="button" class="btn" id="clearSamples">색상 초기화</button>
-                    <button type="button" class="btn" id="restoreOriginal">원본 복구</button>
-                </div>
-
-                <button type="button" class="btn btn--primary" id="go3">다음: 다듬기</button>
-            </div>
-        </section>
-
-        <section id="part3" class="hidden">
-            <div class="box active">
-                <h3>파트 3 - 다듬기</h3>
-
-                <div class="row">
-                    <button type="button" class="btn btn--dark" id="eraser">지우개 사용</button>
-                    <button type="button" class="btn" id="stopEraser">지우개 종료</button>
-                </div>
-
-                <div class="row">
-                    <button type="button" class="btn btn--green" id="rectFill">브러쉬 채우기</button>
-                    <button type="button" class="btn" id="stopRectFill">채우기 종료</button>
-                </div>
-
-                <div class="row">
-                    <div>
-                        <label for="eraserSize">지우개/브러쉬 크기</label>
-                        <input type="range" id="eraserSize" min="4" max="80" value="18">
-                    </div>
-                    <div>
-                        <label for="cleanupArea">작은 조각 제거</label>
-                        <input type="number" id="cleanupArea" value="180">
-                    </div>
-                </div>
-
-                <div class="row">
-                    <button type="button" class="btn btn--amber" id="cleanup">작은 선/조각 자동 제거</button>
-                    <button type="button" class="btn" id="restoreExtract">추출본 복구</button>
-                </div>
-
-                <div class="row">
-                    <button type="button" class="btn btn--green" id="saveClean">Stage1 저장</button>
-                    <button type="button" class="btn btn--primary" id="toStage3">Stage2 이동</button>
-                </div>
-
-                <div class="help">
-                    숫자 때문에 비어 보이는 부분은 <b>브러쉬 채우기</b>로 드래그해서 메우세요.
-                    실제 좌석 버튼이 아니라 Stage2 도면용 회색 사각형입니다.
-                </div>
-            </div>
-        </section>
-    </aside>
-
-    <main class="main">
         <div class="canvas-wrap">
             <div class="canvas-head">
-                <span id="title">원본 / 자르기</span>
+                <span id="title">원본 / 방향 / 자르기</span>
                 <span id="size">-</span>
             </div>
 
@@ -156,13 +46,31 @@
                 <canvas class="base" id="canvas"></canvas>
                 <canvas id="overlay"></canvas>
                 <div id="eraserCursor" class="eraser-cursor"></div>
+
+                <div class="color-loupe" id="colorLoupe" aria-hidden="true">
+                    <div class="color-loupe__lens">
+                        <canvas id="loupeCanvas" width="132" height="132"></canvas>
+                    </div>
+
+                    <div class="color-loupe__info">
+                        <div class="color-loupe__top">
+                            <span class="color-loupe__chip" id="loupeChip"></span>
+                            <strong id="loupeHex">#------</strong>
+                        </div>
+                        <div id="loupeRgb">RGB -</div>
+                        <div id="loupePoint">X -, Y -</div>
+                    </div>
+                </div>
             </div>
         </div>
+
     </main>
+
 </div>
 
 <div class="toast" id="toast"></div>
 
+<script src="/js/admin/seatmap-workspace.js" defer></script>
 <script src="/js/admin/seatmap-concert-stage1.js"></script>
 </body>
 </html>
