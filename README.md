@@ -32,6 +32,9 @@
 
 ### 🔔 알림 / AI 챗봇
 - SSE(Server-Sent Events) 기반 실시간 알림
+- `NotificationDispatcher`가 1:1 문의 답변, 예매 완료/취소, 포인트 적립/만료, 관심 공연 예매 오픈, 1:1 채팅 답변 등 도메인 이벤트별 알림을 중앙에서 조율
+- 인앱(`InAppSender`) / 이메일 / SMS 채널을 동일한 `MessageSender` 인터페이스로 통일
+- K6 부하 테스트로 알림 발송~수신 흐름 검증 (`loadtest/notification-test.js`)
 - Spring AI + Claude(Anthropic) 연동 인앱 챗봇 상담 기능
 
 ### 👤 사용자 / 인증
@@ -148,6 +151,16 @@ k6 run loadtest/queue-test.js
 ```
 
 5000명의 가상 사용자가 동시에 로그인 후 대기열에 진입하여 `READY` 상태로 승격되는 과정을 검증합니다.
+
+### 4. 알림 발송 부하 테스트
+
+유저/관리자 세션을 분리해 1:1 문의 답변, 포인트 적립, 관심 공연 예매 오픈 알림이 실제로 발송되는지 끝까지 검증합니다.
+
+```bash
+k6 run loadtest/notification-test.js
+```
+
+유저(`ssar@naver.com`)가 문의를 등록하고 이벤트에 참여하는 동안, 관리자(`admin@catchcatch.com`)가 답변을 등록하고 공연 상태를 변경한 뒤 `/api/notifications`로 알림 수신 여부를 확인합니다. 결제·환불(PortOne 실연동 필요)과 1:1 채팅 답변(STOMP 기반)은 순수 HTTP 시나리오로 다루기 어려워 검증 범위에서 제외했습니다.
 
 ## 로깅
 

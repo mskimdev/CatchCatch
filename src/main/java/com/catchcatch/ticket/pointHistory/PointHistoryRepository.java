@@ -105,4 +105,16 @@ public interface PointHistoryRepository extends JpaRepository<PointHistory, Inte
       and ph.type = PointHistoryType.USE
 """)
     List<PointHistory> findUseHistoryByPayment(@Param("payment") Payment payment);
+
+    /**
+     * 만료 대상 포인트(balance > 0, 만료일이 지남)가 남아있는 유저 ID 목록
+     * 전체 유저를 풀스캔하지 않고, 정리가 필요한 유저만 골라내기 위한 용도
+     */
+    @Query("""
+        select distinct ph.user.id
+        from PointHistory ph
+        where ph.balance > 0
+          and ph.expiredAt <= :now
+    """)
+    List<Integer> findUserIdsWithExpiredPoint(@Param("now") Timestamp now);
 }

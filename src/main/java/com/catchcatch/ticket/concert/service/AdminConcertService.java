@@ -4,8 +4,10 @@ import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
+import com.catchcatch.ticket.concertlike.ConcertLikeRepository;
 import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.core.util.ProfileImageUtil;
+import com.catchcatch.ticket.notification.service.NotificationDispatcher;
 import com.catchcatch.ticket.seat.SeatJdbcRepository;
 import com.catchcatch.ticket.seat.SeatService;
 import com.catchcatch.ticket.session.ConcertSession;
@@ -33,6 +35,8 @@ public class AdminConcertService {
     private final ConcertSessionRepository concertSessionRepository;
     private final SeatService seatService;
     private final SeatJdbcRepository seatJdbcRepository;
+    private final ConcertLikeRepository concertLikeRepository;
+    private final NotificationDispatcher notificationDispatcher;
 
     // 공연 목록
     @Transactional(readOnly = true)
@@ -172,9 +176,16 @@ public class AdminConcertService {
         if (!concert.getVenue().getId().equals(newVenue.getId())) {
             seatService.updateSeatsForChangedVenue(concert, newVenue);
         }
-        
+
+        ConcertStatus previousStatus = concert.getConcertStatus();
+
         // 마지막에 공연 정보 업데이트 (공연장 포함)
         concert.update(dto, newVenue, updatePosterUrl);
+
+        // 예매 오픈(COMING_SOON -> OPEN) 시점에 찜한 유저들에게 알림 발송
+        if (previousStatus == ConcertStatus.COMING_SOON && concert.getConcertStatus() == ConcertStatus.OPEN) {
+            notificationDispatcher.dispatchConcertOpened(concert, concertLikeRepository.findUsersByConcertId(concert.getId()));
+        }
     }
 
     private String uploadFile(MultipartFile file) throws IOException {
