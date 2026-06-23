@@ -177,3 +177,25 @@
     border-color: var(--cc-primary);
     color: var(--cc-primary-dark);
 }
+
+.cc-guide-box {
+    padding: 24px;
+    margin-bottom: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background-color: #fff;
+}
+
+.cc-guide-box h3 {
+    margin-bottom: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+}
+
+.cc-guide-box p {
+    margin: 0;
+    line-height: 1.7;
+    font-size: 15px;
+    color: #555;
+}
