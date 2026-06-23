@@ -4,7 +4,7 @@ public class EmployeeResponse {
 
     public record ListDTO(
             Integer id,
-            String employeeNumber, // 🚨 추가됨
+            String employeeNumber,
             String accountId,
             String name,
             String department,
@@ -21,6 +21,18 @@ public class EmployeeResponse {
                     employee.getRole().toString(),
                     employee.getStatus().name()
             );
+        }
+    }
+
+    public record DetailDTO(
+            String employeeNumber,
+            String name,
+            String department,
+            EmployeeRole role
+    ) {
+        public DetailDTO(Employee employee) {
+            this(employee.getEmployeeNumber(), employee.getName(),
+                    employee.getDepartment(), employee.getRole());
         }
     }
 }
