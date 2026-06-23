@@ -1,13 +1,5 @@
-// 위치 예시: src/main/resources/static/js/admin/seatmap/concert-stage2.js
 (() => {
-  // Concert Stage2 editor
-  //
-  // 수정 위치 요약:
-  // - 파트/패널 전환: setPart(), renderAll()
-  // - 구역 자동 추출: analyzeAll(), isShapePixel(), polygonFromCells()
-  // - 회색 도형 면 생성: makeButtonForSection(), faceFromGrayInsideSection()
-  // - 컬러 구역도: drawFinalMap(), renderPreview()
-  // - 저장 JSON: updateJson(), saveStage2()
+
 
   // ============================================================
   // 1. DOM / Canvas / 전역 상태
@@ -16,10 +8,16 @@
   const appRoot = $("stage2App");
   const ROUTES = {
     // 이전 스테이지
-    stage1: appRoot?.dataset.stage1Url || "/admin/seatmap/concert-stage1",
+    stage1: appRoot?.dataset.stage1Url || "/admin/seatmap/concert/stage1",
     // 다음 스테이지
-    stage3: appRoot?.dataset.stage3Url || "/admin/seatmap/concert-stage3",
+    stage3: appRoot?.dataset.stage3Url || "/admin/seatmap/concert/stage3",
   };
+  const STAGE1_SETTINGS_KEY = "concert_stage1Settings";
+  const IMAGE_META_KEY = "concert_imageMeta";
+  const STAGE2_BACKGROUND_COLOR = "#ffffff";
+  const STAGE2_SHAPE_COLOR = "#d9d9d9";
+  let stage1Settings = readStage1Settings();
+
   const base = $("baseCanvas");
   const overlay = $("overlayCanvas");
   const bctx = base.getContext("2d", { willReadFrequently: true });
@@ -56,6 +54,18 @@
   let editMode = false;
   let editAction = "move";
   let finalMapUrl = null;
+  let baseScale = 1;
+  let zoomScale = 1;
+  let zoomToolOn = false;
+  let zoomDragging = false;
+  let zoomStartX = 0;
+  let zoomStartScale = 1;
+  let numberClickMode = false;
+  let nextSectionNumber = 1;
+  let sectionNumberHistory = [];
+  let clickSectionGroupKey = "";
+  let part1EditMode = "";
+  let part3AutoNumberApplied = false;
 
   const palette = [
     "#ff7a1a",
@@ -107,6 +117,139 @@
         .join("")
     );
   }
+
+  function normalizeHexColor(value, fallback = "#000000") {
+    const color = String(value || fallback).trim();
+
+    if (/^#[0-9a-fA-F]{6}$/.test(color)) return color.toLowerCase();
+
+    if (/^#[0-9a-fA-F]{3}$/.test(color)) {
+      return (
+        "#" +
+        color
+          .slice(1)
+          .split("")
+          .map((v) => v + v)
+          .join("")
+      ).toLowerCase();
+    }
+
+    return fallback.toLowerCase();
+  }
+
+  function readJsonStorage(key) {
+    try {
+      const value = localStorage.getItem(key);
+      return value ? JSON.parse(value) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function readStage1Settings() {
+    const settings = readJsonStorage(STAGE1_SETTINGS_KEY);
+    const meta = readJsonStorage(IMAGE_META_KEY);
+
+    return {
+      shapeColor: normalizeHexColor(
+        settings?.shapeColor || meta?.shapeColor || "#000000",
+        "#000000",
+      ),
+      backgroundColor: normalizeHexColor(
+        settings?.backgroundColor || meta?.backgroundColor || "#f7f7f7",
+        "#f7f7f7",
+      ),
+      mode: settings?.mode || meta?.mode || "",
+    };
+  }
+
+  function getStage1ShapeColor() {
+    return normalizeHexColor(
+      stage1Settings?.shapeColor || $("shapeColor")?.value || "#000000",
+      "#000000",
+    );
+  }
+
+  function getStage1BackgroundColor() {
+    return normalizeHexColor(
+      stage1Settings?.backgroundColor || $("bgColor")?.value || "#f7f7f7",
+      "#f7f7f7",
+    );
+  }
+
+  function isBlackLikeHex(hex) {
+    const c = hexToRgb(normalizeHexColor(hex, "#000000"));
+    const max = Math.max(c.r, c.g, c.b);
+    const min = Math.min(c.r, c.g, c.b);
+    const avg = (c.r + c.g + c.b) / 3;
+
+    return max <= 80 || (max - min <= 24 && avg <= 135);
+  }
+
+  function getRenderColorFromStage1Shape() {
+    const shapeColor = getStage1ShapeColor();
+
+    if (isBlackLikeHex(shapeColor)) return STAGE2_SHAPE_COLOR;
+
+    return shapeColor;
+  }
+
+  function getStage2ShapeColor() {
+    return STAGE2_SHAPE_COLOR;
+  }
+
+  function getStage2BackgroundColor() {
+    return STAGE2_BACKGROUND_COLOR;
+  }
+
+  function normalizeStage1CleanImageForStage2() {
+    if (!W || !H) return;
+
+    const imageData = cleanCtx.getImageData(0, 0, W, H);
+    const data = imageData.data;
+    const sourceBg = hexToRgb(getStage1BackgroundColor());
+    const targetBg = hexToRgb(STAGE2_BACKGROUND_COLOR);
+    const targetShape = hexToRgb(STAGE2_SHAPE_COLOR);
+
+    for (let i = 0; i < data.length; i += 4) {
+      const pixel = { r: data[i], g: data[i + 1], b: data[i + 2] };
+      const isBackground = dist(pixel, sourceBg) <= 42;
+
+      if (isBackground) {
+        data[i] = targetBg.r;
+        data[i + 1] = targetBg.g;
+        data[i + 2] = targetBg.b;
+        data[i + 3] = 255;
+      } else {
+        data[i] = targetShape.r;
+        data[i + 1] = targetShape.g;
+        data[i + 2] = targetShape.b;
+        data[i + 3] = 255;
+      }
+    }
+
+    cleanCtx.putImageData(imageData, 0, 0);
+  }
+
+  function normalizeStage2SectionColors() {
+    sections.forEach((sec) => {
+      sec.sourceColor = STAGE2_SHAPE_COLOR;
+      sec.stage2ShapeColor = STAGE2_SHAPE_COLOR;
+      sec.backgroundColor = STAGE2_BACKGROUND_COLOR;
+      sec.renderColor = STAGE2_SHAPE_COLOR;
+      sec.sourceGroup = 1;
+      sec.ruleKey = "stage2-gray-shape";
+      sec.sectionGroupKey = "source-1";
+      sec.sectionGroupName = "색상 그룹 1";
+    });
+  }
+
+  function applyStage1SettingsToInputs() {
+    stage1Settings = readStage1Settings();
+
+    if ($("shapeColor")) $("shapeColor").value = STAGE2_SHAPE_COLOR;
+    if ($("bgColor")) $("bgColor").value = STAGE2_BACKGROUND_COLOR;
+  }
   function dist(a, b) {
     return Math.hypot(a.r - b.r, a.g - b.g, a.b - b.b);
   }
@@ -117,6 +260,37 @@
       y: ((e.clientY - r.top) * canvas.height) / r.height,
     };
   }
+  function applyCanvasScale() {
+    if (!W || !H) return;
+
+    const scale = baseScale * zoomScale;
+    const cssW = W * scale;
+    const cssH = H * scale;
+
+    base.style.width = overlay.style.width = cssW + "px";
+    base.style.height = overlay.style.height = cssH + "px";
+
+    const canvasBox = $("canvasBox");
+    if (canvasBox) {
+      canvasBox.style.width = cssW + "px";
+      canvasBox.style.height = cssH + "px";
+    }
+
+    const zoomValue = $("zoomValue");
+    if (zoomValue) {
+      zoomValue.textContent = Math.round(zoomScale * 100) + "%";
+    }
+
+    const zoomTool = $("zoomTool");
+    if (zoomTool) {
+      zoomTool.classList.toggle("is-active", zoomToolOn);
+    }
+
+    if (canvasBox) {
+      canvasBox.classList.toggle("is-zooming", zoomToolOn);
+    }
+  }
+
   function setupCanvas(w, h) {
     W = w;
     H = h;
@@ -126,14 +300,34 @@
     });
     cleanCanvas.width = w;
     cleanCanvas.height = h;
-    const scale = Math.min(1, 1120 / w, 720 / h);
-    base.style.width = overlay.style.width = w * scale + "px";
-    base.style.height = overlay.style.height = h * scale + "px";
-    $("canvasBox").style.width = w * scale + "px";
-    $("canvasBox").style.height = h * scale + "px";
-    $("canvasSize").textContent = w + " × " + h;
+
+    baseScale = Math.min(1, 1120 / w, 720 / h);
+    zoomScale = 1;
+    applyCanvasScale();
+
+    const canvasSize = $("canvasSize");
+    if (canvasSize) {
+      canvasSize.textContent = w + " × " + h;
+    }
     preview.width = w;
     preview.height = h;
+  }
+
+  function setZoom(nextZoom) {
+    zoomScale = Math.max(0.25, Math.min(4, nextZoom));
+    applyCanvasScale();
+  }
+
+  function zoomIn() {
+    setZoom(zoomScale * 1.15);
+  }
+
+  function zoomOut() {
+    setZoom(zoomScale / 1.15);
+  }
+
+  function resetZoom() {
+    setZoom(1);
   }
 
   // ============================================================
@@ -172,6 +366,40 @@
       w: Math.max(...xs) - Math.min(...xs),
       h: Math.max(...ys) - Math.min(...ys),
     };
+  }
+
+  function rectFromDrag(r) {
+    return {
+      x: Math.min(r.x, r.x + r.w),
+      y: Math.min(r.y, r.y + r.h),
+      w: Math.abs(r.w),
+      h: Math.abs(r.h),
+    };
+  }
+
+  function rectContainsPoint(r, p) {
+    return p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h;
+  }
+
+  function rectIntersectsBBox(r, b) {
+    return !(b.x > r.x + r.w || b.x + b.w < r.x || b.y > r.y + r.h || b.y + b.h < r.y);
+  }
+
+  function rectPolygon(x, y, w, h) {
+    return [
+      { x, y },
+      { x: x + w, y },
+      { x: x + w, y: y + h },
+      { x, y: y + h },
+    ];
+  }
+
+  function bboxOfSections(list) {
+    const points = [];
+    list.forEach((sec) => {
+      (sec.polygon || []).forEach((p) => points.push(p));
+    });
+    return points.length ? bboxOf(points) : null;
   }
 
   function polygonArea(poly) {
@@ -624,23 +852,11 @@
 
     if (c.a < 20) return false;
 
-    // Stage1에서 만든 도형색 기준. 기본은 회색.
-    const shape = hexToRgb($("shapeColor").value || "#d9d9d9");
-    const bg = hexToRgb($("bgColor").value || "#f7f7f7");
+    const shape = hexToRgb(getStage2ShapeColor());
+    const bg = hexToRgb(getStage2BackgroundColor());
 
-    // 배경은 제외
-    if (dist(c, bg) < 18) return false;
-
-    // 1순위: Stage1 도형색과 유사한 픽셀
-    if (dist(c, shape) <= 70) return true;
-
-    // 2순위: 실제 이미지 압축/안티앨리어싱 때문에 약간 달라진 저채도 회색 픽셀
-    const max = Math.max(c.r, c.g, c.b);
-    const min = Math.min(c.r, c.g, c.b);
-    const sat = max - min;
-    const bright = (c.r + c.g + c.b) / 3;
-
-    return sat <= 32 && bright >= 125 && bright <= 235;
+    if (dist(c, bg) < 28) return false;
+    return dist(c, shape) <= 54;
   }
 
   function grayCellsInsideSection(sec) {
@@ -848,31 +1064,578 @@
     return loops;
   }
 
-  function simplifyGrayLoop(loop) {
-    if (!loop || loop.length < 3) return loop || [];
+  function pointSegmentDistance(p, a, b) {
+    const vx = b.x - a.x;
+    const vy = b.y - a.y;
+    const len2 = vx * vx + vy * vy;
 
-    // 회색 외곽 그대로가 우선. 아주 미세한 픽셀 계단만 정리한다.
-    let eps = +($("buttonSimplify")?.value || 2);
-    let poly = rdp(loop.concat([loop[0]]), eps).slice(0, -1);
+    if (!len2) return Math.hypot(p.x - a.x, p.y - a.y);
 
-    poly = removeShortAndCollinear(poly);
+    let t = ((p.x - a.x) * vx + (p.y - a.y) * vy) / len2;
+    t = Math.max(0, Math.min(1, t));
 
-    // 최대 꼭짓점은 넉넉하게 둔다. 여기서 억지로 줄이면 네모/박스처럼 망가진다.
-    const maxPts = +($("maxButtonPoints")?.value || 32);
-    if (poly.length > maxPts) {
-      let localEps = eps * 1.2;
-      for (let i = 0; i < 6 && poly.length > maxPts; i++) {
-        poly = rdp(loop.concat([loop[0]]), localEps).slice(0, -1);
-        poly = removeShortAndCollinear(poly);
-        localEps *= 1.25;
+    return Math.hypot(p.x - (a.x + vx * t), p.y - (a.y + vy * t));
+  }
+
+  function pointNearPolygonEdge(p, poly, tolerance) {
+    if (!poly || poly.length < 2) return false;
+
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i];
+      const b = poly[(i + 1) % poly.length];
+      if (pointSegmentDistance(p, a, b) <= tolerance) return true;
+    }
+
+    return false;
+  }
+
+  function pointInsideOrNearPoly(p, poly, tolerance) {
+    return pointInPoly(p, poly) || pointNearPolygonEdge(p, poly, tolerance);
+  }
+
+  function cleanAdjacentPoints(poly, minDistance = 0.75) {
+    if (!poly || poly.length < 3) return poly || [];
+
+    const out = [];
+
+    poly.forEach((p) => {
+      const q = { x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10 };
+      const last = out[out.length - 1];
+
+      if (!last || Math.hypot(q.x - last.x, q.y - last.y) >= minDistance) {
+        out.push(q);
+      }
+    });
+
+    if (out.length > 2) {
+      const first = out[0];
+      const last = out[out.length - 1];
+      if (Math.hypot(first.x - last.x, first.y - last.y) < minDistance) out.pop();
+    }
+
+    return out.length >= 3 ? out : poly.map((p) => ({ x: p.x, y: p.y }));
+  }
+
+  function cornerAngle(a, b, c) {
+    const v1x = a.x - b.x;
+    const v1y = a.y - b.y;
+    const v2x = c.x - b.x;
+    const v2y = c.y - b.y;
+    const len = Math.hypot(v1x, v1y) * Math.hypot(v2x, v2y) || 1;
+    const dot = v1x * v2x + v1y * v2y;
+    return Math.acos(Math.max(-1, Math.min(1, dot / len)));
+  }
+
+  function removeTinyEdges(poly, minLen = 5) {
+    if (!poly || poly.length < 3) return poly || [];
+
+    let out = cleanAdjacentPoints(poly);
+    let changed = true;
+    let guard = 0;
+
+    while (changed && guard++ < 8 && out.length > 3) {
+      changed = false;
+      const next = [];
+
+      for (let i = 0; i < out.length; i++) {
+        const prev = out[(i - 1 + out.length) % out.length];
+        const cur = out[i];
+        const nxt = out[(i + 1) % out.length];
+        const d1 = Math.hypot(cur.x - prev.x, cur.y - prev.y);
+        const d2 = Math.hypot(nxt.x - cur.x, nxt.y - cur.y);
+        const angle = cornerAngle(prev, cur, nxt);
+        const almostStraight = angle > Math.PI * 0.82;
+        const almostDuplicate = Math.hypot(nxt.x - prev.x, nxt.y - prev.y) < minLen * 0.8;
+
+        if ((d1 < minLen || d2 < minLen) && (almostStraight || almostDuplicate) && out.length - next.length > 3) {
+          changed = true;
+          continue;
+        }
+
+        next.push(cur);
+      }
+
+      if (next.length >= 3) out = next;
+    }
+
+    return out;
+  }
+
+  function removeAlmostStraightPoints(poly, tolerance = 0.9) {
+    if (!poly || poly.length < 4) return poly || [];
+
+    let out = cleanAdjacentPoints(poly);
+    let changed = true;
+    let guard = 0;
+
+    while (changed && guard++ < 8 && out.length > 3) {
+      changed = false;
+      const next = [];
+
+      for (let i = 0; i < out.length; i++) {
+        const a = out[(i - 1 + out.length) % out.length];
+        const b = out[i];
+        const c = out[(i + 1) % out.length];
+        const ab = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+        const bc = Math.hypot(c.x - b.x, c.y - b.y) || 1;
+        const cross = Math.abs((b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x));
+        const straightness = cross / (ab + bc);
+        const angle = cornerAngle(a, b, c);
+        const sharpCorner = angle < Math.PI * 0.65;
+
+        if (!sharpCorner && straightness < tolerance && Math.hypot(c.x - a.x, c.y - a.y) > 4) {
+          changed = true;
+          continue;
+        }
+
+        next.push(b);
+      }
+
+      if (next.length >= 3) out = next;
+    }
+
+    return out;
+  }
+
+  function smartStraightenEdges(poly) {
+    if (!poly || poly.length < 3) return poly || [];
+
+    const out = poly.map((p) => ({ x: p.x, y: p.y }));
+
+    for (let pass = 0; pass < 2; pass++) {
+      for (let i = 0; i < out.length; i++) {
+        const a = out[i];
+        const b = out[(i + 1) % out.length];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const len = Math.hypot(dx, dy);
+
+        if (len < 8) continue;
+
+        const limit = Math.max(1.25, Math.min(6, len * 0.075));
+
+        if (Math.abs(dy) <= limit) {
+          const y = (a.y + b.y) / 2;
+          a.y = y;
+          b.y = y;
+        } else if (Math.abs(dx) <= limit) {
+          const x = (a.x + b.x) / 2;
+          a.x = x;
+          b.x = x;
+        }
       }
     }
 
-    // 자동 단계에서는 스냅을 거의 하지 않는다. 스냅은 도형을 박스처럼 만들 수 있음.
-    const snap = +($("buttonSnap")?.value || 0);
-    if (snap > 0) poly = straightenNgon(poly, snap);
+    return out.map((p) => ({
+      x: Math.round(p.x * 10) / 10,
+      y: Math.round(p.y * 10) / 10,
+    }));
+  }
 
-    return poly.length >= 3 ? poly : loop;
+  function orientation(a, b, c) {
+    const v = (b.y - a.y) * (c.x - b.x) - (b.x - a.x) * (c.y - b.y);
+    if (Math.abs(v) < 0.0001) return 0;
+    return v > 0 ? 1 : 2;
+  }
+
+  function onSegment(a, b, c) {
+    return (
+      Math.min(a.x, c.x) - 0.0001 <= b.x && b.x <= Math.max(a.x, c.x) + 0.0001 &&
+      Math.min(a.y, c.y) - 0.0001 <= b.y && b.y <= Math.max(a.y, c.y) + 0.0001
+    );
+  }
+
+  function segmentsIntersect(p1, q1, p2, q2) {
+    const o1 = orientation(p1, q1, p2);
+    const o2 = orientation(p1, q1, q2);
+    const o3 = orientation(p2, q2, p1);
+    const o4 = orientation(p2, q2, q1);
+
+    if (o1 !== o2 && o3 !== o4) return true;
+    if (o1 === 0 && onSegment(p1, p2, q1)) return true;
+    if (o2 === 0 && onSegment(p1, q2, q1)) return true;
+    if (o3 === 0 && onSegment(p2, p1, q2)) return true;
+    if (o4 === 0 && onSegment(p2, q1, q2)) return true;
+
+    return false;
+  }
+
+  function hasSelfIntersection(poly) {
+    if (!poly || poly.length < 4) return false;
+
+    for (let i = 0; i < poly.length; i++) {
+      const a1 = poly[i];
+      const a2 = poly[(i + 1) % poly.length];
+
+      for (let j = i + 1; j < poly.length; j++) {
+        if (Math.abs(i - j) <= 1) continue;
+        if (i === 0 && j === poly.length - 1) continue;
+
+        const b1 = poly[j];
+        const b2 = poly[(j + 1) % poly.length];
+        if (segmentsIntersect(a1, a2, b1, b2)) return true;
+      }
+    }
+
+    return false;
+  }
+
+  function samplePolygonEdges(poly, perEdge = 2) {
+    const samples = [];
+    if (!poly || poly.length < 3) return samples;
+
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i];
+      const b = poly[(i + 1) % poly.length];
+      samples.push(a);
+
+      for (let step = 1; step <= perEdge; step++) {
+        const t = step / (perEdge + 1);
+        samples.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+      }
+    }
+
+    return samples;
+  }
+
+  function shapeSimilarityOk(original, cleaned, tolerance) {
+    if (!original || !cleaned || original.length < 3 || cleaned.length < 3) return false;
+    if (hasSelfIntersection(cleaned)) return false;
+
+    const originalArea = polygonArea(original) || 1;
+    const cleanedArea = polygonArea(cleaned) || 1;
+    const areaRatio = cleanedArea / originalArea;
+
+    if (areaRatio < 0.45 || areaRatio > 1.85) return false;
+
+    const ob = bboxOf(original);
+    const cb = bboxOf(cleaned);
+    const diag = Math.hypot(ob.w, ob.h) || 1;
+    const centerShift = Math.hypot((ob.x + ob.w / 2) - (cb.x + cb.w / 2), (ob.y + ob.h / 2) - (cb.y + cb.h / 2));
+
+    if (centerShift > diag * 0.13) return false;
+    if (cb.w < ob.w * 0.62 || cb.w > ob.w * 1.28) return false;
+    if (cb.h < ob.h * 0.62 || cb.h > ob.h * 1.28) return false;
+
+    const cleanedSamples = samplePolygonEdges(cleaned, 2);
+    const originalSamples = samplePolygonEdges(original, 1);
+
+    const cleanedInside = cleanedSamples.filter((p) => pointInsideOrNearPoly(p, original, tolerance)).length / Math.max(1, cleanedSamples.length);
+    const originalInside = originalSamples.filter((p) => pointInsideOrNearPoly(p, cleaned, tolerance)).length / Math.max(1, originalSamples.length);
+
+    return cleanedInside >= 0.64 && originalInside >= 0.64;
+  }
+
+  function lineFromCleanEdge(a, b) {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const limit = Math.max(1.2, Math.min(7, len * 0.08));
+
+    if (Math.abs(dy) <= limit) {
+      return { type: "h", y: (a.y + b.y) / 2 };
+    }
+
+    if (Math.abs(dx) <= limit) {
+      return { type: "v", x: (a.x + b.x) / 2 };
+    }
+
+    const A = dy;
+    const B = -dx;
+    const C = A * a.x + B * a.y;
+    return { type: "g", A, B, C };
+  }
+
+  function intersectCleanLines(l1, l2, fallback) {
+    if (!l1 || !l2) return fallback;
+
+    if (l1.type === "h" && l2.type === "v") return { x: l2.x, y: l1.y };
+    if (l1.type === "v" && l2.type === "h") return { x: l1.x, y: l2.y };
+
+    if (l1.type === "h" && l2.type === "g") {
+      if (Math.abs(l2.A) < 0.0001) return fallback;
+      return { x: (l2.C - l2.B * l1.y) / l2.A, y: l1.y };
+    }
+
+    if (l1.type === "g" && l2.type === "h") {
+      if (Math.abs(l1.A) < 0.0001) return fallback;
+      return { x: (l1.C - l1.B * l2.y) / l1.A, y: l2.y };
+    }
+
+    if (l1.type === "v" && l2.type === "g") {
+      if (Math.abs(l2.B) < 0.0001) return fallback;
+      return { x: l1.x, y: (l2.C - l2.A * l1.x) / l2.B };
+    }
+
+    if (l1.type === "g" && l2.type === "v") {
+      if (Math.abs(l1.B) < 0.0001) return fallback;
+      return { x: l2.x, y: (l1.C - l1.A * l2.x) / l1.B };
+    }
+
+    if (l1.type === "h" && l2.type === "h") return fallback;
+    if (l1.type === "v" && l2.type === "v") return fallback;
+
+    const det = l1.A * l2.B - l2.A * l1.B;
+    if (Math.abs(det) < 0.0001) return fallback;
+
+    return {
+      x: (l1.C * l2.B - l2.C * l1.B) / det,
+      y: (l1.A * l2.C - l2.A * l1.C) / det,
+    };
+  }
+
+  function rebuildCornersFromGrayLines(poly, reference, tolerance) {
+    if (!poly || poly.length < 3) return poly || [];
+
+    const n = poly.length;
+    const lines = [];
+    const b = bboxOf(reference || poly);
+    const limit = Math.max(6, Math.min(24, Math.hypot(b.w, b.h) * 0.045));
+
+    for (let i = 0; i < n; i++) {
+      lines.push(lineFromCleanEdge(poly[i], poly[(i + 1) % n]));
+    }
+
+    const refined = [];
+
+    for (let i = 0; i < n; i++) {
+      const prevLine = lines[(i - 1 + n) % n];
+      const nextLine = lines[i];
+      const fallback = poly[i];
+      const p = intersectCleanLines(prevLine, nextLine, fallback);
+
+      if (
+        !Number.isFinite(p.x) ||
+        !Number.isFinite(p.y) ||
+        Math.hypot(p.x - fallback.x, p.y - fallback.y) > limit
+      ) {
+        refined.push({ x: fallback.x, y: fallback.y });
+      } else {
+        refined.push({ x: p.x, y: p.y });
+      }
+    }
+
+    const out = cleanAdjacentPoints(refined, 0.75).map((p) => ({
+      x: Math.round(p.x * 10) / 10,
+      y: Math.round(p.y * 10) / 10,
+    }));
+
+    if (out.length < 3 || hasSelfIntersection(out)) return poly;
+    if (reference && !shapeSimilarityOk(reference, out, tolerance)) return poly;
+
+    return out;
+  }
+
+  function dominantLineOfEdge(a, b) {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+    const axisLimit = Math.max(1.5, Math.min(10, len * 0.18));
+
+    if (absDy <= axisLimit) {
+      return { type: "h", y: (a.y + b.y) / 2 };
+    }
+
+    if (absDx <= axisLimit) {
+      return { type: "v", x: (a.x + b.x) / 2 };
+    }
+
+    return lineFromCleanEdge(a, b);
+  }
+
+  function faceCandidateOk(reference, candidate, tolerance) {
+    if (!reference || !candidate || reference.length < 3 || candidate.length < 3) return false;
+    if (hasSelfIntersection(candidate)) return false;
+
+    const refArea = Math.abs(polygonArea(reference)) || 1;
+    const candArea = Math.abs(polygonArea(candidate)) || 1;
+    const ratio = candArea / refArea;
+
+    if (ratio < 0.62 || ratio > 1.48) return false;
+
+    const rb = bboxOf(reference);
+    const cb = bboxOf(candidate);
+    const diag = Math.hypot(rb.w, rb.h) || 1;
+    const pad = Math.max(tolerance * 1.6, diag * 0.035, 3);
+
+    if (cb.x < rb.x - pad) return false;
+    if (cb.y < rb.y - pad) return false;
+    if (cb.x + cb.w > rb.x + rb.w + pad) return false;
+    if (cb.y + cb.h > rb.y + rb.h + pad) return false;
+    if (cb.w < rb.w * 0.45 || cb.w > rb.w * 1.28) return false;
+    if (cb.h < rb.h * 0.45 || cb.h > rb.h * 1.28) return false;
+
+    const centerShift = Math.hypot(
+      rb.x + rb.w / 2 - (cb.x + cb.w / 2),
+      rb.y + rb.h / 2 - (cb.y + cb.h / 2),
+    );
+
+    if (centerShift > diag * 0.16) return false;
+
+    return true;
+  }
+
+  function lineFitCorners(poly, reference, tolerance) {
+    if (!poly || poly.length < 3) return poly || [];
+
+    const n = poly.length;
+    const lines = [];
+    const b = bboxOf(reference || poly);
+    const diag = Math.hypot(b.w, b.h) || 1;
+    const moveLimit = Math.max(5, Math.min(32, diag * 0.075));
+
+    for (let i = 0; i < n; i += 1) {
+      lines.push(dominantLineOfEdge(poly[i], poly[(i + 1) % n]));
+    }
+
+    const refined = [];
+
+    for (let i = 0; i < n; i += 1) {
+      const fallback = poly[i];
+      const p = intersectCleanLines(lines[(i - 1 + n) % n], lines[i], fallback);
+
+      if (
+        !Number.isFinite(p.x) ||
+        !Number.isFinite(p.y) ||
+        Math.hypot(p.x - fallback.x, p.y - fallback.y) > moveLimit
+      ) {
+        refined.push({ x: fallback.x, y: fallback.y });
+      } else {
+        refined.push({ x: p.x, y: p.y });
+      }
+    }
+
+    const out = cleanAdjacentPoints(refined, 0.9).map((p) => ({
+      x: Math.round(p.x * 10) / 10,
+      y: Math.round(p.y * 10) / 10,
+    }));
+
+    if (out.length < 3 || hasSelfIntersection(out)) return poly;
+    if (reference && !faceCandidateOk(reference, out, tolerance)) return poly;
+
+    return out;
+  }
+
+  function removeSmallZigZagCorners(poly, minLen, straightTolerance) {
+    if (!poly || poly.length < 4) return poly || [];
+
+    let out = cleanAdjacentPoints(poly, 0.8);
+    let changed = true;
+    let guard = 0;
+
+    while (changed && guard++ < 8 && out.length > 3) {
+      changed = false;
+      const next = [];
+
+      for (let i = 0; i < out.length; i += 1) {
+        const a = out[(i - 1 + out.length) % out.length];
+        const b = out[i];
+        const c = out[(i + 1) % out.length];
+        const d = pointSegmentDistance(b, a, c);
+        const ab = Math.hypot(b.x - a.x, b.y - a.y);
+        const bc = Math.hypot(c.x - b.x, c.y - b.y);
+        const ac = Math.hypot(c.x - a.x, c.y - a.y);
+
+        const tinyLeg = Math.min(ab, bc) <= minLen;
+        const weakBend = d <= straightTolerance;
+        const nearlyDuplicate = ac <= minLen * 0.8;
+
+        if ((tinyLeg && weakBend) || nearlyDuplicate) {
+          changed = true;
+          continue;
+        }
+
+        next.push(b);
+      }
+
+      if (next.length >= 3) out = next;
+    }
+
+    return out;
+  }
+
+  function simplifyContourToMeaningfulLines(loop) {
+    if (!loop || loop.length < 3) return loop || [];
+
+    const original = cleanAdjacentPoints(loop, 0.8);
+    const b = bboxOf(original);
+    const diag = Math.hypot(b.w, b.h) || 1;
+    const tolerance = Math.max(4, Math.min(18, diag * 0.045));
+    const minLen = Math.max(4, Math.min(18, diag * 0.045));
+    const maxPts = Math.max(10, +($("maxButtonPoints")?.value || 18));
+
+    const epsList = [
+      diag * 0.100,
+      diag * 0.082,
+      diag * 0.066,
+      diag * 0.052,
+      diag * 0.040,
+      diag * 0.030,
+      diag * 0.022,
+      2.4,
+      1.6,
+    ].map((v) => Math.max(1.2, Math.min(22, v)));
+
+    let best = null;
+
+    for (const eps of epsList) {
+      let poly = rdp(original.concat([original[0]]), eps).slice(0, -1);
+      poly = cleanAdjacentPoints(poly, 0.9);
+      poly = removeSmallZigZagCorners(poly, minLen, Math.max(1.2, eps * 0.72));
+      poly = removeTinyEdges(poly, Math.max(3, minLen * 0.75));
+      poly = removeAlmostStraightPoints(poly, 0.9);
+      poly = lineFitCorners(poly, original, tolerance);
+      poly = removeSmallZigZagCorners(poly, minLen * 0.85, Math.max(0.9, eps * 0.52));
+      poly = removeAlmostStraightPoints(poly, 0.54);
+      poly = cleanAdjacentPoints(poly, 0.9).map((p) => ({
+        x: Math.round(p.x * 10) / 10,
+        y: Math.round(p.y * 10) / 10,
+      }));
+
+      if (!faceCandidateOk(original, poly, tolerance)) continue;
+
+      if (!best || poly.length < best.length) best = poly;
+      if (poly.length <= maxPts) return poly;
+    }
+
+    if (best && best.length >= 3) return best;
+
+    let fallback = rdp(original.concat([original[0]]), Math.max(1.4, Math.min(6, diag * 0.018))).slice(0, -1);
+    fallback = cleanAdjacentPoints(fallback, 0.9);
+    fallback = removeSmallZigZagCorners(fallback, minLen * 0.65, Math.max(0.8, diag * 0.010));
+    fallback = lineFitCorners(fallback, original, tolerance * 0.8);
+    fallback = cleanAdjacentPoints(fallback, 0.9).map((p) => ({
+      x: Math.round(p.x * 10) / 10,
+      y: Math.round(p.y * 10) / 10,
+    }));
+
+    return fallback.length >= 3 ? fallback : original;
+  }
+
+  function autoCleanFacePolygon(loop) {
+    return simplifyContourToMeaningfulLines(loop);
+  }
+
+  function simplifyGrayLoop(loop) {
+    return autoCleanFacePolygon(loop);
+  }
+
+  function buildFaceFromSectionLines(sec) {
+    if (!sec || !sec.polygon || sec.polygon.length < 3) return null;
+
+    const original = cleanAdjacentPoints(sec.polygon, 0.75);
+    const outer = autoCleanFacePolygon(original);
+
+    if (!outer || outer.length < 3) return null;
+
+    return {
+      paths: [outer],
+      outer,
+      holes: [],
+      source: "line-rebuild",
+    };
   }
 
   function shapeFromGrayComponent(component) {
@@ -889,13 +1652,13 @@
 
     if (!paths.length) return null;
 
-    // 대부분 좌석 구역은 하나의 외곽 path.
-    // 내부 구멍은 일단 path로 보존하되, 렌더링은 evenodd로 처리 가능하게 저장.
+    const outer = paths[0].poly;
+
     return {
-      paths: paths.map((x) => x.poly),
-      outer: paths[0].poly,
-      holes: paths.slice(1).map((x) => x.poly),
-      source: "gray-edge",
+      paths: [outer],
+      outer,
+      holes: [],
+      source: "gray-line-fit",
     };
   }
 
@@ -921,10 +1684,10 @@
   }
 
   function makeButtonForSection(sec) {
-    const shape = faceFromGrayInsideSection(sec);
+    const grayShape = faceFromGrayInsideSection(sec);
+    const lineShape = grayShape ? null : buildFaceFromSectionLines(sec);
+    const shape = grayShape || lineShape;
 
-    // 회색 도형을 못 찾으면 생성하지 않는다.
-    // 여기서 점선 구역으로 fallback하면 지금처럼 이상한 초록 박스가 생긴다.
     if (!shape || !shape.outer || shape.outer.length < 3) {
       sec.buttonShape = null;
       sec.buttonPolygon = null;
@@ -958,7 +1721,8 @@
 
     if (!selectedId && sections[0]) selectedId = sections[0].id;
     renderAll();
-    toast("회색끼리 이어 면 생성: " + count + "개 / 실패 " + fail + "개");
+    part3AutoNumberApplied = false;
+    toast("전체 구역 면 자동 생성: " + count + "개 / 실패 " + fail + "개");
   }
 
   function hitButtonCorner(p) {
@@ -1135,88 +1899,54 @@
   }
 
   function isShapePixel(data, idx) {
-    const shape = hexToRgb($("shapeColor").value);
-    const bg = hexToRgb($("bgColor").value);
-    const tol = +$("shapeTol").value || 34;
+    const shape = hexToRgb(getStage2ShapeColor());
+    const bg = hexToRgb(getStage2BackgroundColor());
+    const tol = +$("shapeTol")?.value || 34;
     const c = getPixel(data, idx);
+
     if (c.a < 20) return false;
     if (dist(c, bg) < tol + 6) return false;
+
     return dist(c, shape) <= tol;
   }
 
   function dominantSourceColor(cells, bbox) {
-    let sourceData = null;
-    if (
-      originalImageLoaded &&
-      originalCanvas.width === W &&
-      originalCanvas.height === H
-    ) {
-      sourceData = originalCtx.getImageData(0, 0, W, H).data;
+    const color = hexToRgb(STAGE2_SHAPE_COLOR);
+
+    if (!colorGroups.length) {
+      colorGroups.push({ id: 1, color });
     }
-    if (!sourceData) {
-      return { color: { r: 210, g: 210, b: 210 }, group: 0 };
-    }
-    const buckets = {};
-    const step = Math.max(1, Math.floor(cells.length / 900));
-    for (let i = 0; i < cells.length; i += step) {
-      const idx = cells[i];
-      const k = idx * 4;
-      const r = sourceData[k],
-        g = sourceData[k + 1],
-        b = sourceData[k + 2],
-        a = sourceData[k + 3];
-      if (a < 20) continue;
-      const max = Math.max(r, g, b),
-        min = Math.min(r, g, b),
-        sum = r + g + b;
-      if (sum > 690 || sum < 120 || max - min < 18) continue;
-      const key = `${Math.round(r / 24)}_${Math.round(g / 24)}_${Math.round(b / 24)}`;
-      const bucket =
-        buckets[key] || (buckets[key] = { count: 0, r: 0, g: 0, b: 0 });
-      bucket.count++;
-      bucket.r += r;
-      bucket.g += g;
-      bucket.b += b;
-    }
-    let best = null;
-    for (const k in buckets) {
-      if (!best || buckets[k].count > best.count) best = buckets[k];
-    }
-    if (!best) return { color: { r: 210, g: 210, b: 210 }, group: 0 };
-    const color = {
-      r: best.r / best.count,
-      g: best.g / best.count,
-      b: best.b / best.count,
+
+    return {
+      color,
+      rawColor: hexToRgb(getStage1ShapeColor()),
+      group: 1,
+      autoGray: true,
     };
-    let groupIndex = colorGroups.findIndex((g) => dist(g.color, color) < 55);
-    if (groupIndex < 0) {
-      colorGroups.push({ id: colorGroups.length + 1, color });
-      groupIndex = colorGroups.length - 1;
-    }
-    return { color, group: groupIndex + 1 };
   }
 
   function makeSection(cells, bbox, namePrefix = "구역") {
     const polygon = polygonFromCells(cells, bbox);
-    const source = dominantSourceColor(cells, bbox);
-    const renderColor = source.group
-      ? palette[(source.group - 1) % palette.length]
-      : "#d9d9d9";
     const id = "sec" + nextId++;
-    const label = String(sections.length + 1);
+
     return {
       id,
-      name: namePrefix + " " + sections.length,
-      label,
-      floor: "1층",
+      floor: "1",
+      section: "",
+      sectionName: "",
+      name: namePrefix + " 미지정",
+      label: "",
       grade: "일반석",
       price: 132000,
-      sourceColor: rgbToHex(source.color),
-      sourceGroup: source.group || 0,
-      ruleKey: source.group
-        ? "source-" + source.group
-        : "color-" + renderColor.toLowerCase(),
-      renderColor,
+      sourceColor: STAGE2_SHAPE_COLOR,
+      rawSourceColor: getStage1ShapeColor(),
+      stage1ShapeColor: getStage1ShapeColor(),
+      stage2ShapeColor: STAGE2_SHAPE_COLOR,
+      backgroundColor: STAGE2_BACKGROUND_COLOR,
+      autoGray: true,
+      sourceGroup: 1,
+      ruleKey: "stage2-gray-shape",
+      renderColor: STAGE2_SHAPE_COLOR,
       polygon,
       bbox: bboxOf(polygon),
       area: polygonArea(polygon),
@@ -1284,17 +2014,15 @@
 
     sections = found
       .sort((a, b) => a.bbox.y - b.bbox.y || a.bbox.x - b.bbox.x)
-      .map((c, i) => {
-        const sec = makeSection(c.cells, c.bbox, "구역");
-        sec.name = "구역 " + (i + 1);
-        sec.label = String(i + 1);
-        return sec;
-      });
+      .map((c) => makeSection(c.cells, c.bbox, "구역"));
+
+    normalizeAllSections();
+    assignGroupSectionNumbers(false, false);
 
     selectedId = sections[0]?.id || null;
     fillForm(getSelected());
     renderAll();
-    toast("자동 분석 완료: " + sections.length + "개 구역");
+    toast("자동 분석 완료: " + sections.length + "개 구역 · 클릭 선택 / Shift+클릭 합치기 / 빈 곳 드래그 추가");
   }
 
   function findComponentAt(p) {
@@ -1361,228 +2089,435 @@
   }
 
   // ============================================================
-  // 7. 색상 규칙 / 구역 정보 적용
+  // 7. 구역별 번호 지정 / 구역 정보 적용
   // ============================================================
+  function rawSectionGroupKey(sec) {
+    if (!sec) return "group-unknown";
+    if (sec.sourceGroup) return "source-" + sec.sourceGroup;
+    if (sec.ruleKey) return String(sec.ruleKey);
+    if (sec.sourceColor) return "source-color-" + String(sec.sourceColor).toLowerCase();
+    return "color-" + String(sec.renderColor || "#d9d9d9").toLowerCase();
+  }
+
+  function sectionGroupKey(sec) {
+    const key = rawSectionGroupKey(sec);
+    sec.sectionGroupKey = key;
+    return key;
+  }
+
+  function sectionGroupNameFromKey(key, sampleSec) {
+    if (sampleSec && sampleSec.sourceGroup) return "색상 그룹 " + sampleSec.sourceGroup;
+    const groups = getSectionGroups(false);
+    const index = groups.findIndex((g) => g.key === key);
+    return "색상 그룹 " + (index >= 0 ? index + 1 : "-");
+  }
+
   function ruleKeyForSection(sec) {
     if (!sec) return "";
     if (!sec.ruleKey) {
-      sec.ruleKey = sec.sourceGroup
-        ? "source-" + sec.sourceGroup
-        : "color-" + String(sec.renderColor || "#d9d9d9").toLowerCase();
+      sec.ruleKey = rawSectionGroupKey(sec);
     }
     return sec.ruleKey;
-  }
-
-  function syncColorRules() {
-    const existing = new Map(colorRules.map((r) => [r.key, r]));
-    sections.forEach((sec) => {
-      const key = ruleKeyForSection(sec);
-      if (!existing.has(key)) {
-        const label = sec.sourceGroup
-          ? `색상 그룹 ${sec.sourceGroup}`
-          : `사용자 색상 ${existing.size + 1}`;
-        existing.set(key, {
-          key,
-          label,
-          grade: sec.grade || "일반석",
-          price: sec.price || 132000,
-          renderColor: sec.renderColor || "#d9d9d9",
-          count: 0,
-        });
-      }
-    });
-
-    colorRules = Array.from(existing.values()).map((rule) => {
-      const count = sections.filter(
-        (s) => ruleKeyForSection(s) === rule.key,
-      ).length;
-      return { ...rule, count };
-    });
-  }
-
-  function selectedRule() {
-    syncColorRules();
-    const key = $("colorRuleSelect")?.value || colorRules[0]?.key;
-    return colorRules.find((r) => r.key === key) || colorRules[0];
-  }
-
-  function fillRuleForm(rule) {
-    if (!rule) return;
-    $("ruleGradeInput").value = rule.grade || "일반석";
-    $("rulePriceInput").value = rule.price || 132000;
-    $("ruleColorInput").value = rule.renderColor || "#d9d9d9";
-  }
-
-  function renderColorRuleControls() {
-    syncColorRules();
-    const opts = colorRules
-      .map(
-        (rule) => `
-        <option value="${rule.key}">${rule.label} · ${rule.count}구역</option>
-      `,
-      )
-      .join("");
-
-    if ($("colorRuleSelect")) {
-      const before = $("colorRuleSelect").value;
-      $("colorRuleSelect").innerHTML =
-        opts || '<option value="">색상 없음</option>';
-      if (colorRules.some((r) => r.key === before))
-        $("colorRuleSelect").value = before;
-    }
-
-    if ($("singleRuleSelect")) {
-      const before = $("singleRuleSelect").value;
-      $("singleRuleSelect").innerHTML =
-        opts || '<option value="">색상 없음</option>';
-      if (colorRules.some((r) => r.key === before))
-        $("singleRuleSelect").value = before;
-    }
-
-    if ($("colorRuleList")) {
-      $("colorRuleList").innerHTML =
-        colorRules
-          .map(
-            (rule) => `
-          <div class="sec-row" data-rule="${rule.key}">
-            <i class="sec-dot" style="background:${rule.renderColor}"></i>
-            <div>
-              <strong>${rule.label}</strong>
-              <span>${rule.grade} · ${Number(rule.price || 0).toLocaleString("ko-KR")}원 · ${rule.count}구역</span>
-            </div>
-          </div>
-        `,
-          )
-          .join("") || '<div class="help">색상 그룹 없음</div>';
-
-      $("colorRuleList")
-        .querySelectorAll(".sec-row")
-        .forEach((el) => {
-          el.onclick = () => {
-            $("colorRuleSelect").value = el.dataset.rule;
-            fillRuleForm(selectedRule());
-          };
-        });
-    }
-  }
-
-  function applyColorRuleToGroup() {
-    syncColorRules();
-    const rule = selectedRule();
-    if (!rule) {
-      toast("색상 그룹이 없습니다.");
-      return;
-    }
-
-    rule.grade = $("ruleGradeInput").value || "일반석";
-    rule.price = parseInt($("rulePriceInput").value, 10) || 0;
-    rule.renderColor = $("ruleColorInput").value || "#d9d9d9";
-
-    sections.forEach((sec) => {
-      if (ruleKeyForSection(sec) === rule.key) {
-        sec.grade = rule.grade;
-        sec.price = rule.price;
-        sec.renderColor = rule.renderColor;
-      }
-    });
-
-    const sec = getSelected();
-    if (sec) fillForm(sec);
-    renderAll();
-    toast(rule.label + " 일괄 변경 완료");
-  }
-
-  function addColorRule() {
-    const key = "custom-" + Date.now();
-    const rule = {
-      key,
-      label:
-        "추가 색상 " +
-        (colorRules.filter((r) => r.key.startsWith("custom-")).length + 1),
-      grade: $("ruleGradeInput").value || "일반석",
-      price: parseInt($("rulePriceInput").value, 10) || 0,
-      renderColor: $("ruleColorInput").value || "#d9d9d9",
-      count: 0,
-    };
-    colorRules.push(rule);
-    renderColorRuleControls();
-    $("colorRuleSelect").value = key;
-    $("singleRuleSelect").value = key;
-    fillRuleForm(rule);
-    toast("색상을 추가했습니다. 단일 구역에서 선택해 배정할 수 있습니다.");
-  }
-
-  function applyRuleToSingleForm(rule) {
-    if (!rule) return;
-    $("gradeInput").value = rule.grade || "일반석";
-    $("priceInput").value = rule.price || 132000;
-    $("renderColorInput").value = rule.renderColor || "#d9d9d9";
   }
 
   function getSelected() {
     return sections.find((s) => s.id === selectedId);
   }
 
+  function sectionCenter(sec) {
+    return polyCenter(sec.buttonPolygon || sec.polygon);
+  }
+
+  function getSectionGroups(normalize = true) {
+    const map = new Map();
+
+    sections.forEach((sec) => {
+      if (normalize) normalizeSectionInfo(sec, sections.indexOf(sec));
+      const key = rawSectionGroupKey(sec);
+      if (!map.has(key)) {
+        const sourceNo = parseInt(String(sec.sourceGroup || "0"), 10) || 0;
+        map.set(key, {
+          key,
+          sourceNo,
+          color: sec.renderColor || sec.sourceColor || "#d9d9d9",
+          label: sourceNo ? "색상 그룹 " + sourceNo : "색상 그룹 " + (map.size + 1),
+          count: 0,
+        });
+      }
+      map.get(key).count += 1;
+    });
+
+    return Array.from(map.values()).sort((a, b) => {
+      if (a.sourceNo && b.sourceNo) return a.sourceNo - b.sourceNo;
+      if (a.sourceNo) return -1;
+      if (b.sourceNo) return 1;
+      return a.label.localeCompare(b.label, "ko-KR");
+    }).map((group, index) => ({
+      ...group,
+      label: group.sourceNo ? group.label : "색상 그룹 " + (index + 1),
+    }));
+  }
+
+
+  function groupByKey(key) {
+    return getSectionGroups(false).find((group) => group.key === key) || null;
+  }
+
+  function setSectionGroup(sec, groupKey) {
+    if (!sec || !groupKey) return;
+
+    const group = groupByKey(groupKey);
+    const sourceMatch = String(groupKey).match(/^source-(\d+)$/);
+    const sourceNo = sourceMatch ? parseInt(sourceMatch[1], 10) : 0;
+
+    sec.sourceGroup = sourceNo || 0;
+    sec.ruleKey = groupKey;
+    sec.sectionGroupKey = groupKey;
+    sec.sectionGroupName = group?.label || sectionGroupNameFromKey(groupKey, sec);
+
+    if (group?.color) {
+      sec.renderColor = group.color;
+      if (!sec.sourceColor || sourceNo) sec.sourceColor = group.color;
+    }
+  }
+
+  function renderSectionGroupSelect() {
+    const select = $("sectionGroupSelect");
+    if (!select) return;
+
+    const groups = getSectionGroups(false);
+    const selected = getSelected();
+    const before = select.value || (selected ? sectionGroupKey(selected) : "");
+
+    select.innerHTML = groups
+      .map((group) => `<option value="${group.key}">${group.label}</option>`)
+      .join("");
+
+    if (groups.some((group) => group.key === before)) {
+      select.value = before;
+    } else if (selected) {
+      select.value = sectionGroupKey(selected);
+    }
+  }
+
+  function normalizeSectionInfo(sec, index = 0) {
+    if (!sec) return sec;
+
+    const no = String(sec.section || sec.label || "").trim();
+    const key = rawSectionGroupKey(sec);
+    const groupName = sectionGroupNameFromKey(key, sec);
+
+    sec.floor = String(sec.floor || "1").replace("층", "") || "1";
+    sec.section = no;
+    sec.label = String(sec.label || no).trim();
+    sec.sectionName = String(sec.sectionName || sec.name || (no ? "구역 " + no : "미지정 구역")).trim();
+    sec.name = sec.sectionName;
+    sec.grade = sec.grade || "일반석";
+    sec.price = parseInt(sec.price, 10) || 132000;
+    sec.renderColor = sec.renderColor || "#d9d9d9";
+    sec.sourceGroup = sec.sourceGroup || 0;
+    sec.ruleKey = sec.ruleKey || key;
+    sec.sectionGroupKey = key;
+    sec.sectionGroupName = groupName;
+
+    return sec;
+  }
+
+  function normalizeAllSections() {
+    sections.forEach((sec, index) => normalizeSectionInfo(sec, index));
+  }
+
+  function setSectionNumber(sec, number, pushHistory = true) {
+    if (!sec) return;
+
+    normalizeSectionInfo(sec, sections.indexOf(sec));
+
+    const before = {
+      id: sec.id,
+      floor: sec.floor,
+      section: sec.section,
+      sectionName: sec.sectionName,
+      name: sec.name,
+      label: sec.label,
+      sectionGroupKey: sec.sectionGroupKey,
+      sectionGroupName: sec.sectionGroupName,
+    };
+
+    const no = String(number).trim();
+    sec.section = no;
+    sec.sectionName = "구역 " + no;
+    sec.name = sec.sectionName;
+    sec.label = no;
+    sec.sectionGroupKey = sectionGroupKey(sec);
+    sec.sectionGroupName = sectionGroupNameFromKey(sec.sectionGroupKey, sec);
+
+    if (pushHistory) {
+      sectionNumberHistory.push(before);
+    }
+  }
+
+  function sortedSectionsByOrder(order, sourceSections = sections) {
+    const list = sourceSections.slice();
+
+    if (order === "left-right") {
+      return list.sort((a, b) => {
+        const ca = sectionCenter(a);
+        const cb = sectionCenter(b);
+        return ca.x - cb.x || ca.y - cb.y;
+      });
+    }
+
+    return list.sort((a, b) => {
+      const ca = sectionCenter(a);
+      const cb = sectionCenter(b);
+      const rowTolerance = Math.max(18, H * 0.035);
+
+      if (Math.abs(ca.y - cb.y) > rowTolerance) return ca.y - cb.y;
+      return ca.x - cb.x;
+    });
+  }
+
+  function assignGroupSectionNumbers(pushHistory = true, showToast = true) {
+    if (!sections.length) {
+      if (showToast) toast("구역이 없습니다.");
+      return;
+    }
+
+    const startNo = parseInt($("autoStartNumber")?.value, 10) || 1;
+    const order = $("autoNumberOrder")?.value || "top-left";
+    const groups = getSectionGroups();
+
+    if (pushHistory) sectionNumberHistory = [];
+
+    groups.forEach((group) => {
+      const groupSections = sections.filter((sec) => sectionGroupKey(sec) === group.key);
+      const ordered = sortedSectionsByOrder(order, groupSections);
+      ordered.forEach((sec, index) => {
+        setSectionNumber(sec, startNo + index, pushHistory);
+      });
+    });
+
+    selectedId = sortedSectionsByOrder(order)[0]?.id || selectedId;
+    fillForm(getSelected());
+    renderAll();
+
+    if (showToast) toast("색상 그룹별 번호 부여 완료");
+  }
+
+  function assignNextSectionNumberInGroup(sec) {
+    if (!sec) return;
+
+    const key = sectionGroupKey(sec);
+    let maxNo = 0;
+
+    sections.forEach((s) => {
+      if (s.id === sec.id) return;
+      if (sectionGroupKey(s) !== key) return;
+      const no = parseInt(String(s.section || ""), 10);
+      if (!Number.isNaN(no) && no > maxNo) maxNo = no;
+    });
+
+    setSectionNumber(sec, maxNo + 1, false);
+  }
+
+  function autoAssignSectionNumbers() {
+    assignGroupSectionNumbers(true, true);
+  }
+
+  function startClickNumbering() {
+    if (!sections.length) {
+      toast("구역이 없습니다.");
+      return;
+    }
+
+    numberClickMode = true;
+    nextSectionNumber = parseInt($("clickStartNumber")?.value, 10) || 1;
+    clickSectionGroupKey = "";
+    sectionNumberHistory = [];
+    renderAll();
+    toast("첫 클릭한 색상 그룹 안에서만 번호를 지정합니다.");
+  }
+
+  function stopClickNumbering() {
+    numberClickMode = false;
+    clickSectionGroupKey = "";
+    renderAll();
+    toast("클릭 번호 지정 종료");
+  }
+
+  function undoSectionNumber() {
+    const last = sectionNumberHistory.pop();
+    if (!last) {
+      toast("되돌릴 번호 지정이 없습니다.");
+      return;
+    }
+
+    const sec = sections.find((s) => s.id === last.id);
+    if (sec) {
+      sec.floor = last.floor;
+      sec.section = last.section;
+      sec.sectionName = last.sectionName;
+      sec.name = last.name;
+      sec.label = last.label;
+      sec.sectionGroupKey = last.sectionGroupKey;
+      sec.sectionGroupName = last.sectionGroupName;
+      selectedId = sec.id;
+      fillForm(sec);
+    }
+
+    if (numberClickMode) {
+      nextSectionNumber = Math.max(1, nextSectionNumber - 1);
+    }
+
+    renderAll();
+    toast("마지막 번호 지정을 되돌렸습니다.");
+  }
+
+  function resetSectionNumbers() {
+    if (!confirm("구역 번호를 모두 초기화할까요?")) return;
+
+    sectionNumberHistory = [];
+    clickSectionGroupKey = "";
+    sections.forEach((sec) => {
+      normalizeSectionInfo(sec, sections.indexOf(sec));
+      sec.section = "";
+      sec.sectionName = "";
+      sec.name = "미지정 구역";
+      sec.label = "";
+    });
+
+    fillForm(getSelected());
+    renderAll();
+    toast("구역 번호 초기화 완료");
+  }
+
+  function validateSectionNumbers() {
+    normalizeAllSections();
+
+    const missing = sections.filter((sec) => !String(sec.section || "").trim());
+    const map = new Map();
+    const duplicates = [];
+
+    sections.forEach((sec) => {
+      const no = String(sec.section || "").trim();
+      if (!no) return;
+
+      const key = String(sec.floor || "1") + "::" + sectionGroupKey(sec) + "::" + no;
+      const arr = map.get(key) || [];
+      arr.push(sec);
+      map.set(key, arr);
+    });
+
+    map.forEach((arr) => {
+      if (arr.length > 1) duplicates.push(...arr);
+    });
+
+    const noFace = sections.filter(
+      (sec) => !(sec.buttonPolygon && sec.buttonPolygon.length >= 3),
+    );
+
+    return {
+      total: sections.length,
+      groups: getSectionGroups().length,
+      missing,
+      duplicates,
+      noFace,
+      ok: missing.length === 0 && duplicates.length === 0 && noFace.length === 0,
+    };
+  }
+
+  function renderNumberStatus() {
+    const root = $("numberStatus");
+    if (!root) return;
+
+    const result = validateSectionNumbers();
+    root.innerHTML = `
+      <div class="seatmap-number-status__item">
+        <b>${result.total}</b>
+        <span>전체 구역</span>
+      </div>
+      <div class="seatmap-number-status__item">
+        <b>${result.groups}</b>
+        <span>색상 그룹</span>
+      </div>
+      <div class="seatmap-number-status__item ${result.missing.length ? "is-warn" : "is-ok"}">
+        <b>${result.missing.length}</b>
+        <span>번호 미지정</span>
+      </div>
+      <div class="seatmap-number-status__item ${result.duplicates.length ? "is-warn" : "is-ok"}">
+        <b>${result.duplicates.length}</b>
+        <span>그룹 내 중복</span>
+      </div>
+      <div class="seatmap-number-status__item ${result.noFace.length ? "is-warn" : "is-ok"}">
+        <b>${result.noFace.length}</b>
+        <span>면 미생성</span>
+      </div>
+    `;
+  }
+
   function fillForm(sec) {
     if (!sec) return;
-    syncColorRules();
-    $("floorInput").value = sec.floor;
-    $("nameInput").value = sec.name;
-    $("gradeInput").value = sec.grade;
-    $("priceInput").value = sec.price;
-    $("renderColorInput").value = sec.renderColor;
-    $("labelInput").value = sec.label || sec.name;
+    normalizeSectionInfo(sec, sections.indexOf(sec));
 
-    const key = ruleKeyForSection(sec);
-    if ($("singleRuleSelect") && colorRules.some((r) => r.key === key)) {
-      $("singleRuleSelect").value = key;
-    }
-    if ($("colorRuleSelect") && colorRules.some((r) => r.key === key)) {
-      $("colorRuleSelect").value = key;
-      fillRuleForm(selectedRule());
-    }
+    renderSectionGroupSelect();
+
+    const groupKey = sectionGroupKey(sec);
+    if ($("sectionGroupInput")) $("sectionGroupInput").value = sec.sectionGroupName || sectionGroupNameFromKey(groupKey, sec);
+    if ($("sectionGroupSelect")) $("sectionGroupSelect").value = groupKey;
+    if ($("floorInput")) $("floorInput").value = sec.floor || "1";
+    if ($("sectionInput")) $("sectionInput").value = sec.section || "";
+    if ($("sectionNameInput")) $("sectionNameInput").value = sec.sectionName || sec.name || "";
+    if ($("labelInput")) $("labelInput").value = sec.label || sec.section || "";
   }
 
   function applyFormToSection() {
     const sec = getSelected();
     if (!sec) {
       toast("구역을 선택하세요.");
-      return;
+      return false;
     }
 
-    const selectedRuleKey = $("singleRuleSelect")?.value;
-    const rule = colorRules.find((r) => r.key === selectedRuleKey);
+    const no = String($("sectionInput")?.value || "").trim();
+    if (!no) {
+      toast("구역 번호를 입력하세요.");
+      return false;
+    }
 
-    sec.floor = $("floorInput").value || "1층";
-    sec.name = $("nameInput").value || sec.name;
-    sec.ruleKey = selectedRuleKey || ruleKeyForSection(sec);
-    sec.grade = $("gradeInput").value || rule?.grade || "일반석";
-    sec.price = parseInt($("priceInput").value, 10) || rule?.price || 0;
-    sec.renderColor =
-      $("renderColorInput").value || rule?.renderColor || sec.renderColor;
-    sec.label = $("labelInput").value || sec.name;
+    const selectedGroupKey = $("sectionGroupSelect")?.value;
+    if (selectedGroupKey) {
+      setSectionGroup(sec, selectedGroupKey);
+    }
+
+    sec.floor = String($("floorInput")?.value || sec.floor || "1").replace("층", "") || "1";
+    sec.section = no;
+    sec.sectionName = "구역 " + no;
+    sec.name = sec.sectionName;
+    sec.label = no;
+    sec.sectionGroupKey = sectionGroupKey(sec);
+    sec.sectionGroupName = sectionGroupNameFromKey(sec.sectionGroupKey, sec);
 
     renderAll();
-    toast("선택 구역만 변경했습니다.");
+    toast("선택 구역을 적용했습니다.");
+    return true;
   }
 
-  function applyToSameGroup() {
-    const sec = getSelected();
-    if (!sec) {
-      toast("구역을 선택하세요.");
-      return;
+  function canMoveToStage3() {
+    const result = validateSectionNumbers();
+
+    if (result.missing.length) {
+      toast("번호 미지정 구역이 있습니다.");
+      return false;
     }
-    applyFormToSection();
-    const key = ruleKeyForSection(sec);
-    sections.forEach((s) => {
-      if (ruleKeyForSection(s) === key) {
-        s.grade = sec.grade;
-        s.price = sec.price;
-        s.renderColor = sec.renderColor;
-      }
-    });
-    renderAll();
-    toast("같은 색상 그룹에 적용했습니다.");
+    if (result.duplicates.length) {
+      toast("같은 색상 그룹 안에 중복 번호가 있습니다.");
+      return false;
+    }
+    if (result.noFace.length) {
+      toast("면 생성이 안 된 구역이 있습니다.");
+      return false;
+    }
+
+    return true;
   }
 
   // ============================================================
@@ -1615,12 +2550,14 @@
     });
 
     if (dragRect) {
+      const rr = rectFromDrag(dragRect);
       octx.save();
-      octx.fillStyle = "rgba(245,158,11,.12)";
-      octx.strokeStyle = "#f59e0b";
+      octx.fillStyle = dragRect.action === "cut" ? "rgba(239,68,68,.12)" : "rgba(245,158,11,.12)";
+      octx.strokeStyle = dragRect.action === "cut" ? "#ef4444" : "#f59e0b";
+      octx.lineWidth = 2;
       octx.setLineDash([5, 4]);
-      octx.strokeRect(dragRect.x, dragRect.y, dragRect.w, dragRect.h);
-      octx.fillRect(dragRect.x, dragRect.y, dragRect.w, dragRect.h);
+      octx.strokeRect(rr.x, rr.y, rr.w, rr.h);
+      octx.fillRect(rr.x, rr.y, rr.w, rr.h);
       octx.restore();
     }
   }
@@ -1644,6 +2581,96 @@
     ctx.fill("evenodd");
     ctx.stroke();
     ctx.restore();
+  }
+
+
+  function normalizeColorHex(color, fallback = "#d9d9d9") {
+    const value = String(color || fallback).trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(value)) return value;
+    if (/^#[0-9a-fA-F]{3}$/.test(value)) {
+      return "#" + value.slice(1).split("").map((v) => v + v).join("");
+    }
+    return fallback;
+  }
+
+  function colorToRgba(color, alpha) {
+    const rgb = hexToRgb(normalizeColorHex(color));
+    return `rgba(${rgb.r},${rgb.g},${rgb.b},${alpha})`;
+  }
+
+  function textColorForFill(color) {
+    const rgb = hexToRgb(normalizeColorHex(color));
+    const luminance = (rgb.r * 0.299 + rgb.g * 0.587 + rgb.b * 0.114) / 255;
+    return luminance > 0.58 ? "#111827" : "#ffffff";
+  }
+
+  function drawNumberTextOnShape(ctx, sec, activeGroupKey) {
+    const label = String(sec.label || sec.section || "").trim();
+    const center = sectionCenter(sec);
+    const color = normalizeColorHex(sec.renderColor || sec.sourceColor || "#d9d9d9");
+    const isRelated = activeGroupKey && sectionGroupKey(sec) === activeGroupKey;
+    const isSelected = sec.id === selectedId;
+    const text = label || "?";
+    const fontSize = Math.max(10, Math.min(18, Math.sqrt(Math.max(sec.area || 0, 80)) * 0.62));
+
+    ctx.save();
+    ctx.font = `900 ${fontSize}px Arial`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.lineJoin = "round";
+    ctx.miterLimit = 2;
+    ctx.lineWidth = isSelected ? 5 : 4;
+    ctx.strokeStyle = label ? "rgba(255,255,255,.92)" : "rgba(239,68,68,.92)";
+    ctx.fillStyle = label ? textColorForFill(color) : "#ffffff";
+
+    if (activeGroupKey && !isRelated) {
+      ctx.globalAlpha = 0.42;
+    }
+
+    ctx.strokeText(text, center.x, center.y + 0.5);
+    ctx.fillText(text, center.x, center.y + 0.5);
+    ctx.restore();
+  }
+
+  function drawGroupNumberShape(sec, activeGroupKey) {
+    const paths = renderPaths(sec);
+    if (!paths || !paths.length) return;
+
+    const groupKey = sectionGroupKey(sec);
+    const color = normalizeColorHex(sec.renderColor || sec.sourceColor || "#d9d9d9");
+    const isSelected = sec.id === selectedId;
+    const isRelated = activeGroupKey && groupKey === activeGroupKey;
+    const hasNumber = String(sec.section || sec.label || "").trim().length > 0;
+    const lineWidth = isSelected ? 4.4 : isRelated ? 3.2 : 1.4;
+    const fillAlpha = activeGroupKey ? (isRelated ? 0.62 : 0.13) : 0.42;
+    const strokeStyle = isSelected
+      ? "#111827"
+      : isRelated
+        ? "#f59e0b"
+        : colorToRgba(color, 0.82);
+
+    drawShapeFill(
+      octx,
+      paths,
+      hasNumber ? colorToRgba(color, fillAlpha) : "rgba(239,68,68,.34)",
+      strokeStyle,
+      lineWidth,
+    );
+  }
+
+  function drawSelectedGroupGuide(activeGroupKey) {
+    if (!activeGroupKey) return;
+
+    const group = getSectionGroups().find((g) => g.key === activeGroupKey);
+    const count = sections.filter((sec) => sectionGroupKey(sec) === activeGroupKey).length;
+
+    octx.save();
+    octx.font = "900 13px Arial";
+    octx.textAlign = "left";
+    octx.textBaseline = "top";
+    octx.fillStyle = "rgba(15,23,42,.78)";
+    octx.fillText(`${group?.label || "선택 색상 그룹"} · 관련 구역 ${count}개`, 12, 10);
+    octx.restore();
   }
 
   function drawButtonPart() {
@@ -1745,21 +2772,50 @@
     octx.restore();
   }
 
+  function drawSectionNumberLabels(activeGroupKey = "") {
+    sections.forEach((sec) => drawNumberTextOnShape(octx, sec, activeGroupKey));
+
+    drawSelectedGroupGuide(activeGroupKey);
+
+    if (numberClickMode) {
+      octx.save();
+      octx.font = "bold 13px Arial";
+      octx.textAlign = "left";
+      octx.textBaseline = "top";
+      octx.fillStyle = "rgba(239,68,68,.94)";
+      const groupText = clickSectionGroupKey ? " · 같은 색상 그룹" : " · 첫 클릭 색상 그룹";
+      octx.fillText("클릭 번호 지정 중" + groupText + " · 다음 번호 " + nextSectionNumber, 12, activeGroupKey ? 32 : 12);
+      octx.restore();
+    }
+  }
+
+  function drawNumberPart() {
+    bctx.clearRect(0, 0, W, H);
+    bctx.drawImage(cleanCanvas, 0, 0);
+    octx.clearRect(0, 0, W, H);
+
+    const selected = getSelected();
+    const activeGroupKey = selected ? sectionGroupKey(selected) : "";
+
+    sections.forEach((sec) => drawGroupNumberShape(sec, activeGroupKey));
+    drawSectionNumberLabels(activeGroupKey);
+  }
+
   function drawFinalMap(targetCtx, targetCanvas, scaleForPreview = false) {
     targetCanvas.width = W;
     targetCanvas.height = H;
     targetCtx.clearRect(0, 0, W, H);
-    targetCtx.fillStyle = $("mapBg").value || "#f7f7f7";
+    targetCtx.fillStyle = $("mapBg")?.value || "#f7f7f7";
     targetCtx.fillRect(0, 0, W, H);
 
-    if ($("guideMode").value === "on" && cleanImageLoaded) {
+    if (($("guideMode")?.value || "off") === "on" && cleanImageLoaded) {
       targetCtx.save();
       targetCtx.globalAlpha = 0.13;
       targetCtx.drawImage(cleanCanvas, 0, 0);
       targetCtx.restore();
     }
 
-    if ($("stageMode").value === "simple") {
+    if (($("stageMode")?.value || "simple") === "simple") {
       targetCtx.save();
       targetCtx.fillStyle = "#bfbfbf";
       const stageW = Math.min(W * 0.36, 320),
@@ -1773,9 +2829,9 @@
       targetCtx.restore();
     }
 
-    const strokeW = +$("strokeWidth").value || 5;
-    const labelSize = +$("labelSize").value || 15;
-    const showLabel = $("showLabels").value === "on";
+    const strokeW = +($("strokeWidth")?.value || 5);
+    const labelSize = +($("labelSize")?.value || 15);
+    const showLabel = ($("showLabels")?.value || "on") === "on";
 
     sections.forEach((sec) => {
       const paths = renderPaths(sec);
@@ -1847,28 +2903,27 @@
   function renderPreview() {
     if (!W || !H) return;
     drawFinalMap(pctx, preview);
-    const grouped = {};
-    sections.forEach((s) => {
-      const key = s.grade + "_" + s.price + "_" + s.renderColor;
-      grouped[key] = grouped[key] || {
-        grade: s.grade,
-        price: s.price,
-        color: s.renderColor,
-        count: 0,
-      };
-      grouped[key].count++;
-    });
-    $("legend").innerHTML =
-      Object.values(grouped)
-        .map(
-          (g) => `
+
+    const result = validateSectionNumbers();
+    const groups = getSectionGroups();
+    const legend = $("legend");
+    if (!legend) return;
+
+    const groupRows = groups
+      .map((group) => `
         <div class="legend-row">
-          <span><i style="background:${g.color}"></i>${g.grade}</span>
-          <b>${g.count}구역</b>
+          <span><i style="background:${group.color}"></i>${group.label}</span>
+          <b>${group.count}개</b>
         </div>
-      `,
-        )
-        .join("") || '<div class="help">구역 없음</div>';
+      `)
+      .join("");
+
+    legend.innerHTML = `
+      ${groupRows || '<div class="help">색상 그룹 없음</div>'}
+      <div class="legend-row"><span>번호 미지정</span><b>${result.missing.length}</b></div>
+      <div class="legend-row"><span>그룹 내 중복</span><b>${result.duplicates.length}</b></div>
+      <div class="legend-row"><span>면 미생성</span><b>${result.noFace.length}</b></div>
+    `;
   }
 
   function renderSectionList(rootId) {
@@ -1878,19 +2933,23 @@
       root.innerHTML = '<div class="help">구역 없음</div>';
       return;
     }
+
     root.innerHTML = sections
-      .map(
-        (sec) => `
-        <div class="sec-row ${sec.id === selectedId ? "active" : ""}" data-id="${sec.id}">
-          <i class="sec-dot" style="background:${sec.renderColor}"></i>
-          <div>
-            <strong>${sec.name}</strong>
-            <span>${sec.floor} · ${sec.grade} · ${sec.price.toLocaleString("ko-KR")} · 색상그룹 ${sec.sourceGroup || "-"}</span>
+      .map((sec, index) => {
+        normalizeSectionInfo(sec, index);
+        const no = sec.section || "미지정";
+        const faceReady = sec.buttonPolygon && sec.buttonPolygon.length >= 3;
+        const groupName = sec.sectionGroupName || sectionGroupNameFromKey(sectionGroupKey(sec), sec);
+
+        return `
+          <div class="sec-row ${sec.id === selectedId ? "active" : ""}" data-id="${sec.id}">
+            <i class="sec-dot" style="background:${sec.renderColor}"></i>
+            <strong>${groupName} · ${no}</strong>
           </div>
-        </div>
-      `,
-      )
+        `;
+      })
       .join("");
+
     root.querySelectorAll(".sec-row").forEach((el) => {
       el.onclick = () => {
         selectedId = el.dataset.id;
@@ -1900,20 +2959,47 @@
     });
   }
 
+  function updatePart1SelectedActions() {
+    const box = $("part1SelectedActions");
+    const text = $("part1SelectedText");
+    if (!box) return;
+
+    const sec = getSelected();
+    const show = part === 1 && !!sec;
+    box.classList.toggle("hidden", !show);
+
+    if (text && sec) {
+      const groupName = sec.sectionGroupName || sectionGroupNameFromKey(sectionGroupKey(sec), sec);
+      const no = sec.section || sec.label || "미지정";
+      text.textContent = groupName + " · " + no;
+    }
+  }
+
   function updateJson() {
+    normalizeAllSections();
+
     const data = {
-      type: "CONCERT",
-      stage: "section-polygon",
+      type: "CONCERT_SECTIONS",
+      version: 1,
+      stage: "section-group-numbering",
       width: W,
       height: H,
       sections: sections.map((s) => ({
         id: s.id,
-        name: s.name,
-        label: s.label,
-        floor: s.floor,
-        grade: s.grade,
-        price: s.price,
+        floor: String(s.floor || "1"),
+        sectionGroupKey: sectionGroupKey(s),
+        sectionGroupName: s.sectionGroupName || sectionGroupNameFromKey(sectionGroupKey(s), s),
+        section: String(s.section || ""),
+        sectionName: s.sectionName || s.name || "",
+        name: s.sectionName || s.name || "",
+        label: String(s.label || s.section || ""),
+        grade: s.grade || "일반석",
+        price: parseInt(s.price, 10) || 132000,
         sourceColor: s.sourceColor,
+        rawSourceColor: s.rawSourceColor || s.sourceColor,
+        stage1ShapeColor: s.stage1ShapeColor || getStage1ShapeColor(),
+        backgroundColor: s.backgroundColor || getStage1BackgroundColor(),
+        autoGray: !!s.autoGray,
         sourceGroup: s.sourceGroup,
         ruleKey: ruleKeyForSection(s),
         renderColor: s.renderColor,
@@ -1938,67 +3024,316 @@
           : null,
         bbox: s.bbox,
       })),
+      validation: (() => {
+        const v = validateSectionNumbers();
+        return {
+          total: v.total,
+          groups: v.groups,
+          missing: v.missing.length,
+          duplicates: v.duplicates.length,
+          noFace: v.noFace.length,
+          ok: v.ok,
+        };
+      })(),
       overviewImage: finalMapUrl,
       updatedAt: new Date().toISOString(),
     };
-    $("jsonPreview").textContent = JSON.stringify(data, null, 2).slice(0, 4500);
+
+    const jsonPreview = $("jsonPreview");
+    if (jsonPreview) {
+      jsonPreview.textContent = JSON.stringify(data, null, 2).slice(0, 4500);
+    }
+
     return data;
   }
 
   // ============================================================
   // 9. 전체 화면 갱신 / 파트 전환 / 저장
   // ============================================================
+  function setCanvasTitle(text) {
+    const canvasTitle = $("canvasTitle");
+    if (canvasTitle) {
+      canvasTitle.textContent = text;
+    }
+  }
+
   function renderAll() {
     if (part === 1) {
-      $("canvasTitle").textContent = "파트1 · 회색 도형 구역 추출";
+      setCanvasTitle("파트1 · 회색 도형 구역 추출");
       drawPart1();
     } else if (part === 2) {
-      $("canvasTitle").textContent = "파트2 · 구역 안 회색 도형 오토 면 생성";
-      drawButtonPart();
-    } else if (part === 3) {
-      $("canvasTitle").textContent = "파트3 · 선택 구역 꼭짓점 보정";
+      setCanvasTitle("파트2 · 구역 면 자동 생성");
       drawButtonPart();
     } else {
-      $("canvasTitle").textContent = "파트4 · 예매용 컬러 구역도";
-      drawPart2();
+      setCanvasTitle("파트3 · 구역 번호 지정");
+      drawNumberPart();
     }
+
+    renderSectionGroupSelect();
+    updatePart1SelectedActions();
     renderSectionList("sectionList1");
     renderSectionList("sectionListButton");
-    renderSectionList("sectionListFix");
-    renderSectionList("sectionList2");
-    renderColorRuleControls();
+    renderSectionList("sectionListNumber");
+    renderNumberStatus();
     renderPreview();
     updateJson();
   }
 
   function setPart(n) {
-    part = n;
-    $("partBtn1").classList.toggle("active", n === 1);
-    $("partBtn2").classList.toggle("active", n === 2);
-    $("partBtn3").classList.toggle("active", n === 3);
-    $("partBtn4").classList.toggle("active", n === 4);
-    $("part1Panel").classList.toggle("hidden", n !== 1);
-    $("part2Panel").classList.toggle("hidden", n !== 2);
-    $("part3Panel").classList.toggle("hidden", n !== 3);
-    $("part4Panel").classList.toggle("hidden", n !== 4);
+    part = Math.max(1, Math.min(3, n));
+    n = part;
+
+    if (n === 3 && sections.length) {
+      const hasMissingNumber = sections.some((sec) => !String(sec.section || "").trim());
+      if (!part3AutoNumberApplied || hasMissingNumber) {
+        assignGroupSectionNumbers(false, false);
+        part3AutoNumberApplied = true;
+      }
+    }
+
+    const completedParts = [];
+    for (let step = 1; step < n; step += 1) {
+      completedParts.push(step);
+    }
+
+    if (window.SeatmapWorkspace && typeof window.SeatmapWorkspace.setActivePart === "function") {
+      window.SeatmapWorkspace.setActivePart(n, completedParts);
+    } else {
+      [1, 2, 3].forEach((step) => {
+        const panel = $("part" + step + "Panel");
+        const btn = $("partBtn" + step);
+
+        if (!panel || !btn) return;
+
+        const active = step === n;
+        const done = step < n;
+
+        panel.classList.remove("hidden");
+        panel.classList.toggle("is-active", active);
+        panel.classList.toggle("is-done", done);
+        btn.classList.toggle("active", active);
+      });
+    }
+
+    [1, 2, 3].forEach((step) => {
+      const panel = $("part" + step + "Panel");
+      const btn = $("partBtn" + step);
+
+      if (!panel || !btn) return;
+
+      const active = step === n;
+      const done = step < n;
+
+      panel.classList.remove("hidden");
+      panel.classList.toggle("is-active", active);
+      panel.classList.toggle("is-done", done);
+      btn.classList.toggle("active", active);
+
+      const status = panel.querySelector(".seatmap-step__status");
+      if (status) {
+        if (active) {
+          status.textContent = "진행중";
+        } else if (done) {
+          status.textContent = "완료";
+        } else {
+          status.textContent = "대기";
+        }
+      }
+    });
+
     renderAll();
   }
 
+  function setPart1EditMode(mode) {
+    part1EditMode = mode || "";
+    manualMode = false;
+    dragRect = null;
+
+    const help = $("part1EditHelp");
+    const cancel = $("cancelPart1EditBtn");
+    const mergeBtn = $("mergeSectionDragBtn");
+    const cutBtn = $("cutSectionBtn");
+
+    if (cancel) cancel.classList.toggle("hidden", !part1EditMode);
+    if (mergeBtn) mergeBtn.classList.toggle("is-active", part1EditMode === "merge");
+    if (cutBtn) cutBtn.classList.toggle("is-active", part1EditMode === "cut");
+
+    if (help) {
+      if (part1EditMode === "merge") {
+        help.textContent = "합칠 구역들을 포함하도록 캔버스에서 드래그하세요.";
+      } else if (part1EditMode === "cut") {
+        help.textContent = "먼저 구역을 선택한 뒤, 자를 방향으로 짧게 드래그하세요. 세로 드래그는 좌우 분할, 가로 드래그는 상하 분할입니다.";
+      } else {
+        help.textContent = "자동 분석 후 잘못 나뉜 구역은 드래그 합치기, 크게 잡힌 구역은 선택 자르기로 보정합니다.";
+      }
+    }
+
+    renderAll();
+  }
+
+  function sectionsInRect(r) {
+    return sections.filter((sec) => {
+      const b = bboxOf(sec.polygon || []);
+      const c = sectionCenter(sec);
+      return rectContainsPoint(r, c) || rectIntersectsBBox(r, b);
+    });
+  }
+
+  function mergeSectionsByRect(r) {
+    const targets = sectionsInRect(r);
+
+    if (targets.length < 2) {
+      toast("합칠 구역을 2개 이상 포함해서 드래그하세요.");
+      return;
+    }
+
+    const baseSec = selectedId && targets.some((s) => s.id === selectedId)
+      ? getSelected()
+      : targets[0];
+    const b = bboxOfSections(targets);
+
+    if (!baseSec || !b) return;
+
+    const mergedPolygon = rectPolygon(b.x, b.y, b.w, b.h);
+    const targetIds = new Set(targets.map((s) => s.id));
+
+    baseSec.polygon = mergedPolygon;
+    baseSec.bbox = bboxOf(mergedPolygon);
+    baseSec.area = polygonArea(mergedPolygon);
+    baseSec.buttonShape = null;
+    baseSec.buttonPolygon = null;
+    baseSec.faceReady = false;
+
+    sections = sections.filter((sec) => sec.id === baseSec.id || !targetIds.has(sec.id));
+    selectedId = baseSec.id;
+    normalizeAllSections();
+    fillForm(baseSec);
+    renderAll();
+    toast("구역 " + targets.length + "개를 합쳤습니다. 파트2에서 면을 다시 생성하세요.");
+  }
+
+  function mergeSectionsByIds(baseId, targetId) {
+    if (!baseId || !targetId || baseId === targetId) return false;
+
+    const baseSec = sections.find((sec) => sec.id === baseId);
+    const targetSec = sections.find((sec) => sec.id === targetId);
+
+    if (!baseSec || !targetSec) return false;
+
+    const b = bboxOfSections([baseSec, targetSec]);
+    if (!b) return false;
+
+    const mergedPolygon = rectPolygon(b.x, b.y, b.w, b.h);
+
+    baseSec.polygon = mergedPolygon;
+    baseSec.bbox = bboxOf(mergedPolygon);
+    baseSec.area = polygonArea(mergedPolygon);
+    baseSec.buttonShape = null;
+    baseSec.buttonPolygon = null;
+    baseSec.faceReady = false;
+
+    sections = sections.filter((sec) => sec.id !== targetSec.id);
+    selectedId = baseSec.id;
+    normalizeAllSections();
+    fillForm(baseSec);
+    part3AutoNumberApplied = false;
+    toast("선택 구역과 합쳤습니다. 파트2에서 면을 다시 생성하세요.");
+    return true;
+  }
+
+  function cloneSectionForCut(sec, polygon) {
+    const clone = JSON.parse(JSON.stringify(sec));
+    clone.id = "sec" + nextId++;
+    clone.polygon = polygon;
+    clone.bbox = bboxOf(polygon);
+    clone.area = polygonArea(polygon);
+    clone.buttonShape = null;
+    clone.buttonPolygon = null;
+    clone.faceReady = false;
+    clone.section = "";
+    clone.label = "";
+    clone.sectionName = "미지정 구역";
+    clone.name = clone.sectionName;
+    return clone;
+  }
+
+  function cutSelectedSectionByDrag(r) {
+    const sec = getSelected();
+
+    if (!sec) {
+      toast("자를 구역을 먼저 선택하세요.");
+      return;
+    }
+
+    const b = bboxOf(sec.polygon || []);
+    if (!b || b.w < 12 || b.h < 12) {
+      toast("자를 수 있는 구역이 아닙니다.");
+      return;
+    }
+
+    const verticalCut = r.h >= r.w;
+    const minSize = 6;
+    let first = null;
+    let second = null;
+
+    if (verticalCut) {
+      const x = Math.max(b.x + minSize, Math.min(b.x + b.w - minSize, r.x + r.w / 2));
+      if (x <= b.x + minSize || x >= b.x + b.w - minSize) {
+        toast("구역 안쪽을 세로로 드래그하세요.");
+        return;
+      }
+      first = rectPolygon(b.x, b.y, x - b.x, b.h);
+      second = rectPolygon(x, b.y, b.x + b.w - x, b.h);
+    } else {
+      const y = Math.max(b.y + minSize, Math.min(b.y + b.h - minSize, r.y + r.h / 2));
+      if (y <= b.y + minSize || y >= b.y + b.h - minSize) {
+        toast("구역 안쪽을 가로로 드래그하세요.");
+        return;
+      }
+      first = rectPolygon(b.x, b.y, b.w, y - b.y);
+      second = rectPolygon(b.x, y, b.w, b.y + b.h - y);
+    }
+
+    sec.polygon = first;
+    sec.bbox = bboxOf(first);
+    sec.area = polygonArea(first);
+    sec.buttonShape = null;
+    sec.buttonPolygon = null;
+    sec.faceReady = false;
+
+    const clone = cloneSectionForCut(sec, second);
+    const index = sections.findIndex((s) => s.id === sec.id);
+    sections.splice(index + 1, 0, clone);
+    selectedId = clone.id;
+    normalizeAllSections();
+    fillForm(clone);
+    renderAll();
+    toast("선택 구역을 2개로 잘랐습니다. 파트2에서 면을 다시 생성하세요.");
+  }
+
   function saveStage2() {
-    applyFormToSection();
+    if (getSelected() && $("sectionInput")) {
+      applyFormToSection();
+    }
+
     drawFinalMap(pctx, preview);
     const data = updateJson();
+
     localStorage.setItem("concert_sections", JSON.stringify(data.sections));
-    localStorage.setItem("concert_colorRules", JSON.stringify(colorRules));
-    localStorage.setItem("concert_overviewImage", finalMapUrl);
     localStorage.setItem("concert_stage2Data", JSON.stringify(data));
+    localStorage.removeItem("concert_colorRules");
+    localStorage.removeItem("concert_overviewImage");
+
     toast("Stage2 저장 완료");
+    return data;
   }
 
   // ============================================================
   // 10. 초기화
   // ============================================================
   async function init() {
+    applyStage1SettingsToInputs();
+
     if (!cleanUrl) {
       toast("Stage1 도면이 없습니다. Stage1로 이동합니다.");
       setTimeout(() => (location.href = ROUTES.stage1), 800);
@@ -2009,6 +3344,7 @@
     setupCanvas(cleanImg.naturalWidth, cleanImg.naturalHeight);
     cleanCtx.clearRect(0, 0, W, H);
     cleanCtx.drawImage(cleanImg, 0, 0, W, H);
+    normalizeStage1CleanImageForStage2();
     cleanImageLoaded = true;
 
     try {
@@ -2043,38 +3379,78 @@
               Math.max(m, parseInt(String(s.id).replace(/\D/g, "")) || 0),
             0,
           ) + 1;
+        normalizeStage2SectionColors();
+        normalizeAllSections();
         selectedId = sections[0]?.id || null;
         fillForm(getSelected());
       } catch (e) {}
     }
 
-    renderAll();
+    setPart(part);
   }
 
   // ============================================================
   // 11. 버튼 이벤트 바인딩
   // ============================================================
-  $("backStage1Btn").onclick = () => { location.href = ROUTES.stage1; };
-  $("partBtn1").onclick = () => setPart(1);
-  $("partBtn2").onclick = () => setPart(2);
-  $("partBtn3").onclick = () => setPart(3);
-  $("partBtn4").onclick = () => setPart(4);
-  $("goPart2Btn").onclick = () => setPart(2);
-  $("goPart3Btn").onclick = () => setPart(3);
-  $("goPart4Btn").onclick = () => setPart(4);
-  $("autoAnalyzeBtn").onclick = analyzeAll;
-  $("manualSectionBtn").onclick = () => {
+  function bindClick(id, handler) {
+    const el = $(id);
+    if (el) el.onclick = handler;
+  }
+
+  function bindChange(id, handler) {
+    const el = $(id);
+    if (!el) return;
+    el.oninput = handler;
+    el.onchange = handler;
+  }
+
+  bindClick("backStage1Btn", () => { location.href = ROUTES.stage1; });
+  bindClick("partBtn1", () => setPart(1));
+  bindClick("partBtn2", () => setPart(2));
+  bindClick("partBtn3", () => setPart(3));
+  bindClick("goPart2Btn", () => {
+    if (!sections.length) {
+      toast("먼저 자동 구역 분석을 하세요.");
+      return;
+    }
+
+    try {
+      makeButtonsForAll();
+      setPart(2);
+    } catch (e) {
+      console.error(e);
+      toast("면 자동 생성 오류: " + e.message);
+    }
+  });
+  bindClick("goPart3Btn", () => setPart(3));
+
+  bindClick("autoAnalyzeBtn", analyzeAll);
+  bindClick("manualSectionBtn", () => {
     manualMode = true;
+    part1EditMode = "";
     toast("캔버스에서 수동 구역 범위를 드래그하세요.");
-  };
-  $("deleteSectionBtn").onclick = () => {
+  });
+
+  bindClick("mergeSectionDragBtn", () => {
+    setPart1EditMode(part1EditMode === "merge" ? "" : "merge");
+  });
+
+  bindClick("cutSectionBtn", () => {
+    setPart1EditMode(part1EditMode === "cut" ? "" : "cut");
+  });
+
+  bindClick("cancelPart1EditBtn", () => setPart1EditMode(""));
+
+  bindClick("deleteSectionBtn", () => {
     if (!selectedId) return;
     sections = sections.filter((s) => s.id !== selectedId);
     selectedId = sections[0]?.id || null;
+    normalizeAllSections();
     fillForm(getSelected());
     renderAll();
-  };
-  $("recalcPolygonBtn").onclick = () => {
+  });
+
+  bindClick("recalcPolygonBtn", () => {
     const sec = getSelected();
     if (!sec) {
       toast("구역 선택 필요");
@@ -2090,48 +3466,18 @@
     sec.area = polygonArea(sec.polygon);
     renderAll();
     toast("선택 구역 도형 재계산 완료");
-  };
-  $("makeAllButtonsBtn").onclick = () => {
+  });
+
+  bindClick("makeAllButtonsBtn", () => {
     try {
       makeButtonsForAll();
     } catch (e) {
       console.error(e);
       toast("면 생성 오류: " + e.message);
     }
-  };
-  $("pointModeBtn").onclick = () => {
-    if (!getSelected()) {
-      toast("구역을 먼저 선택하세요");
-      return;
-    }
-    pointMode = true;
-    draftPoints = [];
-    toast("캔버스에서 꼭짓점을 순서대로 찍으세요");
-  };
-  $("cancelPointBtn").onclick = () => {
-    pointMode = false;
-    draftPoints = [];
-    renderAll();
-    toast("점 찍기 취소");
-  };
-  $("finishPointBtn").onclick = () => {
-    const sec = getSelected();
-    if (!sec) {
-      toast("구역을 먼저 선택하세요");
-      return;
-    }
-    if (draftPoints.length < 3) {
-      toast("점은 최소 3개 이상 찍어야 합니다");
-      return;
-    }
-    sec.buttonShape = null;
-    sec.buttonPolygon = draftPoints.map((p) => ({ x: p.x, y: p.y }));
-    pointMode = false;
-    draftPoints = [];
-    renderAll();
-    toast("찍은 점을 선으로 이어 면을 만들었습니다");
-  };
-  $("makeSelectedButtonBtn").onclick = () => {
+  });
+
+  bindClick("makeSelectedButtonBtn", () => {
     try {
       const sec = getSelected();
       if (!sec) {
@@ -2141,60 +3487,16 @@
       if (makeButtonForSection(sec)) {
         renderAll();
         toast("선택 구역 면 재생성 완료");
-      } else toast("구역 안 회색 도형을 찾지 못했습니다");
+      } else {
+        toast("구역 안 회색 도형을 찾지 못했습니다");
+      }
     } catch (e) {
       console.error(e);
       toast("면 재생성 오류: " + e.message);
-    }
-  };
-  $("useOriginalPolygonBtn").onclick = () => {
-    const sec = getSelected();
-    if (!sec) return;
-    sec.buttonShape = null;
-    sec.buttonPolygon = sec.polygon.map((p) => ({ ...p }));
-    renderAll();
-    toast("선택 구역은 원본 도형을 버튼으로 사용합니다.");
-  };
-  $("straightenSelectedBtn").onclick = () => {
-    const sec = getSelected();
-    if (!sec || !sec.buttonPolygon) return;
-    sec.buttonPolygon = straightenNgon(
-      sec.buttonPolygon,
-      $("buttonSnap").value,
-    );
-    renderAll();
-    toast("선택 구역 각 보정 완료");
-  };
-  [
-    "buttonStroke",
-    "showButtonHandles",
-    "buttonSimplify",
-    "minEdgeLen",
-    "buttonSnap",
-    "maxButtonPoints",
-  ].forEach((id) => {
-    if ($(id)) {
-      $(id).oninput = renderAll;
-      $(id).onchange = renderAll;
     }
   });
-  $("makeSelectedButtonBtnFix").onclick = () => {
-    try {
-      const sec = getSelected();
-      if (!sec) {
-        toast("구역 선택 필요");
-        return;
-      }
-      if (makeButtonForSection(sec)) {
-        renderAll();
-        toast("선택 구역 자동 재생성 완료");
-      } else toast("구역 안 회색 도형을 찾지 못했습니다");
-    } catch (e) {
-      console.error(e);
-      toast("면 재생성 오류: " + e.message);
-    }
-  };
-  $("useExtractedAsFaceBtn").onclick = () => {
+
+  bindClick("useExtractedAsFaceBtn", () => {
     const sec = getSelected();
     if (!sec) {
       toast("구역 선택 필요");
@@ -2205,56 +3507,61 @@
     sec.faceReady = true;
     renderAll();
     toast("점선 범위를 임시 면으로 적용했습니다");
-  };
-  $("editModeBtn").onclick = () => setEditMode(!editMode, editAction);
-  $("movePointBtn").onclick = () => setEditMode(true, "move");
-  $("addPointBtn").onclick = () => setEditMode(true, "add");
-  $("deletePointBtn").onclick = () => setEditMode(true, "delete");
-  $("doneEditBtn").onclick = () => {
-    setEditMode(false, "move");
-    toast("보정 완료");
-  };
-  $("applySectionBtn").onclick = applyFormToSection;
-  $("applyColorRuleBtn").onclick = applyColorRuleToGroup;
-  $("addColorRuleBtn").onclick = addColorRule;
-  $("colorRuleSelect").onchange = () => fillRuleForm(selectedRule());
-  $("singleRuleSelect").onchange = () =>
-    applyRuleToSingleForm(
-      colorRules.find((r) => r.key === $("singleRuleSelect").value),
-    );
-  $("renderColorMapBtn").onclick = () => {
-    renderAll();
-    toast("컬러 구역도를 다시 생성했습니다.");
-  };
-  $("saveStage2Btn").onclick = saveStage2;
-  $("toStage3Btn").onclick = () => {
+  });
+
+  [
+    "buttonStroke",
+    "buttonSimplify",
+    "minEdgeLen",
+    "buttonSnap",
+    "maxButtonPoints",
+  ].forEach((id) => bindChange(id, renderAll));
+
+  bindClick("autoNumberBtn", autoAssignSectionNumbers);
+  bindClick("startClickNumberBtn", startClickNumbering);
+  bindClick("stopClickNumberBtn", stopClickNumbering);
+  bindClick("undoNumberBtn", undoSectionNumber);
+  bindClick("resetNumberBtn", resetSectionNumbers);
+  bindClick("applySectionBtn", applyFormToSection);
+  ["floorInput", "sectionInput", "sectionNameInput", "labelInput", "sectionGroupSelect"].forEach((id) => {
+    bindChange(id, () => {
+      const sec = getSelected();
+      if (!sec) return;
+      if (id === "sectionInput") {
+        const no = String($("sectionInput")?.value || "").trim();
+        if ($("sectionNameInput")) $("sectionNameInput").value = no ? "구역 " + no : "";
+        if ($("labelInput")) $("labelInput").value = no;
+      }
+    });
+  });
+
+  bindClick("saveStage2Btn", saveStage2);
+  function moveToStage3() {
+    if (getSelected()) applyFormToSection();
+    if (!canMoveToStage3()) return;
     saveStage2();
     setTimeout(() => (location.href = ROUTES.stage3), 250);
-  };
-  $("resetStage2Btn").onclick = () => {
+  }
+
+  bindClick("toStage3Btn", moveToStage3);
+  bindClick("toStage3BtnBottom", moveToStage3);
+
+  bindClick("resetStage2Btn", () => {
     if (!confirm("Stage2 구역 데이터를 초기화할까요?")) return;
     sections = [];
     selectedId = null;
     nextId = 1;
     colorGroups = [];
+    sectionNumberHistory = [];
+    numberClickMode = false;
+    part1EditMode = "";
     localStorage.removeItem("concert_sections");
     localStorage.removeItem("concert_colorRules");
     localStorage.removeItem("concert_overviewImage");
     localStorage.removeItem("concert_stage2Data");
     renderAll();
+    part3AutoNumberApplied = false;
     toast("Stage2 초기화 완료");
-  };
-
-  [
-    "strokeWidth",
-    "labelSize",
-    "showLabels",
-    "guideMode",
-    "stageMode",
-    "mapBg",
-  ].forEach((id) => {
-    $(id).oninput = renderAll;
-    $(id).onchange = renderAll;
   });
 
   // ============================================================
@@ -2359,44 +3666,42 @@
   // 13. 캔버스 포인터 이벤트
   // ============================================================
   overlay.onpointerdown = (e) => {
-    const p = posOn(overlay, e);
-    if (part === 4) {
-      const hit = [...sections]
-        .reverse()
-        .find((s) => pointInPoly(p, renderPoly(s)));
-      if (hit) {
-        selectedId = hit.id;
-        fillForm(hit);
-        renderAll();
-      }
+    if (zoomToolOn) {
+      zoomDragging = true;
+      zoomStartX = e.clientX;
+      zoomStartScale = zoomScale;
+      e.preventDefault();
       return;
     }
 
+    const p = posOn(overlay, e);
     if (part === 3) {
-      if (editMode && selectedId) {
-        if (editAction === "add") {
-          insertPointOnSelected(p);
-          return;
-        }
-        if (editAction === "delete") {
-          deletePointOnSelected(p);
-          return;
-        }
-
-        const corner = hitButtonCorner(p);
-        if (corner) {
-          cornerDrag = corner;
-          return;
-        }
-      }
-
       const hit = [...sections]
         .reverse()
         .find(
           (s) => pointInPoly(p, renderPoly(s)) || pointInPoly(p, s.polygon),
         );
+
       if (hit) {
         selectedId = hit.id;
+
+        if (numberClickMode) {
+          const hitGroupKey = sectionGroupKey(hit);
+          if (!clickSectionGroupKey) {
+            clickSectionGroupKey = hitGroupKey;
+          }
+
+          if (hitGroupKey !== clickSectionGroupKey) {
+            fillForm(hit);
+            renderAll();
+            toast("클릭 번호 지정은 같은 색상 그룹 안에서만 가능합니다.");
+            return;
+          }
+
+          setSectionNumber(hit, nextSectionNumber, true);
+          nextSectionNumber += 1;
+        }
+
         fillForm(hit);
         renderAll();
       }
@@ -2418,32 +3723,37 @@
     }
 
     const hit = [...sections].reverse().find((s) => pointInPoly(p, s.polygon));
-    if (hit && !manualMode) {
+
+    if (hit) {
+      if (e.shiftKey) {
+        if (selectedId && selectedId !== hit.id) {
+          mergeSectionsByIds(selectedId, hit.id);
+          renderAll();
+        } else {
+          selectedId = hit.id;
+          fillForm(hit);
+          renderAll();
+          toast("합칠 기준 구역을 선택했습니다. Shift를 누른 채 다른 구역을 클릭하세요.");
+        }
+        return;
+      }
+
       selectedId = hit.id;
       fillForm(hit);
       renderAll();
       return;
     }
 
-    if (manualMode) {
-      dragRect = { x: p.x, y: p.y, w: 0, h: 0, startX: p.x, startY: p.y };
-      return;
-    }
-
-    const comp = findComponentAt(p);
-    if (comp) {
-      const sec = makeSection(comp.cells, comp.bbox, "클릭 구역");
-      sec.name = "클릭 구역 " + nextId;
-      sec.label = String(sections.length + 1);
-      sections.push(sec);
-      selectedId = sec.id;
-      fillForm(sec);
-      renderAll();
-      toast("클릭한 도형을 새 구역으로 추가했습니다.");
-    }
+    dragRect = { x: p.x, y: p.y, w: 0, h: 0, startX: p.x, startY: p.y, action: "manual" };
   };
 
   window.addEventListener("pointermove", (e) => {
+    if (zoomDragging) {
+      const deltaX = e.clientX - zoomStartX;
+      setZoom(zoomStartScale + deltaX / 260);
+      return;
+    }
+
     if (cornerDrag) {
       const p = posOn(overlay, e);
       cornerDrag.sec.buttonPolygon[cornerDrag.index] = { x: p.x, y: p.y };
@@ -2460,25 +3770,31 @@
   });
 
   window.addEventListener("pointerup", () => {
+    if (zoomDragging) {
+      zoomDragging = false;
+      return;
+    }
+
     if (cornerDrag) {
       cornerDrag = null;
       return;
     }
+
     if (!dragRect) return;
-    const r = dragRect;
+
+    const raw = dragRect;
+    const r = rectFromDrag(raw);
+
     if (r.w > 8 && r.h > 8) {
-      const polygon = [
-        { x: r.x, y: r.y },
-        { x: r.x + r.w, y: r.y },
-        { x: r.x + r.w, y: r.y + r.h },
-        { x: r.x, y: r.y + r.h },
-      ];
+      const polygon = rectPolygon(r.x, r.y, r.w, r.h);
       const id = "sec" + nextId++;
       const sec = {
         id,
-        name: "수동 구역 " + sections.length,
-        label: String(sections.length + 1),
-        floor: "1층",
+        floor: "1",
+        section: "",
+        sectionName: "",
+        name: "수동 구역 미지정",
+        label: "",
         grade: "일반석",
         price: 132000,
         sourceColor: "#d9d9d9",
@@ -2490,14 +3806,49 @@
         area: polygonArea(polygon),
       };
       sections.push(sec);
+      normalizeAllSections();
+      assignNextSectionNumberInGroup(sec);
       selectedId = id;
       fillForm(sec);
       toast("수동 구역 추가 완료");
     }
+
     dragRect = null;
     manualMode = false;
     renderAll();
   });
+
+  // ============================================================
+  // 14. Stage1 패턴 공용 작업 도구
+  // ============================================================
+  if ($("zoomTool")) {
+    $("zoomTool").onclick = () => {
+      zoomToolOn = !zoomToolOn;
+      applyCanvasScale();
+      toast(zoomToolOn ? "확대 도구: 오른쪽 드래그 확대 / 왼쪽 드래그 축소" : "확대 도구 OFF");
+    };
+  }
+
+  if ($("zoomReset")) {
+    $("zoomReset").onclick = resetZoom;
+  }
+
+  if ($("canvasBox")) {
+    $("canvasBox").addEventListener("wheel", (e) => {
+      if (!zoomToolOn && !e.ctrlKey) return;
+      e.preventDefault();
+      if (e.deltaY < 0) zoomIn();
+      else zoomOut();
+    }, { passive: false });
+  }
+
+  if ($("undoAction")) {
+    $("undoAction").onclick = () => toast("Stage2 이전 작업 기록은 아직 연결하지 않았습니다.");
+  }
+
+  if ($("redoAction")) {
+    $("redoAction").onclick = () => toast("Stage2 다음 작업 기록은 아직 연결하지 않았습니다.");
+  }
 
   init();
 })();
