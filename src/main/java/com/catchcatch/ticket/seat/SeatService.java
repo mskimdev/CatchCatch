@@ -252,7 +252,7 @@ public class SeatService {
         boolean hasHeldSeats = seatRepository.existsByConcertSession_IdAndStatus(sessionId, SeatStatus.HELD);
 
         if (hasSoldSeats || hasHeldSeats) {
-            throw new BadRequestException("이미 예매가 진행중이거나 결제된 좌석이 있어 초기화 할 수 업습니다.");
+            throw new BadRequestException("이미 예매가 진행중이거나 결제된 좌석이 있어 초기화 할 수 없습니다.");
         }
 
         seatRepository.deleteBySessionId(sessionId);
