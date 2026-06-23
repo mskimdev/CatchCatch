@@ -216,7 +216,9 @@ public class PaymentResponse {
             Integer userId,
             String userName,
             String userEmail,
-            String userPhone
+            String userPhone,
+
+            Long expiresAtMillis
     ) {
         public FormDTO(Booking booking, Integer usablePoint, Integer ticketFee) {
             this(
@@ -260,7 +262,9 @@ public class PaymentResponse {
                     booking.getUser().getId(),
                     booking.getUser().getUsername(),
                     booking.getUser().getEmail(),
-                    booking.getUser().getPhone()
+                    booking.getUser().getPhone(),
+
+                    booking.getExpiresAt() == null ? null : booking.getExpiresAt().getTime()
             );
         }
     }

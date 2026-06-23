@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+import static com.catchcatch.ticket.core.util.BookingStepUtil.setBookingStep;
+
 @Controller
 @RequiredArgsConstructor
 public class PaymentController {
@@ -46,6 +48,8 @@ public class PaymentController {
                 paymentService.getPaymentForm(bookingId, sessionUser.getId());
 
         model.addAttribute("payment", payment);
+        model.addAttribute("pageTitle", "결제");
+        setBookingStep(model, 3);
 
         return "payment/payment-form";
     }

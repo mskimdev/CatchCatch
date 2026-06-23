@@ -1,6 +1,14 @@
-{{> layout/header}}
+{{> layout/header-booking}}
 
 <link rel="stylesheet" href="/css/booking-payment.css">
+
+<main class="cc-main">
+<input type="hidden" id="bookingExpiresAt" value="{{payment.expiresAtMillis}}">
+
+<div class="cc-timer cc-payment-timer">
+    <span>좌석 점유 보관 시간</span>
+    <b id="paymentCountdown">10:00</b>
+</div>
 
 <section class="cc-payment-layout">
     <!-- 왼쪽: 예매 정보 요약 + 결제 수단 -->
@@ -216,10 +224,9 @@
                 결제하기
             </button>
 
-            <a class="cc-btn cc-btn--outline cc-btn--full cc-payment-prev"
-               href="/booking/seat?concertId={{#payment.concertId}}{{payment.concertId}}{{/payment.concertId}}{{^payment.concertId}}1{{/payment.concertId}}">
-            이전 단계
-            </a>
+            <button type="button" class="cc-btn cc-btn--outline cc-btn--full" id="booking-cancel-btn">
+                예약취소
+            </button>
         </div>
 
         <div class="cc-card cc-notice-card">
@@ -232,6 +239,7 @@
         </div>
     </aside>
 </section>
+</main>
 <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
 <script src="/js/payment/payment.js"></script>
 {{> layout/footer}}

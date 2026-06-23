@@ -28,11 +28,10 @@ public class QueueController {
             return "redirect:/booking/seat";
         }
 
-        QueueResponse.StatusDTO status = queueService.enter(sessionId, sessionUser.getId());
+        queueService.enter(sessionId, sessionUser.getId());
 
         model.addAttribute("pageTitle", "대기열");
         model.addAttribute("sessionId", sessionId);
-        model.addAttribute("queueId", status.queueId());
 
         return "queue/wait";
     }

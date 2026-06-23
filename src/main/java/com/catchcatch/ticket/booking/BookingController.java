@@ -3,15 +3,20 @@ package com.catchcatch.ticket.booking;
 import com.catchcatch.ticket.booking.dto.BookingRequest;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
 import com.catchcatch.ticket.core.util.Define;
+import com.catchcatch.ticket.core.util.Resp;
 import com.catchcatch.ticket.queue.QueueService;
 import com.catchcatch.ticket.user.dto.SessionUser;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import static com.catchcatch.ticket.core.util.BookingStepUtil.setBookingStep;
 
@@ -109,7 +114,7 @@ public class BookingController {
         return "booking/seat";
     }
 
-    // 좌석 선택 후 예매 저장 -> 완료 화면으로 이동
+    // 좌석 선택 후 예매 저장 -> 결제 화면으로 이동
     @PostMapping("/complete")
     public String startPayment(
             BookingRequest.SeatSelectDTO req,
@@ -132,7 +137,7 @@ public class BookingController {
         // 완료 화면에서 조회할 예매 ID 저장
         session.setAttribute("bookingId", booking.getId());
 
-        return "redirect:/booking/complete";
+        return "redirect:/booking/payment?bookingId=" + booking.getId();
     }
 
     // 예매 완료
@@ -160,6 +165,21 @@ public class BookingController {
         // setBookingStep(model, 3);
 
         return "booking/complete";
+    }
+
+    // 결제 화면에서 "예약취소"를 눌렀을 때 호출 (결제 전 PENDING 건만 취소 가능)
+    @PostMapping("/{id}/cancel")
+    @ResponseBody
+    public ResponseEntity<?> cancelPendingBooking(@PathVariable Integer id, HttpSession session) {
+        SessionUser sessionUser = getSessionUser(session);
+
+        if (sessionUser == null) {
+            return Resp.fail(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+
+        bookingService.cancelPendingBooking(id, sessionUser.getId());
+
+        return Resp.ok(null);
     }
 
     private SessionUser getSessionUser(HttpSession session) {

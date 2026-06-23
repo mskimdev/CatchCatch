@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="/css/booking-info.css">
     <link rel="stylesheet" href="/css/booking-seat.css">
     <link rel="stylesheet" href="/css/booking-complete.css">
+    <link rel="stylesheet" href="/css/booking-queue.css">
 </head>
 
 <body>
@@ -38,8 +39,17 @@
 
             <span class="cc-step-line"></span>
 
+            <div class="cc-step {{#stepPayment}}is-active{{/stepPayment}}{{#stepPaymentDone}}is-done{{/stepPaymentDone}}">
+                <span class="cc-step__num">
+                    {{#stepPaymentDone}}✓{{/stepPaymentDone}}{{^stepPaymentDone}}3{{/stepPaymentDone}}
+                </span>
+                <span class="cc-step__text">결제</span>
+            </div>
+
+            <span class="cc-step-line"></span>
+
             <div class="cc-step {{#stepComplete}}is-active{{/stepComplete}}">
-                <span class="cc-step__num">3</span>
+                <span class="cc-step__num">4</span>
                 <span class="cc-step__text">완료</span>
             </div>
 
