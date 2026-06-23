@@ -20,8 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const selectedList = document.querySelector(".cc-selected-list");
   const totalBox = document.querySelector(".cc-total");
   const totalPriceEl = document.querySelector(".cc-total__price");
-  const paymentForm = document.querySelector(".cc-payment-form");
-  const timerEl = document.querySelector("[data-countdown]");
+  const paymentForm = document.querySelector(".cc-complete-form");
 
   const selectedSeatIdsInput = document.querySelector("#selectedSeatIds");
   const selectedSeatInputs = document.querySelector("#selectedSeatInputs");
@@ -478,33 +477,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (selectedSeats.length > MAX_SELECT_COUNT) {
           event.preventDefault();
           alert(`좌석은 최대 ${MAX_SELECT_COUNT}석까지 선택할 수 있습니다.`);
+          return;
         }
+
+        event.preventDefault();
+
+        CcUI.confirm({
+          title: "결제하시겠습니까?",
+          text: "좌석 점유는 결제 화면 진입 시점부터 10분간 유지됩니다.<br>시간 내 결제되지 않으면 좌석이 해제되어 처음부터 다시 선택해야 합니다.",
+          confirmText: "결제하기",
+          onConfirm: () => paymentForm.submit()
+        });
       });
     }
-  }
-
-  function initCountdown() {
-    if (!timerEl) return;
-
-    let remainSeconds = Number(timerEl.dataset.countdown || 600);
-
-    function tick() {
-      const minute = String(Math.floor(remainSeconds / 60)).padStart(2, "0");
-      const second = String(remainSeconds % 60).padStart(2, "0");
-
-      timerEl.textContent = `${minute}:${second}`;
-
-      if (remainSeconds <= 0) {
-        alert("좌석 보관 시간이 만료되었습니다. 좌석을 다시 선택해주세요.");
-        clearAllSeats();
-        return;
-      }
-
-      remainSeconds -= 1;
-      window.setTimeout(tick, 1000);
-    }
-
-    tick();
   }
 
   rebuildGradeTabsIfNeeded();
@@ -522,7 +507,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   renderSelectedPanel();
-  initCountdown();
 
   console.log("window.CATCHCATCH_SEATS =", window.CATCHCATCH_SEATS);
   console.log("normalized dbSeats =", dbSeats);

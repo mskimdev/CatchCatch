@@ -9,6 +9,7 @@ import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.payment.Payment;
 import com.catchcatch.ticket.payment.PaymentRepository;
+import com.catchcatch.ticket.queue.QueueService;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.seat.SeatRepository;
 import com.catchcatch.ticket.seat.SeatStatus;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 public class BookingService {
 
     private static final int PAYMENT_EXPIRE_MINUTES = 10;
+    private static final List<Status> ACTIVE_BOOKING_STATUSES = List.of(Status.PENDING, Status.PAID);
 
     private final BookingRepository bookingRepository;
     private final SeatRepository seatRepository;
@@ -39,6 +41,7 @@ public class BookingService {
     private final ConcertSessionRepository concertSessionRepository;
     private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
+    private final QueueService queueService;
 
     /**
      * 예매 생성
@@ -74,12 +77,18 @@ public class BookingService {
 
         User user = getUserReference(requestDTO.getUserId());
 
+        if (bookingRepository.existsByUser_IdAndConcertSession_IdAndStatusIn(
+                requestDTO.getUserId(), requestDTO.getSessionId(), ACTIVE_BOOKING_STATUSES)) {
+            throw new BadRequestException("이미 진행 중인 예매가 있습니다.");
+        }
+
         List<Integer> seatIds = requestDTO.getSeatIds()
                 .stream()
                 .distinct()
                 .toList();
 
-        List<Seat> seats = seatRepository.findAllById(seatIds);
+        // 비관적 락으로 좌석을 잠근 채 조회 -> 동시에 같은 좌석을 선택해도 한 트랜잭션만 통과한다.
+        List<Seat> seats = seatRepository.findAllByIdInAndSessionIdForUpdate(requestDTO.getSessionId(), seatIds);
 
         if (seats.size() != seatIds.size()) {
             throw new BadRequestException("존재하지 않는 좌석이 포함되어 있습니다.");
@@ -162,6 +171,29 @@ public class BookingService {
 
         cancelSoldSeats(booking);
         booking.cancel();
+        releaseQueueSlot(booking);
+    }
+
+    /**
+     * 결제 전(PENDING) 예매를 사용자가 직접 취소한다.
+     *
+     * 결제 화면에서 "예약취소"를 눌렀을 때 호출. HELD 좌석을 AVAILABLE로 되돌린다.
+     */
+    @Transactional
+    public void cancelPendingBooking(Integer id, Integer userId) {
+        Booking booking = findBooking(id);
+
+        if (!booking.getUser().getId().equals(userId)) {
+            throw new BadRequestException("본인의 예매만 취소할 수 있습니다.");
+        }
+
+        if (booking.getStatus() != Status.PENDING) {
+            throw new BadRequestException("결제 대기 중인 예매만 취소할 수 있습니다.");
+        }
+
+        releaseSeats(booking);
+        booking.cancel();
+        releaseQueueSlot(booking);
     }
 
     /**
@@ -178,6 +210,7 @@ public class BookingService {
         expiredBookings.forEach(booking -> {
             releaseSeats(booking);
             booking.expire();
+            releaseQueueSlot(booking);
         });
     }
 
@@ -228,6 +261,10 @@ public class BookingService {
                 seat.release();
             }
         });
+    }
+
+    private void releaseQueueSlot(Booking booking) {
+        queueService.releaseEnteredSlot(booking.getConcertSession().getId(), booking.getUser().getId());
     }
 
     private void cancelSoldSeats(Booking booking) {

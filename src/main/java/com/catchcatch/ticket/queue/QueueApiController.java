@@ -26,14 +26,16 @@ public class QueueApiController {
         return Resp.ok(queueService.enter(req.concertSessionId(), userId));
     }
 
-    @GetMapping("/{queueId}/status")
-    public ResponseEntity<?> getStatus(@PathVariable Integer queueId) {
-        return Resp.ok(queueService.getStatus(queueId));
+    @GetMapping("/{concertSessionId}/status")
+    public ResponseEntity<?> getStatus(@PathVariable Integer concertSessionId, HttpSession session) {
+        Integer userId = getSessionUser(session).getId();
+        return Resp.ok(queueService.getStatus(concertSessionId, userId));
     }
 
-    @PostMapping("/{queueId}/enter-booking")
-    public ResponseEntity<?> enterBooking(@PathVariable Integer queueId) {
-        queueService.enterBooking(queueId);
+    @PostMapping("/{concertSessionId}/enter-booking")
+    public ResponseEntity<?> enterBooking(@PathVariable Integer concertSessionId, HttpSession session) {
+        Integer userId = getSessionUser(session).getId();
+        queueService.enterBooking(concertSessionId, userId);
         return Resp.ok(null);
     }
 

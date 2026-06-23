@@ -1,5 +1,4 @@
 (function () {
-  const queueId = document.getElementById('cc-queue-id').value;
   const sessionId = document.getElementById('cc-queue-session-id').value;
 
   const numberEl = document.getElementById('cc-queue-number');
@@ -9,7 +8,7 @@
   let entering = false;
 
   async function refreshStatus() {
-    const { res, data } = await apiGet(`/api/queue/${queueId}/status`);
+    const { res, data } = await apiGet(`/api/queue/${sessionId}/status`);
 
     if (!res?.ok || !data?.body) {
       messageEl.textContent = '대기열 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.';
@@ -25,7 +24,7 @@
       entering = true;
 
       messageEl.textContent = '입장 가능합니다. 좌석 선택 화면으로 이동합니다...';
-      const { res: enterRes } = await apiPost(`/api/queue/${queueId}/enter-booking`, {});
+      const { res: enterRes } = await apiPost(`/api/queue/${sessionId}/enter-booking`, {});
       if (enterRes?.ok) {
         location.href = '/booking/seat';
       } else {

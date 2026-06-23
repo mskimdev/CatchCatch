@@ -5,9 +5,11 @@ import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.core.log.InMemoryErrorLogAppender;
-import com.catchcatch.ticket.queue.QueueRepository;
 import com.catchcatch.ticket.operationlog.OperationLogService;
+import com.catchcatch.ticket.queue.QueueRedisRepository;
 import com.catchcatch.ticket.seat.SeatRepository;
+import com.catchcatch.ticket.session.ConcertSession;
+import com.catchcatch.ticket.session.ConcertSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +30,8 @@ public class AdminDashboardService {
     private final BookingRepository bookingRepository;
     private final ConcertRepository concertRepository;
     private final SeatRepository seatRepository;
-    private final QueueRepository queueRepository;
+    private final QueueRedisRepository queueRedisRepository;
+    private final ConcertSessionRepository concertSessionRepository;
     private final OperationLogService operationLogService;
 
     public AdminDashboardResponse.SummaryDTO getSummary(String periodParam) {
@@ -84,15 +88,27 @@ public class AdminDashboardService {
     }
 
     public AdminDashboardResponse.QueueStatusDTO getQueueStatus() {
-        long totalWaiting = queueRepository.countTotalWaiting();
-        long activeSessions = queueRepository.countActiveConcertSessions();
+        List<Integer> activeSessionIds = queueRedisRepository.findActiveSessionIds()
+                .stream()
+                .map(Integer::parseInt)
+                .toList();
 
-        List<AdminDashboardResponse.SessionQueueDTO> sessionQueues =
-                queueRepository.findWaitingCountsBySession()
-                        .stream()
-                        .map( p -> new AdminDashboardResponse.SessionQueueDTO(
-                                p.getConcertSessionId(), p.getConcertTitle(), p.getRound(), p.getWaitingCount()))
-                        .toList();
+        long totalWaiting = queueRedisRepository.countTotalWaiting();
+        long activeSessions = activeSessionIds.size();
+
+        List<AdminDashboardResponse.SessionQueueDTO> sessionQueues = activeSessionIds.stream()
+                .map(sessionId -> {
+                    ConcertSession concertSession = concertSessionRepository.findById(sessionId).orElse(null);
+                    if (concertSession == null) {
+                        return null;
+                    }
+
+                    long waitingCount = queueRedisRepository.countWaitingBySession(sessionId);
+                    return new AdminDashboardResponse.SessionQueueDTO(
+                            sessionId, concertSession.getConcert().getTitle(), concertSession.getRound(), waitingCount);
+                })
+                .filter(Objects::nonNull)
+                .toList();
 
         return new AdminDashboardResponse.QueueStatusDTO(totalWaiting, activeSessions, sessionQueues);
     }

@@ -17,6 +17,9 @@ public class BookingStepUtil {
         model.addAttribute("stepSeat", step == 2);
         model.addAttribute("stepSeatDone", step > 2);
 
-        model.addAttribute("stepComplete", step == 3);
+        model.addAttribute("stepPayment", step == 3);
+        model.addAttribute("stepPaymentDone", step > 3);
+
+        model.addAttribute("stepComplete", step == 4);
     }
 }

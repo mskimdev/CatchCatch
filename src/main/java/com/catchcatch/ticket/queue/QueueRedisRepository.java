@@ -95,7 +95,7 @@ public class QueueRedisRepository {
     }
 
     public boolean isReady(Integer sessionId, Integer userId) {
-        return Boolean.TRUE.equals(redisTemplate.hasKey(QueueRedisKeys.ready(sessionId, userId)));
+        return redisTemplate.hasKey(QueueRedisKeys.ready(sessionId, userId));
     }
 
     // ready 키가 TTL로 자연 만료된 경우를 정리한다. 스케줄러(안전망)가 주기적으로 호출.
@@ -148,6 +148,11 @@ public class QueueRedisRepository {
     public boolean isEntered(Integer sessionId, Integer userId) {
         Boolean isMember = redisTemplate.opsForSet().isMember(QueueRedisKeys.entered(sessionId), userId.toString());
         return Boolean.TRUE.equals(isMember);
+    }
+
+    // 결제완료/취소/만료로 예매 프로세스를 빠져나갈 때 ENTERED 상태를 해제한다.
+    public void clearEntered(Integer sessionId, Integer userId) {
+        redisTemplate.opsForSet().remove(QueueRedisKeys.entered(sessionId), userId.toString());
     }
 
     // READY + ENTERED 합산 (스케줄러의 capacity 계산용)

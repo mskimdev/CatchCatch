@@ -103,6 +103,15 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 //    );
 
     /**
+     * 같은 사용자가 같은 회차에 이미 진행 중인(PENDING/PAID) 예매가 있는지 확인 (중복 예매 방지)
+     */
+    boolean existsByUser_IdAndConcertSession_IdAndStatusIn(
+            Integer userId,
+            Integer concertSessionId,
+            List<Status> statuses
+    );
+
+    /**
      * 마이페이지 예매 목록 조회
      *
      * Booking -> BookingSeat -> Seat 구조로 변경.
