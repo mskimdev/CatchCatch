@@ -111,7 +111,6 @@ public class AdminConcertService {
                 .detailBannerUrl(dto.detailBannerUrl())
                 .build();
 
-        // 영속성 컨텍스트에 저장되면서 concert 객체 내부 파라미터에 id가 자동으로 꽂힙니다.
         Concert savedConcert = concertRepository.save(concert);
 
         // 3. 자식 엔티티(회차 리스트) 연쇄 저장
@@ -135,7 +134,7 @@ public class AdminConcertService {
             }
         }
 
-        // 4. 맨 마지막에 생성된 콘서트의 ID를 반환합니다.
+        // 4. 맨 마지막에 생성된 콘서트의 ID를 반환
         return savedConcert.getId();
     }
 
@@ -241,8 +240,6 @@ public class AdminConcertService {
         ConcertSession session = concertSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new NotFoundException("해당 회차 정보를 찾을 수 없습니다."));
 
-        // 엔티티에 @SQLDelete(sql = "UPDATE concert_session_tb SET is_deleted = true WHERE id = ?") 가 적용되어 있다면
-        // 아래 호출 시 자동으로 소프트 딜리트가 수행됩니다.
         seatService.deleteSeatBySessionId(sessionId);
         concertSessionRepository.delete(session);
     }

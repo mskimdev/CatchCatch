@@ -238,8 +238,10 @@ public class AdminConcertRequest {
             String genre,
             String ageLimit,        // 예: 만 15세 이상
             String runtime,
+            String detailTitle,
             String detailDescription1,
             String detailDescription2,
+            String posterUrl,
             LocalDate startDate,
             LocalDate endDate,
             Integer priceVip,
@@ -280,6 +282,8 @@ public class AdminConcertRequest {
                     .genre(concert.getGenre())
                     .ageLimit(concert.getAgeLimit())
                     .runtime(concert.getRuntime())
+                    .posterUrl(concert.getPosterUrl())
+                    .detailTitle(concert.getDetailTitle())
                     .detailDescription1(concert.getDetailDescription1())
                     .detailDescription2(concert.getDetailDescription2())
                     .startDate(concert.getStartDate())

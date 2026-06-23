@@ -1,329 +1,1051 @@
-/* =========================================================
-   Concert Stage3 Seat Builder
-   - HTML: 화면 구조
-   - CSS : 화면 스타일
-   - JS  : 상태 / 도형 / 좌석 / 렌더링 / 이벤트
-   ========================================================= */
-
 (() => {
-    'use strict';
-
-    /* =====================================================
-       1. Constants / State
-       ===================================================== */
+    "use strict";
 
     const STORAGE_KEYS = {
-        overviewImage: 'concert_overviewImage',
-        cleanImage: 'concert_cleanImage',
-        originalImage: 'concert_originalImage',
-        imageMeta: 'concert_imageMeta',
-        sections: 'concert_sections',
-        stage3Seats: 'concert_stage3_seats',
-        seatJson: 'concert_seat_json',
+        sections: "concert_sections",
+        overviewImage: "concert_overviewImage",
+        imageMeta: "concert_imageMeta",
+        stage3Seats: "concert_stage3_seats",
+        stage3Layouts: "concert_stage3_layouts",
+        stage3Data: "concert_stage3Data",
+        layoutJson: "concert_layout_json",
+        bookingJson: "concert_booking_seats",
+        finalJson: "concert_final_seats"
     };
 
     const PART = {
         BASE: 1,
-        EDIT: 2,
-        EXPORT: 3,
+        EDIT: 2
     };
 
-    const PAINT_MODE = {
-        REMOVED: 'REMOVED',
-        AVAILABLE: 'AVAILABLE',
-        OBSTRUCTED: 'OBSTRUCTED',
-    };
-
-    const SEAT_STATUS = {
-        AVAILABLE: 'AVAILABLE',
-        REMOVED: 'REMOVED',
-        OBSTRUCTED: 'OBSTRUCTED',
-    };
-
-    const CANVAS_GRID = {
-        width: 900,
-        height: 620,
+    const STATUS = {
+        AVAILABLE: "AVAILABLE",
+        REMOVED: "REMOVED",
+        OBSTRUCTED: "OBSTRUCTED"
     };
 
     const COLORS = {
-        canvasBg: '#f7f7f7',
-        seat: '#dedede',
-        seatLine: '#f8fafc',
-        removedLine: 'rgba(148,163,184,.22)',
-        emptySeat: 'rgba(209,213,219,.18)',
-        emptySeatLine: 'rgba(209,213,219,.28)',
-        stage: '#c9c9c9',
-        selected: '#ef4444',
-        normalSection: '#8b5cf6',
-        miniNormalFill: 'rgba(148,163,184,.35)',
-        miniNormalLine: '#cbd5e1',
-        miniSelectedFill: 'rgba(239,68,68,.50)',
-        obstructed: '#f59e0b',
-        obstructedLine: '#d97706',
+        bg: "#f8fafc",
+        stage: "#c9c9c9",
+        sectionStroke: "#ffffff",
+        selected: "#ef4444",
+        sectionFallback: "#8b5cf6",
+        seat: "#dedede",
+        seatLine: "#ffffff",
+        selectedSeat: "#2563eb",
+        obstructed: "#f59e0b",
+        removed: "rgba(148,163,184,.22)",
+        guide: "rgba(100,116,139,.45)",
+        rotate: "#ef4444"
     };
-
-    const PART_TITLE = {
-        [PART.BASE]: '파트1 · 기준 구역 선택',
-        [PART.EDIT]: '파트2 · 선택 구역 좌석 배치',
-        [PART.EXPORT]: '파트3 · JSON 정리',
-    };
-
-    const FALLBACK_SECTIONS = [
-        {
-            id: 'sec1',
-            name: 'A',
-            floor: '1층',
-            grade: 'VIP',
-            renderColor: '#8b5cf6',
-            polygon: [
-                { x: 180, y: 120 },
-                { x: 360, y: 120 },
-                { x: 360, y: 260 },
-                { x: 180, y: 260 },
-            ],
-        },
-        {
-            id: 'sec2',
-            name: 'B',
-            floor: '1층',
-            grade: 'R',
-            renderColor: '#f472b6',
-            polygon: [
-                { x: 390, y: 120 },
-                { x: 570, y: 120 },
-                { x: 570, y: 260 },
-                { x: 390, y: 260 },
-            ],
-        },
-    ];
 
     const dom = {};
 
     const state = {
         part: PART.BASE,
-        zoom: 1,
-        width: 0,
-        height: 0,
-        imageUrl:
-            localStorage.getItem(STORAGE_KEYS.overviewImage) ||
-            localStorage.getItem(STORAGE_KEYS.cleanImage) ||
-            localStorage.getItem(STORAGE_KEYS.originalImage),
-        meta: readStorageJson(STORAGE_KEYS.imageMeta, {}),
-        sections: readStorageJson(STORAGE_KEYS.sections, []),
-        seatsBySection: readStorageJson(STORAGE_KEYS.stage3Seats, {}),
+        sections: readJson(STORAGE_KEYS.sections, []),
+        overviewImageUrl: localStorage.getItem(STORAGE_KEYS.overviewImage),
+        overviewImage: null,
+        seatsBySection: readJson(STORAGE_KEYS.stage3Seats, {}),
+        layoutsBySection: readJson(STORAGE_KEYS.stage3Layouts, {}),
         selectedId: null,
-        isPainting: false,
-        paintMode: PAINT_MODE.REMOVED,
-        stageImage: null,
+        completedParts: new Set(),
+
+        mapZoom: 1,
+        mapPanX: 0,
+        mapPanY: 0,
+        mapDragging: false,
+        mapMoved: false,
+        mapStartX: 0,
+        mapStartY: 0,
+        mapStartPanX: 0,
+        mapStartPanY: 0,
+        mapTransform: { scale: 1, x: 0, y: 0 },
+
+        editorTransform: { scale: 1, x: 0, y: 0 },
+        width: 980,
+        height: 660,
+
+        selectedSeatIds: new Set(),
+        hoverSeatId: null,
+
+        draggingBox: false,
+        movingSeats: false,
+        pointerDown: false,
+        dragStart: null,
+        dragCurrent: null,
+        moveOrigin: null,
+        movedSeatSnapshot: null,
+
+        rotationDragging: false,
+        rotationStartAngle: 0,
+        rotationBaseAngle: 0,
+        rotationHandleHitRadius: 16
     };
 
-    /* =====================================================
-       2. Small Utilities
-       ===================================================== */
+    init();
+
+    function init() {
+        cacheDom();
+        normalizeSections();
+        setInitialSelection();
+        setupCanvasSizes();
+        bindEvents();
+        loadOverviewImage();
+        syncSelects();
+        ensureAllLayoutsHaveAngle();
+        renderAll();
+        setPart(PART.BASE, false);
+    }
+
+    function cacheDom() {
+        dom.app = $("stage3App");
+        dom.toast = $("toast");
+
+        dom.miniCanvas = $("miniCanvas");
+        dom.miniCtx = dom.miniCanvas?.getContext("2d");
+        dom.miniFrame = $("miniFrame");
+
+        dom.seatBase = $("seatBase");
+        dom.seatOverlay = $("seatOverlay");
+        dom.seatBaseCtx = dom.seatBase?.getContext("2d");
+        dom.seatOverlayCtx = dom.seatOverlay?.getContext("2d");
+        dom.seatCanvasBox = $("seatCanvasBox");
+
+        dom.popover = $("seatActionPopover");
+        dom.canvasTitle = $("canvasTitle");
+        dom.sizeText = $("sizeText");
+
+        dom.zoomIn = $("zoomIn");
+        dom.zoomOut = $("zoomOut");
+        dom.zoomReset = $("zoomReset");
+        dom.zoomValue = $("zoomValue");
+
+        dom.partBtn1 = $("partBtn1");
+        dom.partBtn2 = $("partBtn2");
+        dom.part1Panel = $("part1Panel");
+        dom.part2Panel = $("part2Panel");
+        dom.stage3Guide = $("stage3Guide");
+
+        dom.baseSectionSelect = $("baseSectionSelect");
+        dom.editSectionSelect = $("editSectionSelect");
+        dom.baseRows = $("baseRows");
+        dom.baseCols = $("baseCols");
+        dom.editRows = $("editRows");
+        dom.editCols = $("editCols");
+
+        dom.applyBaseOne = $("applyBaseOne");
+        dom.applyBaseAll = $("applyBaseAll");
+        dom.regenSelected = $("regenSelected");
+        dom.sectionsList1 = $("sectionsList1");
+        dom.goPart2 = $("goPart2");
+        dom.toStage4 = $("toStage4");
+
+        dom.selName = $("selName");
+        dom.selCount = $("selCount");
+        dom.selectedCount = $("selectedCount");
+        dom.selObstructed = $("selObstructed");
+
+        dom.seatWidthRange = $("seatWidthRange");
+        dom.seatHeightRange = $("seatHeightRange");
+        dom.gapXRange = $("gapXRange");
+        dom.gapYRange = $("gapYRange");
+        dom.paddingXRange = $("paddingXRange");
+        dom.paddingYRange = $("paddingYRange");
+        dom.offsetXRange = $("offsetXRange");
+        dom.offsetYRange = $("offsetYRange");
+
+        dom.seatWidthValue = $("seatWidthValue");
+        dom.seatHeightValue = $("seatHeightValue");
+        dom.gapXValue = $("gapXValue");
+        dom.gapYValue = $("gapYValue");
+        dom.paddingXValue = $("paddingXValue");
+        dom.paddingYValue = $("paddingYValue");
+        dom.offsetXValue = $("offsetXValue");
+        dom.offsetYValue = $("offsetYValue");
+
+        dom.resetLayoutBtn = $("resetLayoutBtn");
+        dom.saveLayoutBtn = $("saveLayoutBtn");
+
+        dom.applyRemove = $("applyRemove");
+        dom.applyAvailable = $("applyAvailable");
+        dom.applyObstructed = $("applyObstructed");
+        dom.clearSelection = $("clearSelection");
+    }
 
     function $(id) {
         return document.getElementById(id);
     }
 
-    function readStorageJson(key, fallback) {
+    function readJson(key, fallback) {
         try {
             return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
         } catch (error) {
-            console.warn(`[SeatBuilder] localStorage JSON parse failed: ${key}`, error);
             return fallback;
         }
     }
 
-    function writeStorageJson(key, value) {
-        localStorage.setItem(key, JSON.stringify(value));
+    function writeJson(key, value) {
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
+            return true;
+        } catch (error) {
+            console.error(`[Stage3 저장 실패] ${key}`, error);
+
+            if (isQuotaExceeded(error)) {
+                toast("브라우저 저장 공간이 부족합니다. 임시 데이터를 정리한 뒤 다시 시도합니다.");
+            } else {
+                toast("Stage3 저장 중 오류가 발생했습니다. 콘솔을 확인하세요.");
+            }
+
+            return false;
+        }
     }
 
-    function toPositiveInt(value, fallback = 1) {
-        return Math.max(1, parseInt(value, 10) || fallback);
+    function isQuotaExceeded(error) {
+        return error && (
+            error.name === "QuotaExceededError" ||
+            error.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
+            error.code === 22 ||
+            error.code === 1014
+        );
     }
 
-    function showToast(message) {
+    function toast(message) {
+        if (!dom.toast) return;
+
         dom.toast.textContent = message;
-        dom.toast.classList.add('show');
-        setTimeout(() => dom.toast.classList.remove('show'), 1800);
+        dom.toast.classList.add("show");
+
+        clearTimeout(toast.timer);
+        toast.timer = setTimeout(() => dom.toast.classList.remove("show"), 1900);
     }
 
-    function rowName(index) {
-        let number = index + 1;
-        let name = '';
+    function loadOverviewImage() {
+        if (!state.overviewImageUrl) return;
 
-        while (number > 0) {
-            number -= 1;
-            name = String.fromCharCode(97 + (number % 26)) + name;
-            number = Math.floor(number / 26);
-        }
+        const image = new Image();
 
-        return name;
-    }
+        image.onload = () => {
+            state.overviewImage = image;
 
-    function cleanCode(value, fallback) {
-        const raw = String(value || fallback || '').trim();
-        const cleaned = raw
-            .replace(/^구역\s*/, '')
-            .replace(/층/g, '')
-            .replace(/\s+/g, '')
-            .replace(/[^\w가-힣-]/g, '');
+            if (!readJson(STORAGE_KEYS.imageMeta, {}).width) {
+                state.width = image.naturalWidth || state.width;
+                state.height = image.naturalHeight || state.height;
+            }
 
-        return cleaned || String(fallback || 'A');
-    }
-
-    function floorCode(section) {
-        const matched = String(section.floor || '1층').match(/\d+/);
-        return matched ? matched[0] : cleanCode(section.floor, '1');
-    }
-
-    function sectionCode(section) {
-        return cleanCode(section.label || section.name || section.id, section.id);
-    }
-
-    /* =====================================================
-       3. Section Geometry
-       - Stage2에서 넘어온 polygon/buttonShape를 캔버스 도형으로 처리합니다.
-       ===================================================== */
-
-    function getSectionPaths(section) {
-        if (section.buttonShape?.paths?.length) return section.buttonShape.paths;
-        if (section.buttonPolygon?.length) return [section.buttonPolygon];
-        if (section.polygon?.length) return [section.polygon];
-        return [];
-    }
-
-    function getMainPath(section) {
-        return getSectionPaths(section)[0] || [];
-    }
-
-    function getBBox(poly) {
-        if (!poly.length) return { x: 0, y: 0, w: 1, h: 1 };
-
-        const xs = poly.map(point => point.x);
-        const ys = poly.map(point => point.y);
-
-        return {
-            x: Math.min(...xs),
-            y: Math.min(...ys),
-            w: Math.max(...xs) - Math.min(...xs),
-            h: Math.max(...ys) - Math.min(...ys),
+            renderAll();
         };
+
+        image.src = state.overviewImageUrl;
     }
 
-    function polygonArea(poly) {
-        let sum = 0;
-
-        for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-            sum += poly[j].x * poly[i].y - poly[i].x * poly[j].y;
+    function normalizeSections() {
+        if (!Array.isArray(state.sections)) {
+            state.sections = [];
         }
 
-        return Math.abs(sum / 2);
-    }
-
-    function sectionArea(section) {
-        const paths = getSectionPaths(section);
-        if (!paths.length) return 0;
-
-        let area = polygonArea(paths[0]);
-        for (let i = 1; i < paths.length; i += 1) {
-            area -= polygonArea(paths[i]);
-        }
-
-        return Math.max(0, area);
-    }
-
-    function pointInPolygon(point, poly) {
-        let inside = false;
-
-        for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-            const a = poly[i];
-            const b = poly[j];
-            const intersect =
-                (a.y > point.y) !== (b.y > point.y) &&
-                point.x < ((b.x - a.x) * (point.y - a.y)) / (b.y - a.y) + a.x;
-
-            if (intersect) inside = !inside;
-        }
-
-        return inside;
-    }
-
-    function pointInSection(point, section) {
-        const paths = getSectionPaths(section);
-        if (!paths.length) return false;
-
-        let inside = false;
-        paths.forEach(poly => {
-            if (pointInPolygon(point, poly)) inside = !inside;
+        state.sections.forEach((section, index) => {
+            section.id = section.id || `sec${index + 1}`;
+            section.name = section.name || `구역 ${index + 1}`;
+            section.label = section.label || String(index + 1);
+            section.floor = section.floor || "1층";
+            section.grade = section.grade || "일반석";
+            section.price = section.price || 0;
+            section.renderColor = section.renderColor || COLORS.sectionFallback;
+            section.seatShape = cleanupSeatShape(section);
+            section.seatRows = section.seatRows || getLayout(section).rows || 0;
+            section.seatCols = section.seatCols || getLayout(section).cols || 0;
         });
 
-        return inside;
+        const meta = readJson(STORAGE_KEYS.imageMeta, {});
+        const points = state.sections.flatMap(section => getSeatShape(section));
+
+        state.width = meta.width || Math.max(980, Math.ceil(Math.max(0, ...points.map(point => point.x)) + 60));
+        state.height = meta.height || Math.max(660, Math.ceil(Math.max(0, ...points.map(point => point.y)) + 60));
     }
 
-    function drawPath(ctx, poly) {
-        poly.forEach((point, index) => {
-            if (index === 0) ctx.moveTo(point.x, point.y);
-            else ctx.lineTo(point.x, point.y);
+    function ensureAllLayoutsHaveAngle() {
+        state.sections.forEach(section => {
+            const layout = getLayout(section);
+
+            if (!Number.isFinite(Number(layout.angle))) {
+                layout.angle = 0;
+            }
         });
     }
 
-    function drawSectionShape(ctx, section, fill, stroke, lineWidth = 2, dash = []) {
-        const paths = getSectionPaths(section);
+    function setInitialSelection() {
+        state.selectedId = state.sections[0]?.id || null;
+    }
+
+    function setupCanvasSizes() {
+        resizeCanvasToBox(dom.miniCanvas, dom.miniFrame);
+        resizeCanvasToBox(dom.seatBase, dom.seatCanvasBox);
+        resizeCanvasToBox(dom.seatOverlay, dom.seatCanvasBox);
+
+        window.addEventListener("resize", () => {
+            resizeCanvasToBox(dom.miniCanvas, dom.miniFrame);
+            resizeCanvasToBox(dom.seatBase, dom.seatCanvasBox);
+            resizeCanvasToBox(dom.seatOverlay, dom.seatCanvasBox);
+            renderAll();
+        });
+    }
+
+    function resizeCanvasToBox(canvas, box) {
+        if (!canvas || !box) return;
+
+        const rect = box.getBoundingClientRect();
+        const ratio = window.devicePixelRatio || 1;
+
+        canvas.width = Math.max(1, Math.floor(rect.width * ratio));
+        canvas.height = Math.max(1, Math.floor(rect.height * ratio));
+        canvas.style.width = `${rect.width}px`;
+        canvas.style.height = `${rect.height}px`;
+
+        const ctx = canvas.getContext("2d");
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    }
+
+    function bindEvents() {
+        on(dom.partBtn1, "click", () => setPart(PART.BASE));
+        on(dom.partBtn2, "click", () => setPart(PART.EDIT));
+        on(dom.goPart2, "click", () => setPart(PART.EDIT));
+
+        on(dom.applyBaseOne, "click", applyBaseOne);
+        on(dom.applyBaseAll, "click", applyBaseAll);
+        on(dom.regenSelected, "click", regenerateSelected);
+
+        on(dom.baseSectionSelect, "change", event => selectSection(event.target.value));
+        on(dom.editSectionSelect, "change", event => selectSection(event.target.value));
+
+        on(dom.zoomIn, "click", () => setMapZoom(state.mapZoom * 1.15));
+        on(dom.zoomOut, "click", () => setMapZoom(state.mapZoom / 1.15));
+        on(dom.zoomReset, "click", resetMapView);
+
+        on(dom.miniCanvas, "wheel", handleMiniWheel, { passive: false });
+        on(dom.miniCanvas, "pointerdown", handleMiniPointerDown);
+
+        on(window, "pointermove", handleWindowPointerMove);
+        on(window, "pointerup", handleWindowPointerUp);
+
+        on(dom.seatOverlay, "pointerdown", handleSeatPointerDown);
+        on(dom.seatOverlay, "pointermove", handleSeatPointerMove);
+        on(dom.seatOverlay, "pointerleave", () => {
+            state.hoverSeatId = null;
+            renderSeatOverlay();
+        });
+
+        on(dom.applyRemove, "click", () => applyStatusToSelection(STATUS.REMOVED));
+        on(dom.applyAvailable, "click", () => applyStatusToSelection(STATUS.AVAILABLE));
+        on(dom.applyObstructed, "click", () => applyStatusToSelection(STATUS.OBSTRUCTED));
+        on(dom.clearSelection, "click", clearSelection);
+
+        on(dom.resetLayoutBtn, "click", resetSelectedLayout);
+
+        on(dom.saveLayoutBtn, "click", () => {
+            if (saveWorkData()) {
+                toast("Stage3 작업 저장 완료");
+            }
+        });
+
+        on(dom.toStage4, "click", goStage4);
+
+        getRangeControls().forEach(item => {
+            on(item.input, "input", () => updateSelectedLayoutFromControls(true));
+            on(item.input, "change", () => updateSelectedLayoutFromControls(true));
+        });
+    }
+
+    function on(target, eventName, handler, options) {
+        if (!target) return;
+        target.addEventListener(eventName, handler, options);
+    }
+
+    function setPart(nextPart, completePrevious = true) {
+        if (completePrevious) {
+            for (let i = 1; i < nextPart; i += 1) {
+                state.completedParts.add(i);
+            }
+        }
+
+        state.part = nextPart;
+        syncPartUi();
+        syncGuide();
+        renderAll();
+    }
+
+    function syncPartUi() {
+        [PART.BASE, PART.EDIT].forEach(number => {
+            const panel = number === PART.BASE ? dom.part1Panel : dom.part2Panel;
+            const button = number === PART.BASE ? dom.partBtn1 : dom.partBtn2;
+
+            if (!panel || !button) return;
+
+            const active = state.part === number;
+            const done = state.completedParts.has(number) && !active;
+
+            panel.classList.toggle("is-active", active);
+            panel.classList.toggle("is-done", done);
+            button.classList.toggle("active", active);
+
+            const status = panel.querySelector(".seatmap-step__status");
+            if (status) {
+                status.textContent = active ? "진행중" : done ? "완료" : "대기";
+            }
+        });
+    }
+
+    function syncGuide() {
+        if (!dom.stage3Guide) return;
+
+        dom.stage3Guide.textContent = state.part === PART.BASE
+            ? "미니맵에서 기준 구역을 클릭하고 기준 가로 좌석 수만 입력하세요. 전체 구역 자동 추정은 같은 정사각형 좌석 크기로 전부 다시 생성합니다."
+            : "Part2에서는 선택 구역 좌석을 클릭/드래그로 수정할 수 있고, 빨간 회전 핸들을 드래그하면 구역 각도를 임시 지정할 수 있습니다.";
+    }
+
+    function syncSelects() {
+        const html = state.sections.map(section => {
+            const count = getSeatCount(section);
+            const rows = section.seatRows || getLayout(section).rows || 0;
+            const cols = section.seatCols || getLayout(section).cols || 0;
+            const angle = normalizeAngle(getLayout(section).angle || 0);
+
+            return `<option value="${escapeHtml(section.id)}">${escapeHtml(section.name)} · ${escapeHtml(section.floor)} · ${escapeHtml(section.grade)} · ${rows}×${cols} · ${count}석 · ${angle}°</option>`;
+        }).join("");
+
+        if (dom.baseSectionSelect) {
+            dom.baseSectionSelect.innerHTML = html;
+        }
+
+        if (dom.editSectionSelect) {
+            dom.editSectionSelect.innerHTML = html;
+        }
+
+        if (state.selectedId) {
+            if (dom.baseSectionSelect) {
+                dom.baseSectionSelect.value = state.selectedId;
+            }
+
+            if (dom.editSectionSelect) {
+                dom.editSectionSelect.value = state.selectedId;
+            }
+        }
+
+        const section = getSelectedSection();
+
+        if (section) {
+            const layout = getLayout(section);
+
+            if (dom.editRows) {
+                dom.editRows.value = section.seatRows || layout.rows || 5;
+            }
+
+            if (dom.editCols) {
+                dom.editCols.value = section.seatCols || layout.cols || 10;
+            }
+
+            syncLayoutControls(layout);
+        }
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;");
+    }
+
+    function renderAll() {
+        syncSelects();
+        renderSectionList();
+        renderMiniMap();
+        renderSeatEditor();
+        updateInfoPanel();
+    }
+
+    function renderSectionList() {
+        if (!dom.sectionsList1) return;
+
+        if (!state.sections.length) {
+            dom.sectionsList1.innerHTML = `<div class="help-text">Stage2에서 구역을 먼저 저장하세요.</div>`;
+            return;
+        }
+
+        dom.sectionsList1.innerHTML = state.sections.map(section => {
+            const active = section.id === state.selectedId ? " active" : "";
+            const rows = section.seatRows || getLayout(section).rows || 0;
+            const cols = section.seatCols || getLayout(section).cols || 0;
+            const count = getSeatCount(section);
+            const angle = normalizeAngle(getLayout(section).angle || 0);
+
+            return `
+                <div class="section-item${active}" data-id="${escapeHtml(section.id)}">
+                    <i class="section-item__color" style="background:${escapeHtml(section.renderColor || COLORS.sectionFallback)}"></i>
+                    <div>
+                        <strong>${escapeHtml(section.name)}</strong>
+                        <span>${escapeHtml(section.floor)} · ${escapeHtml(section.grade)} · ${rows}×${cols} · ${count}석 · ${angle}°</span>
+                    </div>
+                </div>
+            `;
+        }).join("");
+
+        dom.sectionsList1.querySelectorAll(".section-item").forEach(item => {
+            item.addEventListener("click", () => selectSection(item.dataset.id));
+        });
+    }
+
+    function renderMiniMap() {
+        const canvas = dom.miniCanvas;
+        const ctx = dom.miniCtx;
+
+        if (!canvas || !ctx) return;
+
+        const rect = canvas.getBoundingClientRect();
+
+        ctx.clearRect(0, 0, rect.width, rect.height);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, rect.width, rect.height);
+
+        const fit = Math.min(rect.width / state.width, rect.height / state.height) * 0.92;
+        const scale = fit * state.mapZoom;
+        const x = rect.width / 2 - state.width * scale / 2 + state.mapPanX;
+        const y = rect.height / 2 - state.height * scale / 2 + state.mapPanY;
+
+        state.mapTransform = { scale, x, y };
+
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+
+        if (state.overviewImage) {
+            ctx.drawImage(state.overviewImage, 0, 0, state.width, state.height);
+        } else {
+            drawStageOnMap(ctx);
+            state.sections.forEach(section => drawMapSectionFill(ctx, section, scale));
+        }
+
+        state.sections.forEach(section => drawMapSectionOutline(ctx, section, scale));
+
+        const selected = getSelectedSection();
+        if (selected) {
+            drawMapRotationArrow(ctx, selected, scale);
+        }
+
+        ctx.restore();
+        updateZoomText();
+    }
+
+    function drawStageOnMap(ctx) {
+        const stageW = Math.min(state.width * 0.34, 330);
+        const stageH = Math.max(28, state.height * 0.065);
+        const stageX = (state.width - stageW) / 2;
+        const stageY = state.height * 0.07;
+
+        ctx.save();
+        ctx.fillStyle = COLORS.stage;
+        ctx.fillRect(stageX, stageY, stageW, stageH);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = `bold ${Math.max(14, state.width * 0.016)}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("STAGE", state.width / 2, stageY + stageH / 2);
+        ctx.restore();
+    }
+
+    function drawMapSectionFill(ctx, section, scale) {
+        const paths = getMapPaths(section);
         if (!paths.length) return;
 
         ctx.save();
         ctx.beginPath();
-        paths.forEach(poly => {
-            drawPath(ctx, poly);
+
+        paths.forEach(path => {
+            if (!path || path.length < 3) return;
+            drawPoly(ctx, path);
             ctx.closePath();
         });
-        ctx.fillStyle = fill;
-        ctx.strokeStyle = stroke;
-        ctx.lineWidth = lineWidth;
-        ctx.setLineDash(dash);
-        ctx.fill('evenodd');
+
+        ctx.fillStyle = hexToRgba(section.renderColor || COLORS.sectionFallback, 0.72);
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 3 / scale;
+        ctx.lineJoin = "round";
+        ctx.fill("evenodd");
         ctx.stroke();
         ctx.restore();
     }
 
-    function getSelectedSection() {
-        return state.sections.find(section => section.id === state.selectedId) || state.sections[0];
+    function drawMapSectionOutline(ctx, section, scale) {
+        const paths = getMapPaths(section);
+        if (!paths.length) return;
+
+        const selected = section.id === state.selectedId;
+
+        ctx.save();
+        ctx.beginPath();
+
+        paths.forEach(path => {
+            if (!path || path.length < 3) return;
+            drawPoly(ctx, path);
+            ctx.closePath();
+        });
+
+        ctx.strokeStyle = selected ? COLORS.selected : "rgba(15,23,42,.14)";
+        ctx.lineWidth = selected ? 4 / scale : 1.1 / scale;
+        ctx.lineJoin = "round";
+        ctx.stroke();
+        ctx.restore();
     }
 
-    /* =====================================================
-       4. Seat Data
-       ===================================================== */
+    function drawMapRotationArrow(ctx, section, scale) {
+        const pivot = getSectionPivot(section);
+        const layout = getLayout(section);
+        const bbox = bboxOf(getSeatShape(section));
+        const length = Math.max(bbox.w, bbox.h) * 0.8;
+        const tip = rotatePoint(
+            { x: pivot.x, y: pivot.y - length },
+            pivot,
+            layout.angle || 0
+        );
 
-    function estimateGridByArea(section, baseSection, baseRows, baseCols) {
-        const baseArea = Math.max(1, sectionArea(baseSection));
-        const targetArea = Math.max(1, sectionArea(section));
-        const baseCount = Math.max(1, baseRows * baseCols);
-        const targetCount = Math.max(1, Math.round((baseCount * targetArea) / baseArea));
+        ctx.save();
+        ctx.strokeStyle = COLORS.rotate;
+        ctx.fillStyle = COLORS.rotate;
+        ctx.lineWidth = 4 / scale;
+        ctx.beginPath();
+        ctx.moveTo(pivot.x, pivot.y);
+        ctx.lineTo(tip.x, tip.y);
+        ctx.stroke();
 
-        const bbox = getBBox(getMainPath(section));
-        const aspect = Math.max(0.25, bbox.w / Math.max(1, bbox.h));
-        const cols = Math.max(1, Math.round(Math.sqrt(targetCount * aspect)));
-        const rows = Math.max(1, Math.ceil(targetCount / cols));
+        const arrowSize = 16 / scale;
+        const headBase = pointOnLine(tip, pivot, arrowSize);
+        const left = rotatePoint(headBase, tip, 28);
+        const right = rotatePoint(headBase, tip, -28);
 
-        return { rows, cols };
+        ctx.beginPath();
+        ctx.moveTo(tip.x, tip.y);
+        ctx.lineTo(left.x, left.y);
+        ctx.lineTo(right.x, right.y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
     }
 
-    function createSeatsForSection(section, rows, cols) {
-        const path = getMainPath(section);
-        if (!path.length) return [];
+    function renderSeatEditor() {
+        const base = dom.seatBase;
+        const overlay = dom.seatOverlay;
+        const ctx = dom.seatBaseCtx;
 
-        const bbox = getBBox(path);
-        const seatWidth = Math.max(8, Math.min(36, (bbox.w / cols) * 0.72));
-        const seatHeight = Math.max(8, Math.min(36, (bbox.h / rows) * 0.72));
+        if (!base || !overlay || !ctx) return;
+
+        const rect = base.getBoundingClientRect();
+
+        ctx.clearRect(0, 0, rect.width, rect.height);
+        ctx.fillStyle = COLORS.bg;
+        ctx.fillRect(0, 0, rect.width, rect.height);
+
+        const section = getSelectedSection();
+
+        if (!section) {
+            ctx.fillStyle = "#64748b";
+            ctx.font = "bold 16px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("Stage2 구역 데이터가 없습니다.", rect.width / 2, rect.height / 2);
+            renderSeatOverlay();
+            return;
+        }
+
+        if (dom.canvasTitle) {
+            dom.canvasTitle.textContent = state.part === PART.BASE ? "파트1 · 기준 구역 선택" : "파트2 · 좌석 배치 편집";
+        }
+
+        if (dom.sizeText) {
+            dom.sizeText.textContent = `${Math.round(rect.width)} × ${Math.round(rect.height)}`;
+        }
+
+        const transform = computeEditorTransform(section, rect.width, rect.height);
+        state.editorTransform = transform;
+
+        drawSeatEditorStage(ctx, rect.width);
+        drawSectionGuide(ctx, section, transform);
+        drawSeats(ctx, section, transform);
+        renderSeatOverlay();
+    }
+
+    function drawSeatEditorStage(ctx, width) {
+        ctx.save();
+
+        const stageW = Math.min(width - 180, 660);
+        const x = (width - stageW) / 2;
+
+        ctx.fillStyle = COLORS.stage;
+        ctx.fillRect(x, 34, stageW, 54);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 18px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("무대방향 (STAGE)", width / 2, 61);
+
+        ctx.restore();
+    }
+
+    function drawSectionGuide(ctx, section, transform) {
+        const layout = getLayout(section);
+        const shape = getRotatedSeatShape(section, layout.angle || 0);
+
+        ctx.save();
+        ctx.translate(transform.x, transform.y);
+        ctx.scale(transform.scale, transform.scale);
+
+        ctx.beginPath();
+        drawPoly(ctx, shape);
+        ctx.closePath();
+
+        ctx.fillStyle = "rgba(148,163,184,.08)";
+        ctx.strokeStyle = COLORS.guide;
+        ctx.lineWidth = 2 / transform.scale;
+        ctx.setLineDash([8 / transform.scale, 6 / transform.scale]);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.restore();
+
+        ctx.save();
+        ctx.fillStyle = "#64748b";
+        ctx.font = "13px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(`현재 보고 계신 구역은 ${section.floor} ${section.name} 구역입니다.`, ctx.canvas.getBoundingClientRect().width / 2, 115);
+        ctx.fillText(`현재 좌석 각도: ${normalizeAngle(layout.angle || 0)}°`, ctx.canvas.getBoundingClientRect().width / 2, 136);
+        ctx.restore();
+    }
+
+    function drawSeats(ctx, section, transform) {
+        const seats = getSeats(section);
+
+        ctx.save();
+        ctx.translate(transform.x, transform.y);
+        ctx.scale(transform.scale, transform.scale);
+
+        seats.forEach(seat => {
+            const selected = state.selectedSeatIds.has(seat.id);
+            const hover = state.hoverSeatId === seat.id;
+
+            ctx.save();
+            ctx.translate(seat.x, seat.y);
+            ctx.rotate(toRad(seat.angle || 0));
+
+            roundRect(
+                ctx,
+                -seat.w / 2,
+                -seat.h / 2,
+                seat.w,
+                seat.h,
+                Math.max(1.5, Math.min(seat.w, seat.h) * 0.10)
+            );
+
+            if (seat.status === STATUS.REMOVED) {
+                ctx.strokeStyle = COLORS.removed;
+                ctx.setLineDash([3 / transform.scale, 3 / transform.scale]);
+                ctx.lineWidth = 1.4 / transform.scale;
+                ctx.stroke();
+            } else {
+                ctx.fillStyle = seat.status === STATUS.OBSTRUCTED ? COLORS.obstructed : COLORS.seat;
+                ctx.strokeStyle = selected ? COLORS.selectedSeat : hover ? COLORS.selected : COLORS.seatLine;
+                ctx.lineWidth = selected ? 3 / transform.scale : hover ? 2.4 / transform.scale : 1 / transform.scale;
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        });
+
+        ctx.restore();
+    }
+
+    function renderSeatOverlay() {
+        const canvas = dom.seatOverlay;
+        const ctx = dom.seatOverlayCtx;
+
+        if (!canvas || !ctx) return;
+
+        const rect = canvas.getBoundingClientRect();
+
+        ctx.clearRect(0, 0, rect.width, rect.height);
+
+        if (state.draggingBox && state.dragStart && state.dragCurrent) {
+            const box = rectFromPoints(state.dragStart, state.dragCurrent);
+
+            ctx.save();
+            ctx.fillStyle = "rgba(37,99,235,.10)";
+            ctx.strokeStyle = "#2563eb";
+            ctx.setLineDash([6, 4]);
+            ctx.lineWidth = 1.5;
+            ctx.fillRect(box.x, box.y, box.w, box.h);
+            ctx.strokeRect(box.x, box.y, box.w, box.h);
+            ctx.restore();
+        }
+
+        drawRotationOverlay(ctx);
+        placePopover();
+    }
+
+    function drawRotationOverlay(ctx) {
+        if (state.part !== PART.EDIT) return;
+
+        const section = getSelectedSection();
+        if (!section) return;
+
+        const info = getRotationOverlayInfo(section);
+        if (!info) return;
+
+        ctx.save();
+        ctx.strokeStyle = COLORS.rotate;
+        ctx.fillStyle = COLORS.rotate;
+        ctx.lineWidth = 3;
+
+        ctx.beginPath();
+        ctx.moveTo(info.center.x, info.center.y);
+        ctx.lineTo(info.handle.x, info.handle.y);
+        ctx.stroke();
+
+        const arrowSize = 14;
+        const headBase = pointOnLine(info.handle, info.center, arrowSize);
+        const left = rotatePoint(headBase, info.handle, 28);
+        const right = rotatePoint(headBase, info.handle, -28);
+
+        ctx.beginPath();
+        ctx.moveTo(info.handle.x, info.handle.y);
+        ctx.lineTo(left.x, left.y);
+        ctx.lineTo(right.x, right.y);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(info.handle.x, info.handle.y, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(info.center.x, info.center.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "bold 13px Arial";
+        ctx.textAlign = "left";
+        ctx.fillText(`${normalizeAngle(getLayout(section).angle || 0)}°`, info.handle.x + 14, info.handle.y - 8);
+
+        ctx.restore();
+    }
+
+    function computeEditorTransform(section, canvasW, canvasH) {
+        const layout = getLayout(section);
+        const shape = getRotatedSeatShape(section, layout.angle || 0);
+        const bbox = bboxOf(shape);
+        const maxW = canvasW - 160;
+        const maxH = canvasH - 190;
+        const scale = Math.min(maxW / Math.max(1, bbox.w), maxH / Math.max(1, bbox.h));
+        const x = canvasW / 2 - (bbox.x + bbox.w / 2) * scale;
+        const y = 150 + maxH / 2 - (bbox.y + bbox.h / 2) * scale;
+
+        return { scale, x, y };
+    }
+
+    function selectSection(sectionId) {
+        if (!sectionId) return;
+
+        state.selectedId = sectionId;
+        state.selectedSeatIds.clear();
+
+        const section = getSelectedSection();
+
+        if (section) {
+            const layout = getLayout(section);
+
+            if (dom.baseSectionSelect) {
+                dom.baseSectionSelect.value = section.id;
+            }
+
+            if (dom.editSectionSelect) {
+                dom.editSectionSelect.value = section.id;
+            }
+
+            if (dom.editRows) {
+                dom.editRows.value = section.seatRows || layout.rows || 5;
+            }
+
+            if (dom.editCols) {
+                dom.editCols.value = section.seatCols || layout.cols || 10;
+            }
+
+            syncLayoutControls(layout);
+        }
+
+        hidePopover();
+        renderAll();
+    }
+
+    function applyBaseOne() {
+        const section = getSelectedOrBaseSection();
+
+        if (!section) {
+            toast("기준 구역을 선택하세요.");
+            return;
+        }
+
+        const baseCols = positiveInt(dom.baseCols?.value, 10);
+        const baseBbox = bboxOf(getSeatShape(section));
+        const seatSize = Math.max(2, baseBbox.w / baseCols);
+        const rows = Math.max(1, Math.round(baseBbox.h / seatSize));
+
+        state.selectedId = section.id;
+
+        generateSectionSeats(section, rows, baseCols, true, seatSize);
+
+        if (dom.editRows) {
+            dom.editRows.value = rows;
+        }
+
+        if (dom.editCols) {
+            dom.editCols.value = baseCols;
+        }
+
+        saveWorkData();
+        renderAll();
+        toast(`${section.name} 좌석 초안을 생성했습니다.`);
+    }
+
+    function applyBaseAll() {
+        const baseSection = getSelectedOrBaseSection();
+
+        if (!baseSection) {
+            toast("기준 구역을 선택하세요.");
+            return;
+        }
+
+        const baseCols = positiveInt(dom.baseCols?.value, 10);
+        const baseBbox = bboxOf(getSeatShape(baseSection));
+        const seatSize = Math.max(2, baseBbox.w / baseCols);
+
+        state.selectedId = baseSection.id;
+        state.seatsBySection = {};
+        state.layoutsBySection = {};
+        state.selectedSeatIds.clear();
+
+        state.sections.forEach(section => {
+            section.seatShape = cleanupSeatShape(section);
+
+            const bbox = bboxOf(getSeatShape(section));
+            const cols = Math.max(1, Math.round(bbox.w / seatSize));
+            const rows = Math.max(1, Math.round(bbox.h / seatSize));
+
+            generateSectionSeats(section, rows, cols, true, seatSize);
+        });
+
+        const selectedLayout = getLayout(baseSection);
+
+        if (dom.editRows) {
+            dom.editRows.value = selectedLayout.rows;
+        }
+
+        if (dom.editCols) {
+            dom.editCols.value = selectedLayout.cols;
+        }
+
+        saveWorkData();
+        renderAll();
+        toast("기준 좌석 크기로 모든 구역 좌석을 다시 생성했습니다.");
+    }
+
+    function regenerateSelected() {
+        const section = getSelectedSection();
+        if (!section) return;
+
+        const rows = positiveInt(dom.editRows?.value, section.seatRows || 5);
+        const cols = positiveInt(dom.editCols?.value, section.seatCols || 10);
+
+        generateSectionSeats(section, rows, cols, true);
+        state.selectedSeatIds.clear();
+
+        saveWorkData();
+        renderAll();
+        toast("선택 구역 좌석을 재생성했습니다.");
+    }
+
+    function generateSectionSeats(section, rows, cols, resetLayout, preferredSeatSize) {
+        section.seatRows = rows;
+        section.seatCols = cols;
+
+        const current = getLayout(section);
+        const layout = resetLayout
+            ? defaultLayoutFor(section, rows, cols, preferredSeatSize)
+            : { ...current, rows, cols, angle: normalizeAngle(current.angle || 0) };
+
+        state.layoutsBySection[section.id] = layout;
+        state.seatsBySection[section.id] = buildSeats(section, layout);
+    }
+
+    function rebuildSelectedSectionSeats() {
+        const section = getSelectedSection();
+        if (!section) return;
+
+        const layout = getLayout(section);
+        const previous = getSeats(section);
+        const statusMap = new Map(previous.map(seat => [seat.id, seat.status]));
+        const movedMap = new Map(previous.map(seat => [seat.id, { x: seat.x, y: seat.y, angle: seat.angle }]));
+
+        const rebuilt = buildSeats(section, layout).map(seat => {
+            const prevStatus = statusMap.get(seat.id);
+            const prevMoved = movedMap.get(seat.id);
+
+            return {
+                ...seat,
+                status: prevStatus || seat.status,
+                angle: prevMoved?.angle ?? seat.angle
+            };
+        });
+
+        state.seatsBySection[section.id] = rebuilt;
+    }
+
+    function buildSeats(section, layout) {
+        const bbox = bboxOf(getSeatShape(section));
+        const rows = Math.max(1, layout.rows || section.seatRows || 1);
+        const cols = Math.max(1, layout.cols || section.seatCols || 1);
+
+        const seatW = Math.max(1, Number(layout.seatW) || 1);
+        const seatH = Math.max(1, Number(layout.seatH) || seatW);
+        const gapX = Math.max(0, Number(layout.gapX) || 0);
+        const gapY = Math.max(0, Number(layout.gapY) || 0);
+        const paddingX = Math.max(0, Number(layout.paddingX) || 0);
+        const paddingY = Math.max(0, Number(layout.paddingY) || 0);
+        const offsetX = Number(layout.offsetX) || 0;
+        const offsetY = Number(layout.offsetY) || 0;
+        const angle = normalizeAngle(layout.angle || 0);
+
+        const usableW = Math.max(1, bbox.w - paddingX * 2);
+        const usableH = Math.max(1, bbox.h - paddingY * 2);
+        const gridW = cols * seatW + Math.max(0, cols - 1) * gapX;
+        const gridH = rows * seatH + Math.max(0, rows - 1) * gapY;
+
+        const startX = bbox.x + paddingX + (usableW - gridW) / 2 + offsetX;
+        const startY = bbox.y + paddingY + (usableH - gridH) / 2 + offsetY;
+
+        const pivot = getSectionPivot(section);
+        const rotatedShape = getRotatedSeatShape(section, angle);
         const seats = [];
 
         for (let row = 0; row < rows; row += 1) {
             for (let col = 0; col < cols; col += 1) {
-                const x = bbox.x + (col + 0.5) * (bbox.w / cols);
-                const y = bbox.y + (row + 0.5) * (bbox.h / rows);
+                const baseCenter = {
+                    x: startX + col * (seatW + gapX) + seatW / 2,
+                    y: startY + row * (seatH + gapY) + seatH / 2
+                };
 
-                if (!pointInSection({ x, y }, section)) continue;
+                const rotatedCenter = rotatePoint(baseCenter, pivot, angle);
+
+                if (!seatFitsRotatedShape(rotatedCenter, rotatedShape, Math.max(seatW, seatH) * 0.45)) {
+                    continue;
+                }
 
                 seats.push({
                     id: `${section.id}-${rowName(row)}-${col + 1}`,
@@ -332,798 +1054,1180 @@
                     colIndex: col,
                     row: rowName(row),
                     col: col + 1,
-                    x,
-                    y,
-                    w: seatWidth,
-                    h: seatHeight,
-                    status: SEAT_STATUS.AVAILABLE,
+                    x: rotatedCenter.x,
+                    y: rotatedCenter.y,
+                    w: seatW,
+                    h: seatH,
+                    angle,
+                    status: STATUS.AVAILABLE,
+                    color: section.renderColor || COLORS.seat
                 });
             }
         }
 
-        section.seatRows = rows;
-        section.seatCols = cols;
         return seats;
     }
 
-    function getSectionSeatCount(section) {
-        return (state.seatsBySection[section.id] || [])
-            .filter(seat => seat.status !== SEAT_STATUS.REMOVED)
-            .length;
+    function seatFitsRotatedShape(center, shape, tolerance) {
+        if (pointInPoly(center, shape)) {
+            return true;
+        }
+
+        return distanceToPolygon(center, shape) <= tolerance;
     }
 
-    function exportSeats() {
-        const result = [];
+    function defaultLayoutFor(section, rows, cols, preferredSeatSize) {
+        const bbox = bboxOf(getSeatShape(section));
+        const cellW = bbox.w / Math.max(1, cols);
+        const cellH = bbox.h / Math.max(1, rows);
+        const seatSize = Math.max(2, Math.floor(Math.min(preferredSeatSize || cellW, cellW, cellH)));
+
+        return {
+            rows,
+            cols,
+            seatW: seatSize,
+            seatH: seatSize,
+            gapX: 0,
+            gapY: 0,
+            paddingX: 0,
+            paddingY: 0,
+            offsetX: 0,
+            offsetY: 0,
+            angle: 0
+        };
+    }
+
+    function getLayout(section) {
+        if (!section) return defaultBlankLayout();
+
+        if (!state.layoutsBySection[section.id]) {
+            state.layoutsBySection[section.id] = defaultLayoutFor(section, section.seatRows || 5, section.seatCols || 10);
+        }
+
+        if (!Number.isFinite(Number(state.layoutsBySection[section.id].angle))) {
+            state.layoutsBySection[section.id].angle = 0;
+        }
+
+        return state.layoutsBySection[section.id];
+    }
+
+    function defaultBlankLayout() {
+        return {
+            rows: 5,
+            cols: 10,
+            seatW: 18,
+            seatH: 18,
+            gapX: 4,
+            gapY: 4,
+            paddingX: 14,
+            paddingY: 14,
+            offsetX: 0,
+            offsetY: 0,
+            angle: 0
+        };
+    }
+
+    function syncLayoutControls(layout) {
+        setRange(dom.seatWidthRange, layout.seatW);
+        setRange(dom.seatHeightRange, layout.seatH);
+        setRange(dom.gapXRange, layout.gapX);
+        setRange(dom.gapYRange, layout.gapY);
+        setRange(dom.paddingXRange, layout.paddingX);
+        setRange(dom.paddingYRange, layout.paddingY);
+        setRange(dom.offsetXRange, layout.offsetX);
+        setRange(dom.offsetYRange, layout.offsetY);
+        syncRangeLabels();
+    }
+
+    function setRange(input, value) {
+        if (!input) return;
+        input.value = String(Math.round(value || 0));
+    }
+
+    function updateSelectedLayoutFromControls(redraw) {
+        const section = getSelectedSection();
+        if (!section) return;
+
+        const layout = getLayout(section);
+
+        layout.seatW = numberValue(dom.seatWidthRange, layout.seatW);
+        layout.seatH = numberValue(dom.seatHeightRange, layout.seatH);
+        layout.gapX = numberValue(dom.gapXRange, layout.gapX);
+        layout.gapY = numberValue(dom.gapYRange, layout.gapY);
+        layout.paddingX = numberValue(dom.paddingXRange, layout.paddingX);
+        layout.paddingY = numberValue(dom.paddingYRange, layout.paddingY);
+        layout.offsetX = numberValue(dom.offsetXRange, layout.offsetX);
+        layout.offsetY = numberValue(dom.offsetYRange, layout.offsetY);
+        layout.rows = positiveInt(dom.editRows?.value, section.seatRows || layout.rows || 5);
+        layout.cols = positiveInt(dom.editCols?.value, section.seatCols || layout.cols || 10);
+        layout.angle = normalizeAngle(layout.angle || 0);
+
+        section.seatRows = layout.rows;
+        section.seatCols = layout.cols;
+
+        rebuildSelectedSectionSeats();
+        syncRangeLabels();
+        saveWorkData();
+
+        if (redraw) {
+            renderAll();
+        }
+    }
+
+    function syncRangeLabels() {
+        const pairs = [
+            [dom.seatWidthRange, dom.seatWidthValue],
+            [dom.seatHeightRange, dom.seatHeightValue],
+            [dom.gapXRange, dom.gapXValue],
+            [dom.gapYRange, dom.gapYValue],
+            [dom.paddingXRange, dom.paddingXValue],
+            [dom.paddingYRange, dom.paddingYValue],
+            [dom.offsetXRange, dom.offsetXValue],
+            [dom.offsetYRange, dom.offsetYValue]
+        ];
+
+        pairs.forEach(([input, label]) => {
+            if (input && label) {
+                label.textContent = `${input.value}px`;
+            }
+        });
+    }
+
+    function getRangeControls() {
+        return [
+            { input: dom.seatWidthRange },
+            { input: dom.seatHeightRange },
+            { input: dom.gapXRange },
+            { input: dom.gapYRange },
+            { input: dom.paddingXRange },
+            { input: dom.paddingYRange },
+            { input: dom.offsetXRange },
+            { input: dom.offsetYRange }
+        ];
+    }
+
+    function numberValue(input, fallback) {
+        return input ? Number(input.value) || 0 : fallback;
+    }
+
+    function positiveInt(value, fallback) {
+        return Math.max(1, parseInt(value, 10) || fallback || 1);
+    }
+
+    function resetSelectedLayout() {
+        const section = getSelectedSection();
+        if (!section) return;
+
+        const rows = section.seatRows || positiveInt(dom.editRows?.value, 5);
+        const cols = section.seatCols || positiveInt(dom.editCols?.value, 10);
+
+        generateSectionSeats(section, rows, cols, true);
+        syncLayoutControls(getLayout(section));
+        saveWorkData();
+        renderAll();
+        toast("선택 구역 배치값을 초기화했습니다.");
+    }
+
+    function handleMiniWheel(event) {
+        event.preventDefault();
+
+        const before = screenToWorld(event, dom.miniCanvas, state.mapTransform);
+        const nextZoom = event.deltaY < 0 ? state.mapZoom * 1.12 : state.mapZoom / 1.12;
+
+        setMapZoom(nextZoom, false);
+        renderMiniMap();
+
+        const after = worldToScreen(before, state.mapTransform);
+        const rect = dom.miniCanvas.getBoundingClientRect();
+
+        state.mapPanX += event.clientX - rect.left - after.x;
+        state.mapPanY += event.clientY - rect.top - after.y;
+
+        renderMiniMap();
+    }
+
+    function handleMiniPointerDown(event) {
+        if (!dom.miniCanvas) return;
+
+        state.mapDragging = true;
+        state.mapMoved = false;
+        state.mapStartX = event.clientX;
+        state.mapStartY = event.clientY;
+        state.mapStartPanX = state.mapPanX;
+        state.mapStartPanY = state.mapPanY;
+
+        dom.miniCanvas.setPointerCapture?.(event.pointerId);
+    }
+
+    function handleWindowPointerMove(event) {
+        if (state.mapDragging) {
+            const dx = event.clientX - state.mapStartX;
+            const dy = event.clientY - state.mapStartY;
+
+            if (Math.abs(dx) + Math.abs(dy) > 3) {
+                state.mapMoved = true;
+            }
+
+            state.mapPanX = state.mapStartPanX + dx;
+            state.mapPanY = state.mapStartPanY + dy;
+
+            renderMiniMap();
+            return;
+        }
+
+        if (state.rotationDragging) {
+            handleRotationDrag(event);
+            return;
+        }
+
+        if (state.pointerDown) {
+            handleSeatDrag(event);
+        }
+    }
+
+    function handleWindowPointerUp(event) {
+        if (state.mapDragging) {
+            if (!state.mapMoved) {
+                const point = screenToWorld(event, dom.miniCanvas, state.mapTransform);
+                const hit = findSectionAt(point);
+
+                if (hit) {
+                    selectSection(hit.id);
+                }
+            }
+
+            state.mapDragging = false;
+            return;
+        }
+
+        if (state.rotationDragging) {
+            finishRotationDrag();
+            return;
+        }
+
+        if (state.pointerDown) {
+            finishSeatPointer(event);
+        }
+    }
+
+    function setMapZoom(value, shouldRender = true) {
+        state.mapZoom = Math.max(0.35, Math.min(5, value));
+
+        if (shouldRender) {
+            renderMiniMap();
+        }
+    }
+
+    function resetMapView() {
+        state.mapZoom = 1;
+        state.mapPanX = 0;
+        state.mapPanY = 0;
+        renderMiniMap();
+    }
+
+    function updateZoomText() {
+        if (dom.zoomValue) {
+            dom.zoomValue.textContent = `${Math.round(state.mapZoom * 100)}%`;
+        }
+    }
+
+    function handleSeatPointerDown(event) {
+        const point = pointerInCanvas(event, dom.seatOverlay);
+
+        if (state.part === PART.EDIT && isOnRotationHandle(point)) {
+            startRotationDrag(point);
+            return;
+        }
+
+        const world = editorScreenToWorld(point);
+        const seat = findSeatAtWorld(world);
+
+        state.pointerDown = true;
+        state.dragStart = point;
+        state.dragCurrent = point;
+
+        if (seat && state.selectedSeatIds.has(seat.id)) {
+            state.movingSeats = true;
+            state.moveOrigin = world;
+            state.movedSeatSnapshot = Array.from(state.selectedSeatIds).map(id => {
+                const found = getSelectedSeats().find(item => item.id === id);
+                return found ? { id, x: found.x, y: found.y, angle: found.angle } : null;
+            }).filter(Boolean);
+
+            hidePopover();
+            return;
+        }
+
+        if (seat) {
+            state.selectedSeatIds.clear();
+            state.selectedSeatIds.add(seat.id);
+            hidePopover();
+            renderAll();
+            return;
+        }
+
+        state.draggingBox = true;
+        state.selectedSeatIds.clear();
+
+        hidePopover();
+        renderSeatOverlay();
+    }
+
+    function handleSeatPointerMove(event) {
+        if (state.rotationDragging) {
+            return;
+        }
+
+        if (!state.pointerDown) {
+            const point = pointerInCanvas(event, dom.seatOverlay);
+
+            if (state.part === PART.EDIT && isOnRotationHandle(point)) {
+                dom.seatOverlay.style.cursor = "grab";
+                return;
+            }
+
+            dom.seatOverlay.style.cursor = "default";
+
+            const world = editorScreenToWorld(point);
+            const seat = findSeatAtWorld(world);
+
+            state.hoverSeatId = seat?.id || null;
+            renderSeatOverlay();
+        }
+    }
+
+    function handleSeatDrag(event) {
+        const point = pointerInCanvas(event, dom.seatOverlay);
+        state.dragCurrent = point;
+
+        if (state.movingSeats) {
+            const world = editorScreenToWorld(point);
+            const dx = world.x - state.moveOrigin.x;
+            const dy = world.y - state.moveOrigin.y;
+            const seats = getSelectedSeats();
+
+            state.movedSeatSnapshot.forEach(snapshot => {
+                const seat = seats.find(item => item.id === snapshot.id);
+
+                if (seat) {
+                    seat.x = snapshot.x + dx;
+                    seat.y = snapshot.y + dy;
+                    seat.angle = snapshot.angle;
+                }
+            });
+
+            renderSeatEditor();
+            return;
+        }
+
+        if (state.draggingBox) {
+            const box = rectFromPoints(state.dragStart, state.dragCurrent);
+            const selected = getSeats(getSelectedSection()).filter(seat => {
+                if (seat.status === STATUS.REMOVED) return false;
+
+                const screen = editorWorldToScreen({ x: seat.x, y: seat.y });
+
+                return screen.x >= box.x &&
+                    screen.x <= box.x + box.w &&
+                    screen.y >= box.y &&
+                    screen.y <= box.y + box.h;
+            });
+
+            state.selectedSeatIds = new Set(selected.map(seat => seat.id));
+
+            renderSeatOverlay();
+            updateInfoPanel();
+        }
+    }
+
+    function finishSeatPointer() {
+        state.pointerDown = false;
+
+        if (state.movingSeats) {
+            state.movingSeats = false;
+            state.moveOrigin = null;
+            state.movedSeatSnapshot = null;
+
+            saveWorkData();
+            renderAll();
+            return;
+        }
+
+        if (state.draggingBox) {
+            state.draggingBox = false;
+            renderAll();
+            return;
+        }
+    }
+
+    function startRotationDrag(point) {
+        const section = getSelectedSection();
+        if (!section) return;
+
+        const info = getRotationOverlayInfo(section);
+        if (!info) return;
+
+        const layout = getLayout(section);
+        const center = info.center;
+
+        state.rotationDragging = true;
+        state.rotationBaseAngle = normalizeAngle(layout.angle || 0);
+        state.rotationStartAngle = screenAngleFromCenter(point, center);
+        state.pointerDown = false;
+        state.draggingBox = false;
+        state.movingSeats = false;
+
+        hidePopover();
+        dom.seatOverlay.style.cursor = "grabbing";
+    }
+
+    function handleRotationDrag(event) {
+        const section = getSelectedSection();
+        if (!section) return;
+
+        const point = pointerInCanvas(event, dom.seatOverlay);
+        const info = getRotationOverlayInfo(section);
+        if (!info) return;
+
+        const current = screenAngleFromCenter(point, info.center);
+        const delta = current - state.rotationStartAngle;
+
+        const layout = getLayout(section);
+        layout.angle = normalizeAngle(state.rotationBaseAngle + delta);
+
+        rebuildSelectedSectionSeats();
+        renderAll();
+    }
+
+    function finishRotationDrag() {
+        state.rotationDragging = false;
+        dom.seatOverlay.style.cursor = "grab";
+        saveWorkData();
+        renderAll();
+    }
+
+    function getRotationOverlayInfo(section) {
+        const layout = getLayout(section);
+        const shape = getRotatedSeatShape(section, layout.angle || 0);
+        if (!shape.length) return null;
+
+        const bbox = bboxOf(shape);
+        const centerWorld = {
+            x: bbox.x + bbox.w / 2,
+            y: bbox.y + bbox.h / 2
+        };
+        const center = editorWorldToScreen(centerWorld);
+
+        const handleWorld = {
+            x: centerWorld.x,
+            y: bbox.y - Math.max(26, bbox.h * 0.10) - 18
+        };
+
+        const handle = editorWorldToScreen(handleWorld);
+
+        return { center, handle };
+    }
+
+    function isOnRotationHandle(screenPoint) {
+        const section = getSelectedSection();
+        if (!section) return false;
+
+        const info = getRotationOverlayInfo(section);
+        if (!info) return false;
+
+        return distance(screenPoint, info.handle) <= state.rotationHandleHitRadius;
+    }
+
+    function screenAngleFromCenter(point, center) {
+        return Math.atan2(point.y - center.y, point.x - center.x) * 180 / Math.PI + 90;
+    }
+
+    function findSeatAtWorld(point) {
+        const section = getSelectedSection();
+        if (!section) return null;
+
+        const seats = getSeats(section).slice().reverse();
+
+        return seats.find(seat => {
+            if (seat.status === STATUS.REMOVED) return false;
+            return pointInRotatedRect(point, seat);
+        }) || null;
+    }
+
+    function pointInRotatedRect(point, seat) {
+        const local = inverseRotatePoint(point, { x: seat.x, y: seat.y }, seat.angle || 0);
+
+        return local.x >= seat.x - seat.w / 2 &&
+            local.x <= seat.x + seat.w / 2 &&
+            local.y >= seat.y - seat.h / 2 &&
+            local.y <= seat.y + seat.h / 2;
+    }
+
+    function getSelectedSeats() {
+        const section = getSelectedSection();
+        if (!section) return [];
+
+        return getSeats(section).filter(seat => state.selectedSeatIds.has(seat.id));
+    }
+
+    function applyStatusToSelection(status) {
+        const seats = getSelectedSeats();
+        if (!seats.length) return;
+
+        seats.forEach(seat => {
+            seat.status = status;
+        });
+
+        saveWorkData();
+        renderAll();
+
+        toast(
+            status === STATUS.REMOVED
+                ? "선택 좌석 삭제 완료"
+                : status === STATUS.OBSTRUCTED
+                    ? "선택 좌석 장애석 처리 완료"
+                    : "선택 좌석 복구 완료"
+        );
+    }
+
+    function clearSelection() {
+        state.selectedSeatIds.clear();
+        hidePopover();
+        renderAll();
+    }
+
+    function placePopover() {
+        if (!dom.popover) return;
+
+        const seats = getSelectedSeats().filter(seat => seat.status !== STATUS.REMOVED);
+
+        if (!seats.length || state.rotationDragging) {
+            hidePopover();
+            return;
+        }
+
+        const points = seats.map(seat => editorWorldToScreen({ x: seat.x, y: seat.y }));
+        const xs = points.map(point => point.x);
+        const ys = points.map(point => point.y);
+        const x = (Math.min(...xs) + Math.max(...xs)) / 2;
+        const y = Math.min(...ys) - 12;
+
+        dom.popover.style.left = `${x}px`;
+        dom.popover.style.top = `${Math.max(42, y)}px`;
+        dom.popover.classList.add("is-show");
+        dom.popover.setAttribute("aria-hidden", "false");
+    }
+
+    function hidePopover() {
+        if (!dom.popover) return;
+
+        dom.popover.classList.remove("is-show");
+        dom.popover.setAttribute("aria-hidden", "true");
+    }
+
+    function updateInfoPanel() {
+        const section = getSelectedSection();
+        const seats = section ? getSeats(section) : [];
+        const visible = seats.filter(seat => seat.status !== STATUS.REMOVED);
+        const obstructed = visible.filter(seat => seat.status === STATUS.OBSTRUCTED);
+        const angle = section ? normalizeAngle(getLayout(section).angle || 0) : 0;
+
+        if (dom.selName) {
+            dom.selName.textContent = section?.name || "-";
+        }
+
+        if (dom.selCount) {
+            dom.selCount.textContent = visible.length;
+        }
+
+        if (dom.selectedCount) {
+            dom.selectedCount.textContent = state.selectedSeatIds.size;
+        }
+
+        if (dom.selObstructed) {
+            dom.selObstructed.textContent = obstructed.length;
+        }
+
+        const title = dom.selName?.parentElement?.parentElement?.parentElement?.querySelector("h3");
+        if (title && section) {
+            title.textContent = `선택 구역 · ${angle}°`;
+        }
+    }
+
+    function saveWorkData(finalSave = false) {
+        if (finalSave) {
+            return saveFinalSeatJson();
+        }
+
+        const results = [
+            writeJson(STORAGE_KEYS.sections, state.sections),
+            writeJson(STORAGE_KEYS.stage3Seats, state.seatsBySection),
+            writeJson(STORAGE_KEYS.stage3Layouts, state.layoutsBySection)
+        ];
+
+        return results.every(Boolean);
+    }
+
+    function saveFinalSeatJson() {
+        const finalSeats = createFinalSeatJson();
+
+        clearHeavyStorageBeforeStage4();
+
+        let saved = writeJson(STORAGE_KEYS.finalJson, finalSeats);
+        saved = writeJson(STORAGE_KEYS.bookingJson, finalSeats) && saved;
+
+        if (saved) {
+            return true;
+        }
+
+        clearEmergencyStage3WorkStorage();
+
+        saved = writeJson(STORAGE_KEYS.finalJson, finalSeats);
+        saved = writeJson(STORAGE_KEYS.bookingJson, finalSeats) && saved;
+
+        return saved;
+    }
+
+    function clearHeavyStorageBeforeStage4() {
+        const removeKeys = [
+            STORAGE_KEYS.stage3Data,
+            STORAGE_KEYS.overviewImage,
+            STORAGE_KEYS.layoutJson,
+            STORAGE_KEYS.bookingJson,
+            STORAGE_KEYS.finalJson
+        ];
+
+        removeKeys.forEach(key => {
+            try {
+                localStorage.removeItem(key);
+            } catch (error) {
+                console.warn(`[Stage3 정리 실패] ${key}`, error);
+            }
+        });
+    }
+
+    function clearEmergencyStage3WorkStorage() {
+        const removeKeys = [
+            STORAGE_KEYS.stage3Seats,
+            STORAGE_KEYS.stage3Layouts,
+            STORAGE_KEYS.sections
+        ];
+
+        removeKeys.forEach(key => {
+            try {
+                localStorage.removeItem(key);
+            } catch (error) {
+                console.warn(`[Stage3 긴급 정리 실패] ${key}`, error);
+            }
+        });
+    }
+
+    function createFinalSeatJson() {
+        const finalSeats = [];
 
         state.sections.forEach(section => {
-            const grade = section.grade || '일반석';
-            const floor = floorCode(section);
-            const zone = sectionCode(section);
-            const seats = state.seatsBySection[section.id] || [];
+            getSeats(section).forEach(seat => {
+                if (seat.status === STATUS.REMOVED) {
+                    return;
+                }
 
-            seats.forEach(seat => {
-                if (seat.status === SEAT_STATUS.REMOVED) return;
-
-                result.push({
-                    id: `${floor}-${zone}-${seat.row}-${seat.col}`,
-                    grade,
-                    status: seat.status === SEAT_STATUS.OBSTRUCTED
-                        ? SEAT_STATUS.OBSTRUCTED
-                        : SEAT_STATUS.AVAILABLE,
+                finalSeats.push({
+                    id: makeFinalSeatId(section, seat)
                 });
             });
         });
 
-        return result;
+        return finalSeats;
     }
 
-    function saveWorkData() {
-        writeStorageJson(STORAGE_KEYS.stage3Seats, state.seatsBySection);
-        writeStorageJson(STORAGE_KEYS.sections, state.sections);
-        writeStorageJson(STORAGE_KEYS.seatJson, exportSeats());
+    function makeFinalSeatId(section, seat) {
+        return [
+            floorCode(section),
+            sectionCode(section),
+            seat.row,
+            seat.col,
+            seatCoordinate(seat.x),
+            seatCoordinate(seat.y),
+            seatAngle(seat, section)
+        ].join("---");
     }
 
-    // JSON 으로 저장하기
-    async function saveSeatJsonToServer() {
-        const data = JSON.stringify(exportSeats(), null, 2);
-        localStorage.setItem(STORAGE_KEYS.seatJson, data);
-
-        const fileName = makeSeatMapFileName();
-
-        try {
-            const response = await fetch('/admin/seatmap/json/save', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    fileName,
-                    json: data,
-                }),
-            });
-
-            if (!response.ok) {
-                showToast('JSON 저장 실패');
-                return;
-            }
-
-            const result = await response.json();
-
-            localStorage.setItem('concert_seat_json_url', result.jsonUrl);
-            showToast(`JSON 저장 완료: ${result.jsonUrl}`);
-
-        } catch (error) {
-            console.error('[SeatBuilder] JSON save failed', error);
-            showToast('JSON 저장 중 오류 발생');
-        }
+    function seatCoordinate(value) {
+        return String(Math.round(Number(value) || 0));
     }
 
-    function makeSeatMapFileName() {
-        const concertId = localStorage.getItem('concert_id') || 'concert';
-        const sessionId = localStorage.getItem('concert_session_id') || 'session';
-
-        return `seatmap-${concertId}-${sessionId}.json`;
+    function seatAngle(seat, section) {
+        const layout = getLayout(section);
+        return normalizeAngle(seat.angle ?? layout.angle ?? 0);
     }
 
-    /* =====================================================
-       5. Canvas Rendering
-       ===================================================== */
-
-    function ensureSections() {
-        if (state.sections.length) return;
-
-        state.sections = structuredClone(FALLBACK_SECTIONS);
-        state.selectedId = state.sections[0].id;
-        showToast('Stage2에서 구역을 먼저 저장하세요. 임시 구역으로 표시합니다.');
-    }
-
-    function setupCanvas() {
-        ensureSections();
-
-        if (!state.selectedId) {
-            state.selectedId = state.sections[0]?.id || null;
-        }
-
-        if (state.meta.width && state.meta.height) {
-            state.width = state.meta.width;
-            state.height = state.meta.height;
-        } else {
-            const allPoints = state.sections.flatMap(section => getSectionPaths(section).flat());
-            state.width = Math.ceil(Math.max(900, ...allPoints.map(point => point.x + 40)));
-            state.height = Math.ceil(Math.max(620, ...allPoints.map(point => point.y + 40)));
-        }
-
-        dom.miniCanvas.width = state.width;
-        dom.miniCanvas.height = state.height;
-
-        if (state.imageUrl) {
-            state.stageImage = new Image();
-            state.stageImage.onload = () => {
-                renderMiniMap();
-                draw();
-            };
-            state.stageImage.src = state.imageUrl;
-        } else {
-            renderMiniMap();
-        }
-
-        resizeView();
-    }
-
-    function setCanvasSize(width, height) {
-        dom.baseCanvas.width = width;
-        dom.overlayCanvas.width = width;
-        dom.baseCanvas.height = height;
-        dom.overlayCanvas.height = height;
-        dom.sizeText.textContent = `${width} × ${height}`;
-
-        const fitScale = Math.min(1, 1080 / width, 680 / height);
-        const scale = fitScale * state.zoom;
-
-        [dom.baseCanvas, dom.overlayCanvas].forEach(canvas => {
-            canvas.style.width = `${width * scale}px`;
-            canvas.style.height = `${height * scale}px`;
-        });
-
-        dom.canvasBox.style.width = `${width * scale}px`;
-        dom.canvasBox.style.height = `${height * scale}px`;
-    }
-
-    function resizeView() {
-        if (state.part === PART.EDIT) {
-            setCanvasSize(CANVAS_GRID.width, CANVAS_GRID.height);
-        } else {
-            setCanvasSize(state.width, state.height);
-        }
-
-        draw();
-    }
-
-    function draw() {
-        if (state.part === PART.EDIT) drawSeatGrid();
-        else drawFullMap();
-
-        updateSelectedInfo();
-    }
-
-    function clearFullCanvas() {
-        dom.baseCtx.clearRect(0, 0, dom.baseCanvas.width, dom.baseCanvas.height);
-        dom.overlayCtx.clearRect(0, 0, dom.overlayCanvas.width, dom.overlayCanvas.height);
-    }
-
-    function drawFullMap() {
-        clearFullCanvas();
-
-        dom.baseCtx.fillStyle = COLORS.canvasBg;
-        dom.baseCtx.fillRect(0, 0, state.width, state.height);
-
-        if (state.stageImage) {
-            dom.baseCtx.save();
-            dom.baseCtx.globalAlpha = 0.28;
-            dom.baseCtx.drawImage(state.stageImage, 0, 0, state.width, state.height);
-            dom.baseCtx.restore();
-        }
-
-        state.sections.forEach(section => {
-            const selected = section.id === state.selectedId;
-            drawSectionShape(
-                dom.overlayCtx,
-                section,
-                selected ? 'rgba(239,68,68,.12)' : 'rgba(124,58,237,.06)',
-                selected ? COLORS.selected : (section.renderColor || section.stroke || COLORS.normalSection),
-                selected ? 3 : 1.5,
-                selected ? [8, 4] : [5, 5],
-            );
-        });
-
-        renderMiniMap();
-    }
-
-    function drawSeatGrid() {
-        const layout = getSeatGridLayout();
-        const section = layout.section;
-        const seats = layout.seats;
-
-        clearFullCanvas();
-
-        dom.baseCtx.fillStyle = COLORS.canvasBg;
-        dom.baseCtx.fillRect(0, 0, CANVAS_GRID.width, CANVAS_GRID.height);
-
-        drawStage(layout);
-        drawRowLabels(layout);
-        drawSeats(layout, seats);
-
-        dom.baseCtx.fillStyle = '#9ca3af';
-        dom.baseCtx.font = '15px Arial';
-        dom.baseCtx.textAlign = 'center';
-        dom.baseCtx.textBaseline = 'middle';
-        dom.baseCtx.fillText(
-            `현재 보고 계신 구역은 ${section?.floor || '1층'} ${section?.name || '-'} 구역입니다.`,
-            CANVAS_GRID.width / 2,
-            layout.infoY,
-        );
-
-        renderMiniMap();
-    }
-
-    function getSeatGridLayout() {
-        const section = getSelectedSection();
-        const seats = state.seatsBySection[section?.id] || [];
-        const rows = section?.seatRows || Math.max(1, Math.max(...seats.map(seat => seat.rowIndex + 1), 5));
-        const cols = section?.seatCols || Math.max(1, Math.max(...seats.map(seat => seat.colIndex + 1), 10));
-
-        const stageX = 120;
-        const stageY = 14;
-        const stageW = CANVAS_GRID.width - 240;
-        const stageH = 52;
-
-        const gridX = 110;
-        const gridY = 115;
-        const gridMaxW = CANVAS_GRID.width - gridX - 85;
-        const gridMaxH = CANVAS_GRID.height - gridY - 42;
-        const gap = 4;
-
-        const seatW = Math.max(10, Math.min(34, (gridMaxW - (cols - 1) * gap) / cols));
-        const seatH = Math.max(10, Math.min(32, (gridMaxH - (rows - 1) * gap) / rows));
-
-        return {
-            section,
-            seats,
-            rows,
-            cols,
-            stageX,
-            stageY,
-            stageW,
-            stageH,
-            infoY: 78,
-            gridX,
-            gridY,
-            gap,
-            seatW,
-            seatH,
-        };
-    }
-
-    function drawStage(layout) {
-        dom.baseCtx.fillStyle = COLORS.stage;
-        dom.baseCtx.fillRect(layout.stageX, layout.stageY, layout.stageW, layout.stageH);
-
-        dom.baseCtx.fillStyle = '#ffffff';
-        dom.baseCtx.font = 'bold 18px Arial';
-        dom.baseCtx.textAlign = 'center';
-        dom.baseCtx.textBaseline = 'middle';
-        dom.baseCtx.fillText('무대방향 (STAGE)', CANVAS_GRID.width / 2, layout.stageY + layout.stageH / 2);
-    }
-
-    function drawRowLabels(layout) {
-        for (let row = 0; row < layout.rows; row += 1) {
-            const y = layout.gridY + row * (layout.seatH + layout.gap);
-
-            dom.baseCtx.fillStyle = '#9ca3af';
-            dom.baseCtx.font = '26px Arial';
-            dom.baseCtx.textAlign = 'right';
-            dom.baseCtx.textBaseline = 'middle';
-            dom.baseCtx.fillText(String(row + 1), 70, y + layout.seatH / 2);
-        }
-    }
-
-    function drawSeats(layout, seats) {
-        const seatMap = new Map();
-        seats.forEach(seat => seatMap.set(`${seat.rowIndex}-${seat.colIndex}`, seat));
-
-        for (let row = 0; row < layout.rows; row += 1) {
-            for (let col = 0; col < layout.cols; col += 1) {
-                const seat = seatMap.get(`${row}-${col}`);
-                const x = layout.gridX + col * (layout.seatW + layout.gap);
-                const y = layout.gridY + row * (layout.seatH + layout.gap);
-
-                drawSingleSeat(seat, x, y, layout.seatW, layout.seatH);
-            }
-        }
-    }
-
-    function drawSingleSeat(seat, x, y, width, height) {
-        const ctx = dom.baseCtx;
-
-        if (seat && seat.status === SEAT_STATUS.REMOVED) {
-            ctx.save();
-            ctx.strokeStyle = COLORS.removedLine;
-            ctx.setLineDash([3, 3]);
-            ctx.strokeRect(x, y, width, height);
-            ctx.restore();
-            return;
-        }
-
-        ctx.save();
-        drawRoundRect(ctx, x, y, width, height, 2);
-
-        if (!seat) {
-            ctx.fillStyle = COLORS.emptySeat;
-            ctx.strokeStyle = COLORS.emptySeatLine;
-        } else if (seat.status === SEAT_STATUS.OBSTRUCTED) {
-            ctx.fillStyle = COLORS.obstructed;
-            ctx.strokeStyle = COLORS.obstructedLine;
-        } else {
-            ctx.fillStyle = COLORS.seat;
-            ctx.strokeStyle = COLORS.seatLine;
-        }
-
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
-    }
-
-    function drawRoundRect(ctx, x, y, width, height, radius) {
-        const r = Math.min(radius, width / 2, height / 2);
-
-        ctx.beginPath();
-        ctx.moveTo(x + r, y);
-        ctx.lineTo(x + width - r, y);
-        ctx.quadraticCurveTo(x + width, y, x + width, y + r);
-        ctx.lineTo(x + width, y + height - r);
-        ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
-        ctx.lineTo(x + r, y + height);
-        ctx.quadraticCurveTo(x, y + height, x, y + height - r);
-        ctx.lineTo(x, y + r);
-        ctx.quadraticCurveTo(x, y, x + r, y);
-        ctx.closePath();
-    }
-
-    function renderMiniMap() {
-        dom.miniCtx.clearRect(0, 0, state.width, state.height);
-        dom.miniCtx.fillStyle = COLORS.canvasBg;
-        dom.miniCtx.fillRect(0, 0, state.width, state.height);
-
-        if (state.stageImage) {
-            dom.miniCtx.save();
-            dom.miniCtx.globalAlpha = 0.28;
-            dom.miniCtx.drawImage(state.stageImage, 0, 0, state.width, state.height);
-            dom.miniCtx.restore();
-        }
-
-        state.sections.forEach(section => {
-            const selected = section.id === state.selectedId;
-
-            drawSectionShape(
-                dom.miniCtx,
-                section,
-                selected ? COLORS.miniSelectedFill : COLORS.miniNormalFill,
-                selected ? COLORS.selected : COLORS.miniNormalLine,
-                selected ? 3 : 1.3,
-            );
-        });
-    }
-
-    /* =====================================================
-       6. UI Rendering
-       ===================================================== */
-
-    function renderSelects() {
-        const options = state.sections
-            .map(section => {
-                const title = `${section.name || section.id} · ${section.floor || '1층'} · ${section.grade || '등급'}`;
-                return `<option value="${section.id}">${title}</option>`;
-            })
-            .join('');
-
-        dom.baseSectionSelect.innerHTML = options;
-        dom.editSectionSelect.innerHTML = options;
-
-        if (state.selectedId) {
-            dom.baseSectionSelect.value = state.selectedId;
-            dom.editSectionSelect.value = state.selectedId;
-        }
-    }
-
-    function renderSectionList(rootId) {
-        const root = $(rootId);
-        if (!root) return;
+    function goStage4(event) {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
 
         if (!state.sections.length) {
-            root.innerHTML = '<div class="help-text">구역 없음</div>';
+            toast("Stage2에서 구역을 먼저 생성하세요.");
             return;
         }
 
-        root.innerHTML = state.sections
-            .map(section => {
-                const active = section.id === state.selectedId ? ' active' : '';
-                const color = section.renderColor || section.stroke || COLORS.normalSection;
-                const rows = section.seatRows || 0;
-                const cols = section.seatCols || 0;
-                const count = getSectionSeatCount(section);
-
-                return `
-                    <div class="section-item${active}" data-id="${section.id}">
-                        <i class="section-item__color" style="background:${color}"></i>
-                        <div>
-                            <strong>${section.name || section.id}</strong>
-                            <span>${section.floor || '1층'} · ${section.grade || '등급'} · ${rows}×${cols} · ${count}석</span>
-                        </div>
-                    </div>
-                `;
-            })
-            .join('');
-
-        root.querySelectorAll('.section-item').forEach(item => {
-            item.addEventListener('click', () => selectSection(item.dataset.id));
-        });
-    }
-
-    function renderLists() {
-        renderSelects();
-        renderSectionList('sectionsList1');
-        renderSectionList('sectionsListRight');
-    }
-
-    function selectSection(sectionId) {
-        state.selectedId = sectionId;
-
-        const section = getSelectedSection();
-        if (section) {
-            dom.baseSectionSelect.value = section.id;
-            dom.editSectionSelect.value = section.id;
-            dom.editRows.value = section.seatRows || dom.baseRows.value || 5;
-            dom.editCols.value = section.seatCols || dom.baseCols.value || 10;
+        if (!hasGeneratedSeats()) {
+            toast("좌석을 먼저 생성한 뒤 결과 확인으로 이동하세요.");
+            return;
         }
 
-        renderLists();
-        draw();
-    }
-
-    function updateSelectedInfo() {
-        const section = getSelectedSection();
-        if (!section) return;
-
-        dom.selName.textContent = section.name || section.id;
-        dom.selCount.textContent = getSectionSeatCount(section);
-    }
-
-    function setPart(nextPart) {
-        state.part = nextPart;
-
-        dom.partBtn1.classList.toggle('active', nextPart === PART.BASE);
-        dom.partBtn2.classList.toggle('active', nextPart === PART.EDIT);
-        dom.partBtn3.classList.toggle('active', nextPart === PART.EXPORT);
-
-        dom.part1Panel.classList.toggle('hidden', nextPart !== PART.BASE);
-        dom.part2Panel.classList.toggle('hidden', nextPart !== PART.EDIT);
-        dom.part3Panel.classList.toggle('hidden', nextPart !== PART.EXPORT);
-
-        dom.canvasTitle.textContent = PART_TITLE[nextPart];
-
-        resizeView();
-        renderLists();
-
-        if (nextPart === PART.EXPORT) {
-            updateSummary();
-        }
-    }
-
-    function updateSummary() {
-        const data = exportSeats();
-        const floorCount = new Set(state.sections.map(section => floorCode(section))).size;
-        const obstructedCount = data.filter(seat => seat.status === SEAT_STATUS.OBSTRUCTED).length;
-        const countByGrade = {};
-
-        data.forEach(seat => {
-            countByGrade[seat.grade] = (countByGrade[seat.grade] || 0) + 1;
-        });
-
-        const gradeText = Object.entries(countByGrade)
-            .map(([grade, count]) => `${grade} ${count}석`)
-            .join(' · ') || '좌석 없음';
-
-        dom.sumFloors.textContent = floorCount;
-        dom.sumSections.textContent = state.sections.length;
-        dom.sumSeats.textContent = data.length;
-        dom.sumObstructed.textContent = obstructedCount;
-        dom.summaryText.textContent =
-            `최종 층 수 ${floorCount}개, 구역 ${state.sections.length}개, 좌석 ${data.length}석입니다. ` +
-            `장애석 ${obstructedCount}석. 등급별: ${gradeText}`;
-        dom.jsonPreview.value = JSON.stringify(data, null, 2);
-    }
-
-    function copyJson() {
-        const text = dom.jsonPreview.value;
-
-        if (navigator.clipboard?.writeText) {
-            navigator.clipboard.writeText(text);
-        } else {
-            dom.jsonPreview.select();
-            document.execCommand('copy');
+        if (!saveWorkData(true)) {
+            toast("최종 좌석 JSON 저장 실패입니다. 브라우저 저장공간을 비우고 다시 시도하세요.");
+            return;
         }
 
-        showToast('JSON 복사 완료');
+        const url = dom.app?.dataset.stage4Url || "/admin/seatmap/concert/stage4";
+        window.location.href = url;
     }
 
-    function setPaintMode(mode) {
-        state.paintMode = mode;
-        dom.modeRemove.classList.toggle('active', mode === PAINT_MODE.REMOVED);
-        dom.modeAvailable.classList.toggle('active', mode === PAINT_MODE.AVAILABLE);
-        dom.modeObstructed.classList.toggle('active', mode === PAINT_MODE.OBSTRUCTED);
+    function hasGeneratedSeats() {
+        return state.sections.some(section => getSeats(section).length > 0);
     }
 
-    /* =====================================================
-       7. Actions
-       ===================================================== */
-
-    function applyBaseOne() {
-        const section = state.sections.find(item => item.id === dom.baseSectionSelect.value);
-        if (!section) return;
-
-        state.selectedId = section.id;
-
-        const rows = toPositiveInt(dom.baseRows.value);
-        const cols = toPositiveInt(dom.baseCols.value);
-        state.seatsBySection[section.id] = createSeatsForSection(section, rows, cols);
-
-        saveWorkData();
-        renderLists();
-        draw();
-        showToast(`${section.name || section.id} 좌석 생성 완료`);
+    function getSelectedOrBaseSection() {
+        const id = dom.baseSectionSelect?.value || state.selectedId;
+        return state.sections.find(section => section.id === id) || getSelectedSection();
     }
 
-    function applyBaseAll() {
-        const baseSection = state.sections.find(item => item.id === dom.baseSectionSelect.value);
-        if (!baseSection) return;
-
-        const baseRows = toPositiveInt(dom.baseRows.value);
-        const baseCols = toPositiveInt(dom.baseCols.value);
-
-        state.sections.forEach(section => {
-            const grid = section.id === baseSection.id
-                ? { rows: baseRows, cols: baseCols }
-                : estimateGridByArea(section, baseSection, baseRows, baseCols);
-
-            state.seatsBySection[section.id] = createSeatsForSection(section, grid.rows, grid.cols);
-        });
-
-        state.selectedId = baseSection.id;
-
-        saveWorkData();
-        renderLists();
-        draw();
-        showToast('전체 구역 좌석 수 자동 추정 완료');
+    function getSelectedSection() {
+        return state.sections.find(section => section.id === state.selectedId) || state.sections[0] || null;
     }
 
-    function regenSelectedSection() {
-        const section = state.sections.find(item => item.id === dom.editSectionSelect.value);
-        if (!section) return;
-
-        state.selectedId = section.id;
-
-        const rows = toPositiveInt(dom.editRows.value);
-        const cols = toPositiveInt(dom.editCols.value);
-        state.seatsBySection[section.id] = createSeatsForSection(section, rows, cols);
-
-        saveWorkData();
-        renderLists();
-        draw();
-        showToast('선택 구역 좌석 재생성 완료');
+    function getSeats(section) {
+        if (!section) return [];
+        return state.seatsBySection[section.id] || [];
     }
 
-    /* =====================================================
-       8. Pointer / Hit Test
-       ===================================================== */
+    function getSeatCount(section) {
+        return getSeats(section).filter(seat => seat.status !== STATUS.REMOVED).length;
+    }
 
-    function canvasPointFromEvent(event) {
-        const rect = dom.overlayCanvas.getBoundingClientRect();
+    function getSeatShape(section) {
+        if (!section) return [];
+        return section.seatShape && section.seatShape.length >= 3 ? section.seatShape : cleanupSeatShape(section);
+    }
 
+    function getRotatedSeatShape(section, angle) {
+        const shape = getSeatShape(section);
+        const pivot = getSectionPivot(section);
+        return rotatePolygon(shape, pivot, angle || 0);
+    }
+
+    function getSectionPivot(section) {
+        const bbox = bboxOf(getSeatShape(section));
         return {
-            x: ((event.clientX - rect.left) * dom.overlayCanvas.width) / rect.width,
-            y: ((event.clientY - rect.top) * dom.overlayCanvas.height) / rect.height,
+            x: bbox.x + bbox.w / 2,
+            y: bbox.y + bbox.h / 2
         };
     }
 
-    function miniPointFromEvent(event) {
-        const rect = dom.miniCanvas.getBoundingClientRect();
+    function getMapPaths(section) {
+        if (section.buttonShape?.paths?.length) {
+            return section.buttonShape.paths;
+        }
 
-        return {
-            x: ((event.clientX - rect.left) * dom.miniCanvas.width) / rect.width,
-            y: ((event.clientY - rect.top) * dom.miniCanvas.height) / rect.height,
-        };
+        if (section.buttonPolygon?.length) {
+            return [section.buttonPolygon];
+        }
+
+        if (section.polygon?.length) {
+            return [section.polygon];
+        }
+
+        return [];
+    }
+
+    function getMapShape(section) {
+        const paths = getMapPaths(section);
+        return paths[0] || [];
+    }
+
+    function cleanupSeatShape(section) {
+        const raw = getMapShape(section);
+        if (!raw.length) return [];
+
+        const bbox = bboxOf(raw);
+        const hull = convexHull(raw);
+        const source = hull.length >= 3 ? hull : raw;
+        const simplified = simplifyPolygon(source, Math.max(6, Math.min(bbox.w, bbox.h) * 0.045));
+        const snapped = snapStrongAxis(simplified, Math.max(6, Math.min(bbox.w, bbox.h) * 0.06));
+        const reduced = removeTinySteps(snapped, Math.max(5, Math.min(bbox.w, bbox.h) * 0.035));
+        const finalPoly = reduced.length >= 3 ? reduced : rectFromBBox(bbox);
+
+        return finalPoly.map(point => ({
+            x: round(point.x),
+            y: round(point.y)
+        }));
+    }
+
+    function snapStrongAxis(poly, tolerance) {
+        if (!poly || poly.length < 3) return poly || [];
+
+        const out = poly.map(point => ({ x: point.x, y: point.y }));
+
+        for (let i = 0; i < out.length; i += 1) {
+            const a = out[i];
+            const b = out[(i + 1) % out.length];
+
+            if (Math.abs(a.x - b.x) <= tolerance) {
+                const x = (a.x + b.x) / 2;
+                a.x = x;
+                b.x = x;
+            }
+
+            if (Math.abs(a.y - b.y) <= tolerance) {
+                const y = (a.y + b.y) / 2;
+                a.y = y;
+                b.y = y;
+            }
+        }
+
+        return out;
+    }
+
+    function removeTinySteps(poly, minLen) {
+        if (!poly || poly.length < 3) return poly || [];
+
+        const filtered = [];
+
+        for (let i = 0; i < poly.length; i += 1) {
+            const prev = poly[(i - 1 + poly.length) % poly.length];
+            const curr = poly[i];
+
+            if (distance(prev, curr) >= minLen || filtered.length < 3) {
+                filtered.push(curr);
+            }
+        }
+
+        return filtered.length >= 3 ? filtered : poly;
+    }
+
+    function rectFromBBox(bbox) {
+        return [
+            { x: bbox.x, y: bbox.y },
+            { x: bbox.x + bbox.w, y: bbox.y },
+            { x: bbox.x + bbox.w, y: bbox.y + bbox.h },
+            { x: bbox.x, y: bbox.y + bbox.h }
+        ];
     }
 
     function findSectionAt(point) {
-        return [...state.sections].reverse().find(section => pointInSection(point, section));
+        return state.sections.slice().reverse().find(section => {
+            const paths = getMapPaths(section);
+            return paths.some(path => pointInPoly(point, path));
+        }) || null;
     }
 
-    function seatAtGridPoint(point) {
-        const layout = getSeatGridLayout();
-        const section = layout.section;
-        if (!section) return null;
-
-        const col = Math.floor((point.x - layout.gridX) / (layout.seatW + layout.gap));
-        const row = Math.floor((point.y - layout.gridY) / (layout.seatH + layout.gap));
-
-        if (row < 0 || col < 0 || row >= layout.rows || col >= layout.cols) return null;
-
-        const seatX = layout.gridX + col * (layout.seatW + layout.gap);
-        const seatY = layout.gridY + row * (layout.seatH + layout.gap);
-        if (point.x > seatX + layout.seatW || point.y > seatY + layout.seatH) return null;
-
-        const seats = state.seatsBySection[section.id] || [];
-        return seats.find(seat => seat.rowIndex === row && seat.colIndex === col) || null;
+    function pointerInCanvas(event, canvas) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top
+        };
     }
 
-    function paintSeatAt(point) {
-        const seat = seatAtGridPoint(point);
-        if (!seat || seat.status === state.paintMode) return;
+    function screenToWorld(event, canvas, transform) {
+        const rect = canvas.getBoundingClientRect();
 
-        seat.status = state.paintMode;
-        saveWorkData();
-        draw();
+        return {
+            x: (event.clientX - rect.left - transform.x) / transform.scale,
+            y: (event.clientY - rect.top - transform.y) / transform.scale
+        };
     }
 
-    /* =====================================================
-       9. Event Binding
-       ===================================================== */
+    function worldToScreen(point, transform) {
+        return {
+            x: point.x * transform.scale + transform.x,
+            y: point.y * transform.scale + transform.y
+        };
+    }
 
-    function bindEvents() {
-        dom.partBtn1.addEventListener('click', () => setPart(PART.BASE));
-        dom.partBtn2.addEventListener('click', () => setPart(PART.EDIT));
-        dom.partBtn3.addEventListener('click', () => setPart(PART.EXPORT));
-        dom.goPart2.addEventListener('click', () => setPart(PART.EDIT));
-        dom.goPart3.addEventListener('click', () => setPart(PART.EXPORT));
+    function editorWorldToScreen(point) {
+        return worldToScreen(point, state.editorTransform);
+    }
 
-        dom.baseSectionSelect.addEventListener('change', event => selectSection(event.target.value));
-        dom.editSectionSelect.addEventListener('change', event => selectSection(event.target.value));
+    function editorScreenToWorld(point) {
+        return {
+            x: (point.x - state.editorTransform.x) / state.editorTransform.scale,
+            y: (point.y - state.editorTransform.y) / state.editorTransform.scale
+        };
+    }
 
-        dom.applyBaseOne.addEventListener('click', applyBaseOne);
-        dom.applyBaseAll.addEventListener('click', applyBaseAll);
-        dom.regenSelected.addEventListener('click', regenSelectedSection);
+    function rectFromPoints(a, b) {
+        const x = Math.min(a.x, b.x);
+        const y = Math.min(a.y, b.y);
 
-        dom.modeRemove.addEventListener('click', () => setPaintMode(PAINT_MODE.REMOVED));
-        dom.modeAvailable.addEventListener('click', () => setPaintMode(PAINT_MODE.AVAILABLE));
-        dom.modeObstructed.addEventListener('click', () => setPaintMode(PAINT_MODE.OBSTRUCTED));
+        return {
+            x,
+            y,
+            w: Math.abs(a.x - b.x),
+            h: Math.abs(a.y - b.y)
+        };
+    }
 
-        dom.zoomIn.addEventListener('click', () => {
-            state.zoom = Math.min(3, state.zoom + 0.15);
-            resizeView();
-        });
-
-        dom.zoomOut.addEventListener('click', () => {
-            state.zoom = Math.max(0.35, state.zoom - 0.15);
-            resizeView();
-        });
-
-        dom.zoomReset.addEventListener('click', () => {
-            state.zoom = 1;
-            resizeView();
-        });
-
-        // JSON 폴더에 저장하기
-        dom.saveJsonTop.addEventListener('click', saveSeatJsonToServer);
-
-        dom.copyJson.addEventListener('click', copyJson);
-
-        dom.overlayCanvas.addEventListener('pointerdown', event => {
-            const point = canvasPointFromEvent(event);
-
-            if (state.part === PART.EDIT) {
-                state.isPainting = true;
-                paintSeatAt(point);
-                return;
+    function drawPoly(ctx, poly) {
+        poly.forEach((point, index) => {
+            if (index === 0) {
+                ctx.moveTo(point.x, point.y);
+            } else {
+                ctx.lineTo(point.x, point.y);
             }
-
-            const hit = findSectionAt(point);
-            if (hit) selectSection(hit.id);
-        });
-
-        window.addEventListener('pointermove', event => {
-            if (!state.isPainting || state.part !== PART.EDIT) return;
-            paintSeatAt(canvasPointFromEvent(event));
-        });
-
-        window.addEventListener('pointerup', () => {
-            state.isPainting = false;
-        });
-
-        dom.miniCanvas.addEventListener('click', event => {
-            const hit = findSectionAt(miniPointFromEvent(event));
-            if (!hit) return;
-
-            selectSection(hit.id);
-            setPart(PART.EDIT);
         });
     }
 
-    /* =====================================================
-       10. Init
-       ===================================================== */
+    function roundRect(ctx, x, y, w, h, r) {
+        const radius = Math.min(r, w / 2, h / 2);
 
-    function cacheDom() {
-        dom.baseCanvas = $('base');
-        dom.overlayCanvas = $('overlay');
-        dom.baseCtx = dom.baseCanvas.getContext('2d');
-        dom.overlayCtx = dom.overlayCanvas.getContext('2d');
-        dom.miniCanvas = $('miniCanvas');
-        dom.miniCtx = dom.miniCanvas.getContext('2d');
-
-        dom.canvasBox = $('canvasBox');
-        dom.canvasTitle = $('canvasTitle');
-        dom.sizeText = $('sizeText');
-        dom.toast = $('toast');
-
-        dom.partBtn1 = $('partBtn1');
-        dom.partBtn2 = $('partBtn2');
-        dom.partBtn3 = $('partBtn3');
-        dom.part1Panel = $('part1Panel');
-        dom.part2Panel = $('part2Panel');
-        dom.part3Panel = $('part3Panel');
-        dom.goPart2 = $('goPart2');
-        dom.goPart3 = $('goPart3');
-
-        dom.baseSectionSelect = $('baseSectionSelect');
-        dom.editSectionSelect = $('editSectionSelect');
-        dom.baseRows = $('baseRows');
-        dom.baseCols = $('baseCols');
-        dom.editRows = $('editRows');
-        dom.editCols = $('editCols');
-
-        dom.applyBaseOne = $('applyBaseOne');
-        dom.applyBaseAll = $('applyBaseAll');
-        dom.regenSelected = $('regenSelected');
-
-        dom.modeRemove = $('modeRemove');
-        dom.modeAvailable = $('modeAvailable');
-        dom.modeObstructed = $('modeObstructed');
-
-        dom.zoomIn = $('zoomIn');
-        dom.zoomOut = $('zoomOut');
-        dom.zoomReset = $('zoomReset');
-        dom.saveJsonTop = $('saveJsonTop');
-        dom.copyJson = $('copyJson');
-
-        dom.selName = $('selName');
-        dom.selCount = $('selCount');
-        dom.sumFloors = $('sumFloors');
-        dom.sumSections = $('sumSections');
-        dom.sumSeats = $('sumSeats');
-        dom.sumObstructed = $('sumObstructed');
-        dom.summaryText = $('summaryText');
-        dom.jsonPreview = $('jsonPreview');
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + w - radius, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+        ctx.lineTo(x + w, y + h - radius);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+        ctx.lineTo(x + radius, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
     }
 
-    function init() {
-        cacheDom();
-
-        if (!state.selectedId) {
-            state.selectedId = state.sections[0]?.id || null;
+    function bboxOf(poly) {
+        if (!poly || !poly.length) {
+            return { x: 0, y: 0, w: 1, h: 1 };
         }
 
-        setupCanvas();
-        renderLists();
+        const xs = poly.map(point => point.x);
+        const ys = poly.map(point => point.y);
 
-        const section = getSelectedSection();
-        if (section) {
-            dom.editRows.value = section.seatRows || 5;
-            dom.editCols.value = section.seatCols || 10;
-        }
-
-        bindEvents();
-        setPart(PART.BASE);
+        return {
+            x: Math.min(...xs),
+            y: Math.min(...ys),
+            w: Math.max(...xs) - Math.min(...xs),
+            h: Math.max(...ys) - Math.min(...ys)
+        };
     }
 
-    init();
+    function pointInPoly(point, poly) {
+        let inside = false;
+
+        for (let i = 0, j = poly.length - 1; i < poly.length; j = i, i += 1) {
+            const a = poly[i];
+            const b = poly[j];
+            const intersect = (a.y > point.y) !== (b.y > point.y) &&
+                point.x < ((b.x - a.x) * (point.y - a.y)) / ((b.y - a.y) || 1) + a.x;
+
+            if (intersect) {
+                inside = !inside;
+            }
+        }
+
+        return inside;
+    }
+
+    function distanceToPolygon(point, poly) {
+        if (!poly || poly.length < 2) {
+            return Number.MAX_SAFE_INTEGER;
+        }
+
+        let min = Number.MAX_SAFE_INTEGER;
+
+        for (let i = 0; i < poly.length; i += 1) {
+            const a = poly[i];
+            const b = poly[(i + 1) % poly.length];
+            min = Math.min(min, distancePointToSegment(point, a, b));
+        }
+
+        return min;
+    }
+
+    function distancePointToSegment(p, a, b) {
+        const l2 = (b.x - a.x) ** 2 + (b.y - a.y) ** 2;
+        if (l2 === 0) return distance(p, a);
+
+        let t = ((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / l2;
+        t = Math.max(0, Math.min(1, t));
+
+        const proj = {
+            x: a.x + t * (b.x - a.x),
+            y: a.y + t * (b.y - a.y)
+        };
+
+        return distance(p, proj);
+    }
+
+    function convexHull(points) {
+        const sorted = points
+            .map(point => ({ x: point.x, y: point.y }))
+            .sort((a, b) => a.x - b.x || a.y - b.y);
+
+        const unique = [];
+
+        sorted.forEach(point => {
+            const last = unique[unique.length - 1];
+            if (!last || last.x !== point.x || last.y !== point.y) {
+                unique.push(point);
+            }
+        });
+
+        if (unique.length <= 2) {
+            return unique;
+        }
+
+        const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+        const lower = [];
+
+        unique.forEach(point => {
+            while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], point) <= 0) {
+                lower.pop();
+            }
+            lower.push(point);
+        });
+
+        const upper = [];
+
+        unique.slice().reverse().forEach(point => {
+            while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], point) <= 0) {
+                upper.pop();
+            }
+            upper.push(point);
+        });
+
+        return lower.slice(0, -1).concat(upper.slice(0, -1));
+    }
+
+    function simplifyPolygon(points, epsilon) {
+        if (!points || points.length <= 3) {
+            return points || [];
+        }
+
+        const closed = points.concat([points[0]]);
+        return rdp(closed, epsilon).slice(0, -1);
+    }
+
+    function rdp(points, epsilon) {
+        if (points.length <= 2) {
+            return points.slice();
+        }
+
+        const start = points[0];
+        const end = points[points.length - 1];
+        const len = Math.hypot(end.x - start.x, end.y - start.y) || 1;
+
+        let maxDist = 0;
+        let index = 0;
+
+        for (let i = 1; i < points.length - 1; i += 1) {
+            const p = points[i];
+            const dist = Math.abs((end.y - start.y) * p.x - (end.x - start.x) * p.y + end.x * start.y - end.y * start.x) / len;
+
+            if (dist > maxDist) {
+                index = i;
+                maxDist = dist;
+            }
+        }
+
+        if (maxDist > epsilon) {
+            const left = rdp(points.slice(0, index + 1), epsilon);
+            const right = rdp(points.slice(index), epsilon);
+            return left.slice(0, -1).concat(right);
+        }
+
+        return [start, end];
+    }
+
+    function rotatePolygon(points, pivot, angle) {
+        return points.map(point => rotatePoint(point, pivot, angle));
+    }
+
+    function rotatePoint(point, pivot, angle) {
+        const rad = toRad(angle || 0);
+        const cos = Math.cos(rad);
+        const sin = Math.sin(rad);
+        const dx = point.x - pivot.x;
+        const dy = point.y - pivot.y;
+
+        return {
+            x: pivot.x + dx * cos - dy * sin,
+            y: pivot.y + dx * sin + dy * cos
+        };
+    }
+
+    function inverseRotatePoint(point, pivot, angle) {
+        return rotatePoint(point, pivot, -(angle || 0));
+    }
+
+    function pointOnLine(from, to, distanceValue) {
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const len = Math.hypot(dx, dy) || 1;
+
+        return {
+            x: from.x + (dx / len) * distanceValue,
+            y: from.y + (dy / len) * distanceValue
+        };
+    }
+
+    function distance(a, b) {
+        return Math.hypot((a.x || 0) - (b.x || 0), (a.y || 0) - (b.y || 0));
+    }
+
+    function toRad(deg) {
+        return deg * Math.PI / 180;
+    }
+
+    function round(value) {
+        return Math.round(value * 100) / 100;
+    }
+
+    function normalizeAngle(value) {
+        const angle = Number(value);
+
+        if (!Number.isFinite(angle)) {
+            return 0;
+        }
+
+        return Math.round(angle * 100) / 100;
+    }
+
+    function rowName(index) {
+        let n = index + 1;
+        let name = "";
+
+        while (n > 0) {
+            n -= 1;
+            name = String.fromCharCode(97 + n % 26) + name;
+            n = Math.floor(n / 26);
+        }
+
+        return name;
+    }
+
+    function floorCode(section) {
+        const match = String(section.floor || "1층").match(/\d+/);
+        return match ? match[0] : String(section.floor || "1");
+    }
+
+    function sectionCode(section) {
+        return String(section.label || section.name || section.id)
+            .replace(/^구역\s*/, "")
+            .replace(/\s+/g, "");
+    }
+
+    function hexToRgba(hex, alpha) {
+        const cleaned = String(hex || "#8b5cf6").replace("#", "");
+
+        if (cleaned.length !== 6) {
+            return `rgba(139,92,246,${alpha})`;
+        }
+
+        const r = parseInt(cleaned.slice(0, 2), 16);
+        const g = parseInt(cleaned.slice(2, 4), 16);
+        const b = parseInt(cleaned.slice(4, 6), 16);
+
+        return `rgba(${r},${g},${b},${alpha})`;
+    }
 })();

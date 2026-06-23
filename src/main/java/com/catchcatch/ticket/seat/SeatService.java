@@ -200,7 +200,7 @@ public class SeatService {
 
             String[] parts = dto.getId().split("-");
 
-            if (parts.length != 4) {
+            if (parts.length != 10) {
                 System.out.println("잘못된 좌석 ID 포맷: " + dto.getId());
                 continue;
             }
@@ -210,15 +210,16 @@ public class SeatService {
             String sectionName = parts[1];
             String seatRow = parts[2];
             Integer seatCol = Integer.parseInt(parts[3]);
-            Integer xLabel = Integer.parseInt(parts[4]);
-            Integer yLabel = Integer.parseInt(parts[5]);
+            SeatGrade grade = SeatGrade.valueOf(parts[4]); // 5번째 조각 (VIP)
+            SeatStatus status = "obstructed".equalsIgnoreCase(parts[5]) ? SeatStatus.OBSTRUCTED : SeatStatus.AVAILABLE; // 6번째 조각
+            Double xLabel = Double.parseDouble(parts[6]);
+            Double yLabel = Double.parseDouble(parts[7]);
+            Double seatSize = Double.parseDouble(parts[8]);
+            Double seatAngle = Double.parseDouble(parts[9]);
 
-            String fullSeatNumber = floor + "층 " + sectionName + "구역 " + seatRow + "열 " + seatCol + "번 " + xLabel + "x축 " + yLabel + "y축 ";
-
-            // 5. 등급 및 가격, 상태 세팅
-            SeatGrade grade = SeatGrade.valueOf(dto.getGrade());
+            // 5. 가격 및 번호 세팅
             Integer price = concert.getPriceByGrade(grade);
-            SeatStatus status = "obstructed".equalsIgnoreCase(dto.getStatus()) ? SeatStatus.OBSTRUCTED : SeatStatus.AVAILABLE;
+            String fullSeatNumber = floor + "층 " + sectionName + "구역 " + seatRow + "열 " + seatCol + "번";
 
             // 6. 엔티티 조립
             seatEntities.add(Seat.builder()
@@ -233,6 +234,8 @@ public class SeatService {
                     .status(status)
                     .xLabel(xLabel)
                     .yLabel(yLabel)
+                    .seatSize(seatSize)
+                    .seatAngle(seatAngle)
                     .build());
         }
 
@@ -249,7 +252,7 @@ public class SeatService {
         boolean hasHeldSeats = seatRepository.existsByConcertSession_IdAndStatus(sessionId, SeatStatus.HELD);
 
         if (hasSoldSeats || hasHeldSeats) {
-            throw new BadRequestException("이미 예매가 진행중이거나 결제된 좌석이 있어 초기화 할 수 업습니다.");
+            throw new BadRequestException("이미 예매가 진행중이거나 결제된 좌석이 있어 초기화 할 수 없습니다.");
         }
 
         seatRepository.deleteBySessionId(sessionId);

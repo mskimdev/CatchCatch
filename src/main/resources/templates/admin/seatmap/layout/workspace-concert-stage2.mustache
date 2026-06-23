@@ -1,0 +1,167 @@
+<aside class="seatmap-side seatmap-side--left">
+    <div class="seatmap-step-list">
+
+        <section id="part1Panel" class="seatmap-step is-active" data-step="1">
+            <button type="button" class="seatmap-step__header active" id="partBtn1">
+                <span class="seatmap-step__check" data-step="1"></span>
+                <span class="seatmap-step__text">
+                    <b>파트 1</b>
+                    <small>구역 추출 / 도형화</small>
+                </span>
+                <span class="seatmap-step__status">진행중</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active">
+                        <button type="button" class="btn amber" id="autoAnalyzeBtn">자동 구역 분석</button>
+
+                        <div class="seatmap-part1-guide">
+                            <b>사용법</b>
+                            <span>구역 클릭 = 선택 / Shift + 다른 구역 클릭 = 합치기 / 빈 공간 드래그 = 수동 구역 추가</span>
+                        </div>
+
+                        <div class="seatmap-selected-action hidden" id="part1SelectedActions">
+                            <div class="seatmap-selected-action__body">
+                                <div class="seatmap-selected-action__text" id="part1SelectedText">선택 구역</div>
+                                <div class="seatmap-selected-action__hint">Shift + 다른 구역 클릭 시 합치기</div>
+                            </div>
+                            <button type="button" class="btn red" id="deleteSectionBtn">선택 삭제</button>
+                        </div>
+
+                        <button type="button" class="btn primary" id="goPart2Btn">다음: 면 자동 생성</button>
+                    </div>
+
+                    <div class="hidden" aria-hidden="true">
+                        <input type="color" id="shapeColor" value="#d9d9d9" />
+                        <input type="color" id="bgColor" value="#f7f7f7" />
+                        <input type="range" id="shapeTol" min="8" max="80" value="34" />
+                        <input type="number" id="minArea" value="120" />
+                        <input type="range" id="simplify" min="1" max="18" value="7" />
+                        <input type="range" id="snap" min="0" max="16" value="5" />
+                        <button id="recalcPolygonBtn" type="button"></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="part2Panel" class="seatmap-step" data-step="2">
+            <button type="button" class="seatmap-step__header" id="partBtn2">
+                <span class="seatmap-step__check" data-step="2"></span>
+                <span class="seatmap-step__text">
+                    <b>파트 2</b>
+                    <small>구역 면 수정</small>
+                </span>
+                <span class="seatmap-step__status">대기</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active">
+                        <h3>자동 면 결과 수정</h3>
+                        <div class="seatmap-mode-help">파트1 점선은 범위로만 쓰고, 실제 회색 도형의 꼭짓점을 직선으로 이어 면을 만듭니다.</div>
+                        <button type="button" class="btn dark" id="makeSelectedButtonBtn">선택 면 재생성</button>
+                        <button type="button" class="btn" id="useExtractedAsFaceBtn">점선 범위 사용</button>
+                        <button type="button" class="btn green" id="makeAllButtonsBtn">전체 면 다시 생성</button>
+
+                        <div class="hidden" aria-hidden="true">
+                            <input type="range" id="buttonSimplify" min="1" max="18" value="2" />
+                            <input type="number" id="minEdgeLen" value="2" />
+                            <input type="number" id="buttonStroke" value="3" />
+                            <input type="number" id="buttonSnap" value="0" />
+                            <input type="number" id="maxButtonPoints" value="18" />
+                        </div>
+                    </div>
+
+                    <div class="box">
+                        <button type="button" class="btn primary" id="goPart3Btn">다음: 구역 번호 지정</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="part3Panel" class="seatmap-step" data-step="3">
+            <button type="button" class="seatmap-step__header" id="partBtn3">
+                <span class="seatmap-step__check" data-step="3"></span>
+                <span class="seatmap-step__text">
+                    <b>파트 3</b>
+                    <small>구역 번호 지정</small>
+                </span>
+                <span class="seatmap-step__status">대기</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system seatmap-step__system--compact">
+                    <div class="box active">
+                        <h3>선택 구역 수정</h3>
+                        <div class="row">
+                            <div>
+                                <label>색상 그룹</label>
+                                <select id="sectionGroupSelect"></select>
+                            </div>
+                            <div>
+                                <label>구역 번호</label>
+                                <input id="sectionInput" value="" />
+                            </div>
+                        </div>
+                        <button type="button" class="btn dark" id="applySectionBtn">선택 구역 적용</button>
+                    </div>
+
+                    <div class="box">
+                        <h3>검증</h3>
+                        <div class="seatmap-number-status" id="numberStatus"></div>
+                        <button type="button" class="btn green" id="saveStage2Btn">Stage2 저장</button>
+                        <button type="button" class="btn primary" id="toStage3Btn">Stage3 이동</button>
+                    </div>
+
+                    <div class="hidden" aria-hidden="true">
+                        <input type="number" id="autoStartNumber" value="1" />
+                        <select id="autoNumberOrder"><option value="top-left">위→아래</option></select>
+                        <button type="button" id="autoNumberBtn"></button>
+                        <input type="number" id="clickStartNumber" value="1" />
+                        <button type="button" id="startClickNumberBtn"></button>
+                        <button type="button" id="undoNumberBtn"></button>
+                        <button type="button" id="stopClickNumberBtn"></button>
+                        <button type="button" id="resetNumberBtn"></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</aside>
+
+<main class="seatmap-main">
+    <div class="seatmap-command-bar" aria-label="공용 작업 명령">
+        <button type="button" class="seatmap-command-btn" id="undoAction" title="이전 작업 Ctrl+Z">↶ 이전</button>
+        <button type="button" class="seatmap-command-btn" id="redoAction" title="다음 작업 Ctrl+Y">↷ 다음</button>
+        <button type="button" class="seatmap-command-btn" id="zoomTool" title="오른쪽 드래그 확대 / 왼쪽 드래그 축소">🔍 확대</button>
+        <button type="button" class="seatmap-command-btn" id="zoomReset" title="확대 초기화">100%</button>
+        <span class="seatmap-zoom-value" id="zoomValue">100%</span>
+    </div>
+
+    <div class="canvas-wrap">
+        <span id="canvasTitle" class="sr-only">구역 도형화 도면</span>
+        <span id="canvasSize" class="sr-only">-</span>
+        <div class="canvas-box" id="canvasBox">
+            <canvas class="base" id="baseCanvas"></canvas>
+            <canvas id="overlayCanvas"></canvas>
+        </div>
+    </div>
+</main>
+
+<aside class="seatmap-side seatmap-side--right">
+    <div class="minimap">
+        <h3>원본 미니맵</h3>
+        <img id="miniImg" alt="원본 미니맵" />
+        <div class="help">색상은 구역 그룹 기준입니다. 잘못 잡힌 구역은 파트3에서 색상 그룹을 바꾸면 됩니다.</div>
+    </div>
+
+    <div class="preview-card">
+        <h3>구역 번호 미리보기</h3>
+        <canvas id="previewCanvas"></canvas>
+        <div class="legend" id="legend"></div>
+    </div>
+</aside>

@@ -1,6502 +1,3002 @@
 [
   {
-    "id": "1-1-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-1-VIP-AVAILABLE-100-150-20-0"
   },
   {
-    "id": "1-1-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-2-VIP-AVAILABLE-130-150-20-0"
   },
   {
-    "id": "1-1-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-3-VIP-AVAILABLE-160-150-20-0"
   },
   {
-    "id": "1-1-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-4-VIP-AVAILABLE-190-150-20-0"
   },
   {
-    "id": "1-1-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-5-VIP-AVAILABLE-220-150-20-0"
   },
   {
-    "id": "1-1-a-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-6-VIP-AVAILABLE-250-150-20-0"
   },
   {
-    "id": "1-1-a-7",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-7-VIP-AVAILABLE-280-150-20-0"
   },
   {
-    "id": "1-1-a-8",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-8-VIP-AVAILABLE-310-150-20-0"
   },
   {
-    "id": "1-1-a-9",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-9-VIP-AVAILABLE-340-150-20-0"
   },
   {
-    "id": "1-1-a-10",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-10-VIP-AVAILABLE-370-150-20-0"
   },
   {
-    "id": "1-1-a-11",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-11-VIP-AVAILABLE-400-150-20-0"
   },
   {
-    "id": "1-1-a-12",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-12-VIP-AVAILABLE-430-150-20-0"
   },
   {
-    "id": "1-1-a-13",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-13-VIP-AVAILABLE-460-150-20-0"
   },
   {
-    "id": "1-1-a-14",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-14-VIP-AVAILABLE-490-150-20-0"
   },
   {
-    "id": "1-1-a-15",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-15-VIP-AVAILABLE-520-150-20-0"
   },
   {
-    "id": "1-1-a-16",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-16-VIP-AVAILABLE-550-150-20-0"
   },
   {
-    "id": "1-1-a-17",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-17-VIP-AVAILABLE-580-150-20-0"
   },
   {
-    "id": "1-1-a-18",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-18-VIP-AVAILABLE-610-150-20-0"
   },
   {
-    "id": "1-1-a-19",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-19-VIP-AVAILABLE-640-150-20-0"
   },
   {
-    "id": "1-1-a-20",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-A-20-VIP-AVAILABLE-670-150-20-0"
   },
   {
-    "id": "1-1-a-21",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-1-VIP-AVAILABLE-100-190-20-0"
   },
   {
-    "id": "1-1-a-22",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-2-VIP-AVAILABLE-130-190-20-0"
   },
   {
-    "id": "1-1-a-23",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-3-VIP-AVAILABLE-160-190-20-0"
   },
   {
-    "id": "1-1-a-24",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-4-VIP-AVAILABLE-190-190-20-0"
   },
   {
-    "id": "1-1-a-25",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-5-VIP-AVAILABLE-220-190-20-0"
   },
   {
-    "id": "1-1-a-26",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-6-VIP-AVAILABLE-250-190-20-0"
   },
   {
-    "id": "1-1-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-7-VIP-AVAILABLE-280-190-20-0"
   },
   {
-    "id": "1-1-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-8-VIP-AVAILABLE-310-190-20-0"
   },
   {
-    "id": "1-1-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-9-VIP-AVAILABLE-340-190-20-0"
   },
   {
-    "id": "1-1-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-10-VIP-AVAILABLE-370-190-20-0"
   },
   {
-    "id": "1-1-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-11-VIP-AVAILABLE-400-190-20-0"
   },
   {
-    "id": "1-1-b-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-12-VIP-AVAILABLE-430-190-20-0"
   },
   {
-    "id": "1-1-b-7",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-13-VIP-AVAILABLE-460-190-20-0"
   },
   {
-    "id": "1-1-b-8",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-14-VIP-AVAILABLE-490-190-20-0"
   },
   {
-    "id": "1-1-b-9",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-15-VIP-AVAILABLE-520-190-20-0"
   },
   {
-    "id": "1-1-b-10",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-16-VIP-AVAILABLE-550-190-20-0"
   },
   {
-    "id": "1-1-b-11",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-17-VIP-AVAILABLE-580-190-20-0"
   },
   {
-    "id": "1-1-b-12",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-18-VIP-AVAILABLE-610-190-20-0"
   },
   {
-    "id": "1-1-b-13",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-19-VIP-AVAILABLE-640-190-20-0"
   },
   {
-    "id": "1-1-b-14",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-B-20-VIP-AVAILABLE-670-190-20-0"
   },
   {
-    "id": "1-1-b-15",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-1-VIP-AVAILABLE-100-230-20-0"
   },
   {
-    "id": "1-1-b-16",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-2-VIP-AVAILABLE-130-230-20-0"
   },
   {
-    "id": "1-1-b-17",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-3-VIP-AVAILABLE-160-230-20-0"
   },
   {
-    "id": "1-1-b-18",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-4-VIP-AVAILABLE-190-230-20-0"
   },
   {
-    "id": "1-1-b-19",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-5-VIP-AVAILABLE-220-230-20-0"
   },
   {
-    "id": "1-1-b-20",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-6-VIP-AVAILABLE-250-230-20-0"
   },
   {
-    "id": "1-1-b-21",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-7-VIP-AVAILABLE-280-230-20-0"
   },
   {
-    "id": "1-1-b-22",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-8-VIP-AVAILABLE-310-230-20-0"
   },
   {
-    "id": "1-1-b-23",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-9-VIP-AVAILABLE-340-230-20-0"
   },
   {
-    "id": "1-1-b-24",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-10-VIP-AVAILABLE-370-230-20-0"
   },
   {
-    "id": "1-1-b-25",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-11-VIP-AVAILABLE-400-230-20-0"
   },
   {
-    "id": "1-1-b-26",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-12-VIP-AVAILABLE-430-230-20-0"
   },
   {
-    "id": "1-1-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-13-VIP-AVAILABLE-460-230-20-0"
   },
   {
-    "id": "1-1-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-14-VIP-AVAILABLE-490-230-20-0"
   },
   {
-    "id": "1-1-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-15-VIP-AVAILABLE-520-230-20-0"
   },
   {
-    "id": "1-1-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-16-VIP-AVAILABLE-550-230-20-0"
   },
   {
-    "id": "1-1-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-17-VIP-AVAILABLE-580-230-20-0"
   },
   {
-    "id": "1-1-c-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-18-VIP-AVAILABLE-610-230-20-0"
   },
   {
-    "id": "1-1-c-7",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-19-VIP-AVAILABLE-640-230-20-0"
   },
   {
-    "id": "1-1-c-8",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-C-20-VIP-AVAILABLE-670-230-20-0"
   },
   {
-    "id": "1-1-c-9",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-1-VIP-AVAILABLE-100-270-20-0"
   },
   {
-    "id": "1-1-c-10",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-2-VIP-AVAILABLE-130-270-20-0"
   },
   {
-    "id": "1-1-c-11",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-3-VIP-AVAILABLE-160-270-20-0"
   },
   {
-    "id": "1-1-c-12",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-4-VIP-AVAILABLE-190-270-20-0"
   },
   {
-    "id": "1-1-c-13",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-5-VIP-AVAILABLE-220-270-20-0"
   },
   {
-    "id": "1-1-c-14",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-6-VIP-AVAILABLE-250-270-20-0"
   },
   {
-    "id": "1-1-c-15",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-7-VIP-AVAILABLE-280-270-20-0"
   },
   {
-    "id": "1-1-c-16",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-8-VIP-AVAILABLE-310-270-20-0"
   },
   {
-    "id": "1-1-c-17",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-9-VIP-AVAILABLE-340-270-20-0"
   },
   {
-    "id": "1-1-c-18",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-10-VIP-AVAILABLE-370-270-20-0"
   },
   {
-    "id": "1-1-c-19",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-11-VIP-AVAILABLE-400-270-20-0"
   },
   {
-    "id": "1-1-c-20",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-12-VIP-AVAILABLE-430-270-20-0"
   },
   {
-    "id": "1-1-c-21",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-13-VIP-AVAILABLE-460-270-20-0"
   },
   {
-    "id": "1-1-c-22",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-14-VIP-AVAILABLE-490-270-20-0"
   },
   {
-    "id": "1-1-c-23",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-15-VIP-AVAILABLE-520-270-20-0"
   },
   {
-    "id": "1-1-c-24",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-16-VIP-AVAILABLE-550-270-20-0"
   },
   {
-    "id": "1-1-c-25",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-17-VIP-AVAILABLE-580-270-20-0"
   },
   {
-    "id": "1-1-c-26",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-18-VIP-AVAILABLE-610-270-20-0"
   },
   {
-    "id": "1-1-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-19-VIP-AVAILABLE-640-270-20-0"
   },
   {
-    "id": "1-1-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-D-20-VIP-AVAILABLE-670-270-20-0"
   },
   {
-    "id": "1-1-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-1-VIP-AVAILABLE-100-310-20-0"
   },
   {
-    "id": "1-1-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-2-VIP-AVAILABLE-130-310-20-0"
   },
   {
-    "id": "1-1-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-3-VIP-AVAILABLE-160-310-20-0"
   },
   {
-    "id": "1-1-d-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-4-VIP-AVAILABLE-190-310-20-0"
   },
   {
-    "id": "1-1-d-7",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-5-VIP-AVAILABLE-220-310-20-0"
   },
   {
-    "id": "1-1-d-8",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-6-VIP-AVAILABLE-250-310-20-0"
   },
   {
-    "id": "1-1-d-9",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-7-VIP-AVAILABLE-280-310-20-0"
   },
   {
-    "id": "1-1-d-10",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-8-VIP-AVAILABLE-310-310-20-0"
   },
   {
-    "id": "1-1-d-11",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-9-VIP-AVAILABLE-340-310-20-0"
   },
   {
-    "id": "1-1-d-12",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-10-VIP-AVAILABLE-370-310-20-0"
   },
   {
-    "id": "1-1-d-13",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-11-VIP-AVAILABLE-400-310-20-0"
   },
   {
-    "id": "1-1-d-14",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-12-VIP-AVAILABLE-430-310-20-0"
   },
   {
-    "id": "1-1-d-15",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-13-VIP-AVAILABLE-460-310-20-0"
   },
   {
-    "id": "1-1-d-16",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-14-VIP-AVAILABLE-490-310-20-0"
   },
   {
-    "id": "1-1-d-17",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-15-VIP-AVAILABLE-520-310-20-0"
   },
   {
-    "id": "1-1-d-18",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-16-VIP-AVAILABLE-550-310-20-0"
   },
   {
-    "id": "1-1-d-19",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-17-VIP-AVAILABLE-580-310-20-0"
   },
   {
-    "id": "1-1-d-20",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-18-VIP-AVAILABLE-610-310-20-0"
   },
   {
-    "id": "1-1-d-21",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-19-VIP-AVAILABLE-640-310-20-0"
   },
   {
-    "id": "1-1-d-22",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-VIP-E-20-VIP-AVAILABLE-670-310-20-0"
   },
   {
-    "id": "1-1-d-23",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-1-R-AVAILABLE-70-430-20-0"
   },
   {
-    "id": "1-1-d-24",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-2-R-AVAILABLE-100-430-20-0"
   },
   {
-    "id": "1-1-d-25",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-3-R-AVAILABLE-130-430-20-0"
   },
   {
-    "id": "1-1-d-26",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-4-R-AVAILABLE-160-430-20-0"
   },
   {
-    "id": "1-1-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-5-R-AVAILABLE-190-430-20-0"
   },
   {
-    "id": "1-1-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-6-R-AVAILABLE-220-430-20-0"
   },
   {
-    "id": "1-1-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-7-R-AVAILABLE-250-430-20-0"
   },
   {
-    "id": "1-1-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-8-R-AVAILABLE-280-430-20-0"
   },
   {
-    "id": "1-1-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-9-R-AVAILABLE-310-430-20-0"
   },
   {
-    "id": "1-1-e-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-10-R-AVAILABLE-340-430-20-0"
   },
   {
-    "id": "1-1-e-7",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-11-R-AVAILABLE-370-430-20-0"
   },
   {
-    "id": "1-1-e-8",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-12-R-AVAILABLE-400-430-20-0"
   },
   {
-    "id": "1-1-e-9",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-13-R-AVAILABLE-430-430-20-0"
   },
   {
-    "id": "1-1-e-10",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-14-R-AVAILABLE-460-430-20-0"
   },
   {
-    "id": "1-1-e-11",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-15-R-AVAILABLE-490-430-20-0"
   },
   {
-    "id": "1-1-e-12",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-16-R-AVAILABLE-520-430-20-0"
   },
   {
-    "id": "1-1-e-13",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-17-R-AVAILABLE-550-430-20-0"
   },
   {
-    "id": "1-1-e-14",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-18-R-AVAILABLE-580-430-20-0"
   },
   {
-    "id": "1-1-e-15",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-19-R-AVAILABLE-610-430-20-0"
   },
   {
-    "id": "1-1-e-16",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-20-R-AVAILABLE-640-430-20-0"
   },
   {
-    "id": "1-1-e-17",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-21-R-AVAILABLE-670-430-20-0"
   },
   {
-    "id": "1-1-e-18",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-22-R-AVAILABLE-700-430-20-0"
   },
   {
-    "id": "1-1-e-19",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-23-R-AVAILABLE-730-430-20-0"
   },
   {
-    "id": "1-1-e-20",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-24-R-AVAILABLE-760-430-20-0"
   },
   {
-    "id": "1-1-e-21",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-A-25-R-AVAILABLE-790-430-20-0"
   },
   {
-    "id": "1-1-e-22",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-1-R-AVAILABLE-70-470-20-0"
   },
   {
-    "id": "1-1-e-23",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-2-R-AVAILABLE-100-470-20-0"
   },
   {
-    "id": "1-1-e-24",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-3-R-AVAILABLE-130-470-20-0"
   },
   {
-    "id": "1-1-e-25",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-4-R-AVAILABLE-160-470-20-0"
   },
   {
-    "id": "1-1-e-26",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-5-R-AVAILABLE-190-470-20-0"
   },
   {
-    "id": "1-1-f-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-6-R-AVAILABLE-220-470-20-0"
   },
   {
-    "id": "1-1-f-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-7-R-AVAILABLE-250-470-20-0"
   },
   {
-    "id": "1-1-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-8-R-AVAILABLE-280-470-20-0"
   },
   {
-    "id": "1-1-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-9-R-AVAILABLE-310-470-20-0"
   },
   {
-    "id": "1-1-f-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-10-R-AVAILABLE-340-470-20-0"
   },
   {
-    "id": "1-1-f-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-11-R-AVAILABLE-370-470-20-0"
   },
   {
-    "id": "1-1-f-21",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-12-R-AVAILABLE-400-470-20-0"
   },
   {
-    "id": "1-1-f-22",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-13-R-AVAILABLE-430-470-20-0"
   },
   {
-    "id": "1-1-f-23",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-14-R-AVAILABLE-460-470-20-0"
   },
   {
-    "id": "1-1-f-24",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-15-R-AVAILABLE-490-470-20-0"
   },
   {
-    "id": "1-1-f-25",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-16-R-AVAILABLE-520-470-20-0"
   },
   {
-    "id": "1-1-f-26",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-17-R-AVAILABLE-550-470-20-0"
   },
   {
-    "id": "1-1-g-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-18-R-AVAILABLE-580-470-20-0"
   },
   {
-    "id": "1-1-g-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-19-R-AVAILABLE-610-470-20-0"
   },
   {
-    "id": "1-1-g-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-20-R-AVAILABLE-640-470-20-0"
   },
   {
-    "id": "1-1-g-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-21-R-AVAILABLE-670-470-20-0"
   },
   {
-    "id": "1-1-g-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-22-R-AVAILABLE-700-470-20-0"
   },
   {
-    "id": "1-1-g-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-23-R-AVAILABLE-730-470-20-0"
   },
   {
-    "id": "1-1-g-21",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-24-R-AVAILABLE-760-470-20-0"
   },
   {
-    "id": "1-1-g-22",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-B-25-R-AVAILABLE-790-470-20-0"
   },
   {
-    "id": "1-1-g-23",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-1-R-AVAILABLE-70-510-20-0"
   },
   {
-    "id": "1-1-g-24",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-2-R-AVAILABLE-100-510-20-0"
   },
   {
-    "id": "1-1-g-25",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-3-R-AVAILABLE-130-510-20-0"
   },
   {
-    "id": "1-1-g-26",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-4-R-AVAILABLE-160-510-20-0"
   },
   {
-    "id": "1-1-h-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-5-R-AVAILABLE-190-510-20-0"
   },
   {
-    "id": "1-1-h-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-6-R-AVAILABLE-220-510-20-0"
   },
   {
-    "id": "1-1-h-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-7-R-AVAILABLE-250-510-20-0"
   },
   {
-    "id": "1-1-h-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-8-R-AVAILABLE-280-510-20-0"
   },
   {
-    "id": "1-1-h-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-9-R-AVAILABLE-310-510-20-0"
   },
   {
-    "id": "1-1-h-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-10-R-AVAILABLE-340-510-20-0"
   },
   {
-    "id": "1-1-h-21",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-11-R-AVAILABLE-370-510-20-0"
   },
   {
-    "id": "1-1-h-22",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-12-R-AVAILABLE-400-510-20-0"
   },
   {
-    "id": "1-1-h-23",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-13-R-AVAILABLE-430-510-20-0"
   },
   {
-    "id": "1-1-h-24",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-14-R-AVAILABLE-460-510-20-0"
   },
   {
-    "id": "1-1-h-25",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-15-R-AVAILABLE-490-510-20-0"
   },
   {
-    "id": "1-1-h-26",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-16-R-AVAILABLE-520-510-20-0"
   },
   {
-    "id": "1-1-i-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-17-R-AVAILABLE-550-510-20-0"
   },
   {
-    "id": "1-1-i-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-18-R-AVAILABLE-580-510-20-0"
   },
   {
-    "id": "1-1-i-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-19-R-AVAILABLE-610-510-20-0"
   },
   {
-    "id": "1-1-i-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-20-R-AVAILABLE-640-510-20-0"
   },
   {
-    "id": "1-1-i-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-21-R-AVAILABLE-670-510-20-0"
   },
   {
-    "id": "1-1-i-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-22-R-AVAILABLE-700-510-20-0"
   },
   {
-    "id": "1-1-i-21",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-23-R-AVAILABLE-730-510-20-0"
   },
   {
-    "id": "1-1-i-22",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-24-R-AVAILABLE-760-510-20-0"
   },
   {
-    "id": "1-1-i-23",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-C-25-R-AVAILABLE-790-510-20-0"
   },
   {
-    "id": "1-1-i-24",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-1-R-AVAILABLE-70-550-20-0"
   },
   {
-    "id": "1-1-i-25",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-2-R-AVAILABLE-100-550-20-0"
   },
   {
-    "id": "1-1-i-26",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-3-R-AVAILABLE-130-550-20-0"
   },
   {
-    "id": "1-1-j-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-4-R-AVAILABLE-160-550-20-0"
   },
   {
-    "id": "1-1-j-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-5-R-AVAILABLE-190-550-20-0"
   },
   {
-    "id": "1-1-j-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-6-R-AVAILABLE-220-550-20-0"
   },
   {
-    "id": "1-1-j-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-7-R-AVAILABLE-250-550-20-0"
   },
   {
-    "id": "1-1-j-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-8-R-AVAILABLE-280-550-20-0"
   },
   {
-    "id": "1-1-j-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-9-R-AVAILABLE-310-550-20-0"
   },
   {
-    "id": "1-1-j-21",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-10-R-AVAILABLE-340-550-20-0"
   },
   {
-    "id": "1-1-j-22",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-11-R-AVAILABLE-370-550-20-0"
   },
   {
-    "id": "1-1-j-23",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-12-R-AVAILABLE-400-550-20-0"
   },
   {
-    "id": "1-1-j-24",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-13-R-AVAILABLE-430-550-20-0"
   },
   {
-    "id": "1-1-j-25",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-14-R-AVAILABLE-460-550-20-0"
   },
   {
-    "id": "1-1-j-26",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-15-R-AVAILABLE-490-550-20-0"
   },
   {
-    "id": "1-2-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-16-R-AVAILABLE-520-550-20-0"
   },
   {
-    "id": "1-2-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-17-R-AVAILABLE-550-550-20-0"
   },
   {
-    "id": "1-2-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-18-R-AVAILABLE-580-550-20-0"
   },
   {
-    "id": "1-2-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-19-R-AVAILABLE-610-550-20-0"
   },
   {
-    "id": "1-2-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-20-R-AVAILABLE-640-550-20-0"
   },
   {
-    "id": "1-2-a-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-21-R-AVAILABLE-670-550-20-0"
   },
   {
-    "id": "1-2-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-22-R-AVAILABLE-700-550-20-0"
   },
   {
-    "id": "1-2-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-23-R-AVAILABLE-730-550-20-0"
   },
   {
-    "id": "1-2-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-24-R-AVAILABLE-760-550-20-0"
   },
   {
-    "id": "1-2-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-D-25-R-AVAILABLE-790-550-20-0"
   },
   {
-    "id": "1-2-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-1-R-AVAILABLE-70-590-20-0"
   },
   {
-    "id": "1-2-b-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-2-R-AVAILABLE-100-590-20-0"
   },
   {
-    "id": "1-2-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-3-R-AVAILABLE-130-590-20-0"
   },
   {
-    "id": "1-2-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-4-R-AVAILABLE-160-590-20-0"
   },
   {
-    "id": "1-2-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-5-R-AVAILABLE-190-590-20-0"
   },
   {
-    "id": "1-2-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-6-R-AVAILABLE-220-590-20-0"
   },
   {
-    "id": "1-2-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-7-R-AVAILABLE-250-590-20-0"
   },
   {
-    "id": "1-2-c-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-8-R-AVAILABLE-280-590-20-0"
   },
   {
-    "id": "1-2-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-9-R-AVAILABLE-310-590-20-0"
   },
   {
-    "id": "1-2-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-10-R-AVAILABLE-340-590-20-0"
   },
   {
-    "id": "1-2-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-11-R-AVAILABLE-370-590-20-0"
   },
   {
-    "id": "1-2-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-12-R-AVAILABLE-400-590-20-0"
   },
   {
-    "id": "1-2-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-13-R-AVAILABLE-430-590-20-0"
   },
   {
-    "id": "1-2-d-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-14-R-AVAILABLE-460-590-20-0"
   },
   {
-    "id": "1-2-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-15-R-AVAILABLE-490-590-20-0"
   },
   {
-    "id": "1-2-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-16-R-AVAILABLE-520-590-20-0"
   },
   {
-    "id": "1-2-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-17-R-AVAILABLE-550-590-20-0"
   },
   {
-    "id": "1-2-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-18-R-AVAILABLE-580-590-20-0"
   },
   {
-    "id": "1-2-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-19-R-AVAILABLE-610-590-20-0"
   },
   {
-    "id": "1-2-e-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-20-R-AVAILABLE-640-590-20-0"
   },
   {
-    "id": "1-3-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-21-R-AVAILABLE-670-590-20-0"
   },
   {
-    "id": "1-3-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-22-R-AVAILABLE-700-590-20-0"
   },
   {
-    "id": "1-3-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-23-R-AVAILABLE-730-590-20-0"
   },
   {
-    "id": "1-3-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-24-R-AVAILABLE-760-590-20-0"
   },
   {
-    "id": "1-3-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-E-25-R-AVAILABLE-790-590-20-0"
   },
   {
-    "id": "1-3-a-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-1-R-AVAILABLE-70-630-20-0"
   },
   {
-    "id": "1-3-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-2-R-AVAILABLE-100-630-20-0"
   },
   {
-    "id": "1-3-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-3-R-AVAILABLE-130-630-20-0"
   },
   {
-    "id": "1-3-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-4-R-AVAILABLE-160-630-20-0"
   },
   {
-    "id": "1-3-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-5-R-AVAILABLE-190-630-20-0"
   },
   {
-    "id": "1-3-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-6-R-AVAILABLE-220-630-20-0"
   },
   {
-    "id": "1-3-b-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-7-R-AVAILABLE-250-630-20-0"
   },
   {
-    "id": "1-3-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-8-R-AVAILABLE-280-630-20-0"
   },
   {
-    "id": "1-3-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-9-R-AVAILABLE-310-630-20-0"
   },
   {
-    "id": "1-3-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-10-R-AVAILABLE-340-630-20-0"
   },
   {
-    "id": "1-3-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-11-R-AVAILABLE-370-630-20-0"
   },
   {
-    "id": "1-3-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-12-R-AVAILABLE-400-630-20-0"
   },
   {
-    "id": "1-3-c-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-13-R-AVAILABLE-430-630-20-0"
   },
   {
-    "id": "1-3-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-14-R-AVAILABLE-460-630-20-0"
   },
   {
-    "id": "1-3-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-15-R-AVAILABLE-490-630-20-0"
   },
   {
-    "id": "1-3-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-16-R-AVAILABLE-520-630-20-0"
   },
   {
-    "id": "1-3-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-17-R-AVAILABLE-550-630-20-0"
   },
   {
-    "id": "1-3-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-18-R-AVAILABLE-580-630-20-0"
   },
   {
-    "id": "1-3-d-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-19-R-AVAILABLE-610-630-20-0"
   },
   {
-    "id": "1-3-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-20-R-AVAILABLE-640-630-20-0"
   },
   {
-    "id": "1-3-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-21-R-AVAILABLE-670-630-20-0"
   },
   {
-    "id": "1-3-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-22-R-AVAILABLE-700-630-20-0"
   },
   {
-    "id": "1-3-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-23-R-AVAILABLE-730-630-20-0"
   },
   {
-    "id": "1-3-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-24-R-AVAILABLE-760-630-20-0"
   },
   {
-    "id": "1-3-e-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-F-25-R-AVAILABLE-790-630-20-0"
   },
   {
-    "id": "1-4-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-1-R-AVAILABLE-70-670-20-0"
   },
   {
-    "id": "1-4-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-2-R-AVAILABLE-100-670-20-0"
   },
   {
-    "id": "1-4-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-3-R-AVAILABLE-130-670-20-0"
   },
   {
-    "id": "1-4-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-4-R-AVAILABLE-160-670-20-0"
   },
   {
-    "id": "1-4-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-5-R-AVAILABLE-190-670-20-0"
   },
   {
-    "id": "1-4-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-6-R-AVAILABLE-220-670-20-0"
   },
   {
-    "id": "1-4-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-7-R-AVAILABLE-250-670-20-0"
   },
   {
-    "id": "1-4-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-8-R-AVAILABLE-280-670-20-0"
   },
   {
-    "id": "1-4-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-9-R-AVAILABLE-310-670-20-0"
   },
   {
-    "id": "1-4-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-10-R-AVAILABLE-340-670-20-0"
   },
   {
-    "id": "1-4-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-11-R-AVAILABLE-370-670-20-0"
   },
   {
-    "id": "1-4-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-12-R-AVAILABLE-400-670-20-0"
   },
   {
-    "id": "1-4-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-13-R-AVAILABLE-430-670-20-0"
   },
   {
-    "id": "1-4-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-14-R-AVAILABLE-460-670-20-0"
   },
   {
-    "id": "1-4-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-15-R-AVAILABLE-490-670-20-0"
   },
   {
-    "id": "1-4-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-16-R-AVAILABLE-520-670-20-0"
   },
   {
-    "id": "1-4-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-17-R-AVAILABLE-550-670-20-0"
   },
   {
-    "id": "1-4-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-18-R-AVAILABLE-580-670-20-0"
   },
   {
-    "id": "1-4-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-19-R-AVAILABLE-610-670-20-0"
   },
   {
-    "id": "1-4-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-20-R-AVAILABLE-640-670-20-0"
   },
   {
-    "id": "1-4-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-21-R-AVAILABLE-670-670-20-0"
   },
   {
-    "id": "1-4-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-22-R-AVAILABLE-700-670-20-0"
   },
   {
-    "id": "1-4-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-23-R-AVAILABLE-730-670-20-0"
   },
   {
-    "id": "1-4-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-24-R-AVAILABLE-760-670-20-0"
   },
   {
-    "id": "1-4-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-G-25-R-AVAILABLE-790-670-20-0"
   },
   {
-    "id": "1-5-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-1-R-AVAILABLE-70-710-20-0"
   },
   {
-    "id": "1-5-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-2-R-AVAILABLE-100-710-20-0"
   },
   {
-    "id": "1-5-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-3-R-AVAILABLE-130-710-20-0"
   },
   {
-    "id": "1-5-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-4-R-AVAILABLE-160-710-20-0"
   },
   {
-    "id": "1-5-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-5-R-AVAILABLE-190-710-20-0"
   },
   {
-    "id": "1-5-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-6-R-AVAILABLE-220-710-20-0"
   },
   {
-    "id": "1-5-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-7-R-AVAILABLE-250-710-20-0"
   },
   {
-    "id": "1-5-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-8-R-AVAILABLE-280-710-20-0"
   },
   {
-    "id": "1-5-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-9-R-AVAILABLE-310-710-20-0"
   },
   {
-    "id": "1-5-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-10-R-AVAILABLE-340-710-20-0"
   },
   {
-    "id": "1-5-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-11-R-AVAILABLE-370-710-20-0"
   },
   {
-    "id": "1-5-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-12-R-AVAILABLE-400-710-20-0"
   },
   {
-    "id": "1-5-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-13-R-AVAILABLE-430-710-20-0"
   },
   {
-    "id": "1-5-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-14-R-AVAILABLE-460-710-20-0"
   },
   {
-    "id": "1-5-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-15-R-AVAILABLE-490-710-20-0"
   },
   {
-    "id": "1-5-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-16-R-AVAILABLE-520-710-20-0"
   },
   {
-    "id": "1-5-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-17-R-AVAILABLE-550-710-20-0"
   },
   {
-    "id": "1-5-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-18-R-AVAILABLE-580-710-20-0"
   },
   {
-    "id": "1-5-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-19-R-AVAILABLE-610-710-20-0"
   },
   {
-    "id": "1-5-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-20-R-AVAILABLE-640-710-20-0"
   },
   {
-    "id": "1-5-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-21-R-AVAILABLE-670-710-20-0"
   },
   {
-    "id": "1-5-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-22-R-AVAILABLE-700-710-20-0"
   },
   {
-    "id": "1-5-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-23-R-AVAILABLE-730-710-20-0"
   },
   {
-    "id": "1-5-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-24-R-AVAILABLE-760-710-20-0"
   },
   {
-    "id": "1-5-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "1-R-H-25-R-AVAILABLE-790-710-20-0"
   },
   {
-    "id": "1-6-a-7",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-1-S-AVAILABLE-70-830-20-0"
   },
   {
-    "id": "1-6-a-8",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-2-S-AVAILABLE-100-830-20-0"
   },
   {
-    "id": "1-6-a-9",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-3-S-AVAILABLE-130-830-20-0"
   },
   {
-    "id": "1-6-a-10",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-4-S-AVAILABLE-160-830-20-0"
   },
   {
-    "id": "1-6-a-11",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-5-S-AVAILABLE-190-830-20-0"
   },
   {
-    "id": "1-6-a-12",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-6-S-AVAILABLE-220-830-20-0"
   },
   {
-    "id": "1-6-a-13",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-7-S-AVAILABLE-250-830-20-0"
   },
   {
-    "id": "1-6-a-14",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-8-S-AVAILABLE-280-830-20-0"
   },
   {
-    "id": "1-6-a-15",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-9-S-AVAILABLE-310-830-20-0"
   },
   {
-    "id": "1-6-a-16",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-10-S-AVAILABLE-340-830-20-0"
   },
   {
-    "id": "1-6-a-17",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-11-S-AVAILABLE-370-830-20-0"
   },
   {
-    "id": "1-6-a-18",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-12-S-AVAILABLE-400-830-20-0"
   },
   {
-    "id": "1-6-a-19",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-13-S-AVAILABLE-430-830-20-0"
   },
   {
-    "id": "1-6-a-20",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-14-S-AVAILABLE-460-830-20-0"
   },
   {
-    "id": "1-6-b-7",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-15-S-AVAILABLE-490-830-20-0"
   },
   {
-    "id": "1-6-b-8",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-16-S-AVAILABLE-520-830-20-0"
   },
   {
-    "id": "1-6-b-9",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-17-S-AVAILABLE-550-830-20-0"
   },
   {
-    "id": "1-6-b-10",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-18-S-AVAILABLE-580-830-20-0"
   },
   {
-    "id": "1-6-b-11",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-19-S-AVAILABLE-610-830-20-0"
   },
   {
-    "id": "1-6-b-12",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-20-S-AVAILABLE-640-830-20-0"
   },
   {
-    "id": "1-6-b-13",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-21-S-AVAILABLE-670-830-20-0"
   },
   {
-    "id": "1-6-b-14",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-22-S-AVAILABLE-700-830-20-0"
   },
   {
-    "id": "1-6-b-15",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-23-S-AVAILABLE-730-830-20-0"
   },
   {
-    "id": "1-6-b-16",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-24-S-AVAILABLE-760-830-20-0"
   },
   {
-    "id": "1-6-b-17",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-25-S-AVAILABLE-790-830-20-0"
   },
   {
-    "id": "1-6-b-18",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-26-S-AVAILABLE-820-830-20-0"
   },
   {
-    "id": "1-6-b-19",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-27-S-AVAILABLE-850-830-20-0"
   },
   {
-    "id": "1-6-b-20",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-28-S-AVAILABLE-880-830-20-0"
   },
   {
-    "id": "1-6-c-7",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-29-S-AVAILABLE-910-830-20-0"
   },
   {
-    "id": "1-6-c-8",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-A-30-S-AVAILABLE-940-830-20-0"
   },
   {
-    "id": "1-6-c-9",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-1-S-AVAILABLE-70-870-20-0"
   },
   {
-    "id": "1-6-c-10",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-2-S-AVAILABLE-100-870-20-0"
   },
   {
-    "id": "1-6-c-11",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-3-S-AVAILABLE-130-870-20-0"
   },
   {
-    "id": "1-6-c-12",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-4-S-AVAILABLE-160-870-20-0"
   },
   {
-    "id": "1-6-c-13",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-5-S-AVAILABLE-190-870-20-0"
   },
   {
-    "id": "1-6-c-14",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-6-S-AVAILABLE-220-870-20-0"
   },
   {
-    "id": "1-6-c-15",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-7-S-AVAILABLE-250-870-20-0"
   },
   {
-    "id": "1-6-c-16",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-8-S-AVAILABLE-280-870-20-0"
   },
   {
-    "id": "1-6-c-17",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-9-S-AVAILABLE-310-870-20-0"
   },
   {
-    "id": "1-6-c-18",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-10-S-AVAILABLE-340-870-20-0"
   },
   {
-    "id": "1-6-c-19",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-11-S-AVAILABLE-370-870-20-0"
   },
   {
-    "id": "1-6-c-20",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-12-S-AVAILABLE-400-870-20-0"
   },
   {
-    "id": "1-6-d-7",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-13-S-AVAILABLE-430-870-20-0"
   },
   {
-    "id": "1-6-d-8",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-14-S-AVAILABLE-460-870-20-0"
   },
   {
-    "id": "1-6-d-9",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-15-S-AVAILABLE-490-870-20-0"
   },
   {
-    "id": "1-6-d-10",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-16-S-AVAILABLE-520-870-20-0"
   },
   {
-    "id": "1-6-d-11",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-17-S-AVAILABLE-550-870-20-0"
   },
   {
-    "id": "1-6-d-12",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-18-S-AVAILABLE-580-870-20-0"
   },
   {
-    "id": "1-6-d-13",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-19-S-AVAILABLE-610-870-20-0"
   },
   {
-    "id": "1-6-d-14",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-20-S-AVAILABLE-640-870-20-0"
   },
   {
-    "id": "1-6-d-15",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-21-S-AVAILABLE-670-870-20-0"
   },
   {
-    "id": "1-6-d-16",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-22-S-AVAILABLE-700-870-20-0"
   },
   {
-    "id": "1-6-d-17",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-23-S-AVAILABLE-730-870-20-0"
   },
   {
-    "id": "1-6-d-18",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-24-S-AVAILABLE-760-870-20-0"
   },
   {
-    "id": "1-6-d-19",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-25-S-AVAILABLE-790-870-20-0"
   },
   {
-    "id": "1-6-d-20",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-26-S-AVAILABLE-820-870-20-0"
   },
   {
-    "id": "1-6-e-7",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-27-S-AVAILABLE-850-870-20-0"
   },
   {
-    "id": "1-6-e-8",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-28-S-AVAILABLE-880-870-20-0"
   },
   {
-    "id": "1-6-e-9",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-29-S-AVAILABLE-910-870-20-0"
   },
   {
-    "id": "1-6-e-10",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-B-30-S-AVAILABLE-940-870-20-0"
   },
   {
-    "id": "1-6-e-11",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-1-S-AVAILABLE-70-910-20-0"
   },
   {
-    "id": "1-6-e-12",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-2-S-AVAILABLE-100-910-20-0"
   },
   {
-    "id": "1-6-e-13",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-3-S-AVAILABLE-130-910-20-0"
   },
   {
-    "id": "1-6-e-14",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-4-S-AVAILABLE-160-910-20-0"
   },
   {
-    "id": "1-6-e-15",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-5-S-AVAILABLE-190-910-20-0"
   },
   {
-    "id": "1-6-e-16",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-6-S-AVAILABLE-220-910-20-0"
   },
   {
-    "id": "1-6-e-17",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-7-S-AVAILABLE-250-910-20-0"
   },
   {
-    "id": "1-6-e-18",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-8-S-AVAILABLE-280-910-20-0"
   },
   {
-    "id": "1-6-e-19",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-9-S-AVAILABLE-310-910-20-0"
   },
   {
-    "id": "1-6-e-20",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-10-S-AVAILABLE-340-910-20-0"
   },
   {
-    "id": "1-6-f-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-11-S-AVAILABLE-370-910-20-0"
   },
   {
-    "id": "1-6-f-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-12-S-AVAILABLE-400-910-20-0"
   },
   {
-    "id": "1-6-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-13-S-AVAILABLE-430-910-20-0"
   },
   {
-    "id": "1-6-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-14-S-AVAILABLE-460-910-20-0"
   },
   {
-    "id": "1-6-f-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-15-S-AVAILABLE-490-910-20-0"
   },
   {
-    "id": "1-6-f-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-16-S-AVAILABLE-520-910-20-0"
   },
   {
-    "id": "1-6-f-7",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-17-S-AVAILABLE-550-910-20-0"
   },
   {
-    "id": "1-6-f-8",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-18-S-AVAILABLE-580-910-20-0"
   },
   {
-    "id": "1-6-f-9",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-19-S-AVAILABLE-610-910-20-0"
   },
   {
-    "id": "1-6-f-10",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-20-S-AVAILABLE-640-910-20-0"
   },
   {
-    "id": "1-6-f-11",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-21-S-AVAILABLE-670-910-20-0"
   },
   {
-    "id": "1-6-f-12",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-22-S-AVAILABLE-700-910-20-0"
   },
   {
-    "id": "1-6-f-13",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-23-S-AVAILABLE-730-910-20-0"
   },
   {
-    "id": "1-6-f-14",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-24-S-AVAILABLE-760-910-20-0"
   },
   {
-    "id": "1-6-f-15",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-25-S-AVAILABLE-790-910-20-0"
   },
   {
-    "id": "1-6-f-16",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-26-S-AVAILABLE-820-910-20-0"
   },
   {
-    "id": "1-6-f-17",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-27-S-AVAILABLE-850-910-20-0"
   },
   {
-    "id": "1-6-f-18",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-28-S-AVAILABLE-880-910-20-0"
   },
   {
-    "id": "1-6-f-19",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-29-S-AVAILABLE-910-910-20-0"
   },
   {
-    "id": "1-6-f-20",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-C-30-S-AVAILABLE-940-910-20-0"
   },
   {
-    "id": "1-6-f-21",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-1-S-AVAILABLE-70-950-20-0"
   },
   {
-    "id": "1-6-f-22",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-2-S-AVAILABLE-100-950-20-0"
   },
   {
-    "id": "1-6-f-23",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-3-S-AVAILABLE-130-950-20-0"
   },
   {
-    "id": "1-6-f-24",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-4-S-AVAILABLE-160-950-20-0"
   },
   {
-    "id": "1-6-f-25",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-5-S-AVAILABLE-190-950-20-0"
   },
   {
-    "id": "1-6-f-26",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-6-S-AVAILABLE-220-950-20-0"
   },
   {
-    "id": "1-6-g-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-7-S-AVAILABLE-250-950-20-0"
   },
   {
-    "id": "1-6-g-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-8-S-AVAILABLE-280-950-20-0"
   },
   {
-    "id": "1-6-g-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-9-S-AVAILABLE-310-950-20-0"
   },
   {
-    "id": "1-6-g-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-10-S-AVAILABLE-340-950-20-0"
   },
   {
-    "id": "1-6-g-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-11-S-AVAILABLE-370-950-20-0"
   },
   {
-    "id": "1-6-g-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-12-S-AVAILABLE-400-950-20-0"
   },
   {
-    "id": "1-6-g-7",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-13-S-AVAILABLE-430-950-20-0"
   },
   {
-    "id": "1-6-g-8",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-14-S-AVAILABLE-460-950-20-0"
   },
   {
-    "id": "1-6-g-9",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-15-S-AVAILABLE-490-950-20-0"
   },
   {
-    "id": "1-6-g-10",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-16-S-AVAILABLE-520-950-20-0"
   },
   {
-    "id": "1-6-g-11",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-17-S-AVAILABLE-550-950-20-0"
   },
   {
-    "id": "1-6-g-12",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-18-S-AVAILABLE-580-950-20-0"
   },
   {
-    "id": "1-6-g-13",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-19-S-AVAILABLE-610-950-20-0"
   },
   {
-    "id": "1-6-g-14",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-20-S-AVAILABLE-640-950-20-0"
   },
   {
-    "id": "1-6-g-15",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-21-S-AVAILABLE-670-950-20-0"
   },
   {
-    "id": "1-6-g-16",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-22-S-AVAILABLE-700-950-20-0"
   },
   {
-    "id": "1-6-g-17",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-23-S-AVAILABLE-730-950-20-0"
   },
   {
-    "id": "1-6-g-18",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-24-S-AVAILABLE-760-950-20-0"
   },
   {
-    "id": "1-6-g-19",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-25-S-AVAILABLE-790-950-20-0"
   },
   {
-    "id": "1-6-g-20",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-26-S-AVAILABLE-820-950-20-0"
   },
   {
-    "id": "1-6-g-21",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-27-S-AVAILABLE-850-950-20-0"
   },
   {
-    "id": "1-6-g-22",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-28-S-AVAILABLE-880-950-20-0"
   },
   {
-    "id": "1-6-g-23",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-29-S-AVAILABLE-910-950-20-0"
   },
   {
-    "id": "1-6-g-24",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-D-30-S-AVAILABLE-940-950-20-0"
   },
   {
-    "id": "1-6-g-25",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-1-S-AVAILABLE-70-990-20-0"
   },
   {
-    "id": "1-6-g-26",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-2-S-AVAILABLE-100-990-20-0"
   },
   {
-    "id": "1-6-h-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-3-S-AVAILABLE-130-990-20-0"
   },
   {
-    "id": "1-6-h-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-4-S-AVAILABLE-160-990-20-0"
   },
   {
-    "id": "1-6-h-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-5-S-AVAILABLE-190-990-20-0"
   },
   {
-    "id": "1-6-h-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-6-S-AVAILABLE-220-990-20-0"
   },
   {
-    "id": "1-6-h-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-7-S-AVAILABLE-250-990-20-0"
   },
   {
-    "id": "1-6-h-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-8-S-AVAILABLE-280-990-20-0"
   },
   {
-    "id": "1-6-h-7",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-9-S-AVAILABLE-310-990-20-0"
   },
   {
-    "id": "1-6-h-8",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-10-S-AVAILABLE-340-990-20-0"
   },
   {
-    "id": "1-6-h-9",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-11-S-AVAILABLE-370-990-20-0"
   },
   {
-    "id": "1-6-h-10",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-12-S-AVAILABLE-400-990-20-0"
   },
   {
-    "id": "1-6-h-11",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-13-S-AVAILABLE-430-990-20-0"
   },
   {
-    "id": "1-6-h-12",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-14-S-AVAILABLE-460-990-20-0"
   },
   {
-    "id": "1-6-h-13",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-15-S-AVAILABLE-490-990-20-0"
   },
   {
-    "id": "1-6-h-14",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-16-S-AVAILABLE-520-990-20-0"
   },
   {
-    "id": "1-6-h-15",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-17-S-AVAILABLE-550-990-20-0"
   },
   {
-    "id": "1-6-h-16",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-18-S-AVAILABLE-580-990-20-0"
   },
   {
-    "id": "1-6-h-17",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-19-S-AVAILABLE-610-990-20-0"
   },
   {
-    "id": "1-6-h-18",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-20-S-AVAILABLE-640-990-20-0"
   },
   {
-    "id": "1-6-h-19",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-21-S-AVAILABLE-670-990-20-0"
   },
   {
-    "id": "1-6-h-20",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-22-S-AVAILABLE-700-990-20-0"
   },
   {
-    "id": "1-6-h-21",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-23-S-AVAILABLE-730-990-20-0"
   },
   {
-    "id": "1-6-h-22",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-24-S-AVAILABLE-760-990-20-0"
   },
   {
-    "id": "1-6-h-23",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-25-S-AVAILABLE-790-990-20-0"
   },
   {
-    "id": "1-6-h-24",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-26-S-AVAILABLE-820-990-20-0"
   },
   {
-    "id": "1-6-h-25",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-27-S-AVAILABLE-850-990-20-0"
   },
   {
-    "id": "1-6-h-26",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-28-S-AVAILABLE-880-990-20-0"
   },
   {
-    "id": "1-7-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-29-S-AVAILABLE-910-990-20-0"
   },
   {
-    "id": "1-7-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-E-30-S-AVAILABLE-940-990-20-0"
   },
   {
-    "id": "1-7-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-1-S-AVAILABLE-70-1030-20-0"
   },
   {
-    "id": "1-7-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-2-S-AVAILABLE-100-1030-20-0"
   },
   {
-    "id": "1-7-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-3-S-AVAILABLE-130-1030-20-0"
   },
   {
-    "id": "1-7-a-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-4-S-AVAILABLE-160-1030-20-0"
   },
   {
-    "id": "1-7-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-5-S-AVAILABLE-190-1030-20-0"
   },
   {
-    "id": "1-7-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-6-S-AVAILABLE-220-1030-20-0"
   },
   {
-    "id": "1-7-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-7-S-AVAILABLE-250-1030-20-0"
   },
   {
-    "id": "1-7-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-8-S-AVAILABLE-280-1030-20-0"
   },
   {
-    "id": "1-7-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-9-S-AVAILABLE-310-1030-20-0"
   },
   {
-    "id": "1-7-b-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-10-S-AVAILABLE-340-1030-20-0"
   },
   {
-    "id": "1-7-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-11-S-AVAILABLE-370-1030-20-0"
   },
   {
-    "id": "1-7-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-12-S-AVAILABLE-400-1030-20-0"
   },
   {
-    "id": "1-7-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-13-S-AVAILABLE-430-1030-20-0"
   },
   {
-    "id": "1-7-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-14-S-AVAILABLE-460-1030-20-0"
   },
   {
-    "id": "1-7-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-15-S-AVAILABLE-490-1030-20-0"
   },
   {
-    "id": "1-7-c-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-16-S-AVAILABLE-520-1030-20-0"
   },
   {
-    "id": "1-7-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-17-S-AVAILABLE-550-1030-20-0"
   },
   {
-    "id": "1-7-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-18-S-AVAILABLE-580-1030-20-0"
   },
   {
-    "id": "1-7-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-19-S-AVAILABLE-610-1030-20-0"
   },
   {
-    "id": "1-7-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-20-S-AVAILABLE-640-1030-20-0"
   },
   {
-    "id": "1-7-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-21-S-AVAILABLE-670-1030-20-0"
   },
   {
-    "id": "1-7-d-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-22-S-AVAILABLE-700-1030-20-0"
   },
   {
-    "id": "1-7-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-23-S-AVAILABLE-730-1030-20-0"
   },
   {
-    "id": "1-7-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-24-S-AVAILABLE-760-1030-20-0"
   },
   {
-    "id": "1-7-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-25-S-AVAILABLE-790-1030-20-0"
   },
   {
-    "id": "1-7-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-26-S-AVAILABLE-820-1030-20-0"
   },
   {
-    "id": "1-7-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-27-S-AVAILABLE-850-1030-20-0"
   },
   {
-    "id": "1-7-e-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-28-S-AVAILABLE-880-1030-20-0"
   },
   {
-    "id": "1-8-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-29-S-AVAILABLE-910-1030-20-0"
   },
   {
-    "id": "1-8-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-F-30-S-AVAILABLE-940-1030-20-0"
   },
   {
-    "id": "1-8-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-1-S-AVAILABLE-70-1070-20-0"
   },
   {
-    "id": "1-8-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-2-S-AVAILABLE-100-1070-20-0"
   },
   {
-    "id": "1-8-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-3-S-AVAILABLE-130-1070-20-0"
   },
   {
-    "id": "1-8-a-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-4-S-AVAILABLE-160-1070-20-0"
   },
   {
-    "id": "1-8-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-5-S-AVAILABLE-190-1070-20-0"
   },
   {
-    "id": "1-8-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-6-S-AVAILABLE-220-1070-20-0"
   },
   {
-    "id": "1-8-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-7-S-AVAILABLE-250-1070-20-0"
   },
   {
-    "id": "1-8-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-8-S-AVAILABLE-280-1070-20-0"
   },
   {
-    "id": "1-8-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-9-S-AVAILABLE-310-1070-20-0"
   },
   {
-    "id": "1-8-b-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-10-S-AVAILABLE-340-1070-20-0"
   },
   {
-    "id": "1-8-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-11-S-AVAILABLE-370-1070-20-0"
   },
   {
-    "id": "1-8-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-12-S-AVAILABLE-400-1070-20-0"
   },
   {
-    "id": "1-8-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-13-S-AVAILABLE-430-1070-20-0"
   },
   {
-    "id": "1-8-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-14-S-AVAILABLE-460-1070-20-0"
   },
   {
-    "id": "1-8-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-15-S-AVAILABLE-490-1070-20-0"
   },
   {
-    "id": "1-8-c-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-16-S-AVAILABLE-520-1070-20-0"
   },
   {
-    "id": "1-8-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-17-S-AVAILABLE-550-1070-20-0"
   },
   {
-    "id": "1-8-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-18-S-AVAILABLE-580-1070-20-0"
   },
   {
-    "id": "1-8-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-19-S-AVAILABLE-610-1070-20-0"
   },
   {
-    "id": "1-8-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-20-S-AVAILABLE-640-1070-20-0"
   },
   {
-    "id": "1-8-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-21-S-AVAILABLE-670-1070-20-0"
   },
   {
-    "id": "1-8-d-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-22-S-AVAILABLE-700-1070-20-0"
   },
   {
-    "id": "1-8-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-23-S-AVAILABLE-730-1070-20-0"
   },
   {
-    "id": "1-8-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-24-S-AVAILABLE-760-1070-20-0"
   },
   {
-    "id": "1-8-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-25-S-AVAILABLE-790-1070-20-0"
   },
   {
-    "id": "1-8-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-26-S-AVAILABLE-820-1070-20-0"
   },
   {
-    "id": "1-8-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-27-S-AVAILABLE-850-1070-20-0"
   },
   {
-    "id": "1-8-e-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-28-S-AVAILABLE-880-1070-20-0"
   },
   {
-    "id": "1-9-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-29-S-AVAILABLE-910-1070-20-0"
   },
   {
-    "id": "1-9-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-G-30-S-AVAILABLE-940-1070-20-0"
   },
   {
-    "id": "1-9-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-1-S-AVAILABLE-70-1110-20-0"
   },
   {
-    "id": "1-9-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-2-S-AVAILABLE-100-1110-20-0"
   },
   {
-    "id": "1-9-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-3-S-AVAILABLE-130-1110-20-0"
   },
   {
-    "id": "1-9-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-4-S-AVAILABLE-160-1110-20-0"
   },
   {
-    "id": "1-9-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-5-S-AVAILABLE-190-1110-20-0"
   },
   {
-    "id": "1-9-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-6-S-AVAILABLE-220-1110-20-0"
   },
   {
-    "id": "1-9-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-7-S-AVAILABLE-250-1110-20-0"
   },
   {
-    "id": "1-9-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-8-S-AVAILABLE-280-1110-20-0"
   },
   {
-    "id": "1-9-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-9-S-AVAILABLE-310-1110-20-0"
   },
   {
-    "id": "1-9-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-10-S-AVAILABLE-340-1110-20-0"
   },
   {
-    "id": "1-9-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-11-S-AVAILABLE-370-1110-20-0"
   },
   {
-    "id": "1-9-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-12-S-AVAILABLE-400-1110-20-0"
   },
   {
-    "id": "1-9-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-13-S-AVAILABLE-430-1110-20-0"
   },
   {
-    "id": "1-9-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-14-S-AVAILABLE-460-1110-20-0"
   },
   {
-    "id": "1-9-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-15-S-AVAILABLE-490-1110-20-0"
   },
   {
-    "id": "1-9-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-16-S-AVAILABLE-520-1110-20-0"
   },
   {
-    "id": "1-9-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-17-S-AVAILABLE-550-1110-20-0"
   },
   {
-    "id": "1-9-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-18-S-AVAILABLE-580-1110-20-0"
   },
   {
-    "id": "1-9-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-19-S-AVAILABLE-610-1110-20-0"
   },
   {
-    "id": "1-9-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-20-S-AVAILABLE-640-1110-20-0"
   },
   {
-    "id": "1-9-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-21-S-AVAILABLE-670-1110-20-0"
   },
   {
-    "id": "1-9-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-22-S-AVAILABLE-700-1110-20-0"
   },
   {
-    "id": "1-9-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-23-S-AVAILABLE-730-1110-20-0"
   },
   {
-    "id": "1-10-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-24-S-AVAILABLE-760-1110-20-0"
   },
   {
-    "id": "1-10-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-25-S-AVAILABLE-790-1110-20-0"
   },
   {
-    "id": "1-10-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-26-S-AVAILABLE-820-1110-20-0"
   },
   {
-    "id": "1-10-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-27-S-AVAILABLE-850-1110-20-0"
   },
   {
-    "id": "1-10-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-28-S-AVAILABLE-880-1110-20-0"
   },
   {
-    "id": "1-10-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-29-S-AVAILABLE-910-1110-20-0"
   },
   {
-    "id": "1-10-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-H-30-S-AVAILABLE-940-1110-20-0"
   },
   {
-    "id": "1-10-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-1-S-AVAILABLE-70-1150-20-0"
   },
   {
-    "id": "1-10-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-2-S-AVAILABLE-100-1150-20-0"
   },
   {
-    "id": "1-10-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-3-S-AVAILABLE-130-1150-20-0"
   },
   {
-    "id": "1-10-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-4-S-AVAILABLE-160-1150-20-0"
   },
   {
-    "id": "1-10-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-5-S-AVAILABLE-190-1150-20-0"
   },
   {
-    "id": "1-10-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-6-S-AVAILABLE-220-1150-20-0"
   },
   {
-    "id": "1-10-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-7-S-AVAILABLE-250-1150-20-0"
   },
   {
-    "id": "1-10-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-8-S-AVAILABLE-280-1150-20-0"
   },
   {
-    "id": "1-10-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-9-S-AVAILABLE-310-1150-20-0"
   },
   {
-    "id": "1-10-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-10-S-AVAILABLE-340-1150-20-0"
   },
   {
-    "id": "1-10-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-11-S-AVAILABLE-370-1150-20-0"
   },
   {
-    "id": "1-10-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-12-S-AVAILABLE-400-1150-20-0"
   },
   {
-    "id": "1-10-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-13-S-AVAILABLE-430-1150-20-0"
   },
   {
-    "id": "1-10-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-14-S-AVAILABLE-460-1150-20-0"
   },
   {
-    "id": "1-10-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-15-S-AVAILABLE-490-1150-20-0"
   },
   {
-    "id": "1-10-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-16-S-AVAILABLE-520-1150-20-0"
   },
   {
-    "id": "1-10-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-17-S-AVAILABLE-550-1150-20-0"
   },
   {
-    "id": "1-10-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-18-S-AVAILABLE-580-1150-20-0"
   },
   {
-    "id": "1-11-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-19-S-AVAILABLE-610-1150-20-0"
   },
   {
-    "id": "1-11-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-20-S-AVAILABLE-640-1150-20-0"
   },
   {
-    "id": "1-11-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-21-S-AVAILABLE-670-1150-20-0"
   },
   {
-    "id": "1-11-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-22-S-AVAILABLE-700-1150-20-0"
   },
   {
-    "id": "1-11-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-23-S-AVAILABLE-730-1150-20-0"
   },
   {
-    "id": "1-11-a-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-24-S-AVAILABLE-760-1150-20-0"
   },
   {
-    "id": "1-11-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-25-S-AVAILABLE-790-1150-20-0"
   },
   {
-    "id": "1-11-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-26-S-AVAILABLE-820-1150-20-0"
   },
   {
-    "id": "1-11-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-27-S-AVAILABLE-850-1150-20-0"
   },
   {
-    "id": "1-11-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-28-S-AVAILABLE-880-1150-20-0"
   },
   {
-    "id": "1-11-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-29-S-AVAILABLE-910-1150-20-0"
   },
   {
-    "id": "1-11-b-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-I-30-S-AVAILABLE-940-1150-20-0"
   },
   {
-    "id": "1-11-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-1-S-AVAILABLE-70-1190-20-0"
   },
   {
-    "id": "1-11-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-2-S-AVAILABLE-100-1190-20-0"
   },
   {
-    "id": "1-11-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-3-S-AVAILABLE-130-1190-20-0"
   },
   {
-    "id": "1-11-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-4-S-AVAILABLE-160-1190-20-0"
   },
   {
-    "id": "1-11-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-5-S-AVAILABLE-190-1190-20-0"
   },
   {
-    "id": "1-11-c-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-6-S-AVAILABLE-220-1190-20-0"
   },
   {
-    "id": "1-11-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-7-S-AVAILABLE-250-1190-20-0"
   },
   {
-    "id": "1-11-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-8-S-AVAILABLE-280-1190-20-0"
   },
   {
-    "id": "1-11-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-9-S-AVAILABLE-310-1190-20-0"
   },
   {
-    "id": "1-11-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-10-S-AVAILABLE-340-1190-20-0"
   },
   {
-    "id": "1-11-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-11-S-AVAILABLE-370-1190-20-0"
   },
   {
-    "id": "1-11-d-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-12-S-AVAILABLE-400-1190-20-0"
   },
   {
-    "id": "1-11-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-13-S-AVAILABLE-430-1190-20-0"
   },
   {
-    "id": "1-11-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-14-S-AVAILABLE-460-1190-20-0"
   },
   {
-    "id": "1-11-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-15-S-AVAILABLE-490-1190-20-0"
   },
   {
-    "id": "1-11-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-16-S-AVAILABLE-520-1190-20-0"
   },
   {
-    "id": "1-11-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-17-S-AVAILABLE-550-1190-20-0"
   },
   {
-    "id": "1-11-e-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-18-S-AVAILABLE-580-1190-20-0"
   },
   {
-    "id": "1-12-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-19-S-AVAILABLE-610-1190-20-0"
   },
   {
-    "id": "1-12-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-20-S-AVAILABLE-640-1190-20-0"
   },
   {
-    "id": "1-12-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-21-S-AVAILABLE-670-1190-20-0"
   },
   {
-    "id": "1-12-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-22-S-AVAILABLE-700-1190-20-0"
   },
   {
-    "id": "1-12-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-23-S-AVAILABLE-730-1190-20-0"
   },
   {
-    "id": "1-12-a-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-24-S-AVAILABLE-760-1190-20-0"
   },
   {
-    "id": "1-12-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-25-S-AVAILABLE-790-1190-20-0"
   },
   {
-    "id": "1-12-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-26-S-AVAILABLE-820-1190-20-0"
   },
   {
-    "id": "1-12-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-27-S-AVAILABLE-850-1190-20-0"
   },
   {
-    "id": "1-12-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-28-S-AVAILABLE-880-1190-20-0"
   },
   {
-    "id": "1-12-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-29-S-AVAILABLE-910-1190-20-0"
   },
   {
-    "id": "1-12-b-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-S-J-30-S-AVAILABLE-940-1190-20-0"
   },
   {
-    "id": "1-12-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-1-A-AVAILABLE-70-1310-20-0"
   },
   {
-    "id": "1-12-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-2-A-AVAILABLE-100-1310-20-0"
   },
   {
-    "id": "1-12-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-3-A-AVAILABLE-130-1310-20-0"
   },
   {
-    "id": "1-12-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-4-A-AVAILABLE-160-1310-20-0"
   },
   {
-    "id": "1-12-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-5-A-AVAILABLE-190-1310-20-0"
   },
   {
-    "id": "1-12-c-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-6-A-AVAILABLE-220-1310-20-0"
   },
   {
-    "id": "1-12-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-7-A-AVAILABLE-250-1310-20-0"
   },
   {
-    "id": "1-12-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-8-A-AVAILABLE-280-1310-20-0"
   },
   {
-    "id": "1-12-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-9-A-AVAILABLE-310-1310-20-0"
   },
   {
-    "id": "1-12-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-10-A-AVAILABLE-340-1310-20-0"
   },
   {
-    "id": "1-12-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-11-A-AVAILABLE-370-1310-20-0"
   },
   {
-    "id": "1-12-d-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-12-A-AVAILABLE-400-1310-20-0"
   },
   {
-    "id": "1-12-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-13-A-AVAILABLE-430-1310-20-0"
   },
   {
-    "id": "1-12-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-14-A-AVAILABLE-460-1310-20-0"
   },
   {
-    "id": "1-12-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-15-A-AVAILABLE-490-1310-20-0"
   },
   {
-    "id": "1-12-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-16-A-AVAILABLE-520-1310-20-0"
   },
   {
-    "id": "1-12-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-17-A-AVAILABLE-550-1310-20-0"
   },
   {
-    "id": "1-12-e-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-18-A-AVAILABLE-580-1310-20-0"
   },
   {
-    "id": "1-13-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-19-A-AVAILABLE-610-1310-20-0"
   },
   {
-    "id": "1-13-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-20-A-AVAILABLE-640-1310-20-0"
   },
   {
-    "id": "1-13-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-21-A-AVAILABLE-670-1310-20-0"
   },
   {
-    "id": "1-13-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-22-A-AVAILABLE-700-1310-20-0"
   },
   {
-    "id": "1-13-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-23-A-AVAILABLE-730-1310-20-0"
   },
   {
-    "id": "1-13-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-24-A-AVAILABLE-760-1310-20-0"
   },
   {
-    "id": "1-13-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-25-A-AVAILABLE-790-1310-20-0"
   },
   {
-    "id": "1-13-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-26-A-AVAILABLE-820-1310-20-0"
   },
   {
-    "id": "1-13-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-27-A-AVAILABLE-850-1310-20-0"
   },
   {
-    "id": "1-13-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-28-A-AVAILABLE-880-1310-20-0"
   },
   {
-    "id": "1-13-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-29-A-AVAILABLE-910-1310-20-0"
   },
   {
-    "id": "1-13-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-30-A-AVAILABLE-940-1310-20-0"
   },
   {
-    "id": "1-13-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-31-A-AVAILABLE-970-1310-20-0"
   },
   {
-    "id": "1-13-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-32-A-AVAILABLE-1000-1310-20-0"
   },
   {
-    "id": "1-13-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-33-A-AVAILABLE-1030-1310-20-0"
   },
   {
-    "id": "1-13-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-34-A-AVAILABLE-1060-1310-20-0"
   },
   {
-    "id": "1-13-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-35-A-AVAILABLE-1090-1310-20-0"
   },
   {
-    "id": "1-13-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-36-A-AVAILABLE-1120-1310-20-0"
   },
   {
-    "id": "1-13-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-37-A-AVAILABLE-1150-1310-20-0"
   },
   {
-    "id": "1-13-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-38-A-AVAILABLE-1180-1310-20-0"
   },
   {
-    "id": "1-13-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-39-A-AVAILABLE-1210-1310-20-0"
   },
   {
-    "id": "1-13-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-A-40-A-AVAILABLE-1240-1310-20-0"
   },
   {
-    "id": "1-13-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-1-A-AVAILABLE-70-1350-20-0"
   },
   {
-    "id": "1-13-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-2-A-AVAILABLE-100-1350-20-0"
   },
   {
-    "id": "1-13-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-3-A-AVAILABLE-130-1350-20-0"
   },
   {
-    "id": "1-13-f-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-4-A-AVAILABLE-160-1350-20-0"
   },
   {
-    "id": "1-13-f-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-5-A-AVAILABLE-190-1350-20-0"
   },
   {
-    "id": "1-13-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-6-A-AVAILABLE-220-1350-20-0"
   },
   {
-    "id": "1-13-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-7-A-AVAILABLE-250-1350-20-0"
   },
   {
-    "id": "1-13-f-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-8-A-AVAILABLE-280-1350-20-0"
   },
   {
-    "id": "1-14-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-9-A-AVAILABLE-310-1350-20-0"
   },
   {
-    "id": "1-14-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-10-A-AVAILABLE-340-1350-20-0"
   },
   {
-    "id": "1-14-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-11-A-AVAILABLE-370-1350-20-0"
   },
   {
-    "id": "1-14-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-12-A-AVAILABLE-400-1350-20-0"
   },
   {
-    "id": "1-14-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-13-A-AVAILABLE-430-1350-20-0"
   },
   {
-    "id": "1-14-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-14-A-AVAILABLE-460-1350-20-0"
   },
   {
-    "id": "1-14-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-15-A-AVAILABLE-490-1350-20-0"
   },
   {
-    "id": "1-14-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-16-A-AVAILABLE-520-1350-20-0"
   },
   {
-    "id": "1-14-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-17-A-AVAILABLE-550-1350-20-0"
   },
   {
-    "id": "1-14-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-18-A-AVAILABLE-580-1350-20-0"
   },
   {
-    "id": "1-14-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-19-A-AVAILABLE-610-1350-20-0"
   },
   {
-    "id": "1-14-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-20-A-AVAILABLE-640-1350-20-0"
   },
   {
-    "id": "1-14-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-21-A-AVAILABLE-670-1350-20-0"
   },
   {
-    "id": "1-14-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-22-A-AVAILABLE-700-1350-20-0"
   },
   {
-    "id": "1-14-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-23-A-AVAILABLE-730-1350-20-0"
   },
   {
-    "id": "1-14-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-24-A-AVAILABLE-760-1350-20-0"
   },
   {
-    "id": "1-14-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-25-A-AVAILABLE-790-1350-20-0"
   },
   {
-    "id": "1-14-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-26-A-AVAILABLE-820-1350-20-0"
   },
   {
-    "id": "1-14-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-27-A-AVAILABLE-850-1350-20-0"
   },
   {
-    "id": "1-14-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-28-A-AVAILABLE-880-1350-20-0"
   },
   {
-    "id": "1-14-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-29-A-AVAILABLE-910-1350-20-0"
   },
   {
-    "id": "1-14-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-30-A-AVAILABLE-940-1350-20-0"
   },
   {
-    "id": "1-14-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-31-A-AVAILABLE-970-1350-20-0"
   },
   {
-    "id": "1-14-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-32-A-AVAILABLE-1000-1350-20-0"
   },
   {
-    "id": "1-14-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-33-A-AVAILABLE-1030-1350-20-0"
   },
   {
-    "id": "1-14-f-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-34-A-AVAILABLE-1060-1350-20-0"
   },
   {
-    "id": "1-14-f-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-35-A-AVAILABLE-1090-1350-20-0"
   },
   {
-    "id": "1-14-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-36-A-AVAILABLE-1120-1350-20-0"
   },
   {
-    "id": "1-14-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-37-A-AVAILABLE-1150-1350-20-0"
   },
   {
-    "id": "1-14-f-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-38-A-AVAILABLE-1180-1350-20-0"
   },
   {
-    "id": "1-15-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-39-A-AVAILABLE-1210-1350-20-0"
   },
   {
-    "id": "1-15-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-B-40-A-AVAILABLE-1240-1350-20-0"
   },
   {
-    "id": "1-15-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-1-A-AVAILABLE-70-1390-20-0"
   },
   {
-    "id": "1-15-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-2-A-AVAILABLE-100-1390-20-0"
   },
   {
-    "id": "1-15-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-3-A-AVAILABLE-130-1390-20-0"
   },
   {
-    "id": "1-15-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-4-A-AVAILABLE-160-1390-20-0"
   },
   {
-    "id": "1-15-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-5-A-AVAILABLE-190-1390-20-0"
   },
   {
-    "id": "1-15-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-6-A-AVAILABLE-220-1390-20-0"
   },
   {
-    "id": "1-15-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-7-A-AVAILABLE-250-1390-20-0"
   },
   {
-    "id": "1-15-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-8-A-AVAILABLE-280-1390-20-0"
   },
   {
-    "id": "1-15-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-9-A-AVAILABLE-310-1390-20-0"
   },
   {
-    "id": "1-15-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-10-A-AVAILABLE-340-1390-20-0"
   },
   {
-    "id": "1-15-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-11-A-AVAILABLE-370-1390-20-0"
   },
   {
-    "id": "1-15-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-12-A-AVAILABLE-400-1390-20-0"
   },
   {
-    "id": "1-15-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-13-A-AVAILABLE-430-1390-20-0"
   },
   {
-    "id": "1-15-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-14-A-AVAILABLE-460-1390-20-0"
   },
   {
-    "id": "1-15-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-15-A-AVAILABLE-490-1390-20-0"
   },
   {
-    "id": "1-15-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-16-A-AVAILABLE-520-1390-20-0"
   },
   {
-    "id": "1-15-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-17-A-AVAILABLE-550-1390-20-0"
   },
   {
-    "id": "1-15-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-18-A-AVAILABLE-580-1390-20-0"
   },
   {
-    "id": "1-15-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-19-A-AVAILABLE-610-1390-20-0"
   },
   {
-    "id": "1-15-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-20-A-AVAILABLE-640-1390-20-0"
   },
   {
-    "id": "1-15-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-21-A-AVAILABLE-670-1390-20-0"
   },
   {
-    "id": "1-15-f-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-22-A-AVAILABLE-700-1390-20-0"
   },
   {
-    "id": "1-16-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-23-A-AVAILABLE-730-1390-20-0"
   },
   {
-    "id": "1-16-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-24-A-AVAILABLE-760-1390-20-0"
   },
   {
-    "id": "1-16-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-25-A-AVAILABLE-790-1390-20-0"
   },
   {
-    "id": "1-16-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-26-A-AVAILABLE-820-1390-20-0"
   },
   {
-    "id": "1-16-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-27-A-AVAILABLE-850-1390-20-0"
   },
   {
-    "id": "1-16-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-28-A-AVAILABLE-880-1390-20-0"
   },
   {
-    "id": "1-16-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-29-A-AVAILABLE-910-1390-20-0"
   },
   {
-    "id": "1-16-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-30-A-AVAILABLE-940-1390-20-0"
   },
   {
-    "id": "1-16-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-31-A-AVAILABLE-970-1390-20-0"
   },
   {
-    "id": "1-16-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-32-A-AVAILABLE-1000-1390-20-0"
   },
   {
-    "id": "1-16-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-33-A-AVAILABLE-1030-1390-20-0"
   },
   {
-    "id": "1-16-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-34-A-AVAILABLE-1060-1390-20-0"
   },
   {
-    "id": "1-16-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-35-A-AVAILABLE-1090-1390-20-0"
   },
   {
-    "id": "1-16-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-36-A-AVAILABLE-1120-1390-20-0"
   },
   {
-    "id": "1-16-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-37-A-AVAILABLE-1150-1390-20-0"
   },
   {
-    "id": "1-16-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-38-A-AVAILABLE-1180-1390-20-0"
   },
   {
-    "id": "1-16-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-39-A-AVAILABLE-1210-1390-20-0"
   },
   {
-    "id": "1-16-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-C-40-A-AVAILABLE-1240-1390-20-0"
   },
   {
-    "id": "1-16-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-1-A-AVAILABLE-70-1430-20-0"
   },
   {
-    "id": "1-16-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-2-A-AVAILABLE-100-1430-20-0"
   },
   {
-    "id": "1-16-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-3-A-AVAILABLE-130-1430-20-0"
   },
   {
-    "id": "1-16-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-4-A-AVAILABLE-160-1430-20-0"
   },
   {
-    "id": "1-16-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-5-A-AVAILABLE-190-1430-20-0"
   },
   {
-    "id": "1-16-f-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-6-A-AVAILABLE-220-1430-20-0"
   },
   {
-    "id": "1-17-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-7-A-AVAILABLE-250-1430-20-0"
   },
   {
-    "id": "1-17-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-8-A-AVAILABLE-280-1430-20-0"
   },
   {
-    "id": "1-17-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-9-A-AVAILABLE-310-1430-20-0"
   },
   {
-    "id": "1-17-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-10-A-AVAILABLE-340-1430-20-0"
   },
   {
-    "id": "1-17-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-11-A-AVAILABLE-370-1430-20-0"
   },
   {
-    "id": "1-17-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-12-A-AVAILABLE-400-1430-20-0"
   },
   {
-    "id": "1-17-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-13-A-AVAILABLE-430-1430-20-0"
   },
   {
-    "id": "1-17-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-14-A-AVAILABLE-460-1430-20-0"
   },
   {
-    "id": "1-17-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-15-A-AVAILABLE-490-1430-20-0"
   },
   {
-    "id": "1-17-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-16-A-AVAILABLE-520-1430-20-0"
   },
   {
-    "id": "1-17-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-17-A-AVAILABLE-550-1430-20-0"
   },
   {
-    "id": "1-17-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-18-A-AVAILABLE-580-1430-20-0"
   },
   {
-    "id": "1-17-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-19-A-AVAILABLE-610-1430-20-0"
   },
   {
-    "id": "1-17-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-20-A-AVAILABLE-640-1430-20-0"
   },
   {
-    "id": "1-17-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-21-A-AVAILABLE-670-1430-20-0"
   },
   {
-    "id": "1-17-c-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-22-A-AVAILABLE-700-1430-20-0"
   },
   {
-    "id": "1-17-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-23-A-AVAILABLE-730-1430-20-0"
   },
   {
-    "id": "1-17-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-24-A-AVAILABLE-760-1430-20-0"
   },
   {
-    "id": "1-17-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-25-A-AVAILABLE-790-1430-20-0"
   },
   {
-    "id": "1-17-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-26-A-AVAILABLE-820-1430-20-0"
   },
   {
-    "id": "1-17-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-27-A-AVAILABLE-850-1430-20-0"
   },
   {
-    "id": "1-17-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-28-A-AVAILABLE-880-1430-20-0"
   },
   {
-    "id": "1-17-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-29-A-AVAILABLE-910-1430-20-0"
   },
   {
-    "id": "1-17-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-30-A-AVAILABLE-940-1430-20-0"
   },
   {
-    "id": "1-18-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-31-A-AVAILABLE-970-1430-20-0"
   },
   {
-    "id": "1-18-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-32-A-AVAILABLE-1000-1430-20-0"
   },
   {
-    "id": "1-18-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-33-A-AVAILABLE-1030-1430-20-0"
   },
   {
-    "id": "1-18-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-34-A-AVAILABLE-1060-1430-20-0"
   },
   {
-    "id": "1-18-a-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-35-A-AVAILABLE-1090-1430-20-0"
   },
   {
-    "id": "1-18-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-36-A-AVAILABLE-1120-1430-20-0"
   },
   {
-    "id": "1-18-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-37-A-AVAILABLE-1150-1430-20-0"
   },
   {
-    "id": "1-18-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-38-A-AVAILABLE-1180-1430-20-0"
   },
   {
-    "id": "1-18-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-39-A-AVAILABLE-1210-1430-20-0"
   },
   {
-    "id": "1-18-b-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-D-40-A-AVAILABLE-1240-1430-20-0"
   },
   {
-    "id": "1-18-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-1-A-AVAILABLE-70-1470-20-0"
   },
   {
-    "id": "1-18-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-2-A-AVAILABLE-100-1470-20-0"
   },
   {
-    "id": "1-18-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-3-A-AVAILABLE-130-1470-20-0"
   },
   {
-    "id": "1-18-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-4-A-AVAILABLE-160-1470-20-0"
   },
   {
-    "id": "1-18-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-5-A-AVAILABLE-190-1470-20-0"
   },
   {
-    "id": "1-18-c-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-6-A-AVAILABLE-220-1470-20-0"
   },
   {
-    "id": "1-18-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-7-A-AVAILABLE-250-1470-20-0"
   },
   {
-    "id": "1-18-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-8-A-AVAILABLE-280-1470-20-0"
   },
   {
-    "id": "1-18-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-9-A-AVAILABLE-310-1470-20-0"
   },
   {
-    "id": "1-18-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-10-A-AVAILABLE-340-1470-20-0"
   },
   {
-    "id": "1-18-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-11-A-AVAILABLE-370-1470-20-0"
   },
   {
-    "id": "1-18-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-12-A-AVAILABLE-400-1470-20-0"
   },
   {
-    "id": "1-19-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-13-A-AVAILABLE-430-1470-20-0"
   },
   {
-    "id": "1-19-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-14-A-AVAILABLE-460-1470-20-0"
   },
   {
-    "id": "1-19-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-15-A-AVAILABLE-490-1470-20-0"
   },
   {
-    "id": "1-19-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-16-A-AVAILABLE-520-1470-20-0"
   },
   {
-    "id": "1-19-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-17-A-AVAILABLE-550-1470-20-0"
   },
   {
-    "id": "1-19-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-18-A-AVAILABLE-580-1470-20-0"
   },
   {
-    "id": "1-19-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-19-A-AVAILABLE-610-1470-20-0"
   },
   {
-    "id": "1-19-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-20-A-AVAILABLE-640-1470-20-0"
   },
   {
-    "id": "1-19-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-21-A-AVAILABLE-670-1470-20-0"
   },
   {
-    "id": "1-19-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-22-A-AVAILABLE-700-1470-20-0"
   },
   {
-    "id": "1-19-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-23-A-AVAILABLE-730-1470-20-0"
   },
   {
-    "id": "1-19-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-24-A-AVAILABLE-760-1470-20-0"
   },
   {
-    "id": "1-19-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-25-A-AVAILABLE-790-1470-20-0"
   },
   {
-    "id": "1-19-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-26-A-AVAILABLE-820-1470-20-0"
   },
   {
-    "id": "1-19-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-27-A-AVAILABLE-850-1470-20-0"
   },
   {
-    "id": "1-19-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-28-A-AVAILABLE-880-1470-20-0"
   },
   {
-    "id": "1-19-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-29-A-AVAILABLE-910-1470-20-0"
   },
   {
-    "id": "1-19-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-30-A-AVAILABLE-940-1470-20-0"
   },
   {
-    "id": "1-19-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-31-A-AVAILABLE-970-1470-20-0"
   },
   {
-    "id": "1-19-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-32-A-AVAILABLE-1000-1470-20-0"
   },
   {
-    "id": "1-19-f-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-33-A-AVAILABLE-1030-1470-20-0"
   },
   {
-    "id": "1-20-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-34-A-AVAILABLE-1060-1470-20-0"
   },
   {
-    "id": "1-20-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-35-A-AVAILABLE-1090-1470-20-0"
   },
   {
-    "id": "1-20-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-36-A-AVAILABLE-1120-1470-20-0"
   },
   {
-    "id": "1-20-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-37-A-AVAILABLE-1150-1470-20-0"
   },
   {
-    "id": "1-20-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-38-A-AVAILABLE-1180-1470-20-0"
   },
   {
-    "id": "1-20-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-39-A-AVAILABLE-1210-1470-20-0"
   },
   {
-    "id": "1-20-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-E-40-A-AVAILABLE-1240-1470-20-0"
   },
   {
-    "id": "1-20-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-1-A-AVAILABLE-70-1510-20-0"
   },
   {
-    "id": "1-20-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-2-A-AVAILABLE-100-1510-20-0"
   },
   {
-    "id": "1-20-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-3-A-AVAILABLE-130-1510-20-0"
   },
   {
-    "id": "1-20-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-4-A-AVAILABLE-160-1510-20-0"
   },
   {
-    "id": "1-20-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-5-A-AVAILABLE-190-1510-20-0"
   },
   {
-    "id": "1-20-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-6-A-AVAILABLE-220-1510-20-0"
   },
   {
-    "id": "1-20-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-7-A-AVAILABLE-250-1510-20-0"
   },
   {
-    "id": "1-20-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-8-A-AVAILABLE-280-1510-20-0"
   },
   {
-    "id": "1-20-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-9-A-AVAILABLE-310-1510-20-0"
   },
   {
-    "id": "1-20-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-10-A-AVAILABLE-340-1510-20-0"
   },
   {
-    "id": "1-20-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-11-A-AVAILABLE-370-1510-20-0"
   },
   {
-    "id": "1-20-f-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-12-A-AVAILABLE-400-1510-20-0"
   },
   {
-    "id": "1-20-f-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-13-A-AVAILABLE-430-1510-20-0"
   },
   {
-    "id": "1-20-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-14-A-AVAILABLE-460-1510-20-0"
   },
   {
-    "id": "1-21-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-15-A-AVAILABLE-490-1510-20-0"
   },
   {
-    "id": "1-21-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-16-A-AVAILABLE-520-1510-20-0"
   },
   {
-    "id": "1-21-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-17-A-AVAILABLE-550-1510-20-0"
   },
   {
-    "id": "1-21-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-18-A-AVAILABLE-580-1510-20-0"
   },
   {
-    "id": "1-21-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-19-A-AVAILABLE-610-1510-20-0"
   },
   {
-    "id": "1-21-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-20-A-AVAILABLE-640-1510-20-0"
   },
   {
-    "id": "1-21-b-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-21-A-AVAILABLE-670-1510-20-0"
   },
   {
-    "id": "1-21-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-22-A-AVAILABLE-700-1510-20-0"
   },
   {
-    "id": "1-21-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-23-A-AVAILABLE-730-1510-20-0"
   },
   {
-    "id": "1-21-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-24-A-AVAILABLE-760-1510-20-0"
   },
   {
-    "id": "1-21-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-25-A-AVAILABLE-790-1510-20-0"
   },
   {
-    "id": "1-21-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-26-A-AVAILABLE-820-1510-20-0"
   },
   {
-    "id": "1-21-c-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-27-A-AVAILABLE-850-1510-20-0"
   },
   {
-    "id": "1-21-c-7",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-28-A-AVAILABLE-880-1510-20-0"
   },
   {
-    "id": "1-21-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-29-A-AVAILABLE-910-1510-20-0"
   },
   {
-    "id": "1-21-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-30-A-AVAILABLE-940-1510-20-0"
   },
   {
-    "id": "1-21-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-31-A-AVAILABLE-970-1510-20-0"
   },
   {
-    "id": "1-21-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-32-A-AVAILABLE-1000-1510-20-0"
   },
   {
-    "id": "1-21-d-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-33-A-AVAILABLE-1030-1510-20-0"
   },
   {
-    "id": "1-21-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-34-A-AVAILABLE-1060-1510-20-0"
   },
   {
-    "id": "1-21-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-35-A-AVAILABLE-1090-1510-20-0"
   },
   {
-    "id": "1-21-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-36-A-AVAILABLE-1120-1510-20-0"
   },
   {
-    "id": "1-21-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-37-A-AVAILABLE-1150-1510-20-0"
   },
   {
-    "id": "1-22-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-38-A-AVAILABLE-1180-1510-20-0"
   },
   {
-    "id": "1-22-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-39-A-AVAILABLE-1210-1510-20-0"
   },
   {
-    "id": "1-22-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-F-40-A-AVAILABLE-1240-1510-20-0"
   },
   {
-    "id": "1-22-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-1-A-AVAILABLE-70-1550-20-0"
   },
   {
-    "id": "1-22-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-2-A-AVAILABLE-100-1550-20-0"
   },
   {
-    "id": "1-22-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-3-A-AVAILABLE-130-1550-20-0"
   },
   {
-    "id": "1-22-b-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-4-A-AVAILABLE-160-1550-20-0"
   },
   {
-    "id": "1-22-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-5-A-AVAILABLE-190-1550-20-0"
   },
   {
-    "id": "1-22-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-6-A-AVAILABLE-220-1550-20-0"
   },
   {
-    "id": "1-22-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-7-A-AVAILABLE-250-1550-20-0"
   },
   {
-    "id": "1-22-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-8-A-AVAILABLE-280-1550-20-0"
   },
   {
-    "id": "1-22-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-9-A-AVAILABLE-310-1550-20-0"
   },
   {
-    "id": "1-22-c-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-10-A-AVAILABLE-340-1550-20-0"
   },
   {
-    "id": "1-22-c-7",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-11-A-AVAILABLE-370-1550-20-0"
   },
   {
-    "id": "1-22-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-12-A-AVAILABLE-400-1550-20-0"
   },
   {
-    "id": "1-22-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-13-A-AVAILABLE-430-1550-20-0"
   },
   {
-    "id": "1-22-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-14-A-AVAILABLE-460-1550-20-0"
   },
   {
-    "id": "1-22-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-15-A-AVAILABLE-490-1550-20-0"
   },
   {
-    "id": "1-22-d-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-16-A-AVAILABLE-520-1550-20-0"
   },
   {
-    "id": "1-22-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-17-A-AVAILABLE-550-1550-20-0"
   },
   {
-    "id": "1-22-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-18-A-AVAILABLE-580-1550-20-0"
   },
   {
-    "id": "1-22-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-19-A-AVAILABLE-610-1550-20-0"
   },
   {
-    "id": "1-22-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-20-A-AVAILABLE-640-1550-20-0"
   },
   {
-    "id": "1-23-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-21-A-AVAILABLE-670-1550-20-0"
   },
   {
-    "id": "1-23-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-22-A-AVAILABLE-700-1550-20-0"
   },
   {
-    "id": "1-23-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-23-A-AVAILABLE-730-1550-20-0"
   },
   {
-    "id": "1-23-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-24-A-AVAILABLE-760-1550-20-0"
   },
   {
-    "id": "1-23-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-25-A-AVAILABLE-790-1550-20-0"
   },
   {
-    "id": "1-23-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-26-A-AVAILABLE-820-1550-20-0"
   },
   {
-    "id": "1-23-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-27-A-AVAILABLE-850-1550-20-0"
   },
   {
-    "id": "1-23-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-28-A-AVAILABLE-880-1550-20-0"
   },
   {
-    "id": "1-23-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-29-A-AVAILABLE-910-1550-20-0"
   },
   {
-    "id": "1-23-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-30-A-AVAILABLE-940-1550-20-0"
   },
   {
-    "id": "1-23-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-31-A-AVAILABLE-970-1550-20-0"
   },
   {
-    "id": "1-23-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-32-A-AVAILABLE-1000-1550-20-0"
   },
   {
-    "id": "1-23-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-33-A-AVAILABLE-1030-1550-20-0"
   },
   {
-    "id": "1-23-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-34-A-AVAILABLE-1060-1550-20-0"
   },
   {
-    "id": "1-23-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-35-A-AVAILABLE-1090-1550-20-0"
   },
   {
-    "id": "1-23-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-36-A-AVAILABLE-1120-1550-20-0"
   },
   {
-    "id": "1-23-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-37-A-AVAILABLE-1150-1550-20-0"
   },
   {
-    "id": "1-23-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-38-A-AVAILABLE-1180-1550-20-0"
   },
   {
-    "id": "1-23-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-39-A-AVAILABLE-1210-1550-20-0"
   },
   {
-    "id": "1-23-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-G-40-A-AVAILABLE-1240-1550-20-0"
   },
   {
-    "id": "1-23-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-1-A-AVAILABLE-70-1590-20-0"
   },
   {
-    "id": "1-23-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-2-A-AVAILABLE-100-1590-20-0"
   },
   {
-    "id": "1-23-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-3-A-AVAILABLE-130-1590-20-0"
   },
   {
-    "id": "1-23-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-4-A-AVAILABLE-160-1590-20-0"
   },
   {
-    "id": "1-23-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-5-A-AVAILABLE-190-1590-20-0"
   },
   {
-    "id": "1-23-f-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-6-A-AVAILABLE-220-1590-20-0"
   },
   {
-    "id": "1-23-f-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-7-A-AVAILABLE-250-1590-20-0"
   },
   {
-    "id": "1-23-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-8-A-AVAILABLE-280-1590-20-0"
   },
   {
-    "id": "1-23-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-9-A-AVAILABLE-310-1590-20-0"
   },
   {
-    "id": "1-23-f-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-10-A-AVAILABLE-340-1590-20-0"
   },
   {
-    "id": "1-24-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-11-A-AVAILABLE-370-1590-20-0"
   },
   {
-    "id": "1-24-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-12-A-AVAILABLE-400-1590-20-0"
   },
   {
-    "id": "1-24-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-13-A-AVAILABLE-430-1590-20-0"
   },
   {
-    "id": "1-24-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-14-A-AVAILABLE-460-1590-20-0"
   },
   {
-    "id": "1-24-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-15-A-AVAILABLE-490-1590-20-0"
   },
   {
-    "id": "1-24-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-16-A-AVAILABLE-520-1590-20-0"
   },
   {
-    "id": "1-24-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-17-A-AVAILABLE-550-1590-20-0"
   },
   {
-    "id": "1-24-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-18-A-AVAILABLE-580-1590-20-0"
   },
   {
-    "id": "1-24-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-19-A-AVAILABLE-610-1590-20-0"
   },
   {
-    "id": "1-24-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-20-A-AVAILABLE-640-1590-20-0"
   },
   {
-    "id": "1-24-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-21-A-AVAILABLE-670-1590-20-0"
   },
   {
-    "id": "1-24-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-22-A-AVAILABLE-700-1590-20-0"
   },
   {
-    "id": "1-24-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-23-A-AVAILABLE-730-1590-20-0"
   },
   {
-    "id": "1-24-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-24-A-AVAILABLE-760-1590-20-0"
   },
   {
-    "id": "1-24-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-25-A-AVAILABLE-790-1590-20-0"
   },
   {
-    "id": "1-24-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-26-A-AVAILABLE-820-1590-20-0"
   },
   {
-    "id": "1-24-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-27-A-AVAILABLE-850-1590-20-0"
   },
   {
-    "id": "1-24-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-28-A-AVAILABLE-880-1590-20-0"
   },
   {
-    "id": "1-24-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-29-A-AVAILABLE-910-1590-20-0"
   },
   {
-    "id": "1-24-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-30-A-AVAILABLE-940-1590-20-0"
   },
   {
-    "id": "1-24-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-31-A-AVAILABLE-970-1590-20-0"
   },
   {
-    "id": "1-24-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-32-A-AVAILABLE-1000-1590-20-0"
   },
   {
-    "id": "1-24-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-33-A-AVAILABLE-1030-1590-20-0"
   },
   {
-    "id": "1-24-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-34-A-AVAILABLE-1060-1590-20-0"
   },
   {
-    "id": "1-24-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-35-A-AVAILABLE-1090-1590-20-0"
   },
   {
-    "id": "1-25-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-36-A-AVAILABLE-1120-1590-20-0"
   },
   {
-    "id": "1-25-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-37-A-AVAILABLE-1150-1590-20-0"
   },
   {
-    "id": "1-25-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-38-A-AVAILABLE-1180-1590-20-0"
   },
   {
-    "id": "1-25-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-39-A-AVAILABLE-1210-1590-20-0"
   },
   {
-    "id": "1-25-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-H-40-A-AVAILABLE-1240-1590-20-0"
   },
   {
-    "id": "1-25-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-1-A-AVAILABLE-70-1630-20-0"
   },
   {
-    "id": "1-25-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-2-A-AVAILABLE-100-1630-20-0"
   },
   {
-    "id": "1-25-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-3-A-AVAILABLE-130-1630-20-0"
   },
   {
-    "id": "1-25-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-4-A-AVAILABLE-160-1630-20-0"
   },
   {
-    "id": "1-25-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-5-A-AVAILABLE-190-1630-20-0"
   },
   {
-    "id": "1-25-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-6-A-AVAILABLE-220-1630-20-0"
   },
   {
-    "id": "1-25-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-7-A-AVAILABLE-250-1630-20-0"
   },
   {
-    "id": "1-25-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-8-A-AVAILABLE-280-1630-20-0"
   },
   {
-    "id": "1-25-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-9-A-AVAILABLE-310-1630-20-0"
   },
   {
-    "id": "1-25-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-10-A-AVAILABLE-340-1630-20-0"
   },
   {
-    "id": "1-25-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-11-A-AVAILABLE-370-1630-20-0"
   },
   {
-    "id": "1-25-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-12-A-AVAILABLE-400-1630-20-0"
   },
   {
-    "id": "1-25-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-13-A-AVAILABLE-430-1630-20-0"
   },
   {
-    "id": "1-25-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-14-A-AVAILABLE-460-1630-20-0"
   },
   {
-    "id": "1-25-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-15-A-AVAILABLE-490-1630-20-0"
   },
   {
-    "id": "1-25-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-16-A-AVAILABLE-520-1630-20-0"
   },
   {
-    "id": "1-25-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-17-A-AVAILABLE-550-1630-20-0"
   },
   {
-    "id": "1-25-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-18-A-AVAILABLE-580-1630-20-0"
   },
   {
-    "id": "1-26-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-19-A-AVAILABLE-610-1630-20-0"
   },
   {
-    "id": "1-26-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-20-A-AVAILABLE-640-1630-20-0"
   },
   {
-    "id": "1-26-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-21-A-AVAILABLE-670-1630-20-0"
   },
   {
-    "id": "1-26-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-22-A-AVAILABLE-700-1630-20-0"
   },
   {
-    "id": "1-26-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-23-A-AVAILABLE-730-1630-20-0"
   },
   {
-    "id": "1-26-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-24-A-AVAILABLE-760-1630-20-0"
   },
   {
-    "id": "1-26-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-25-A-AVAILABLE-790-1630-20-0"
   },
   {
-    "id": "1-26-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-26-A-AVAILABLE-820-1630-20-0"
   },
   {
-    "id": "1-26-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-27-A-AVAILABLE-850-1630-20-0"
   },
   {
-    "id": "1-26-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-28-A-AVAILABLE-880-1630-20-0"
   },
   {
-    "id": "1-26-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-29-A-AVAILABLE-910-1630-20-0"
   },
   {
-    "id": "1-26-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-30-A-AVAILABLE-940-1630-20-0"
   },
   {
-    "id": "1-26-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-31-A-AVAILABLE-970-1630-20-0"
   },
   {
-    "id": "1-26-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-32-A-AVAILABLE-1000-1630-20-0"
   },
   {
-    "id": "1-26-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-33-A-AVAILABLE-1030-1630-20-0"
   },
   {
-    "id": "1-26-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-34-A-AVAILABLE-1060-1630-20-0"
   },
   {
-    "id": "1-26-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-35-A-AVAILABLE-1090-1630-20-0"
   },
   {
-    "id": "1-26-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-36-A-AVAILABLE-1120-1630-20-0"
   },
   {
-    "id": "1-26-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-37-A-AVAILABLE-1150-1630-20-0"
   },
   {
-    "id": "1-26-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-38-A-AVAILABLE-1180-1630-20-0"
   },
   {
-    "id": "1-26-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-39-A-AVAILABLE-1210-1630-20-0"
   },
   {
-    "id": "1-26-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-I-40-A-AVAILABLE-1240-1630-20-0"
   },
   {
-    "id": "1-26-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-1-A-AVAILABLE-70-1670-20-0"
   },
   {
-    "id": "1-27-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-2-A-AVAILABLE-100-1670-20-0"
   },
   {
-    "id": "1-27-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-3-A-AVAILABLE-130-1670-20-0"
   },
   {
-    "id": "1-27-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-4-A-AVAILABLE-160-1670-20-0"
   },
   {
-    "id": "1-27-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-5-A-AVAILABLE-190-1670-20-0"
   },
   {
-    "id": "1-27-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-6-A-AVAILABLE-220-1670-20-0"
   },
   {
-    "id": "1-27-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-7-A-AVAILABLE-250-1670-20-0"
   },
   {
-    "id": "1-27-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-8-A-AVAILABLE-280-1670-20-0"
   },
   {
-    "id": "1-27-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-9-A-AVAILABLE-310-1670-20-0"
   },
   {
-    "id": "1-27-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-10-A-AVAILABLE-340-1670-20-0"
   },
   {
-    "id": "1-27-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-11-A-AVAILABLE-370-1670-20-0"
   },
   {
-    "id": "1-27-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-12-A-AVAILABLE-400-1670-20-0"
   },
   {
-    "id": "1-27-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-13-A-AVAILABLE-430-1670-20-0"
   },
   {
-    "id": "1-27-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-14-A-AVAILABLE-460-1670-20-0"
   },
   {
-    "id": "1-27-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-15-A-AVAILABLE-490-1670-20-0"
   },
   {
-    "id": "1-27-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-16-A-AVAILABLE-520-1670-20-0"
   },
   {
-    "id": "1-27-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-17-A-AVAILABLE-550-1670-20-0"
   },
   {
-    "id": "1-27-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-18-A-AVAILABLE-580-1670-20-0"
   },
   {
-    "id": "1-27-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-19-A-AVAILABLE-610-1670-20-0"
   },
   {
-    "id": "1-27-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-20-A-AVAILABLE-640-1670-20-0"
   },
   {
-    "id": "1-27-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-21-A-AVAILABLE-670-1670-20-0"
   },
   {
-    "id": "1-27-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-22-A-AVAILABLE-700-1670-20-0"
   },
   {
-    "id": "1-27-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-23-A-AVAILABLE-730-1670-20-0"
   },
   {
-    "id": "1-27-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-24-A-AVAILABLE-760-1670-20-0"
   },
   {
-    "id": "1-27-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-25-A-AVAILABLE-790-1670-20-0"
   },
   {
-    "id": "1-27-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-26-A-AVAILABLE-820-1670-20-0"
   },
   {
-    "id": "1-28-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-27-A-AVAILABLE-850-1670-20-0"
   },
   {
-    "id": "1-28-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-28-A-AVAILABLE-880-1670-20-0"
   },
   {
-    "id": "1-28-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-29-A-AVAILABLE-910-1670-20-0"
   },
   {
-    "id": "1-28-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-30-A-AVAILABLE-940-1670-20-0"
   },
   {
-    "id": "1-28-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-31-A-AVAILABLE-970-1670-20-0"
   },
   {
-    "id": "1-28-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-32-A-AVAILABLE-1000-1670-20-0"
   },
   {
-    "id": "1-28-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-33-A-AVAILABLE-1030-1670-20-0"
   },
   {
-    "id": "1-28-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-34-A-AVAILABLE-1060-1670-20-0"
   },
   {
-    "id": "1-28-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-35-A-AVAILABLE-1090-1670-20-0"
   },
   {
-    "id": "1-28-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-36-A-AVAILABLE-1120-1670-20-0"
   },
   {
-    "id": "1-28-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-37-A-AVAILABLE-1150-1670-20-0"
   },
   {
-    "id": "1-28-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-38-A-AVAILABLE-1180-1670-20-0"
   },
   {
-    "id": "1-28-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-39-A-AVAILABLE-1210-1670-20-0"
   },
   {
-    "id": "1-28-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-28-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-28-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-28-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-28-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-28-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-28-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-28-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-28-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-28-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-28-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-28-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-28-f-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-28-f-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-28-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-28-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-28-f-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-c-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-d-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-f-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-29-g-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-d-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-f-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-30-g-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-f-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-f-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-31-f-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-f-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-f-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-32-f-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-f-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-f-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-f-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-33-f-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-a-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-b-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-c-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-d-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-e-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-f-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-f-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-f-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-34-f-6",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-f-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-f-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-35-f-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-f-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-f-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-36-f-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-f-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-f-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-37-f-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-a-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-a-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-a-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-a-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-a-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-b-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-b-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-b-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-b-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-b-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-c-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-c-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-c-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-c-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-c-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-d-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-d-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-d-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-d-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-d-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-e-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-e-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-e-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-e-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-e-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-f-1",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-f-2",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-f-3",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-f-4",
-    "grade": "일반석",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "1-38-f-5",
-    "grade": "일반석",
-    "status": "AVAILABLE"
+    "id": "2-A-J-40-A-AVAILABLE-1240-1670-20-0"
   }
 ]
