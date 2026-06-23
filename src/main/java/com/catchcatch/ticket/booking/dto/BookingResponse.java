@@ -201,6 +201,8 @@ public class BookingResponse {
         private Timestamp canceledAt;
 
         private Integer concertSessionId;
+        private String sessionText;
+
         private List<Integer> seatIds;
         private Integer seatCount;
 
@@ -221,13 +223,16 @@ public class BookingResponse {
         public MyPageListDTO(Booking booking) {
             List<BookingSeat> bookingSeats = safeBookingSeats(booking);
 
+            ConcertSession concertSession = booking.getConcertSession();
+
             this.id = booking.getId();
             this.bookingNumber = booking.getBookingNumber();
             this.status = booking.getStatus();
             this.createdAt = booking.getCreatedAt();
             this.canceledAt = booking.getCanceledAt();
 
-            this.concertSessionId = booking.getConcertSession().getId();
+            this.concertSessionId = concertSession.getId();
+            this.sessionText = formatSessionText(concertSession);
 
             this.seatIds = bookingSeats.stream()
                     .map(bookingSeat -> bookingSeat.getSeat().getId())
@@ -235,9 +240,9 @@ public class BookingResponse {
 
             this.seatCount = bookingSeats.size();
 
-            this.concertTitle = booking.getConcertSession().getConcert().getTitle();
-            this.concertPosterUrl = booking.getConcertSession().getConcert().getPosterUrl();
-            this.venueName = booking.getConcertSession().getConcert().getVenue().getName();
+            this.concertTitle = concertSession.getConcert().getTitle();
+            this.concertPosterUrl = concertSession.getConcert().getPosterUrl();
+            this.venueName = concertSession.getConcert().getVenue().getName();
 
             this.seatName = formatSeatName(bookingSeats);
 
@@ -249,6 +254,17 @@ public class BookingResponse {
             this.isPending = booking.getStatus() == Status.PENDING;
             this.isPaid = booking.getStatus() == Status.PAID;
             this.isCanceled = booking.getStatus() == Status.CANCELED;
+        }
+
+        private static String formatSessionText(ConcertSession concertSession) {
+            String date = concertSession.getSessionDate().toString();
+            String time = concertSession.getSessionTime().toString();
+
+            if (concertSession.getRound() != null && !concertSession.getRound().isBlank()) {
+                return date + " " + time + " (" + concertSession.getRound() + ")";
+            }
+
+            return date + " " + time;
         }
     }
 

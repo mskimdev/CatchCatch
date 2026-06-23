@@ -197,8 +197,8 @@ public class UserController {
         model.addAttribute("bookings", bookings);
         model.addAttribute("navBookings", true);
         model.addAttribute("statusAll",      status == null);
-        model.addAttribute("statusPaid",     "PAID".equals(status));
-        model.addAttribute("statusCanceled", "CANCELED".equals(status));
+        model.addAttribute("statusPaid", status == Status.PAID);
+        model.addAttribute("statusCanceled", status == Status.CANCELED);
         return "user/bookings";
     }
 
