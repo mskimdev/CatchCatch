@@ -163,6 +163,7 @@ public class UserService {
         List<Booking> bookings = status == null
                 ? bookingRepository.findAllWithDetailsByUserId(userId)
                 : bookingRepository.findAllWithDetailsByUserIdAndStatus(userId, status);
+        bookings.stream().forEach(b -> System.out.println(b.toString()));
 
         return bookings.stream()
                 .map(BookingResponse.MyPageListDTO::new)
