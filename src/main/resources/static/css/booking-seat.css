@@ -1292,3 +1292,448 @@ a {
         grid-template-columns: 1fr;
     }
 }
+
+/* ================================
+   CatchCatch Melon Ticket Style Override
+   - 구역 버튼 기반 좌석도
+   - STAGE 제거
+================================ */
+
+.cc-zone-stage {
+    display: none !important;
+}
+
+/* 좌석 선택 전체 레이아웃 */
+.cc-seat-layout--wide {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 18px;
+    align-items: start;
+}
+
+.cc-seat-map-card {
+    padding: 0 !important;
+    min-height: 720px;
+    overflow: hidden;
+}
+
+.cc-seat-redesign--wide {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    min-height: 720px;
+}
+
+/* 기존 좌석도 영역을 메인 구역 선택 화면으로 사용 */
+.cc-zone-overview--large {
+    position: relative;
+    width: 100%;
+    min-height: 720px;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #fafafa !important;
+    overflow: hidden;
+}
+
+.cc-zone-overview__head {
+    height: 58px;
+    padding: 0 28px;
+    margin: 0 !important;
+    border-bottom: 1px solid #e5e5e5;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+}
+
+.cc-zone-overview__head strong {
+    font-size: 20px;
+    font-weight: 900;
+    color: #222;
+}
+
+.cc-zone-overview__head span {
+    font-size: 14px;
+    color: #777;
+    font-weight: 600;
+}
+
+/* 기존 이미지 박스는 실제 구역 버튼 캔버스 */
+.cc-zone-overview__image-box--large {
+    position: relative;
+    width: 100%;
+    height: 612px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #fafafa !important;
+    overflow: hidden;
+}
+
+/* 기존 이미지 숨김 */
+.cc-zone-overview__image {
+    display: none !important;
+}
+
+/* 구역 버튼 레이어 */
+.cc-seat-image-hover-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: auto !important;
+}
+
+/* 안내 문구 */
+.cc-catch-map-guide {
+    position: absolute;
+    top: 22px;
+    left: 0;
+    right: 0;
+    z-index: 4;
+    text-align: center;
+    color: #aaa;
+    font-size: 15px;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+/* 구역 버튼 공통 */
+.cc-zone-area-btn {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: var(--w);
+    height: var(--h);
+    transform: translate(-50%, -50%) rotate(var(--angle));
+    border: 4px solid #fff;
+    border-radius: 2px;
+    color: #fff;
+    font-size: var(--font-size, 24px);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: filter .12s ease, opacity .12s ease, outline .12s ease;
+    box-shadow: none;
+    z-index: 10;
+}
+
+.cc-zone-area-btn:hover,
+.cc-zone-area-btn.is-active {
+    filter: brightness(.92);
+    outline: 3px solid rgba(124, 58, 237, .28);
+    z-index: 20;
+}
+
+.cc-zone-area-btn.is-dimmed {
+    opacity: .25;
+}
+
+.cc-zone-area-btn--vip {
+    background: #bbaa8b;
+}
+
+.cc-zone-area-btn--standing {
+    background: #8a72f7;
+}
+
+.cc-zone-area-btn--r {
+    background: #f47faa;
+}
+
+.cc-zone-area-btn--s {
+    background: #b2e844;
+}
+
+.cc-zone-area-btn--a {
+    background: #62c9dd;
+}
+
+.cc-zone-area-btn--b {
+    background: #9ca3af;
+}
+
+/* 하단 안내바 */
+.cc-catch-bottom-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 52px;
+    padding: 0 28px;
+    background: rgba(40, 40, 40, .72);
+    color: #fff;
+    font-size: 17px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    z-index: 30;
+}
+
+/* 등급 탭 숨김 - 오른쪽 등급 리스트로 대체 */
+.cc-zone-tabs,
+.cc-zone-legend {
+    display: none !important;
+}
+
+/* 좌석 상세 화면 */
+.cc-zone-detail {
+    display: none;
+    min-height: 720px;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+}
+
+.cc-zone-detail.is-open {
+    display: flex;
+    flex-direction: column;
+}
+
+.cc-zone-detail__top {
+    min-height: 74px;
+    padding: 14px 24px;
+    border-bottom: 1px solid #e5e5e5;
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.cc-zone-detail__top h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.cc-zone-detail__top p {
+    margin: 5px 0 0;
+    font-size: 14px;
+    color: #777;
+}
+
+/* 구역으로 돌아가기 버튼 JS에서 생성 */
+.cc-zone-back-btn {
+    width: 112px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #4c1d95;
+    font-weight: 900;
+}
+
+/* 실제 좌석 표시 */
+.cc-zone-seat-grid {
+    position: relative;
+    flex: 1;
+    min-height: 560px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #fafafa !important;
+    overflow: auto;
+    display: block !important;
+}
+
+.cc-seat-dot {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: var(--size);
+    height: var(--size);
+    transform: translate(-50%, -50%) rotate(var(--angle));
+    border-radius: 2px;
+    border: 1px solid #fff;
+    background: #d8d8d8;
+    padding: 0;
+    cursor: pointer;
+}
+
+.cc-seat-dot.is-available {
+    background: #d8d8d8;
+}
+
+.cc-seat-dot.is-available:hover {
+    background: #7c3aed;
+}
+
+.cc-seat-dot.is-selected {
+    background: #7c3aed;
+}
+
+.cc-seat-dot.is-sold {
+    background: #eeeeee;
+    cursor: not-allowed;
+}
+
+/* 상세 하단 안내 */
+.cc-zone-bottom {
+    min-height: 52px;
+    margin: 0 !important;
+    padding: 0 28px;
+    background: rgba(40, 40, 40, .72);
+    color: #fff;
+    display: flex;
+    align-items: center;
+}
+
+.cc-zone-bottom #seatHoverInfo {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.cc-small-btn {
+    display: none !important;
+}
+
+/* 오른쪽 사이드 */
+.cc-seat-side {
+    position: sticky;
+    top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* JS에서 생성되는 미니맵 */
+.cc-mini-map-card {
+    padding: 16px;
+}
+
+.cc-mini-brand {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.cc-mini-brand b {
+    color: #5b21c9;
+    font-size: 26px;
+    font-weight: 950;
+}
+
+.cc-mini-brand span {
+    color: #23b96d;
+    font-size: 20px;
+    font-weight: 900;
+    margin-left: 5px;
+}
+
+.cc-mini-zone-map {
+    position: relative;
+    height: 180px;
+    background: #fafafa;
+    border: 1px solid #eee;
+    overflow: hidden;
+}
+
+.cc-mini-zone-map .cc-zone-area-btn {
+    border-width: 2px;
+    font-size: 9px;
+    pointer-events: auto;
+}
+
+.cc-mini-map-link {
+    width: 100%;
+    margin-top: 9px;
+    background: transparent;
+    text-align: right;
+    color: #666;
+    font-size: 13px;
+}
+
+/* JS에서 생성되는 등급 리스트 */
+.cc-grade-card {
+    padding: 16px;
+}
+
+.cc-grade-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.cc-grade-head h3 {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 900;
+}
+
+.cc-grade-head button {
+    height: 30px;
+    padding: 0 12px;
+    border: 1px solid #ddd;
+    border-radius: 15px;
+    background: #fff;
+    color: #666;
+    font-weight: 700;
+}
+
+.cc-grade-list {
+    border: 1px solid #eee;
+}
+
+.cc-grade-row {
+    width: 100%;
+    min-height: 52px;
+    padding: 10px 12px;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    display: grid;
+    grid-template-columns: 14px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    text-align: left;
+}
+
+.cc-grade-row:last-child {
+    border-bottom: 0;
+}
+
+.cc-grade-row.is-active {
+    background: #f5efff;
+}
+
+.cc-grade-color {
+    width: 14px;
+    height: 14px;
+}
+
+.cc-grade-name {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 14px;
+    color: #333;
+}
+
+.cc-grade-name b {
+    font-size: 15px;
+}
+
+.cc-grade-price {
+    color: #777;
+    white-space: nowrap;
+}
+
+/* 선택 카드 */
+.cc-seat-complete-btn:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+.cc-selected-seat__remove {
+    border: 0;
+    background: transparent;
+    color: #7c3aed;
+    font-weight: 900;
+    cursor: pointer;
+}
