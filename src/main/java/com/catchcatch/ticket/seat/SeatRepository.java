@@ -3,6 +3,7 @@ package com.catchcatch.ticket.seat;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -108,4 +109,11 @@ public interface SeatRepository extends JpaRepository<Seat, Integer> {
             @Param("sessionId") Integer sessionId,
             @Param("seatIds") List<Integer> seatIds
     );
+
+    /**
+     * 특정 회차의 모든 좌석 대량 삭제 (Bulk Delete)
+     */
+    @Modifying
+    @Query("DELETE FROM Seat s WHERE s.concertSession.id = :sessionId")
+    void deleteBySessionId(@Param("sessionId") Integer sessionId);
 }

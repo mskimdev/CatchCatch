@@ -2,6 +2,7 @@ package com.catchcatch.ticket.notice;
 
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.Resp;
+import com.catchcatch.ticket.operationlog.AdminLog;
 import com.catchcatch.ticket.user.dto.SessionUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +37,7 @@ public class AdminNoticeController {
         return "admin/board/notice/save";
     }
 
+    @AdminLog("공지사항 등록 (#{#reqDTO.title})")
     @PostMapping("/save")
     public String saveProc(NoticeRequest.SaveDTO reqDTO,
                            @SessionAttribute(Define.SESSION_USER) SessionUser sessionUser) {
@@ -44,6 +46,7 @@ public class AdminNoticeController {
         return "redirect:/admin/boards/notice";
     }
 
+    @AdminLog("공지사항 수정 (id=#{#id})")
     @PutMapping("/{id}/edit")
     public ResponseEntity<?> update(@PathVariable Integer id,
                                     @RequestBody NoticeRequest.UpdateDTO reqDTO,
@@ -61,12 +64,14 @@ public class AdminNoticeController {
         return "admin/board/notice/edit";
     }
 
+    @AdminLog("공지사항 삭제 (id=#{#id})")
     @PostMapping("/{id}/delete")
     public String deleteProc(@PathVariable Integer id) {
         noticeService.deleteById(id);
         return "redirect:/admin/boards/notice";
     }
 
+    @AdminLog("공지사항 삭제 (id=#{#id})")
     @DeleteMapping("/api/notices/{id}")
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         noticeService.deleteById(id);

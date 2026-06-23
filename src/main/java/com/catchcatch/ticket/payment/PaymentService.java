@@ -6,6 +6,7 @@ import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.booking.bookingSeat.BookingSeat;
 import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.core.exception.NotFoundException;
+import com.catchcatch.ticket.notification.service.NotificationDispatcher;
 import com.catchcatch.ticket.pointHistory.PointService;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.user.User;
@@ -32,6 +33,7 @@ public class PaymentService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final PointService pointService;
+    private final NotificationDispatcher notificationDispatcher;
 
     @Value("${portone.store-id}")
     private String storeId;
@@ -364,6 +366,8 @@ public class PaymentService {
 
         booking.completePayment();
         payment.complete(portOnePayment.getPgTxId());
+
+        notificationDispatcher.dispatchBookingConfirmed(booking);
 
         return new PaymentResponse.CompleteDTO(payment);
     }

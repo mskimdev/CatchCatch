@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class AdminController {
 
     private final AdminDashboardService adminDashboardService;
+    private final AdminUserService adminUserService;
 
     @GetMapping({"", "/"})
     public String adminDashboard(
@@ -24,6 +25,8 @@ public class AdminController {
         model.addAttribute("pageTitle", "CatchCatch 대시보드");
         model.addAttribute("summary", adminDashboardService.getSummary(period));
         model.addAttribute("queueStats", adminDashboardService.getQueueStatus());
+        model.addAttribute("operationLogs", adminDashboardService.getOperationLogs());
+        model.addAttribute("systemErrorStats", adminDashboardService.getSystemErrorStats());
         return "admin/index";
     }
 
@@ -39,6 +42,7 @@ public class AdminController {
     @GetMapping("/users")
     public String adminUserList(Model model) {
         model.addAttribute("pageTitle", "회원 관리");
+        model.addAttribute("users", adminUserService.findAll());
         return "admin/user/list";
     }
 

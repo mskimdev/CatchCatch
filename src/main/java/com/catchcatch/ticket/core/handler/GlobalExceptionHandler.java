@@ -60,16 +60,12 @@ public class GlobalExceptionHandler {
     }
 
     private String logAndAlertError(Exception e, HttpServletRequest request) {
-        String errName = e.getClass().getSimpleName();
-        log.warn("=== {} 에러 발생 ===", errName);
-        log.warn("요청 URL : {} ", request.getRequestURL());
-        log.warn("에러 메시지 : {} ", e.getMessage());
-
         String message = e.getMessage() != null ? e.getMessage() : "잘못된 요청입니다";
+        log.warn("[{}] {} - {}", e.getClass().getSimpleName(), request.getRequestURL(), message);
 
         // API 요청은 JSON, 일반 요청은 SweetAlert2 페이지 반환
         String uri = request.getRequestURI();
-        if (uri.startsWith("/api/")) {
+        if (uri.startsWith("/api/") || uri.startsWith("/admin/api/")) {
             return "{\"message\":\"" + message.replace("\"", "\\\"") + "\"}";
         }
 

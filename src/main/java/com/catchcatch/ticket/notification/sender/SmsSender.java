@@ -1,8 +1,5 @@
 package com.catchcatch.ticket.notification.sender;
 
-
-import com.catchcatch.ticket.notification.NotificationMessage;
-import com.catchcatch.ticket.notification.NotificationSender;
 import com.solapi.sdk.SolapiClient;
 import com.solapi.sdk.message.model.Message;
 import com.solapi.sdk.message.service.DefaultMessageService;
@@ -13,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class SmsSender implements NotificationSender {
+public class SmsSender implements MessageSender<MessagePayload> {
 
     @Value("${sol.key}")
     private String solKey;
@@ -32,7 +29,7 @@ public class SmsSender implements NotificationSender {
     }
 
     @Override
-    public void send(NotificationMessage message) {
+    public void send(MessagePayload message) {
         Message sms = new Message();
         sms.setFrom(solSender);
         sms.setTo(message.getTo());

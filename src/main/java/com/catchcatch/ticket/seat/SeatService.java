@@ -8,6 +8,8 @@ import com.catchcatch.ticket.venue.Venue;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -168,8 +170,7 @@ public class SeatService {
      */
 
     @Transactional
-    public void createSeatsFromJson(Integer sessionId)
-    {
+    public void createSeatsFromJson(Integer sessionId) {
         ConcertSession session = concertSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("해당 회차를 찾을 수 없습니다."));
 
@@ -177,19 +178,20 @@ public class SeatService {
         Venue venue = concert.getVenue();
 
         String filePath = venue.getSeatMapFilePath();
-        if (filePath == null || filePath.isBlank()){
+        if (filePath == null || filePath.isBlank()) {
             throw new BadRequestException("해당 공연장에 등록된 좌석 도면(JSON)이 없습니다.");
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
-        List<SeatRequest.SeatJsonDTO> jsonSeats;
-        try{
-            java.io.File jsonFile = new File(filePath);
-            jsonSeats = objectMapper.readValue(
-                    jsonFile,
-                    new TypeReference<List<SeatRequest.SeatJsonDTO>>() {}
-            );
-        }catch (Exception e){
+        String absolutePath = System.getProperty("user.dir") + "/src/main/resources/static" + venue.getSeatMapFilePath();
+        List<SeatRequest.SeatJsonDTO> jsonSeats = null;
+
+        try {
+            java.io.File jsonFile = new File(absolutePath);
+            jsonSeats = objectMapper.readValue(jsonFile, new TypeReference<>() {
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
             throw new BadRequestException("도면 JSON 파싱 중 오류가 발생했습니다.");
         }
 
@@ -205,11 +207,13 @@ public class SeatService {
 
             // 3. 파싱
             Integer floor = Integer.parseInt(parts[0]);      // "1" -> 1
-            String sectionName = parts[1];                   // "VIP"
-            String seatRow = parts[2];                       // "A"
-            Integer seatCol = Integer.parseInt(parts[3]);    // "1" -> 1
+            String sectionName = parts[1];
+            String seatRow = parts[2];
+            Integer seatCol = Integer.parseInt(parts[3]);
+            Integer xLabel = Integer.parseInt(parts[4]);
+            Integer yLabel = Integer.parseInt(parts[5]);
 
-            String fullSeatNumber = floor + "층 " + sectionName + "구역 " + seatRow + "열 " + seatCol + "번";
+            String fullSeatNumber = floor + "층 " + sectionName + "구역 " + seatRow + "열 " + seatCol + "번 " + xLabel + "x축 " + yLabel + "y축 ";
 
             // 5. 등급 및 가격, 상태 세팅
             SeatGrade grade = SeatGrade.valueOf(dto.getGrade());
@@ -227,6 +231,8 @@ public class SeatService {
                     .grade(grade)
                     .price(price)
                     .status(status)
+                    .xLabel(xLabel)
+                    .yLabel(yLabel)
                     .build());
         }
 
@@ -234,5 +240,98 @@ public class SeatService {
 
     } // end of createSeatsFromJson
 
+    /**
+     * 관리자: 특정 회차의 좌석 일괄 삭제
+     */
+    @Transactional
+    public void deleteSeatBySessionId(Integer sessionId) {
+        boolean hasSoldSeats = seatRepository.existsByConcertSession_IdAndStatus(sessionId, SeatStatus.SOLD);
+        boolean hasHeldSeats = seatRepository.existsByConcertSession_IdAndStatus(sessionId, SeatStatus.HELD);
 
+        if (hasSoldSeats || hasHeldSeats) {
+            throw new BadRequestException("이미 예매가 진행중이거나 결제된 좌석이 있어 초기화 할 수 업습니다.");
+        }
+
+        seatRepository.deleteBySessionId(sessionId);
+    }
+
+    /**
+     * 관리자: 공연장 변경 시 해당 공연의 모든 회차 좌석 데이터를 새 도면에 맞게 재생성
+     */
+    @Transactional
+    public void updateSeatsForChangedVenue(Concert concert, Venue newVenue) {
+        // 1. 해당 공연에 연관된 모든 회차 리스트 조회
+        List<ConcertSession> sessions = concertSessionRepository.findByConcertId(concert.getId());
+
+        if (sessions.isEmpty()) {
+            return; // 등록된 회차가 없다면 좌석을 갱신할 필요가 없으므로 종료
+        }
+
+        // 2. 비즈니스 정합성 검증: 단 하나의 좌석이라도 예매(SOLD) 또는 점유(HELD) 중이면 공연장 변경 불가
+        for (ConcertSession session : sessions) {
+            boolean hasSold = seatRepository.existsByConcertSession_IdAndStatus(session.getId(), SeatStatus.SOLD);
+            boolean hasHeld = seatRepository.existsByConcertSession_IdAndStatus(session.getId(), SeatStatus.HELD);
+            if (hasSold || hasHeld) {
+                throw new BadRequestException("이미 예매 또는 임시 점유된 좌석이 존재하는 회차가 있어 공연장을 변경할 수 없습니다.");
+            }
+        }
+
+        // 3. 기존 회차별 구형 좌석 데이터 일괄 삭제 (Bulk Delete)
+        for (ConcertSession session : sessions) {
+            seatRepository.deleteBySessionId(session.getId());
+        }
+
+        // 4. 새로운 공연장의 도면 파일 파싱 준비
+        String filePath = newVenue.getSeatMapFilePath();
+        if (filePath == null || filePath.isBlank()) {
+            throw new BadRequestException("새로운 공연장에 등록된 좌석 도면(JSON) 경로가 존재하지 않습니다.");
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        // filePath = /json/seatmap/... → static/json/seatmap/...
+        String resourcePath = "static" + filePath;
+        List<SeatRequest.SeatJsonDTO> jsonSeats;
+        try {
+            Resource resource = new ClassPathResource(resourcePath);
+            jsonSeats = objectMapper.readValue(resource.getInputStream(), new TypeReference<>() {});
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BadRequestException("새로운 도면 JSON 파일을 파싱하는 중 오류가 발생했습니다.");
+        }
+
+        // 5. 모든 회차를 순회하며 새 도면 기준 엔티티 일괄 조립 후 Batch Insert
+        List<Seat> newSeatEntities = new ArrayList<>();
+        for (ConcertSession session : sessions) {
+            for (SeatRequest.SeatJsonDTO dto : jsonSeats) {
+                String[] parts = dto.getId().split("-");
+                if (parts.length != 4) continue;
+
+                Integer floor = Integer.parseInt(parts[0]);
+                String sectionName = parts[1];
+                String seatRow = parts[2];
+                Integer seatCol = Integer.parseInt(parts[3]);
+                String fullSeatNumber = floor + "층 " + sectionName + "구역 " + seatRow + "열 " + seatCol + "번";
+
+                SeatGrade grade = SeatGrade.valueOf(dto.getGrade());
+                Integer price = concert.getPriceByGrade(grade);
+                SeatStatus status = "obstructed".equalsIgnoreCase(dto.getStatus()) ? SeatStatus.OBSTRUCTED : SeatStatus.AVAILABLE;
+
+                newSeatEntities.add(Seat.builder()
+                        .concertSession(session)
+                        .floor(floor)
+                        .sectionName(sectionName)
+                        .seatRow(seatRow)
+                        .seatCol(seatCol)
+                        .seatNumber(fullSeatNumber)
+                        .grade(grade)
+                        .price(price)
+                        .status(status)
+                        .build());
+            }
+        }
+
+        // 6. JDBC Template을 통한 고속 대량 삽입 실행
+        seatJdbcRepository.batchInsertSeats(newSeatEntities);
+    }
 }

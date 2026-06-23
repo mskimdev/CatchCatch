@@ -1,129 +1,172 @@
 {{> admin/layout/header}}
 
-<div class="container-fluid">
-    <div class="card shadow mb-4" style="max-width: 800px; margin: 0 auto;">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">새 홈 배너 등록</h6>
+<body id="page-top">
+<div id="wrapper">
+    {{> admin/layout/sidebar}}
+
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            {{> admin/layout/topbar}}
+
+            <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h1 class="h3 mb-1 text-gray-800">새 배너 등록</h1>
+                        <p class="mb-0 text-muted small">이미지와 홍보 문구를 입력하고 메인 홈 노출 모습을 확인하세요.</p>
+                    </div>
+                    <a href="/admin/banners" class="btn btn-sm btn-outline-secondary mt-3 mt-sm-0"><i class="fas fa-arrow-left mr-1"></i>목록으로</a>
+                </div>
+
+                <form id="bannerForm" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-xl-7 col-lg-7">
+                            <div class="card admin-banner-form-card shadow mb-4">
+                                <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">배너 정보</h6></div>
+                                <div class="card-body">
+                                    <section class="admin-banner-form-section">
+                                        <div class="admin-banner-form-section__title mb-3"><i class="far fa-image text-primary mr-2"></i>배너 이미지</div>
+                                        <div class="custom-file">
+                                            <input type="file" class="custom-file-input" id="imageFile" name="imageFile" accept="image/*" required>
+                                            <label class="custom-file-label" for="imageFile" id="imageFileName">이미지 파일을 선택하세요</label>
+                                        </div>
+                                        <small class="form-text text-muted"><i class="fas fa-info-circle mr-1"></i>가로형 이미지(권장 비율 5:2, JPG/PNG/WEBP)를 사용하면 가장 자연스럽게 노출됩니다.</small>
+                                    </section>
+
+                                    <section class="admin-banner-form-section">
+                                        <div class="admin-banner-form-section__title mb-3"><i class="fas fa-font text-primary mr-2"></i>노출 문구</div>
+                                        <div class="row">
+                                            <div class="form-group col-md-4">
+                                                <label for="displayOrder">노출 순서 <span class="text-danger">*</span></label>
+                                                <input type="number" class="form-control" id="displayOrder" name="displayOrder" value="1" min="1" required>
+                                            </div>
+                                            <div class="form-group col-md-8">
+                                                <label for="eyebrow">상단 카피</label>
+                                                <input type="text" class="form-control js-preview-input" id="eyebrow" name="eyebrow" placeholder="CATCHCATCH EXCLUSIVE" data-preview="previewEyebrow">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="title">메인 타이틀 <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control js-preview-input" id="title" name="title" placeholder="2026 악뮤 전국투어 콘서트" data-preview="previewTitle" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="highlight">강조 문구</label>
+                                            <input type="text" class="form-control js-preview-input" id="highlight" name="highlight" placeholder="단독 오픈 결정!" data-preview="previewHighlight">
+                                        </div>
+                                        <div class="form-group mb-0">
+                                            <label for="description">상세 설명</label>
+                                            <textarea class="form-control js-preview-input" id="description" name="description" rows="3" placeholder="배너에 들어갈 상세 홍보 문구를 입력하세요." data-preview="previewDescription"></textarea>
+                                        </div>
+                                    </section>
+
+                                    <section class="admin-banner-form-section">
+                                        <div class="admin-banner-form-section__title mb-3"><i class="fas fa-mouse-pointer text-primary mr-2"></i>연결 및 노출</div>
+                                        <div class="row">
+                                            <div class="form-group col-md-5">
+                                                <label for="buttonText">버튼 텍스트</label>
+                                                <input type="text" class="form-control js-preview-input" id="buttonText" name="buttonText" placeholder="예매하기" data-preview="previewButton">
+                                            </div>
+                                            <div class="form-group col-md-7">
+                                                <label for="linkUrl">이동 링크 URL</label>
+                                                <input type="text" class="form-control" id="linkUrl" name="linkUrl" placeholder="/concerts/1">
+                                            </div>
+                                        </div>
+                                        <div class="rounded bg-light border px-3 py-3">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="isActive" name="isActive" value="true" checked>
+                                                <label class="custom-control-label font-weight-bold" for="isActive">등록 즉시 메인 홈에 노출</label>
+                                            </div>
+                                            <small class="text-muted ml-4">비활성화하면 저장되지만 사용자 화면에는 표시되지 않습니다.</small>
+                                        </div>
+                                    </section>
+
+                                    <div class="d-flex justify-content-end pt-3">
+                                        <a href="/admin/banners" class="btn btn-light border mr-2">취소</a>
+                                        <button type="submit" class="btn btn-primary px-4"><i class="fas fa-check mr-1"></i>배너 등록</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-5 col-lg-5">
+                            <div class="admin-banner-preview">
+                                <div class="admin-banner-preview__canvas">
+                                    <img id="imagePreview" class="admin-banner-preview__image d-none" alt="선택한 배너 이미지">
+                                    <div class="admin-banner-preview__shade"></div>
+                                    <div class="admin-banner-preview__content">
+                                        <div class="admin-banner-preview__eyebrow" id="previewEyebrow">CATCHCATCH EXCLUSIVE</div>
+                                        <h2 class="admin-banner-preview__title"><span id="previewTitle">메인 타이틀을 입력하세요</span><br><span class="admin-banner-preview__highlight" id="previewHighlight">강조 문구</span></h2>
+                                        <p class="admin-banner-preview__description" id="previewDescription">배너 상세 설명이 이곳에 표시됩니다.</p>
+                                        <span class="admin-banner-preview__button" id="previewButton">자세히 보기</span>
+                                    </div>
+                                </div>
+                                <div class="admin-banner-preview__meta d-flex justify-content-between"><span><i class="fas fa-desktop mr-1"></i>메인 홈 미리보기</span><span id="previewStatus" class="text-success font-weight-bold">노출 예정</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="card-body">
-            <form id="bannerForm" enctype="multipart/form-data">
-
-                <div class="form-group mb-4">
-                    <label>배너 이미지 등록 <span class="text-danger">*</span></label>
-                    <div class="custom-file">
-                        <input type="file" class="custom-file-input" id="imageFile" name="imageFile" accept="image/*" required onchange="previewImage(this)">
-                        <label class="custom-file-label" for="imageFile" id="imageFileName">이미지 파일을 선택하세요 (가로형 권장)</label>
-                    </div>
-                    <div class="mt-3 d-none" id="imagePreviewContainer">
-                        <img id="imagePreview" src="" alt="미리보기" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px;">
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="form-group col-md-4">
-                        <label for="displayOrder">노출 순서 <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control" id="displayOrder" name="displayOrder" value="1" min="1" required>
-                    </div>
-                    <div class="form-group col-md-8">
-                        <label for="title">메인 타이틀 <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="title" name="title" placeholder="EX) 2026 악뮤 전국투어 콘서트" required>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="form-group col-md-6">
-                        <label for="eyebrow">상단 서브 카피 (Eyebrow)</label>
-                        <input type="text" class="form-control" id="eyebrow" name="eyebrow" placeholder="EX) CATCHCATCH EXCLUSIVE">
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label for="highlight">강조 문구 (Highlight)</label>
-                        <input type="text" class="form-control" id="highlight" name="highlight" placeholder="EX) 단독 오픈 결정!">
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="form-group col-md-6">
-                        <label for="buttonText">버튼 텍스트</label>
-                        <input type="text" class="form-control" id="buttonText" name="buttonText" placeholder="EX) 예매하기">
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label for="linkUrl">이동 링크 URL</label>
-                        <input type="text" class="form-control" id="linkUrl" name="linkUrl" placeholder="EX) /concerts/1">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="description">배너 상세 설명</label>
-                    <textarea class="form-control" id="description" name="description" rows="3" placeholder="배너에 들어갈 상세 홍보 문구를 입력하세요."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>노출 활성화 상태</label>
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" id="isActive" name="isActive" value="true" checked>
-                        <label class="custom-control-label" for="isActive">활성화 (메인 홈 노출)</label>
-                    </div>
-                </div>
-
-                <div class="text-right">
-                    <a href="/admin/banners" class="btn btn-secondary">취소</a>
-                    <button type="button" class="btn btn-primary" onclick="submitBanner()">등록하기</button>
-                </div>
-            </form>
-        </div>
+        {{> admin/layout/footer}}
     </div>
 </div>
 
 <script>
-    function previewImage(input) {
-        if (input.files && input.files[0]) {
-            // 커스텀 라벨 파일명 변경
-            document.getElementById('imageFileName').innerText = input.files[0].name;
+    const previewFallbacks = {
+        previewEyebrow: 'CATCHCATCH EXCLUSIVE', previewTitle: '메인 타이틀을 입력하세요',
+        previewHighlight: '강조 문구', previewDescription: '배너 상세 설명이 이곳에 표시됩니다.', previewButton: '자세히 보기'
+    };
 
-            // 미리보기 세팅
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('imagePreview').src = e.target.result;
-                document.getElementById('imagePreviewContainer').classList.remove('d-none');
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
+    document.querySelectorAll('.js-preview-input').forEach(input => {
+        input.addEventListener('input', () => {
+            const target = document.getElementById(input.dataset.preview);
+            target.textContent = input.value.trim() || previewFallbacks[input.dataset.preview];
+        });
+    });
 
-    function submitBanner() {
-        const form = document.getElementById('bannerForm');
-        if (!form.checkValidity()) {
-            form.reportValidity();
+    document.getElementById('imageFile').addEventListener('change', function() {
+        const file = this.files && this.files[0];
+        if (!file) return;
+        document.getElementById('imageFileName').textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = event => {
+            const preview = document.getElementById('imagePreview');
+            preview.src = event.target.result;
+            preview.classList.remove('d-none');
+        };
+        reader.readAsDataURL(file);
+    });
+
+    document.getElementById('isActive').addEventListener('change', function() {
+        const status = document.getElementById('previewStatus');
+        status.textContent = this.checked ? '노출 예정' : '비노출 저장';
+        status.className = this.checked ? 'text-success font-weight-bold' : 'text-secondary font-weight-bold';
+    });
+
+    document.getElementById('bannerForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        if (!this.checkValidity()) {
+            this.reportValidity();
             return;
         }
 
-        const formData = new FormData(form);
+        const formData = new FormData(this);
+        if (!document.getElementById('isActive').checked) formData.append('isActive', 'false');
 
-        // 체크박스가 꺼져있으면 폼데이터에 아예 안담기므로 강제로 false 주입
-        if(!document.getElementById('isActive').checked) {
-            formData.append('isActive', 'false');
-        }
-
-        CcUI.loading.show();
-
-        fetch('/api/admin/banners', {
-            method: 'POST',
-            body: formData // Content-Type 헤더는 브라우저가 boundary와 함께 자동 세팅하게 생략해야 함!
-        })
-        .then(res => {
+        CcUI.loading.show('배너를 등록하고 있습니다...');
+        try {
+            const response = await fetch('/api/admin/banners', { method: 'POST', body: formData });
             CcUI.loading.hide();
-            if(res.ok) {
-                CcUI.toast('새로운 배너가 성공적으로 등록되었습니다.', 'success');
-                setTimeout(() => location.href = '/admin/banners', 1500);
-            } else {
-                CcUI.alert('등록 실패', '입력한 데이터를 다시 확인해 주세요.', 'error');
+            if (!response.ok) {
+                CcUI.alert('입력한 내용을 확인해주세요.', 'error');
+                return;
             }
-        })
-        .catch(err => {
+            CcUI.toast('새 배너가 등록되었습니다.');
+            setTimeout(() => location.href = '/admin/banners', 700);
+        } catch (error) {
             CcUI.loading.hide();
-            CcUI.alert('오류 발생', '통신 중 에러가 발생했습니다.', 'error');
-        });
-    }
+            CcUI.alert('서버와 통신하지 못했습니다.', 'error');
+        }
+    });
 </script>
-
-{{> admin/layout/footer}}
+</body>
+</html>

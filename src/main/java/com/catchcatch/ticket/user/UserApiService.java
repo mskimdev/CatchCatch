@@ -6,7 +6,7 @@ import com.catchcatch.ticket.core.util.HtmlUtil;
 import com.catchcatch.ticket.core.util.MailUtil;
 import com.catchcatch.ticket.core.util.ProfileImageUtil;
 import com.catchcatch.ticket.notification.sender.EmailSender;
-import com.catchcatch.ticket.notification.NotificationMessage;
+import com.catchcatch.ticket.notification.sender.MessagePayload;
 import com.catchcatch.ticket.user.dto.UserRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class UserApiService {
         String content = HtmlUtil.loadWithPlaceholder(
                 "static/html/mail/email-verify.html", "{{code}}", code);
 
-        emailSender.send(NotificationMessage.builder()
+        emailSender.send(MessagePayload.builder()
                 .to(email)
                 .subject("[CatchCatch] 회원가입 인증 번호 발송")
                 .content(content)

@@ -10,6 +10,19 @@
     .stat-card { border-left: .25rem solid; padding: .5rem 1rem; border-radius: .35rem; }
     .stat-card--total   { border-color: #4e73df; background: #f0f3ff; }
     .stat-card--pending { border-color: #f6c23e; background: #fffbf0; }
+    .inquiry-actions {
+        display: inline-flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        white-space: nowrap;
+    }
+    .inquiry-actions .btn {
+        padding: .25rem .45rem;
+        font-size: .72rem;
+        line-height: 1.4;
+    }
 </style>
 
 <body id="page-top">
@@ -96,8 +109,8 @@
                                         </td>
                                         <td class="align-middle text-center" style="width:160px;">{{createdAt}}</td>
 
-                                        <td class="align-middle text-center" style="width:190px;">
-                                            <div class="d-flex justify-content-center align-items-center" style="gap:6px;">
+                                        <td class="align-middle text-center text-nowrap" style="width:230px; min-width:230px;">
+                                            <div class="inquiry-actions">
                                                 <a href="/admin/boards/inquiry/{{id}}"
                                                    class="btn btn-primary btn-sm">
                                                     <i class="fas fa-reply"></i> 답변
@@ -107,6 +120,11 @@
                                                 class="btn btn-info btn-sm">
                                                 <i class="fas fa-question-circle"></i> FAQ등록
                                                 </a>
+
+                                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                                        onclick="deleteInquiry({{id}})">
+                                                    <i class="fas fa-trash"></i> 삭제
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -138,7 +156,34 @@
                     "columnDefs": [{"orderable": false, "targets": 6}],
                     "language": {"url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Korean.json"}
                 });
+
+                if (sessionStorage.getItem('inquiryDeleteSuccess')) {
+                    sessionStorage.removeItem('inquiryDeleteSuccess');
+                    CcUI.toast('문의가 삭제되었습니다.');
+                }
             });
+
+            function deleteInquiry(id) {
+                CcUI.confirm({
+                    title: '문의를 삭제하시겠습니까?',
+                    text: '삭제된 문의와 답변은 복구할 수 없습니다.',
+                    confirmText: '삭제',
+                    danger: true,
+                    onConfirm: async () => {
+                        CcUI.loading.show('문의를 삭제하고 있습니다...');
+                        const { res, data } = await apiDelete(`/api/admin/boards/inquiry/${id}`);
+                        CcUI.loading.hide();
+
+                        if (!res || !res.ok) {
+                            CcUI.alert(data?.message || data?.msg || '문의 삭제 중 오류가 발생했습니다.', 'error');
+                            return;
+                        }
+
+                        sessionStorage.setItem('inquiryDeleteSuccess', '1');
+                        location.reload();
+                    }
+                });
+            }
         </script>
     </div>
 </div>
