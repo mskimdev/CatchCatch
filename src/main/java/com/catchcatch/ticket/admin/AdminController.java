@@ -5,9 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -50,7 +53,26 @@ public class AdminController {
     @ResponseBody
     public AdminDashboardResponse.QueueStatusDTO queueStats(){
         return adminDashboardService.getQueueStatus();
+    }
 
+    // 어드민이 모니터링할 회차를 고를 때 보여줄 활성 회차 목록(=getQueueStatus의 sessionQueues와 동일 소스)
+    @GetMapping("/api/queue-stats/sessions")
+    @ResponseBody
+    public List<AdminDashboardResponse.SessionQueueDTO> queueStatsSessions(){
+        return adminDashboardService.getQueueStatus().sessionQueues();
+    }
 
+    // 어드민이 선택한 회차 하나의 큐 상태 (다중 선택 시 회차별로 각각 호출)
+    @GetMapping("/api/queue-stats/{sessionId}")
+    @ResponseBody
+    public AdminDashboardResponse.SessionQueueDTO queueStatsBySession(@PathVariable Integer sessionId){
+        return adminDashboardService.getSessionQueueStatus(sessionId);
+    }
+
+    // 전체(All) 뷰 - 모든 활성 회차 합산
+    @GetMapping("/api/queue-stats/overall")
+    @ResponseBody
+    public AdminDashboardResponse.OverallQueueStatusDTO queueStatsOverall(){
+        return adminDashboardService.getOverallQueueStatus();
     }
 }

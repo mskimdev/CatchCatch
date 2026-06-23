@@ -40,6 +40,11 @@ public class SseEmitterRepository {
                 emitter.send(SseEmitter.event().name(eventName).data(safeData));
             }catch(IOException e){
                 remove(key, emitter);
+            }catch(IllegalStateException e){
+                // 클라이언트가 이미 연결을 끊었거나(onCompletion/onTimeout) emitter가 완료된 후
+                // 뒤늦게 send()가 호출되는 경우. 구독 해제 콜백이 아직 처리 중인 race condition이라
+                // 정상적인 흐름이므로 조용히 정리만 한다.
+                remove(key, emitter);
             }
         }
     }

@@ -1,5 +1,6 @@
 RUNSCRIPT FROM 'classpath:db/data/user.sql';
 RUNSCRIPT FROM 'classpath:db/data/concert.sql';
+RUNSCRIPT FROM 'classpath:db/data/test_mskim.sql';
 RUNSCRIPT FROM 'classpath:db/data/queue.sql';
 RUNSCRIPT FROM 'classpath:db/data/booking.sql';
 RUNSCRIPT FROM 'classpath:db/data/payment.sql';

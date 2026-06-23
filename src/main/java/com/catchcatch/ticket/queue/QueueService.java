@@ -43,14 +43,15 @@ public class QueueService {
 
         long queueNumber = queueRedisRepository.enqueueWaiting(concertSessionId, userId);
         long waitingAhead = queueRedisRepository.countWaitingAhead(concertSessionId, queueNumber);
+        long waitingBehind = calculateWaitingBehind(concertSessionId, waitingAhead);
 
-        sseEmitterRepository.send(ADMIN_QUEUE_STATS_KEY, "queue-stats-updated", "");
+        notifyAdminQueueStats(concertSessionId);
 
         // 자리가 비어있는데도 아무도 빠져나가지 않아 승격 트리거가 없던 회차(첫 진입자 등)를 위해
         // 등록 직후 즉시 승격을 시도한다. capacity 검증은 promoteNext 내부에서 처리된다.
         promoteNext(concertSessionId, 1);
 
-        return new QueueResponse.StatusDTO(concertSessionId, QueueStatus.WAITING, queueNumber, waitingAhead, null);
+        return new QueueResponse.StatusDTO(concertSessionId, QueueStatus.WAITING, queueNumber, waitingAhead, waitingBehind, null);
     }
 
     /**
@@ -63,21 +64,28 @@ public class QueueService {
 
     private Optional<QueueResponse.StatusDTO> currentStatus(Integer concertSessionId, Integer userId) {
         if (queueRedisRepository.isEntered(concertSessionId, userId)) {
-            return Optional.of(new QueueResponse.StatusDTO(concertSessionId, QueueStatus.ENTERED, null, 0, null));
+            return Optional.of(new QueueResponse.StatusDTO(concertSessionId, QueueStatus.ENTERED, null, 0, 0, null));
         }
 
         if (queueRedisRepository.isReady(concertSessionId, userId)) {
             String token = queueRedisRepository.getReadyToken(concertSessionId, userId).orElse(null);
-            return Optional.of(new QueueResponse.StatusDTO(concertSessionId, QueueStatus.READY, null, 0, token));
+            return Optional.of(new QueueResponse.StatusDTO(concertSessionId, QueueStatus.READY, null, 0, 0, token));
         }
 
         if (queueRedisRepository.isWaiting(concertSessionId, userId)) {
             long myNumber = queueRedisRepository.getQueueNumber(concertSessionId, userId).orElse(0L);
             long waitingAhead = queueRedisRepository.countWaitingAhead(concertSessionId, myNumber);
-            return Optional.of(new QueueResponse.StatusDTO(concertSessionId, QueueStatus.WAITING, myNumber, waitingAhead, null));
+            long waitingBehind = calculateWaitingBehind(concertSessionId, waitingAhead);
+            return Optional.of(new QueueResponse.StatusDTO(concertSessionId, QueueStatus.WAITING, myNumber, waitingAhead, waitingBehind, null));
         }
 
         return Optional.empty();
+    }
+
+    // 전체 WAITING 인원 중 나(waitingAhead명 + 나 자신 1명)를 뺀 나머지가 내 뒤에 있는 인원이다.
+    private long calculateWaitingBehind(Integer concertSessionId, long waitingAhead) {
+        long totalWaiting = queueRedisRepository.countWaitingBySession(concertSessionId);
+        return Math.max(0, totalWaiting - waitingAhead - 1);
     }
 
     /**
@@ -118,7 +126,7 @@ public class QueueService {
         Integer userId = resolved[1];
 
         enterBooking(concertSessionId, userId);
-        sseEmitterRepository.send(ADMIN_QUEUE_STATS_KEY, "queue-stats-updated", "");
+        notifyAdminQueueStats(concertSessionId);
     }
 
     /**
@@ -130,8 +138,7 @@ public class QueueService {
      * capacity = min(시스템이 버틸 수 있는 고정 상한, 남은 AVAILABLE 좌석 수) - 현재 활성 인원
      */
     public void promoteNext(Integer concertSessionId, int count) {
-        long availableSeatCount = seatRepository.countByConcertSession_IdAndStatus(concertSessionId, SeatStatus.AVAILABLE);
-        long capacity = Math.min(FIXED_SYSTEM_LIMIT, availableSeatCount);
+        long capacity = getCapacity(concertSessionId);
 
         long activeCount = queueRedisRepository.countActiveBySession(concertSessionId);
         int availableSlots = (int) Math.max(0, capacity - activeCount);
@@ -156,7 +163,21 @@ public class QueueService {
         queueRedisRepository.removeFromActiveSessionsIfEmpty(concertSessionId);
 
         sseEmitterRepository.send("queue:" + concertSessionId, "queue-updated", "");
+        notifyAdminQueueStats(concertSessionId);
+    }
+
+    // 전역 어드민 채널 + 회차별 어드민 채널에 동시에 알린다.
+    // 어드민이 "전체" 화면만 보고 있어도, 특정 회차를 선택해 보고 있어도 둘 다 즉시 반영된다.
+    private void notifyAdminQueueStats(Integer concertSessionId) {
         sseEmitterRepository.send(ADMIN_QUEUE_STATS_KEY, "queue-stats-updated", "");
+        sseEmitterRepository.send(ADMIN_QUEUE_STATS_KEY + ":" + concertSessionId, "queue-stats-updated", "");
+    }
+
+    // capacity = min(시스템이 버틸 수 있는 고정 상한, 남은 AVAILABLE 좌석 수)
+    // 어드민 대시보드의 혼잡도(활성인원/capacity) 계산에도 재사용된다.
+    public long getCapacity(Integer concertSessionId) {
+        long availableSeatCount = seatRepository.countByConcertSession_IdAndStatus(concertSessionId, SeatStatus.AVAILABLE);
+        return Math.min(FIXED_SYSTEM_LIMIT, availableSeatCount);
     }
 
     // READY 토큰이 TTL 만료된 직후 호출된다.
@@ -171,5 +192,6 @@ public class QueueService {
     public void releaseEnteredSlot(Integer concertSessionId, Integer userId) {
         queueRedisRepository.clearEntered(concertSessionId, userId);
         promoteNext(concertSessionId, 1);
+        queueRedisRepository.removeFromActiveSessionsIfEmpty(concertSessionId);
     }
 }

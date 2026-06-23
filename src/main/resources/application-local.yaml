@@ -6,6 +6,13 @@ server:
     encoding:
       charset: utf-8
       force: true
+  tomcat:
+    # 부하 테스트 용도
+    threads:
+      max: 400
+      min-spare: 50
+    accept-count: 200
+    max-connections: 10000
 
 # log 설정
 logging:
@@ -51,6 +58,11 @@ spring:
     url: jdbc:h2:mem:test
     username: sa
     password:
+    hikari:
+      # 부하 테스트 용도
+      maximum-pool-size: 100
+      minimum-idle: 20
+      connection-timeout: 10000
   h2:
     console:
       enabled: true

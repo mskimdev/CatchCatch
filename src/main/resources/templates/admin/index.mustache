@@ -90,26 +90,24 @@
                     <div class="col-xl-8 col-lg-7">
                         <div class="card shadow mb-4">
                             <div class="card-header py-3 d-flex align-items-center justify-content-between">
-                                <h6 class="m-0 font-weight-bold text-primary">실시간 트래픽 및 대기열 모니터링</h6>
-                                <div class="btn-group" role="group" aria-label="차트 단위 선택">
-                                    <button type="button" class="btn btn-sm btn-primary" data-chart-unit="second">초</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" data-chart-unit="minute">분</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" data-chart-unit="hour">시</button>
-                                </div>
+                                <h6 class="m-0 font-weight-bold text-primary">실시간 대기열 모니터링</h6>
+                                <span class="text-gray-500" style="font-size: 12px;">회차는 최대 5개까지 동시에 선택할 수 있습니다.</span>
                             </div>
                             <div class="card-body">
-                                <div class="chart-area"><canvas id="myAreaChart"></canvas></div>
+                                <div class="d-flex flex-wrap align-items-center mb-3" id="sessionPicker">
+                                    <label class="mr-3 mb-2 font-weight-bold" style="cursor: pointer;">
+                                        <input type="checkbox" id="overallToggle" checked>
+                                        <span class="ml-1">전체</span>
+                                    </label>
+                                    <div id="sessionCheckboxList" class="d-flex flex-wrap"></div>
+                                </div>
+
+                                <div id="queueMetricCards" class="row mb-3"></div>
+
+                                <div class="chart-area"><canvas id="queueChart"></canvas></div>
                                 <hr>
-                                <ul class="list-group" id="sessionQueueList" style="max-height: 150px; overflow-y: auto;">
-                                    {{#queueStats.sessionQueues}}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>{{concertTitle}} {{round}}회차</span>
-                                        <span class="font-weight-bold">{{waitingCount}}명 대기</span>
-                                    </li>
-                                    {{/queueStats.sessionQueues}}
-                                    {{^queueStats.sessionQueues}}
-                                    <li class="list-group-item text-gray-500">현재 대기 중인 공연 회차가 없습니다.</li>
-                                    {{/queueStats.sessionQueues}}
+                                <ul class="list-group" id="sessionQueueList" style="max-height: 120px; overflow-y: auto;">
+                                    <li class="list-group-item text-gray-500">불러오는 중...</li>
                                 </ul>
                             </div>
                         </div>
@@ -179,114 +177,8 @@
         </div>
         {{> admin/layout/footer}}
 
-        <script src="/admin/vendor/chart.js/Chart.min.js"></script>
-        <script>
-            var MAX_POINTS = 60;
-            var rawHistory = []; // { time: Date, value: number }
-            var chartUnit = 'second';
-
-            var ctx = document.getElementById("myAreaChart");
-            var trafficChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{ label: "실시간 대기 인원", data: [], fill: true }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-
-            function pad(n) {
-                return n < 10 ? '0' + n : '' + n;
-            }
-
-            function bucketKey(date, unit) {
-                if (unit === 'hour') {
-                    return pad(date.getHours()) + ':00';
-                }
-                if (unit === 'minute') {
-                    return pad(date.getHours()) + ':' + pad(date.getMinutes());
-                }
-                return pad(date.getHours()) + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds());
-            }
-
-            function rebuildChart() {
-                var buckets = [];
-                var bucketIndex = {};
-
-                rawHistory.forEach(function (point) {
-                    var key = bucketKey(point.time, chartUnit);
-                    if (!(key in bucketIndex)) {
-                        bucketIndex[key] = { key: key, value: point.value };
-                        buckets.push(bucketIndex[key]);
-                    } else {
-                        bucketIndex[key].value = point.value; // 같은 구간의 마지막 값 사용
-                    }
-                });
-
-                var visible = buckets.slice(-MAX_POINTS);
-                trafficChart.data.labels = visible.map(function (b) { return b.key; });
-                trafficChart.data.datasets[0].data = visible.map(function (b) { return b.value; });
-                trafficChart.update();
-            }
-
-            function setChartUnit(unit) {
-                chartUnit = unit;
-                document.querySelectorAll('[data-chart-unit]').forEach(function (btn) {
-                    var isActive = btn.getAttribute('data-chart-unit') === unit;
-                    btn.classList.toggle('btn-primary', isActive);
-                    btn.classList.toggle('btn-outline-primary', !isActive);
-                });
-                rebuildChart();
-            }
-
-            document.querySelectorAll('[data-chart-unit]').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    setChartUnit(btn.getAttribute('data-chart-unit'));
-                });
-            });
-        </script>
-        <script>
-            function renderSessionQueueList(sessionQueues) {
-                var listEl = document.getElementById("sessionQueueList");
-                if (!sessionQueues || sessionQueues.length === 0) {
-                    listEl.innerHTML = '<li class="list-group-item text-gray-500">현재 대기 중인 공연 회차가 없습니다.</li>';
-                    return;
-                }
-                listEl.innerHTML = sessionQueues.map(function (s) {
-                    return '<li class="list-group-item d-flex justify-content-between align-items-center">'
-                        + '<span>' + s.concertTitle + ' ' + s.round + '회차</span>'
-                        + '<span class="font-weight-bold">' + s.waitingCount + '명 대기</span>'
-                        + '</li>';
-                }).join('');
-            }
-
-            function refreshQueueStats() {
-                fetch('/admin/api/queue-stats')
-                    .then(function (res) { return res.json(); })
-                    .then(function (data) {
-                        document.getElementById("totalWaitingCount").textContent = data.totalWaitingCount;
-                        document.getElementById("activeSessionCount").textContent = data.activeSessionCount;
-                        renderSessionQueueList(data.sessionQueues);
-
-                        rawHistory.push({ time: new Date(), value: data.totalWaitingCount });
-                        if (rawHistory.length > MAX_POINTS * 60) {
-                            rawHistory.shift();
-                        }
-                        rebuildChart();
-                    });
-            }
-
-            var queueStatsSource = new EventSource("/api/queue/admin/subscribe");
-            queueStatsSource.addEventListener("queue-stats-updated", refreshQueueStats);
-
-            refreshQueueStats();
-            setInterval(refreshQueueStats, 1000);
-        </script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+        <script src="/js/admin/queue-monitor.js"></script>
     </div>
 </div>
 </body>
