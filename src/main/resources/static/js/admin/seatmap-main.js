@@ -1,15 +1,23 @@
 (() => {
     const PAGE_URL = {
-        // 콘서트
+        seatButtonImage: "/admin/seatmap/button-image",
         concert: "/admin/seatmap/concert/stage1",
-        // 소극장
         small: "/admin/seatmap/small-seat-builder"
     };
 
     const STORAGE_KEYS = {
+        seatButtonImage: [
+            "seat_button_originalImage",
+            "seat_button_resultImage",
+            "seat_button_imageMeta",
+            "seat_button_groups",
+            "seat_button_entryFromMain"
+        ],
         concert: [
             "concert_originalImage",
             "concert_cleanImage",
+            "concert_buttonImage",
+            "concert_buttonImageMeta",
             "concert_sections",
             "concert_seats",
             "concert_extractSettings",
@@ -27,23 +35,33 @@
     };
 
     const IMAGE_KEY = {
+        seatButtonImage: "seat_button_originalImage",
         concert: "concert_originalImage",
         small: "small_originalImage"
     };
 
     const ENTRY_KEY = {
+        seatButtonImage: "seat_button_entryFromMain",
         concert: "concert_entryFromMain",
         small: "small_entryFromMain"
     };
 
     const FILE_INPUT_ID = {
+        seatButtonImage: "seatButtonImageFileInput",
         concert: "concertFileInput",
         small: "smallFileInput"
     };
 
     const START_MESSAGE = {
+        seatButtonImage: "좌석 이미지 등록 완료. 버튼 이미지화 화면으로 이동합니다.",
         concert: "콘서트 이미지 등록 완료. Stage1로 이동합니다.",
         small: "소극장 이미지 등록 완료. 제작 화면으로 이동합니다."
+    };
+
+    const TYPE_LABEL = {
+        seatButtonImage: "좌석 이미지 버튼 이미지화",
+        concert: "콘서트 제작",
+        small: "소극장 제작"
     };
 
     const $ = (id) => document.getElementById(id);
@@ -64,10 +82,13 @@
         });
     }
 
-    // 콘서트 or 소극장 실행 함수
     function bindFileInputs() {
         Object.entries(FILE_INPUT_ID).forEach(([type, inputId]) => {
             const input = $(inputId);
+
+            if (!input) {
+                return;
+            }
 
             input.addEventListener("change", (event) => {
                 const file = event.target.files[0];
@@ -95,14 +116,24 @@
     }
 
     function startNewWork(type) {
+        if (!STORAGE_KEYS[type]) {
+            toast("알 수 없는 제작 방식입니다.");
+            return;
+        }
+
         clearWork(type);
 
         const input = $(FILE_INPUT_ID[type]);
+
+        if (!input) {
+            toast("파일 입력 요소를 찾을 수 없습니다.");
+            return;
+        }
+
         input.value = "";
         input.click();
     }
 
-    // 이미지 저장 후 해당 URL 이동
     function saveImageAndMove(type, file) {
         readImage(file, (imageUrl) => {
             localStorage.setItem(IMAGE_KEY[type], imageUrl);
@@ -117,29 +148,35 @@
     }
 
     function continueSavedWork() {
-        const hasConcertWork = hasSavedWork("concert");
-        const hasSmallWork = hasSavedWork("small");
+        const savedTypes = Object.keys(IMAGE_KEY).filter((type) => hasSavedWork(type));
 
-        if (!hasConcertWork && !hasSmallWork) {
+        if (savedTypes.length === 0) {
             toast("불러올 작업이 없습니다.");
             return;
         }
 
-        if (hasConcertWork && !hasSmallWork) {
-            location.href = PAGE_URL.concert;
+        if (savedTypes.length === 1) {
+            location.href = PAGE_URL[savedTypes[0]];
             return;
         }
 
-        if (!hasConcertWork && hasSmallWork) {
-            location.href = PAGE_URL.small;
-            return;
-        }
+        const message = savedTypes
+            .map((type, index) => `${index + 1}. ${TYPE_LABEL[type]}`)
+            .join("\n");
 
-        const loadConcert = confirm(
-            "콘서트 작업과 소극장 작업이 모두 있습니다.\n\n확인: 콘서트 작업 불러오기\n취소: 소극장 작업 불러오기"
+        const selected = prompt(
+            `불러올 작업 번호를 입력하세요.\n\n${message}`
         );
 
-        location.href = loadConcert ? PAGE_URL.concert : PAGE_URL.small;
+        const index = Number(selected) - 1;
+        const type = savedTypes[index];
+
+        if (!type) {
+            toast("작업 불러오기를 취소했습니다.");
+            return;
+        }
+
+        location.href = PAGE_URL[type];
     }
 
     function hasSavedWork(type) {
@@ -147,8 +184,9 @@
     }
 
     function clearAllWork() {
-        clearWork("concert");
-        clearWork("small");
+        Object.keys(STORAGE_KEYS).forEach((type) => {
+            clearWork(type);
+        });
     }
 
     function clearWork(type) {

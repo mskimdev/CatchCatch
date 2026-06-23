@@ -266,3 +266,18 @@ button {
         gap: 12px;
     }
 }
+
+.seat-type-grid--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.seat-type-card__button--button-image {
+    background: linear-gradient(135deg, #0f766e, #2563eb);
+    color: #ffffff;
+}
+
+@media (max-width: 1100px) {
+    .seat-type-grid--three {
+        grid-template-columns: 1fr;
+    }
+}

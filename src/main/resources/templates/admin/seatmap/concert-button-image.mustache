@@ -1,0 +1,221 @@
+{{> admin/seatmap/layout/header}}
+
+<link href="/css/admin/seatmap-workspace.css" rel="stylesheet">
+<link href="/css/admin/seatmap-button-image.css" rel="stylesheet">
+
+<body>
+<div class="seatmap-workspace seatmap-workspace--button-image"
+     id="buttonImageApp"
+     data-main-url="/admin/seatmap/main"
+     data-concert-url="/admin/seatmap/concert/stage1">
+
+    <aside class="seatmap-side seatmap-side--left">
+        <div class="button-image-title">
+            <strong>좌석 이미지 버튼 이미지화</strong>
+            <span>원본 도면을 단색 버튼용 이미지로 변환합니다.</span>
+        </div>
+
+        <div class="button-image-step-list">
+            <section id="part1" class="button-image-step is-active" data-step="1">
+                <button type="button" class="button-image-step__header active" id="tab1">
+                    <span class="button-image-step__check" data-step="1"></span>
+                    <span class="button-image-step__text">
+                        <b>파트 1</b>
+                        <small>원본 확인 / 자르기</small>
+                    </span>
+                    <span class="button-image-step__status">진행중</span>
+                    <span class="button-image-step__arrow">⌄</span>
+                </button>
+
+                <div class="button-image-step__body">
+                    <div class="button-image-box">
+                        <button type="button" class="btn btn--dark" id="cropStart">범위 드래그 시작</button>
+                        <button type="button" class="btn" id="cropApply" disabled>선택 범위로 자르기</button>
+                        <button type="button" class="btn" id="restoreSource">원본 다시 표시</button>
+                        <button type="button" class="btn btn--primary" id="go2">다음: 색상 그룹 지정</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="part2" class="button-image-step" data-step="2">
+                <button type="button" class="button-image-step__header" id="tab2">
+                    <span class="button-image-step__check" data-step="2"></span>
+                    <span class="button-image-step__text">
+                        <b>파트 2</b>
+                        <small>색상 그룹 지정</small>
+                    </span>
+                    <span class="button-image-step__status">대기</span>
+                    <span class="button-image-step__arrow">⌄</span>
+                </button>
+
+                <div class="button-image-step__body">
+                    <div class="button-image-box">
+                        <div class="button-image-guide">
+                            그룹을 선택한 뒤 도면을 클릭하면 해당 색상이 그룹 샘플로 등록됩니다.
+                        </div>
+
+                        <div class="button-image-group-list" id="buttonImageGroups"></div>
+
+                        <div class="button-image-selected">
+                            <label>선택 그룹</label>
+                            <strong id="selectedGroupName">-</strong>
+                        </div>
+
+                        <div class="button-image-field-grid">
+                            <div>
+                                <label for="groupOutputColor">출력 색상</label>
+                                <input type="color" id="groupOutputColor" value="#f7f7f7">
+                            </div>
+
+                            <div>
+                                <label for="sampleTol">색상 허용 범위</label>
+                                <input type="range" id="sampleTol" min="5" max="160" value="52">
+                            </div>
+                        </div>
+
+                        <div class="button-image-range-value">
+                            <span>허용 범위</span>
+                            <b id="sampleTolValue">52</b>
+                        </div>
+
+                        <div class="button-image-sample-list" id="buttonImageSamples"></div>
+
+                        <div class="button-image-row">
+                            <button type="button" class="btn" id="clearSelectedSamples">선택 그룹 비우기</button>
+                            <button type="button" class="btn" id="clearAllSamples">전체 샘플 비우기</button>
+                        </div>
+
+                        <button type="button" class="btn btn--primary" id="generateButtonImage">단색 버튼 이미지 생성</button>
+                        <button type="button" class="btn btn--primary" id="go3">다음: 보정 / 저장</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="part3" class="button-image-step" data-step="3">
+                <button type="button" class="button-image-step__header" id="tab3">
+                    <span class="button-image-step__check" data-step="3"></span>
+                    <span class="button-image-step__text">
+                        <b>파트 3</b>
+                        <small>보정 / 저장</small>
+                    </span>
+                    <span class="button-image-step__status">대기</span>
+                    <span class="button-image-step__arrow">⌄</span>
+                </button>
+
+                <div class="button-image-step__body">
+                    <div class="button-image-box">
+                        <div class="button-image-tool-block">
+                            <strong>자동 보정</strong>
+                            <small>작게 남은 점, 선, 찌꺼기를 배경색으로 정리합니다.</small>
+
+                            <div class="button-image-field-grid mt-8">
+                                <div>
+                                    <label for="cleanupArea">작은 조각 기준</label>
+                                    <input type="number" id="cleanupArea" value="180" min="1">
+                                </div>
+
+                                <div>
+                                    <label for="brushSize">브러쉬 크기</label>
+                                    <input type="range" id="brushSize" min="4" max="90" value="22">
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn--cleanup" id="cleanupPieces">작은 조각 자동 제거</button>
+                        </div>
+
+                        <div class="button-image-tool-block">
+                            <strong>수동 보정</strong>
+                            <small>브러쉬는 선택 그룹 색상, 지우개는 배경색으로 칠합니다.</small>
+
+                            <div class="button-image-row">
+                                <button type="button" class="btn btn--tool" id="brushTool">브러쉬</button>
+                                <button type="button" class="btn btn--tool" id="eraseTool">지우개</button>
+                            </div>
+
+                            <button type="button" class="btn" id="restoreResultBase">생성 직후 이미지로 복구</button>
+                        </div>
+
+                        <div class="button-image-save-box">
+                            <button type="button" class="btn btn--green" id="saveButtonImage">버튼 이미지 저장</button>
+                            <button type="button" class="btn btn--dark" id="applyToConcert">콘서트 제작에 적용 후 이동</button>
+                            <button type="button" class="btn" id="downloadButtonImage">PNG 다운로드</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="button-image-side-guide" id="buttonImageGuide">
+            1번 사진처럼 복잡한 도면을 2번 사진처럼 색상별 단색 이미지로 만드는 전처리 화면입니다.
+        </div>
+    </aside>
+
+    <main class="seatmap-main">
+        <div class="button-image-command-bar">
+            <button type="button" class="button-image-command-btn" id="undoAction">↶ 이전</button>
+            <button type="button" class="button-image-command-btn" id="redoAction">↷ 다음</button>
+            <button type="button" class="button-image-command-btn" id="zoomOut">− 축소</button>
+            <button type="button" class="button-image-command-btn" id="zoomIn">＋ 확대</button>
+            <button type="button" class="button-image-command-btn" id="zoomReset">100%</button>
+            <span class="button-image-zoom-value" id="zoomValue">100%</span>
+        </div>
+
+        <div class="button-image-canvas-wrap">
+            <div class="button-image-canvas-box" id="box">
+                <canvas class="base" id="canvas"></canvas>
+                <canvas id="overlay"></canvas>
+                <div class="button-image-brush-cursor" id="brushCursor"></div>
+
+                <div class="button-image-loupe" id="colorLoupe">
+                    <span class="button-image-loupe__chip" id="loupeChip"></span>
+                    <strong id="loupeHex">#------</strong>
+                    <small id="loupePoint">X -, Y -</small>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <aside class="seatmap-side seatmap-side--right">
+        <div class="button-image-preview-card">
+            <h3>작업 상태</h3>
+
+            <div class="button-image-stat">
+                <span>이미지 크기</span>
+                <b id="imageSizeText">-</b>
+            </div>
+
+            <div class="button-image-stat">
+                <span>등록된 샘플</span>
+                <b id="sampleCountText">0개</b>
+            </div>
+
+            <div class="button-image-stat">
+                <span>저장 상태</span>
+                <b id="saveStateText">미저장</b>
+            </div>
+        </div>
+
+        <div class="button-image-preview-card">
+            <h3>그룹 색상</h3>
+            <div class="button-image-legend" id="buttonImageLegend"></div>
+        </div>
+
+        <div class="button-image-preview-card">
+            <h3>저장 키</h3>
+            <div class="button-image-storage-info">
+                <b>원본</b>
+                <span>seat_button_originalImage</span>
+                <b>결과</b>
+                <span>seat_button_resultImage</span>
+                <b>콘서트 적용</b>
+                <span>concert_originalImage / concert_cleanImage</span>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/js/admin/seatmap-button-image.js"></script>
+</body>
+</html>

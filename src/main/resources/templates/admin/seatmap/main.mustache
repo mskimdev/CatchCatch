@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SeatTrace Main</title>
 
-    <!-- Spring Boot static 경로 기준 -->
     <link rel="stylesheet" href="/css/admin/seatmap-main.css">
 </head>
 
@@ -19,14 +18,34 @@
 </header>
 
 <main class="start-page">
-    <section class="start-panel">
+<!--    <section class="start-panel">-->
+        <section class="start-panel">
         <header class="start-panel__header">
-            <h1>어떤 좌석 시스템을 만들까요?</h1>
-            <p>콘서트 대형장과 소극장은 제작 방식이 다르므로 처음부터 분리합니다.</p>
+            <h1>어떤 작업을 시작할까요?</h1>
+            <p>버튼 이미지 전처리, 콘서트 대형장, 소극장 제작을 분리해서 진행합니다.</p>
         </header>
+<!--        <div class="seat-type-grid seat-type-grid--three">-->
+        <div class="seat-type-grid seat-type-grid--three">
+            <article class="seat-type-card">
+                <div class="seat-type-card__body">
+                    <h2>좌석 이미지 버튼 이미지화</h2>
+                    <p>
+                        원본 도면을 단색화해서 구역 버튼 생성에 쓰기 좋은 이미지로 변환합니다.
+                    </p>
 
-        <div class="seat-type-grid">
-            <!-- 콘서트 / 대형장 -->
+                    <div class="seat-type-card__note">
+                        도면 업로드 → 색상 그룹 지정 → 단색화 → 버튼용 이미지 저장
+                    </div>
+                </div>
+
+                <button
+                        type="button"
+                        class="seat-type-card__button seat-type-card__button--button-image"
+                        data-start-type="seatButtonImage">
+                    버튼 이미지화 시작
+                </button>
+            </article>
+
             <article class="seat-type-card">
                 <div class="seat-type-card__body">
                     <h2>콘서트 / 대형장</h2>
@@ -35,8 +54,7 @@
                     </p>
 
                     <div class="seat-type-card__note">
-                        Stage1 업로드 → Stage1 단색 도면 추출 → Stage2 구역 버튼 →
-                        Stage3 각 구역 좌석 생성
+                        도면 업로드 → 구역 생성 → 각 구역 좌석 생성 → JSON 저장
                     </div>
                 </div>
 
@@ -48,7 +66,6 @@
                 </button>
             </article>
 
-            <!-- 소극장 / 좌석 이미지 -->
             <article class="seat-type-card">
                 <div class="seat-type-card__body">
                     <h2>소극장 / 좌석 이미지</h2>
@@ -57,8 +74,7 @@
                     </p>
 
                     <div class="seat-type-card__note">
-                        기존 방식 유지: 이미지 업로드 → 스포이드 → 좌석 후보 분석 →
-                        좌석 버튼 생성/보정
+                        이미지 업로드 → 스포이드 → 좌석 후보 분석 → 좌석 버튼 생성/보정
                     </div>
                 </div>
 
@@ -83,6 +99,7 @@
     </section>
 </main>
 
+<input class="hidden" type="file" id="seatButtonImageFileInput" accept="image/*">
 <input class="hidden" type="file" id="concertFileInput" accept="image/*">
 <input class="hidden" type="file" id="smallFileInput" accept="image/*">
 

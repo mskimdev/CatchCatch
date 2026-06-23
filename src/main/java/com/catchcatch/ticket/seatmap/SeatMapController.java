@@ -20,6 +20,14 @@ public class SeatMapController {
         return "admin/seatmap/main";
     }
 
+    @GetMapping("/button-image")
+    public String concertButtonImage(Model model) {
+        model.addAttribute("stage1Url", "/admin/seatmap/concert/stage1");
+        model.addAttribute("stage2Url", "/admin/seatmap/concert/stage2");
+
+        return "admin/seatmap/concert-button-image";
+    }
+
     @GetMapping("/concert/stage1")
     public String startConcertStage1(Model model) {
         model.addAttribute("seatmapTitle", "Concert Stage1");
