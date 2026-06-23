@@ -1,7 +1,7 @@
 (() => {
     const PAGE_URL = {
         // 콘서트
-        concert: "/admin/seatmap/concert-stage1",
+        concert: "/admin/seatmap/concert/stage1",
         // 소극장
         small: "/admin/seatmap/small-seat-builder"
     };

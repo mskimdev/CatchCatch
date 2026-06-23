@@ -15,8 +15,10 @@ public class SeatResponse {
         private SeatStatus status;
         private Boolean selectable;
         private Boolean soldOut;
-        public Integer xLabel;
-        public Integer yLabel;
+        public Double xLabel;
+        public Double yLabel;
+        public Double seatSize;
+        public Double seatAngle;
 
 
         public SeatDTO(Seat seat) {
@@ -28,6 +30,8 @@ public class SeatResponse {
             this.status = seat.getStatus();
             this.xLabel = seat.getXLabel();
             this.yLabel = seat.getYLabel();
+            this.seatSize = seat.getSeatSize();
+            this.seatAngle = seat.getSeatAngle();
 
             this.selectable = seat.getStatus() == SeatStatus.AVAILABLE;
             this.soldOut = seat.getStatus() == SeatStatus.SOLD;

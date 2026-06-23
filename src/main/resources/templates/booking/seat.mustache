@@ -5,23 +5,35 @@
 
         <section class="cc-seat-layout cc-seat-layout--wide">
 
-            <!-- 좌석 선택 영역 -->
             <section class="cc-card cc-seat-map-card">
-                <div class="cc-seat-redesign cc-seat-redesign--wide">
+                <div class="cc-seat-redesign cc-seat-redesign--wide"
+                     id="bookingSeatApp"
+                     data-max-select="4"
+                     data-concert-id="{{concertId}}"
+                     data-session-id="{{sessionId}}">
 
-                    <!-- 전체 좌석도 -->
                     <section class="cc-zone-overview cc-zone-overview--large">
                         <div class="cc-zone-overview__head">
                             <strong>전체 좌석도</strong>
-                            <span>등급을 선택하면 좌석이 표시됩니다.</span>
+                            <span>등급 또는 구역을 선택하면 좌석이 표시됩니다.</span>
                         </div>
 
                         <div class="cc-zone-overview__image-box cc-zone-overview__image-box--large">
-                            <img src="/images/sample/seat.jpg"
-                                 alt="전체 좌석도"
-                                 class="cc-zone-overview__image">
+                            {{#seat.overviewImageUrl}}
+                                <img src="{{seat.overviewImageUrl}}"
+                                     alt="전체 좌석도"
+                                     class="cc-zone-overview__image">
+                            {{/seat.overviewImageUrl}}
 
-                            <div id="seatImageHoverLayer" class="cc-seat-image-hover-layer"></div>
+                            {{^seat.overviewImageUrl}}
+                                <img src="/images/sample/seat.jpg"
+                                     alt="전체 좌석도"
+                                     class="cc-zone-overview__image">
+                            {{/seat.overviewImageUrl}}
+
+                            <div id="seatImageHoverLayer"
+                                 class="cc-seat-image-hover-layer"
+                                 aria-hidden="true"></div>
                         </div>
 
                         <div class="cc-zone-tabs" aria-label="좌석 등급 선택">
@@ -53,12 +65,11 @@
                             </div>
                             <div>
                                 <i class="cc-seat-sample cc-seat-sample--sold"></i>
-                                매진
+                                예매 불가
                             </div>
                         </div>
                     </section>
 
-                    <!-- 선택 등급 좌석 -->
                     <section class="cc-zone-detail">
                         <div class="cc-zone-detail__top">
                             <div>
@@ -71,7 +82,8 @@
 
                         <div id="zoneSeatGrid"
                              class="cc-zone-seat-grid"
-                             aria-label="좌석 선택"></div>
+                             aria-label="좌석 선택">
+                        </div>
 
                         <div class="cc-zone-bottom">
                             <button type="button"
@@ -89,7 +101,6 @@
                 </div>
             </section>
 
-            <!-- 오른쪽 선택 좌석 -->
             <aside class="cc-seat-side">
 
                 <div class="cc-card cc-selected-card">
@@ -126,10 +137,13 @@
 
                         <form action="/booking/complete"
                               method="post"
-                              class="cc-complete-form">
+                              class="cc-complete-form cc-payment-form">
+
                             <input type="hidden"
                                    name="seatIds"
                                    id="selectedSeatIds">
+
+                            <div id="selectedSeatInputs"></div>
 
                             <input type="hidden"
                                    name="sessionId"
@@ -152,6 +166,7 @@
                     <ul>
                         <li>보관 시간이 초과되면 선택 좌석이 해제됩니다.</li>
                         <li>좌석은 최대 4석까지 선택할 수 있습니다.</li>
+                        <li>이미 예매된 좌석은 선택할 수 없습니다.</li>
                     </ul>
                 </div>
 
@@ -160,10 +175,116 @@
         </section>
 
         <script>
-            window.CATCHCATCH_SEATS = {{{seat.seatsJson}}};
+            (() => {
+                const rawSeats =
+            {{#seat.seatsJson}}
+                {{{seat.seatsJson}}}
+            {{/seat.seatsJson}}
+            {{^seat.seatsJson}}
+                []
+            {{/seat.seatsJson}};
+
+                function normalizeGrade(value) {
+                    const raw = String(value || "").trim().toUpperCase();
+
+                    if (raw === "VIP") return "VIP";
+                    if (raw === "R" || raw === "R석") return "R";
+                    if (raw === "S" || raw === "S석") return "S";
+                    if (raw === "A" || raw === "A석") return "A";
+                    if (raw === "B" || raw === "B석") return "B";
+
+                    return raw || "A";
+                }
+
+                function gradeName(grade) {
+                    if (!grade) return "좌석";
+                    if (grade === "VIP") return "VIP석";
+                    return `${grade}석`;
+                }
+
+                function normalizeStatus(value) {
+                    const raw = String(value || "AVAILABLE").trim().toUpperCase();
+
+                    if (raw === "AVAILABLE") return "AVAILABLE";
+                    if (raw === "OBSTRUCTED") return "UNAVAILABLE";
+                    if (raw === "REMOVED") return "UNAVAILABLE";
+                    if (raw === "SOLD") return "SOLD";
+                    if (raw === "RESERVED") return "RESERVED";
+                    if (raw === "BOOKED") return "BOOKED";
+                    if (raw === "PENDING") return "PENDING";
+                    if (raw === "CONFIRMED") return "CONFIRMED";
+
+                    return raw;
+                }
+
+                function toNumber(value, fallback) {
+                    const number = Number(value);
+                    return Number.isFinite(number) ? number : fallback;
+                }
+
+                function makeSeatNumber(seat, rowName, seatNo) {
+                    return seat.seatNumber
+                        || seat.name
+                        || `${seat.floor || 1}층 ${seat.sectionName || seat.section || "A"}구역 ${rowName}열 ${seatNo}번`;
+                }
+
+                window.CATCHCATCH_SEATS = Array.isArray(rawSeats)
+                    ? rawSeats.map((seat) => {
+                        const grade = normalizeGrade(seat.grade || seat.gradeCode || seat.seatGrade);
+                        const rowName = seat.rowName || seat.row || seat.seatRow || "A";
+                        const seatNo = seat.seatNo || seat.seatNumberOnly || seat.no || seat.number || seat.seatCol || seat.col || 1;
+                        const status = normalizeStatus(seat.status || seat.seatStatus);
+
+                        return {
+                            ...seat,
+
+                            id: seat.id || seat.seatId || `${seat.floor || 1}-${seat.sectionName || seat.section || "A"}-${rowName}-${seatNo}`,
+
+                            floor: toNumber(seat.floor, 1),
+                            sectionName: seat.sectionName || seat.section || "A",
+
+                            rowName,
+                            row: rowName,
+                            seatRow: rowName,
+
+                            seatNo,
+                            number: seatNo,
+                            no: seatNo,
+                            seatCol: toNumber(seat.seatCol || seat.col || seatNo, 1),
+
+                            seatNumber: makeSeatNumber(seat, rowName, seatNo),
+
+                            grade,
+                            gradeCode: grade,
+                            gradeName: seat.gradeName || gradeName(grade),
+
+                            price: toNumber(seat.price || seat.seatPrice, 0),
+
+                            status,
+                            bookingStatus: seat.bookingStatus || seat.booking_status || "",
+
+                            x: toNumber(seat.x || seat.xLabel, 0),
+                            y: toNumber(seat.y || seat.yLabel, 0),
+                            xLabel: toNumber(seat.xLabel || seat.x, 0),
+                            yLabel: toNumber(seat.yLabel || seat.y, 0),
+
+                            size: toNumber(seat.size, 16),
+                            angle: toNumber(seat.angle, 0)
+                        };
+                    })
+                    : [];
+
+                window.CATCHCATCH_SEAT_META = {
+                    concertId: "{{concertId}}",
+                    sessionId: "{{sessionId}}",
+                    maxSelectCount: 4,
+                    defaultSeatSize: 16,
+                    defaultSeatAngle: 0
+                };
+            })();
         </script>
 
-        <script src="/js/booking/seat.js?v=20260610"></script>
+        <script src="/js/booking/seat.js?v=20260623"></script>
 
     </div>
 </main>
