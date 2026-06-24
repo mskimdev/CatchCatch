@@ -1,0 +1,144 @@
+.cc-booking-item {
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cc-booking-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(80, 45, 140, 0.12);
+}
+
+.cc-booking-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.cc-detail-card {
+    padding: 24px 28px;
+    border-radius: 12px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    box-shadow: 0 4px 18px rgba(80, 45, 140, 0.06);
+}
+
+.cc-detail-booking-number {
+    margin: 0 0 6px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #006fd6;
+}
+
+.cc-detail-title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    color: #006fd6;
+}
+
+.cc-detail-line {
+    height: 1px;
+    margin: 16px 0;
+    background-color: #e5e7eb;
+}
+
+.cc-detail-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin: 10px 0;
+    font-size: 15px;
+}
+
+.cc-detail-row span {
+    width: 72px;
+    flex-shrink: 0;
+    color: #777;
+}
+
+.cc-detail-row strong {
+    font-weight: 500;
+    color: #222;
+}
+
+.cc-detail-section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.cc-detail-section-title h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: #222;
+}
+
+.cc-detail-arrow {
+    font-size: 20px;
+    color: #333;
+}
+
+.cc-detail-pay-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 14px 0;
+    font-size: 15px;
+}
+
+.cc-detail-pay-row div {
+    display: flex;
+    gap: 24px;
+}
+
+.cc-detail-pay-row span {
+    color: #777;
+}
+
+.cc-detail-pay-row strong {
+    font-weight: 500;
+    color: #222;
+}
+
+.cc-detail-pay-total strong:first-child {
+    font-weight: 800;
+}
+
+.cc-detail-pay-total strong:last-child {
+    color: #ff3333;
+    font-weight: 800;
+}
+
+.cc-payment-detail-btn {
+    width: 100%;
+    height: 44px;
+    margin-top: 16px;
+    border: 1px solid #ddd;
+    background-color: #fafafa;
+    font-size: 15px;
+    color: #333;
+    cursor: pointer;
+}
+
+.cc-payment-detail-btn:hover {
+    background-color: #f4f0ff;
+    border-color: #8a2be2;
+    color: #6d28d9;
+}
+
+.cc-payment-detail-btn:disabled {
+    cursor: default;
+    color: #aaa;
+    background-color: #f5f5f5;
+}
+
+.cc-kakao-map {
+    width: 100%;
+    height: 320px;
+    margin-top: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #f2f2f2;
+}

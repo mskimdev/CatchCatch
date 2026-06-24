@@ -216,6 +216,25 @@ public class UserController {
         return "user/liked-concerts";
     }
 
+    @GetMapping("/users/bookings/{bookingId}")
+    public String bookingDetail(@PathVariable Integer bookingId,
+                                @SessionAttribute SessionUser sessionUser,
+                                Model model) {
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+
+        addSidebarAttributes(model, sessionUser);
+
+        BookingResponse.DetailDTO detail =
+                userService.findBookingDetail(sessionUser.getId(), bookingId);
+
+        model.addAttribute("detail", detail);
+        model.addAttribute("navBookings", true);
+
+        return "user/booking-detail";
+    }
+
 
     private void addSidebarAttributes(Model model, SessionUser user) {
         model.addAttribute("username", user.getUsername());
