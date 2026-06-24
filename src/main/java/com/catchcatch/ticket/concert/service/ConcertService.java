@@ -58,11 +58,11 @@ public class ConcertService {
                 .collect(Collectors.toList());
     } // end of getPopularConcerts
 
-    // 3. 오픈 예정 콘서트
-    public List<ConcertResponse.ListDTO> getComingSoonConcerts() {
+    // 3. 홈 오픈 예정 섹션
+    public List<ConcertResponse.HomeOpenScheduleDTO> getHomeOpenSchedules() {
         List<Concert> soonList = concertRepository.findAllByStatusWithFetchJoin(ConcertStatus.COMING_SOON);
         return soonList.stream()
-                .map(ConcertResponse.ListDTO::from)
+                .map(ConcertResponse.HomeOpenScheduleDTO::from)
                 .collect(Collectors.toList());
     }
 
