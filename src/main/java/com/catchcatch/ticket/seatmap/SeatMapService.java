@@ -6,12 +6,58 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Base64;
 
 @Service
 public class SeatMapService {
 
     private static final Path SEATMAP_JSON_DIR =
             Path.of("src/main/resources/static/json/seatmap");
+
+    public OverwriteSaveResult overwriteSave(SeatMapRequest.OverwriteSaveDTO req) {
+        try {
+            Path jsonPath = Path.of(
+                    "src/main/resources/static/json/seatmap/seatmap-concert-session.json"
+            );
+
+            Path imagePath = Path.of(
+                    "src/main/resources/static/images/seatmap/generated/seatmap-concert-image.png"
+            );
+
+            Files.createDirectories(jsonPath.getParent());
+            Files.createDirectories(imagePath.getParent());
+
+            String jsonText = req.getJsonText();
+
+            if (jsonText == null || jsonText.isBlank()) {
+                jsonText = "{}";
+            }
+
+            Files.writeString(jsonPath, jsonText, StandardCharsets.UTF_8);
+
+            String imageDataUrl = req.getImageDataUrl();
+
+            if (imageDataUrl != null && imageDataUrl.startsWith("data:image")) {
+                String base64 = imageDataUrl.replaceFirst("^data:image/\\w+;base64,", "");
+                byte[] imageBytes = Base64.getDecoder().decode(base64);
+                Files.write(imagePath, imageBytes);
+            }
+
+            return new OverwriteSaveResult(
+                    "/json/seatmap/seatmap-concert-session.json",
+                    "/images/seatmap/generated/seatmap-concert-image.png"
+            );
+
+        } catch (IOException e) {
+            throw new RuntimeException("좌석도 덮어쓰기 저장 실패", e);
+        }
+    }
+
+    public record OverwriteSaveResult(
+            String jsonUrl,
+            String imageUrl
+    ) {
+    }
 
     public String saveJsonFile(SeatMapRequest.SaveDTO req) {
         try {

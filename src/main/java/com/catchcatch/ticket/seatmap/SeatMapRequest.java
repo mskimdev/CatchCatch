@@ -12,4 +12,11 @@ public class SeatMapRequest {
         private String fileName;
         private String json;
     }
+
+    @Getter
+    @Setter
+    public static class OverwriteSaveDTO {
+        private String imageDataUrl;
+        private String jsonText;
+    }
 }

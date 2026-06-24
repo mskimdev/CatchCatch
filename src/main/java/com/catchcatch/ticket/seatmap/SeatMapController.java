@@ -17,7 +17,23 @@ public class SeatMapController {
 
     @GetMapping("/main")
     public String startSeatMap() {
+
         return "admin/seatmap/main";
+    }
+
+    // 이미지 저장하기
+    @ResponseBody
+    @PostMapping("/overwrite-save")
+    public ResponseEntity<Map<String, String>> overwriteSave(
+            @RequestBody SeatMapRequest.OverwriteSaveDTO req
+    ) {
+        SeatMapService.OverwriteSaveResult result = seatMapService.overwriteSave(req);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "저장 완료",
+                "jsonUrl", result.jsonUrl(),
+                "imageUrl", result.imageUrl()
+        ));
     }
 
     @GetMapping("/button-image")
@@ -25,7 +41,7 @@ public class SeatMapController {
         model.addAttribute("stage1Url", "/admin/seatmap/concert/stage1");
         model.addAttribute("stage2Url", "/admin/seatmap/concert/stage2");
 
-        return "admin/seatmap/concert-button-image";
+        return "admin/seatmap/button-image";
     }
 
     @GetMapping("/concert/stage1")

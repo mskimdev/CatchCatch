@@ -1,33 +1,23 @@
-<header class="seatmap-header" data-step="{{seatmapStep}}">
-    <div class="seatmap-header__left">
-        <a class="seatmap-header__system" href="/admin/seatmap-main">
-            <span class="seatmap-header__logo">▦</span>
-            <span>좌석 도면 제작 시스템</span>
+<header class="seatmap-header-simple" data-step="{{seatmapStep}}">
+    <div class="seatmap-header-simple__brand">
+        <a class="seatmap-header-simple__home" href="/admin/seatmap/main" aria-label="좌석 도면 제작 시스템 홈">
+            <span class="seatmap-header-simple__logo">▦</span>
+            <strong class="seatmap-header-simple__name">SeatTrace</strong>
+            <span class="seatmap-header-simple__sub">좌석 도면 제작 시스템</span>
         </a>
-
-        <strong class="seatmap-header__title">{{seatmapTitle}}</strong>
     </div>
 
-    <nav class="seatmap-header__progress" aria-label="좌석 도면 제작 단계">
-        <span class="seatmap-step seatmap-step--1">1. 단색 도면 추출</span>
-        <span class="seatmap-step seatmap-step--2">2. 구역 생성</span>
-        <span class="seatmap-step seatmap-step--3">3. 좌석 생성</span>
-        <span class="seatmap-step seatmap-step--4">4. 결과 확인 및 JSON 생성</span>
-    </nav>
-
-    <div class="seatmap-header__actions">
-        {{#showTempSave}}
-            <button type="button" class="seatmap-header__save" id="{{tempSaveButtonId}}">
-                임시 저장
-            </button>
-        {{/showTempSave}}
+    <div class="seatmap-header-simple__actions">
+        <button type="button" class="seatmap-header-simple__save" id="seatmapHeaderSave">
+            저장하기
+        </button>
 
         {{#prevUrl}}
-            <a class="seatmap-header__button" href="{{prevUrl}}">이전</a>
+            <a class="seatmap-header-simple__button" href="{{prevUrl}}">이전</a>
         {{/prevUrl}}
 
         {{#nextUrl}}
-            <a class="seatmap-header__button seatmap-header__button--primary" href="{{nextUrl}}">
+            <a class="seatmap-header-simple__button seatmap-header-simple__button--primary" href="{{nextUrl}}">
                 {{nextLabel}}
             </a>
         {{/nextUrl}}
@@ -35,3 +25,4 @@
 </header>
 
 <link rel="stylesheet" href="/css/admin/seatmap-header.css">
+<script defer src="/js/admin/seatmap-header.js"></script>
