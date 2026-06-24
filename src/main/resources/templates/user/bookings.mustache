@@ -1,5 +1,6 @@
 {{> layout/header}}
 <link rel="stylesheet" href="/css/user-mypage.css">
+
 <main class="cc-main">
     <div class="cc-container cc-mypage-layout">
 
@@ -12,47 +13,63 @@
                 <h2>예매 내역</h2>
                 <div class="cc-chip-row" style="margin:0">
                     <a class="cc-chip {{#statusAll}}is-active{{/statusAll}}" href="/users/bookings">전체</a>
-                    <a class="cc-chip {{#statusPaid}}is-active{{/statusPaid}}" href="/users/bookings?status=PAID">예매 완료</a>
-                    <a class="cc-chip {{#statusCanceled}}is-active{{/statusCanceled}}" href="/users/bookings?status=CANCELED">취소</a>
+                    <a class="cc-chip {{#statusPaid}}is-active{{/statusPaid}}" href="/users/bookings?status=PAID">예매
+                        완료</a>
+                    <a class="cc-chip {{#statusCanceled}}is-active{{/statusCanceled}}"
+                       href="/users/bookings?status=CANCELED">취소</a>
                 </div>
             </div>
 
             {{#bookings}}
-                <div class="cc-card cc-booking-item">
-                    <img class="cc-booking-item__poster" src="{{concertPosterUrl}}" alt="{{concertTitle}} 포스터">
+                <div class="cc-card cc-booking-item js-booking-detail"
+                     data-detail-url="/users/bookings/{{id}}">
+
+                    <img class="cc-booking-item__poster"
+                         src="{{concertPosterUrl}}"
+                         alt="{{concertTitle}} 포스터">
+
                     <div class="cc-booking-item__info">
                         <span class="cc-badge {{#isPaid}}cc-badge--fill{{/isPaid}} {{#isCanceled}}cc-badge--gray{{/isCanceled}}">
                             {{statusLabel}}
                         </span>
+
                         <h4>{{concertTitle}}</h4>
+
                         <p>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                 style="width:14px;height:14px;vertical-align:-2px;margin-right:4px">
+                                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                                <path d="M16 2v4M8 2v4M3 10h18"/>
+                            </svg>
                             {{sessionText}}
                         </p>
+
                         <p>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                 style="width:14px;height:14px;vertical-align:-2px;margin-right:4px">
+                                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z"/>
+                                <circle cx="12" cy="10" r="3"/>
+                            </svg>
                             {{venueName}}
                         </p>
+
                         <p>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2Z"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                 style="width:14px;height:14px;vertical-align:-2px;margin-right:4px">
+                                <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2Z"/>
+                            </svg>
                             {{seatName}}
                         </p>
+
                         <p class="cc-booking-item__number">예매번호 {{bookingNumber}}</p>
                     </div>
+
                     <div class="cc-booking-item__price">
                         <strong>{{priceText}}</strong>
-
-                        {{#isPending}}
-                            <a class="cc-btn cc-btn--primary"
-                               style="height:38px;font-size:13px;margin-top:10px;display:inline-flex;align-items:center;justify-content:center;"
-                               href="/booking/payment?bookingId={{id}}">
-                            결제하기
-                            </a>
-                        {{/isPending}}
-
                     </div>
                 </div>
             {{/bookings}}
+
             {{^bookings}}
                 <div class="cc-empty-state">
                     <p>예매 내역이 없습니다.</p>
@@ -64,4 +81,5 @@
     </div>
 </main>
 
+<script src="/js/booking/booking.js"></script>
 {{> layout/footer}}
