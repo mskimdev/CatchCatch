@@ -22,6 +22,7 @@ public class InquiryController {
 
     @GetMapping("/save")
     public String inquiryForm(@SessionAttribute(Define.SESSION_USER) SessionUser sessionUser, Model model) {
+        model.addAttribute("navInquirySave", true);
         model.addAttribute("hasPhone", sessionUser != null &&
                 sessionUser.getPhone() != null &&
                 !sessionUser.getPhone().isBlank());
@@ -49,6 +50,7 @@ public class InquiryController {
         boolean asc = "asc".equals(sort);
 
 
+        model.addAttribute("navInquiry", true);
         model.addAttribute("inquiries", inquiryService.findAllByFilter(status, publicOnly, asc, myOnly, sessionUser.getId()));
 
         model.addAttribute("filterAll", status == null && !myOnly);
@@ -67,8 +69,7 @@ public class InquiryController {
 
         InquiryResponse.DetailDTO inquiry = inquiryService.findById(id, sessionUser.getId());
 
-
-
+        model.addAttribute("navInquiry", true);
         model.addAttribute("inquiry", inquiry);
         return "support/inquiry-detail";
     }
@@ -80,6 +81,7 @@ public class InquiryController {
             @SessionAttribute(Define.SESSION_USER) SessionUser sessionUser){
 
         InquiryResponse.DetailDTO inquiry = inquiryService.findById(id, sessionUser.getId());
+        model.addAttribute("navInquirySave", true);
         model.addAttribute("inquiry", inquiry);
         model.addAttribute("hasPhone", sessionUser.getPhone() != null && !sessionUser.getPhone().isBlank());
 
