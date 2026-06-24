@@ -88,6 +88,8 @@ public class BookingResponse {
         private Integer userId;
         private Integer concertSessionId;
 
+        private String ticketToken;
+
         private List<Integer> seatIds;
         private Integer seatCount;
         private String seatName;
@@ -109,7 +111,8 @@ public class BookingResponse {
         private String venueAddress;
 
         // 추가: 결제 상세 이동용
-        private Integer paymentId;
+        private Integer paymentId;          // DB payment id
+        private String portOnePaymentId;    // 포트원 결제 코드
         private Boolean hasPayment;
 
         // 추가: 예약자 정보
@@ -135,6 +138,7 @@ public class BookingResponse {
 
             this.bookingNumber = booking.getBookingNumber();
             this.status = booking.getStatus();
+            this.ticketToken = booking.getTicketToken();
 
             this.totalPrice = calculateTotalPrice(bookingSeats);
             this.totalPriceText = formatPrice(this.totalPrice);
@@ -155,7 +159,9 @@ public class BookingResponse {
             this.reserverEmail = maskEmail(booking.getUser().getEmail());
 
             // 기본값
+            // 기본값
             this.paymentId = null;
+            this.portOnePaymentId = null;
             this.hasPayment = false;
         }
 
@@ -163,7 +169,8 @@ public class BookingResponse {
             this(booking);
 
             if (payment != null) {
-                this.paymentId = payment.getId();
+                this.paymentId = payment.getId();              // DB 결제 id
+                this.portOnePaymentId = payment.getPaymentId(); // 포트원 결제 코드
                 this.hasPayment = true;
             }
         }

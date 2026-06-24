@@ -10,6 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -40,6 +41,14 @@ public class Booking {
     // 예매 번호 - 사용자 조회 및 티켓 확인용
     @Column(name = "booking_number", nullable = false, unique = true)
     private String bookingNumber;
+
+    // QR 입장권 검증용 토큰
+    @Column(name = "ticket_token", unique = true, length = 36)
+    private String ticketToken;
+
+    // 입장 처리 시간
+    @Column(name = "checked_in_at")
+    private Timestamp checkedInAt;
 
     // 예매 상태 - PENDING, PAID, CANCELED, EXPIRED
     @Enumerated(EnumType.STRING)
@@ -129,6 +138,24 @@ public class Booking {
     }
 
     /**
+     * 입장 여부 확인
+     */
+    public boolean isCheckedIn() {
+        return this.checkedInAt != null;
+    }
+
+    /**
+     * 입장 처리
+     */
+    public void checkIn() {
+        if (this.checkedInAt != null) {
+            throw new IllegalStateException("이미 입장 처리된 예매입니다.");
+        }
+
+        this.checkedInAt = new Timestamp(System.currentTimeMillis());
+    }
+
+    /**
      * 예매 만료 처리
      */
     public void expire() {
@@ -137,5 +164,12 @@ public class Booking {
         }
 
         this.status = Status.EXPIRED;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.ticketToken == null) {
+            this.ticketToken = UUID.randomUUID().toString();
+        }
     }
 }
