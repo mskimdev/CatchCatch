@@ -2,11 +2,17 @@
     <section class="stage4-result-page">
 
         <div class="stage4-complete-card">
-            <strong>JSON 생성 준비 완료</strong>
-            <p>
-                배치용 JSON과 예매용 JSON이 생성되었습니다.
-                저장 버튼을 누르면 서버에 JSON 파일로 저장됩니다.
+            <strong>좌석 이미지 / JSON 생성 완료</strong>
+            <p id="summaryText">
+                Stage3 좌석 배치를 기준으로 최종 좌석 이미지, 배치용 JSON, 예매용 JSON을 새로 생성합니다.
             </p>
+
+            <div class="stats stage4-stats">
+                <div class="stat"><b id="sumFloors">0</b><span>층</span></div>
+                <div class="stat"><b id="sumSections">0</b><span>구역</span></div>
+                <div class="stat"><b id="sumSeats">0</b><span>좌석</span></div>
+                <div class="stat"><b id="sumObstructed">0</b><span>장애석</span></div>
+            </div>
 
             <div class="stage4-main-actions">
                 <button type="button" class="btn btn--green" id="saveAllJsonMain">
@@ -19,40 +25,34 @@
                     예매용 JSON 복사
                 </button>
             </div>
+
+            <p class="help-text" id="saveResultText">아직 서버 저장 전입니다.</p>
         </div>
 
         <div class="stage4-file-grid">
             <article class="stage4-file-card">
-                <h3>배치용 JSON</h3>
-                <p>예매 화면에서 좌석 위치를 그릴 때 사용합니다.</p>
-                <ul>
-                    <li>x, y, w, h 포함</li>
-                    <li>color 포함</li>
-                    <li>구역 polygon 포함</li>
-                    <li>overviewImage 포함</li>
-                </ul>
+                <h3>최종 좌석 이미지</h3>
+                <p>원본을 지우지 않고 Stage3 좌석 데이터로 새로 그린 이미지입니다.</p>
+                <div class="stage4-preview-box">
+                    <img id="generatedOverviewPreview" alt="최종 좌석 이미지 미리보기">
+                </div>
             </article>
 
             <article class="stage4-file-card">
-                <h3>예매용 JSON</h3>
-                <p>좌석 DB 또는 예매 로직에 넣을 때 사용합니다.</p>
-                <ul>
-                    <li>REMOVED 좌석 제외</li>
-                    <li>AVAILABLE 저장</li>
-                    <li>OBSTRUCTED 저장</li>
-                    <li>좌석 가격, 등급 포함</li>
-                </ul>
+                <h3>등급 요약</h3>
+                <p>REMOVED 좌석은 제외하고 집계합니다.</p>
+                <div id="gradeSummaryList"></div>
             </article>
         </div>
 
-        <details class="stage4-json-debug" id="rawJsonDetails">
+        <details class="stage4-json-debug" id="rawJsonDetails" open>
             <summary>JSON 원문 확인하기</summary>
 
             <div class="stage4-debug-grid">
                 <div class="stage4-card">
                     <div class="stage4-card__header">
                         <strong>배치용 JSON</strong>
-                        <span>화면에서는 overviewImage base64 생략</span>
+                        <span>좌석 위치 / 크기 / 각도 / 이미지 포함</span>
                     </div>
                     <textarea id="layoutJsonPreview" readonly></textarea>
                 </div>
@@ -60,7 +60,7 @@
                 <div class="stage4-card">
                     <div class="stage4-card__header">
                         <strong>예매용 JSON</strong>
-                        <span>REMOVED 제외</span>
+                        <span>REMOVED 제외 / AVAILABLE, OBSTRUCTED 저장</span>
                     </div>
                     <textarea id="bookingJsonPreview" readonly></textarea>
                 </div>

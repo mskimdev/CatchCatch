@@ -15,6 +15,13 @@
         "concert_extractSettings",
         "concert_finalLayout",
         "concert_imageMeta",
+        "concert_stage",
+        "concert_stage3_seats",
+        "concert_stage3_layouts",
+        "concert_generated_overviewImage",
+        "concert_layout_json",
+        "concert_booking_seats",
+        "concert_final_seats",
         "small_originalImage",
         "small_detectedSeats",
         "small_seats",
@@ -102,6 +109,7 @@
 
         return localStorage.getItem("seat_button_resultImage")
             || localStorage.getItem("concert_cleanImage")
+            || localStorage.getItem("concert_generated_overviewImage")
             || localStorage.getItem("concert_buttonImage")
             || localStorage.getItem("seat_button_originalImage")
             || localStorage.getItem("concert_originalImage")

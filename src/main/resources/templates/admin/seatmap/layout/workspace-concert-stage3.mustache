@@ -14,6 +14,46 @@
 
             <div class="seatmap-step__body">
                 <div class="seatmap-step__system">
+                    <div class="box active stage3-stage-box">
+                        <h3>메인 스테이지 기준</h3>
+                        <div class="help-text">
+                            좌석은 이제 원본에서 지우는 방식이 아니라 스테이지 기준으로 새로 그립니다.
+                            먼저 미니맵에서 스테이지 위치를 맞춘 뒤 좌석을 생성하세요.
+                        </div>
+
+                        <label class="stage3-check-row">
+                            <input type="checkbox" id="stageEditMode">
+                            <span>미니맵에서 스테이지 위치 조절</span>
+                        </label>
+
+                        <div class="field-grid field-grid--two">
+                            <div>
+                                <label for="stageX">스테이지 X</label>
+                                <input type="number" id="stageX" value="0">
+                            </div>
+                            <div>
+                                <label for="stageY">스테이지 Y</label>
+                                <input type="number" id="stageY" value="0">
+                            </div>
+                        </div>
+
+                        <div class="field-grid field-grid--two">
+                            <div>
+                                <label for="stageW">스테이지 너비</label>
+                                <input type="number" id="stageW" value="360" min="20">
+                            </div>
+                            <div>
+                                <label for="stageH">스테이지 높이</label>
+                                <input type="number" id="stageH" value="54" min="10">
+                            </div>
+                        </div>
+
+                        <div class="field-grid field-grid--two">
+                            <button type="button" class="btn" id="resetStagePosition">상단 중앙 자동 배치</button>
+                            <button type="button" class="btn btn--dark" id="autoStageAngles">스테이지 기준 각도 적용</button>
+                        </div>
+                    </div>
+
                     <div class="box active">
                         <label for="baseSectionSelect">기준 구역</label>
                         <select id="baseSectionSelect"></select>

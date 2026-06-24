@@ -1,18 +1,103 @@
 {
-  "version": 2,
-  "createdAt": "2026-06-24T01:28:59.420Z",
-  "sourceKey": "seat_button_originalImage",
-  "width": 696,
-  "height": 621,
-  "algorithm": "scan-role-enclosure-region-brain",
-  "steps": [
-    "multiScan",
-    "outerWhiteFloodFill",
-    "innerTextHoleDetection",
-    "smallIslandAbsorption",
-    "majorityCleanup",
-    "componentDominantFill"
+  "_comment": "SeatTrace 1단계 좌석 이미지 버튼 이미지화 결과입니다. 원본 도면을 단색 구역 이미지로 변환한 PNG와 HTML 미리보기 파일을 함께 저장합니다.",
+  "service": "SeatTrace",
+  "type": "button-image-result",
+  "savedAt": "2026-06-24T03:24:33.841Z",
+  "page": "button-image",
+  "path": "/admin/seatmap/button-image",
+  "output": {
+    "jsonUrl": "/json/seatmap/seatmap-concert-session.json",
+    "imageUrl": "/images/seatmap/generated/seatmap-concert-image.png",
+    "htmlUrl": "/html/seatmap/generated/seatmap-concert-image.html"
+  },
+  "image": {
+    "exists": true,
+    "width": 696,
+    "height": 621,
+    "format": "png"
+  },
+  "source": {
+    "originalExists": true,
+    "originalKey": "seat_button_originalImage",
+    "resultKey": "seat_button_resultImage"
+  },
+  "groups": [
+    {
+      "id": "background",
+      "name": "배경 / 불필요",
+      "gradeName": "BG",
+      "color": "#f7f7f7",
+      "role": "배경"
+    },
+    {
+      "id": "stage",
+      "name": "STAGE / 무대",
+      "gradeName": "STAGE",
+      "color": "#222222",
+      "role": "검은 구조"
+    },
+    {
+      "id": "text",
+      "name": "층수 / 안내 문자",
+      "gradeName": "TEXT",
+      "color": "#8f8f8f",
+      "role": "회색 구조"
+    },
+    {
+      "id": "vip",
+      "name": "VIP / 갈색 좌석",
+      "gradeName": "VIP",
+      "color": "#c7b28e",
+      "role": "좌석 갈색"
+    },
+    {
+      "id": "standing",
+      "name": "STANDING",
+      "gradeName": "S",
+      "color": "#8067ff",
+      "role": "좌석 보라"
+    },
+    {
+      "id": "seatPink",
+      "name": "좌석 핑크",
+      "gradeName": "R",
+      "color": "#f77bab",
+      "role": "좌석 핑크"
+    },
+    {
+      "id": "seatBlue",
+      "name": "좌석 하늘",
+      "gradeName": "B",
+      "color": "#63cce4",
+      "role": "좌석 하늘"
+    },
+    {
+      "id": "seatGreen",
+      "name": "좌석 연두",
+      "gradeName": "A",
+      "color": "#2fc28e",
+      "role": "좌석 초록"
+    },
+    {
+      "id": "seatOrange",
+      "name": "좌석 오렌지",
+      "gradeName": "A",
+      "color": "#f4a11f",
+      "role": "좌석 오렌지"
+    },
+    {
+      "id": "line",
+      "name": "외곽선 / 기타 라인",
+      "gradeName": "LINE",
+      "color": "#eeeeee",
+      "role": "흰색 후보"
+    }
   ],
+  "corrections": {
+    "selectedRegionCount": 0,
+    "selectedRegions": []
+  },
+  "algorithm": "scan-role-enclosure-region-brain",
   "stats": {
     "width": 696,
     "height": 621,
@@ -1823,88 +1908,5 @@
         "count": 1
       }
     ]
-  },
-  "groups": [
-    {
-      "id": "background",
-      "name": "배경 / 불필요",
-      "gradeName": "BG",
-      "output": "#f7f7f7",
-      "role": 1,
-      "samples": []
-    },
-    {
-      "id": "stage",
-      "name": "STAGE / 무대",
-      "gradeName": "STAGE",
-      "output": "#222222",
-      "role": 5,
-      "samples": []
-    },
-    {
-      "id": "text",
-      "name": "층수 / 안내 문자",
-      "gradeName": "TEXT",
-      "output": "#8f8f8f",
-      "role": 4,
-      "samples": []
-    },
-    {
-      "id": "vip",
-      "name": "VIP / 갈색 좌석",
-      "gradeName": "VIP",
-      "output": "#c7b28e",
-      "role": 25,
-      "samples": []
-    },
-    {
-      "id": "standing",
-      "name": "STANDING",
-      "gradeName": "S",
-      "output": "#8067ff",
-      "role": 23,
-      "samples": []
-    },
-    {
-      "id": "seatPink",
-      "name": "좌석 핑크",
-      "gradeName": "R",
-      "output": "#f77bab",
-      "role": 20,
-      "samples": []
-    },
-    {
-      "id": "seatBlue",
-      "name": "좌석 하늘",
-      "gradeName": "B",
-      "output": "#63cce4",
-      "role": 24,
-      "samples": []
-    },
-    {
-      "id": "seatGreen",
-      "name": "좌석 연두",
-      "gradeName": "A",
-      "output": "#2fc28e",
-      "role": 21,
-      "samples": []
-    },
-    {
-      "id": "seatOrange",
-      "name": "좌석 오렌지",
-      "gradeName": "A",
-      "output": "#f4a11f",
-      "role": 22,
-      "samples": []
-    },
-    {
-      "id": "line",
-      "name": "외곽선 / 기타 라인",
-      "gradeName": "LINE",
-      "output": "#eeeeee",
-      "role": 2,
-      "samples": []
-    }
-  ],
-  "selectedRegionGrades": []
+  }
 }

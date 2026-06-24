@@ -1,76 +1,196 @@
-{{> admin/seatmap/layout/header}}
+<aside class="seatmap-side seatmap-side--left">
 
-<link href="/css/admin/seatmap-workspace.css" rel="stylesheet">
-<link href="/css/admin/seatmap-concert-stage1.css" rel="stylesheet">
+    <div class="seatmap-step-list">
 
-<body>
-<div class="seatmap-workspace seatmap-workspace--stage1">
-
-    {{> admin/seatmap/layout/workspace-concert-stage1}}
-
-    <main class="seatmap-main">
-
-        <div class="seatmap-command-bar" aria-label="공용 작업 명령">
-            <button type="button" class="seatmap-command-btn" id="undoAction" title="이전 작업 Ctrl+Z">
-                ↶ 이전
+        <section id="part1" class="seatmap-step is-active" data-step="1">
+            <button type="button" class="seatmap-step__header active" id="tab1">
+                <span class="seatmap-step__check" data-step="1"></span>
+                <span class="seatmap-step__text">
+                    <b>파트 1</b>
+                    <small>스테이지 / 기준 이미지</small>
+                </span>
+                <span class="seatmap-step__status">진행중</span>
+                <span class="seatmap-step__arrow">⌄</span>
             </button>
 
-            <button type="button" class="seatmap-command-btn" id="redoAction" title="다음 작업 Ctrl+Y">
-                ↷ 다음
-            </button>
-
-            <button type="button" class="seatmap-command-btn" id="zoomTool" title="오른쪽 드래그 확대 / 왼쪽 드래그 축소">
-                🔍 확대
-            </button>
-
-            <button type="button" class="seatmap-command-btn" id="rotateTool" title="마우스를 누른 채 좌우로 드래그하면 이미지가 회전됩니다">
-                ⟳ 회전
-            </button>
-
-            <span class="seatmap-rotate-value" id="rotateValue">0°</span>
-
-            <button type="button" class="seatmap-command-btn" id="zoomReset" title="확대 초기화">
-                100%
-            </button>
-
-            <span class="seatmap-zoom-value" id="zoomValue">100%</span>
-        </div>
-
-        <div class="canvas-wrap">
-            <div class="canvas-head">
-                <span id="title">원본 / 방향 / 자르기</span>
-                <span id="size">-</span>
-            </div>
-
-            <div class="canvas-box" id="box">
-                <canvas class="base" id="canvas"></canvas>
-                <canvas id="overlay"></canvas>
-                <div id="eraserCursor" class="eraser-cursor"></div>
-
-                <div class="color-loupe" id="colorLoupe" aria-hidden="true">
-                    <div class="color-loupe__lens">
-                        <canvas id="loupeCanvas" width="132" height="132"></canvas>
-                    </div>
-
-                    <div class="color-loupe__info">
-                        <div class="color-loupe__top">
-                            <span class="color-loupe__chip" id="loupeChip"></span>
-                            <strong id="loupeHex">#------</strong>
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active">
+                        <div class="stage1-tool-title">
+                            <strong>도면 기준 정리</strong>
+                            <span>필요하면 회전/자르기 후, 좌석이 바라볼 메인 스테이지 위치를 먼저 잡습니다.</span>
                         </div>
-                        <div id="loupeRgb">RGB -</div>
-                        <div id="loupePoint">X -, Y -</div>
+
+                        <button type="button" class="btn btn--dark" id="cropStart">범위 드래그 시작</button>
+                        <button type="button" class="btn" id="cropApply" disabled>선택 범위로 자르기</button>
+
+                        <div class="stage1-tool-title mt-10">
+                            <strong>메인 스테이지 위치</strong>
+                            <span>전체 구역 좌석 각도는 이 스테이지 중심을 기준으로 자동 계산됩니다.</span>
+                        </div>
+
+                        <div class="field-grid field-grid--two">
+                            <div>
+                                <label for="stageX">Stage X</label>
+                                <input type="number" id="stageX" value="0">
+                            </div>
+                            <div>
+                                <label for="stageY">Stage Y</label>
+                                <input type="number" id="stageY" value="0">
+                            </div>
+                        </div>
+
+                        <div class="field-grid field-grid--two">
+                            <div>
+                                <label for="stageW">Stage W</label>
+                                <input type="number" id="stageW" value="320" min="20">
+                            </div>
+                            <div>
+                                <label for="stageH">Stage H</label>
+                                <input type="number" id="stageH" value="48" min="12">
+                            </div>
+                        </div>
+
+                        <div class="stage1-button-grid">
+                            <button type="button" class="btn" id="stagePlaceMode">도면에서 위치 찍기</button>
+                            <button type="button" class="btn" id="stageAutoTop">상단 중앙 자동</button>
+                        </div>
+
+                        <button type="button" class="btn btn--primary" id="stageApply">스테이지 적용</button>
+                        <button type="button" class="btn btn--primary" id="go2">다음: 구역 좌석 초안</button>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
 
-    </main>
+        <section id="part2" class="seatmap-step" data-step="2">
+            <button type="button" class="seatmap-step__header" id="tab2">
+                <span class="seatmap-step__check" data-step="2"></span>
+                <span class="seatmap-step__text">
+                    <b>파트 2</b>
+                    <small>구역 선택 / 좌석 수</small>
+                </span>
+                <span class="seatmap-step__status">대기</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
 
-</div>
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active">
+                        <div class="stage1-tool-title">
+                            <strong>구역 외곽 찍기</strong>
+                            <span>구역 하나를 선택하고, 그 구역의 세로/가로 좌석 수를 지정합니다.</span>
+                        </div>
 
-<div class="toast" id="toast"></div>
+                        <div class="field-grid field-grid--two">
+                            <div>
+                                <label for="sectionFloor">층</label>
+                                <input type="text" id="sectionFloor" value="1층">
+                            </div>
+                            <div>
+                                <label for="sectionName">구역명</label>
+                                <input type="text" id="sectionName" value="A2">
+                            </div>
+                        </div>
 
-<script src="/js/admin/seatmap-workspace.js" defer></script>
-<script src="/js/admin/seatmap-concert-stage1.js"></script>
-</body>
-</html>
+                        <div class="field-grid field-grid--two">
+                            <div>
+                                <label for="sectionGrade">등급</label>
+                                <input type="text" id="sectionGrade" value="일반석">
+                            </div>
+                            <div>
+                                <label for="sectionColor">구역색</label>
+                                <input type="color" id="sectionColor" value="#f77bab">
+                            </div>
+                        </div>
+
+                        <div class="field-grid field-grid--two">
+                            <div>
+                                <label for="sectionRows">세로 좌석 수</label>
+                                <input type="number" id="sectionRows" value="5" min="1">
+                            </div>
+                            <div>
+                                <label for="sectionCols">가로 좌석 수</label>
+                                <input type="number" id="sectionCols" value="10" min="1">
+                            </div>
+                        </div>
+
+                        <div class="stage1-button-grid stage1-button-grid--three">
+                            <button type="button" class="btn btn--dark" id="sectionDrawStart">구역 외곽 찍기</button>
+                            <button type="button" class="btn" id="sectionUndoPoint">마지막 점 취소</button>
+                            <button type="button" class="btn btn--primary" id="sectionFinish">구역 저장</button>
+                        </div>
+
+                        <button type="button" class="btn btn--red" id="sectionClear">구역 초안 전체 삭제</button>
+
+                        <div class="stage1-section-list" id="sectionList"></div>
+
+                        <button type="button" class="btn btn--primary" id="go3">다음: 반듯한 도형 생성</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="part3" class="seatmap-step" data-step="3">
+            <button type="button" class="seatmap-step__header" id="tab3">
+                <span class="seatmap-step__check" data-step="3"></span>
+                <span class="seatmap-step__text">
+                    <b>파트 3</b>
+                    <small>좌석 기반 도형 생성</small>
+                </span>
+                <span class="seatmap-step__status">대기</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active">
+                        <div class="stage1-tool-title">
+                            <strong>삭제가 아니라 새로 그리기</strong>
+                            <span>구역별 좌석 수와 스테이지 방향을 기준으로 반듯한 구역 이미지를 새로 만듭니다.</span>
+                        </div>
+
+                        <input type="hidden" id="backgroundColor" value="#f7f7f7">
+                        <input type="hidden" id="shapeColor" value="#000000">
+
+                        <button type="button" class="btn btn--primary" id="generateStage1Layout">좌석 기준 구역 이미지 생성</button>
+                        <button type="button" class="btn" id="previewGeneratedStage1">생성 이미지 다시 보기</button>
+                        <button type="button" class="btn btn--green" id="saveGeneratedStage1">생성 이미지 저장 후 Stage2 이동</button>
+                        <button type="button" class="btn" id="go4">다음: 최종 확인</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="part4" class="seatmap-step" data-step="4">
+            <button type="button" class="seatmap-step__header" id="tab4">
+                <span class="seatmap-step__check" data-step="4"></span>
+                <span class="seatmap-step__text">
+                    <b>파트 4</b>
+                    <small>저장 / Stage2 이동</small>
+                </span>
+                <span class="seatmap-step__status">대기</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active box--tool">
+                        <div class="stage1-tool-title">
+                            <strong>Stage1 결과</strong>
+                            <span>생성된 이미지는 concert_cleanImage로 저장되고 Stage2가 이 이미지를 기준으로 구역을 확정합니다.</span>
+                        </div>
+
+                        <button type="button" class="btn btn--next-stage" id="toStage3">Stage2 이동</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <div class="seatmap-side-guide" id="stage1Guide">
+        먼저 메인 스테이지 위치를 잡으세요. 이후 구역을 찍고 좌석 수를 입력하면 스테이지 방향 기준으로 반듯한 구역 이미지를 생성합니다.
+    </div>
+
+</aside>

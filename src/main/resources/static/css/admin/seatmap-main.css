@@ -43,10 +43,6 @@ button {
     display: none !important;
 }
 
-/* =========================
-   상단 헤더
-========================= */
-
 .app-header {
     height: 58px;
     background: var(--nav);
@@ -78,10 +74,6 @@ button {
     margin-left: 6px;
 }
 
-/* =========================
-   시작 화면
-========================= */
-
 .start-page {
     min-height: calc(100vh - 58px);
     display: grid;
@@ -91,17 +83,16 @@ button {
 
 .start-panel {
     width: min(920px, 100%);
-    min-height: 520px;
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 22px;
     box-shadow: var(--shadow);
-    padding: 34px 36px 26px;
+    padding: 34px 36px 42px;
 }
 
 .start-panel__header {
     text-align: center;
-    margin-bottom: 26px;
+    margin-bottom: 30px;
 }
 
 .start-panel__header h1 {
@@ -121,20 +112,19 @@ button {
     line-height: 1.6;
 }
 
-/* =========================
-   선택 카드
-========================= */
-
 .seat-type-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
     gap: 36px;
     max-width: 760px;
     margin: 0 auto;
 }
 
+.seat-type-grid--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .seat-type-card {
-    min-height: 238px;
+    min-height: 318px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -181,6 +171,10 @@ button {
     font-weight: 900;
 }
 
+.seat-type-card__button--button-image {
+    background: linear-gradient(135deg, #0f766e, #2563eb);
+}
+
 .seat-type-card__button--concert {
     background: linear-gradient(135deg, var(--violet), var(--blue));
 }
@@ -189,52 +183,15 @@ button {
     background: var(--green);
 }
 
-/* =========================
-   하단 버튼
-========================= */
-
-.start-panel__footer {
-    max-width: 760px;
-    margin: 110px auto 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 36px;
-    align-items: center;
-}
-
-.footer-link-button {
-    border: 0;
-    background: transparent;
-    color: var(--red);
-    font-size: 12px;
-    font-weight: 800;
-}
-
-.footer-reset-button {
-    height: 38px;
-    border: 0;
-    border-radius: 8px;
-    background: #111827;
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: 900;
-}
-
-/* =========================
-   토스트
-========================= */
-
 .toast {
     position: fixed;
     right: 22px;
     bottom: 22px;
     z-index: 100;
-
     background: #111827;
     color: #ffffff;
     padding: 12px 15px;
     border-radius: 12px;
-
     font-size: 12px;
     opacity: 0;
     transform: translateY(6px);
@@ -246,38 +203,22 @@ button {
     transform: none;
 }
 
-/* =========================
-   반응형
-========================= */
-
-@media (max-width: 760px) {
-    .start-panel {
-        padding: 28px 20px 22px;
-    }
-
-    .seat-type-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-
-    .start-panel__footer {
-        margin-top: 40px;
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-}
-
-.seat-type-grid--three {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.seat-type-card__button--button-image {
-    background: linear-gradient(135deg, #0f766e, #2563eb);
-    color: #ffffff;
-}
-
 @media (max-width: 1100px) {
     .seat-type-grid--three {
         grid-template-columns: 1fr;
+    }
+
+    .seat-type-card {
+        min-height: 240px;
+    }
+}
+
+@media (max-width: 760px) {
+    .start-panel {
+        padding: 28px 20px 30px;
+    }
+
+    .seat-type-grid {
+        gap: 16px;
     }
 }

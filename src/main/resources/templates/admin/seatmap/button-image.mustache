@@ -1,4 +1,15 @@
-{{> admin/seatmap/layout/header}}
+<header class="seatmap-header-simple" data-step="{{seatmapStep}}">
+    <div class="seatmap-header-simple__brand">
+        <a class="seatmap-header-simple__home" href="/admin/seatmap/main" aria-label="좌석 도면 제작 시스템 홈">
+            <span class="seatmap-header-simple__logo">▦</span>
+            <strong class="seatmap-header-simple__name">SeatTrace</strong>
+            <span class="seatmap-header-simple__sub">좌석 도면 제작 시스템</span>
+        </a>
+    </div>
+</header>
+
+<link rel="stylesheet" href="/css/admin/seatmap-header.css">
+<script defer src="/js/admin/seatmap-header.js"></script>
 
 <link rel="stylesheet" href="/css/admin/seatmap-header.css">
 <link href="/css/admin/seatmap-workspace.css" rel="stylesheet">

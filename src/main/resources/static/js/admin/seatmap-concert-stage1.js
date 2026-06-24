@@ -98,30 +98,7 @@
         renderRemoveSamples();
         renderSamples();
 
-        state.originalUrl = localStorage.getItem(STORAGE_KEYS.ORIGINAL_IMAGE);
-        state.workingUrl = state.originalUrl;
-        state.rotationBaseUrl = state.workingUrl;
-        state.simplifyBaseUrl = localStorage.getItem(STORAGE_KEYS.SIMPLIFY_BASE_IMAGE);
-        state.cleanUrl = localStorage.getItem(STORAGE_KEYS.CLEAN_IMAGE) || state.workingUrl;
-        state.lastExtractUrl = state.cleanUrl;
-
-        if (!state.originalUrl) {
-            showToast("메인에서 이미지를 업로드하세요");
-            updateSimplifyInfo("적용 전");
-            return;
-        }
-
-        loadImage(state.workingUrl, (sourceImage) => {
-            setupCanvas(sourceImage.naturalWidth, sourceImage.naturalHeight);
-            drawImageToSourceCanvas(sourceImage);
-
-            loadImage(state.cleanUrl, (cleanImage) => {
-                drawImageToCleanCanvas(cleanImage);
-                render();
-                updateSimplifyInfo("적용 전");
-                pushHistory("초기 상태");
-            });
-        });
+        loadInitialImageFromStorageOrJson();
     }
 
     function cacheDom() {
@@ -1935,9 +1912,18 @@
     }
 
     function loadImage(url, callback) {
+        if (!url) {
+            console.error("[Stage1] 이미지 경로가 비어있습니다.");
+            showToast("이미지 경로가 비어있습니다");
+            return;
+        }
+
         const image = new Image();
         image.onload = () => callback(image);
-        image.onerror = () => showToast("이미지를 불러오지 못했습니다");
+        image.onerror = () => {
+            console.error("[Stage1] 이미지 로딩 실패:", url);
+            showToast("이미지를 불러오지 못했습니다");
+        };
         image.src = url;
     }
 
@@ -2072,5 +2058,150 @@
         window.setTimeout(() => {
             dom.toast.classList.remove("show");
         }, 2000);
+    }
+
+    async function loadInitialImageFromStorageOrJson() {
+        const fallbackImageUrl = "/images/seatmap/generated/seatmap-concert-image.png";
+
+        state.originalUrl = localStorage.getItem(STORAGE_KEYS.ORIGINAL_IMAGE);
+
+        if (!state.originalUrl) {
+            await loadConcertJsonFallback();
+        }
+
+        state.originalUrl =
+            localStorage.getItem(STORAGE_KEYS.ORIGINAL_IMAGE) ||
+            localStorage.getItem("concert_buttonImage") ||
+            localStorage.getItem("concert_cleanImage") ||
+            localStorage.getItem("concert_overviewImage") ||
+            fallbackImageUrl;
+
+        state.workingUrl = state.originalUrl;
+        state.rotationBaseUrl = state.workingUrl;
+        state.simplifyBaseUrl = localStorage.getItem(STORAGE_KEYS.SIMPLIFY_BASE_IMAGE);
+
+        state.cleanUrl =
+            localStorage.getItem(STORAGE_KEYS.CLEAN_IMAGE) ||
+            state.workingUrl;
+
+        state.lastExtractUrl = state.cleanUrl;
+
+        localStorage.setItem(STORAGE_KEYS.ORIGINAL_IMAGE, state.originalUrl);
+        localStorage.setItem(STORAGE_KEYS.CLEAN_IMAGE, state.cleanUrl);
+
+        console.log("[Stage1] 초기 이미지", {
+            originalUrl: state.originalUrl,
+            cleanUrl: state.cleanUrl
+        });
+
+        loadImage(state.workingUrl, (sourceImage) => {
+            setupCanvas(sourceImage.naturalWidth, sourceImage.naturalHeight);
+            drawImageToSourceCanvas(sourceImage);
+
+            loadImage(state.cleanUrl, (cleanImage) => {
+                drawImageToCleanCanvas(cleanImage);
+                render();
+                updateSimplifyInfo("적용 전");
+                pushHistory("초기 상태");
+            });
+        });
+    }
+
+    async function loadConcertJsonFallback() {
+        try {
+            const response = await fetch("/json/seatmap/seatmap-concert-session.json", {
+                method: "GET",
+                cache: "no-store"
+            });
+
+            if (!response.ok) {
+                return false;
+            }
+
+            const json = await response.json();
+            const payload = normalizeConcertJsonForStage1(json);
+
+            if (!payload.imageUrl) {
+                return false;
+            }
+
+            localStorage.setItem(STORAGE_KEYS.ORIGINAL_IMAGE, payload.imageUrl);
+            localStorage.setItem(STORAGE_KEYS.CLEAN_IMAGE, payload.cleanImageUrl || payload.imageUrl);
+            localStorage.setItem("concert_buttonImage", payload.buttonImageUrl || payload.cleanImageUrl || payload.imageUrl);
+            localStorage.setItem("concert_overviewImage", payload.buttonImageUrl || payload.cleanImageUrl || payload.imageUrl);
+            localStorage.setItem("concert_entryFromMain", "true");
+
+            if (payload.imageMeta) {
+                localStorage.setItem(STORAGE_KEYS.IMAGE_META, JSON.stringify(payload.imageMeta));
+            }
+
+            if (payload.sections) {
+                localStorage.setItem("concert_sections", JSON.stringify(payload.sections));
+            }
+
+            return true;
+        } catch (error) {
+            console.error("[Stage1] 내부 JSON 로딩 실패", error);
+            return false;
+        }
+    }
+
+    function normalizeConcertJsonForStage1(json) {
+        const storage = json.localStorage || {};
+        const output = json.output || {};
+
+        const imageUrl =
+            json.concert_originalImage ||
+            json.originalImage ||
+            json.sourceImage ||
+            json.seat_button_originalImage ||
+            storage.concert_originalImage ||
+            storage.seat_button_originalImage ||
+            output.imageUrl ||
+            json.imageUrl ||
+            json.imageDataUrl ||
+            null;
+
+        const cleanImageUrl =
+            json.concert_cleanImage ||
+            json.cleanImage ||
+            storage.concert_cleanImage ||
+            storage.seat_button_resultImage ||
+            imageUrl ||
+            null;
+
+        const buttonImageUrl =
+            json.concert_buttonImage ||
+            json.buttonImage ||
+            json.resultImage ||
+            json.seat_button_resultImage ||
+            storage.concert_buttonImage ||
+            storage.seat_button_resultImage ||
+            output.imageUrl ||
+            cleanImageUrl ||
+            imageUrl ||
+            null;
+
+        return {
+            imageUrl,
+            cleanImageUrl,
+            buttonImageUrl,
+            imageMeta:
+                json.concert_imageMeta ||
+                json.imageMeta ||
+                json.seat_button_imageMeta ||
+                storage.concert_imageMeta ||
+                storage.seat_button_imageMeta ||
+                json.image ||
+                null,
+            sections:
+                json.concert_sections ||
+                json.sections ||
+                storage.concert_sections ||
+                storage.seat_button_groups ||
+                json.groups ||
+                json.seat_button_groups ||
+                []
+        };
     }
 })();

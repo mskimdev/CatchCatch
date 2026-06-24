@@ -1134,3 +1134,110 @@
     max-width: 100%;
     min-width: 0;
 }
+/* =========================================================
+   Stage1 seat-first draft builder
+========================================================= */
+.stage1-tool-title {
+    display: grid;
+    gap: 4px;
+    padding: 9px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    background: #f8fafc;
+}
+
+.stage1-tool-title strong {
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 950;
+}
+
+.stage1-tool-title span {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.45;
+}
+
+.stage1-button-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.stage1-button-grid--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.stage1-section-list {
+    display: grid;
+    gap: 7px;
+    max-height: 180px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.stage1-section-row {
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr) 24px;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    background: #ffffff;
+    cursor: pointer;
+}
+
+.stage1-section-row.is-active {
+    border-color: #8b5cf6;
+    background: #f5f3ff;
+}
+
+.stage1-section-row i {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid rgba(15, 23, 42, 0.14);
+}
+
+.stage1-section-row strong,
+.stage1-section-row span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.stage1-section-row strong {
+    color: #0f172a;
+    font-size: 12px;
+    font-weight: 950;
+}
+
+.stage1-section-row span {
+    margin-top: 2px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.stage1-section-row button {
+    width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: 5px;
+    background: #fee2e2;
+    color: #dc2626;
+    font-size: 14px;
+    font-weight: 950;
+    line-height: 1;
+}
+
+.seatmap-workspace--stage1 .btn.is-active,
+.seatmap-workspace--stage1 .seatmap-command-btn.is-active {
+    border-color: #ef4444 !important;
+    background: #fee2e2 !important;
+    color: #b91c1c !important;
+}
