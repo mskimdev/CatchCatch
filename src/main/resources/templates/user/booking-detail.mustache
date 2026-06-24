@@ -1,12 +1,15 @@
-{{> layout/header}}
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>예매 상세</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="/css/user-mypage.css">
 <link rel="stylesheet" href="/css/user-booking-detail.css">
+</head>
 
 <main class="cc-main">
     <div class="cc-container cc-mypage-layout">
-
-        <!-- 사이드바 -->
-        {{> components/mypage-sidebar}}
 
         <!-- 메인 콘텐츠 -->
         <section class="cc-mypage-content">
@@ -171,4 +174,5 @@
 <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{kakaoMapJsKey}}&autoload=false&libraries=services"></script>
 <script src="/js/booking/booking-detail-map.js"></script>
 <script src="/js/booking/booking-detail.js"></script>
-{{> layout/footer}}
+    </body>
+</html>
