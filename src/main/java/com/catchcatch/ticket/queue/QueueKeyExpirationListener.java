@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 public class QueueKeyExpirationListener implements MessageListener {
 
     private static final String READY_KEY_PREFIX = "queue:ready:";
+    private static final String ENTERED_KEY_PREFIX = "queue:entered:";
 
     private final RedisMessageListenerContainer listenerContainer;
     private final QueueService queueService;
@@ -29,15 +30,21 @@ public class QueueKeyExpirationListener implements MessageListener {
     public void onMessage(Message message, byte[] pattern){
         String expiredKey = message.toString();
 
-        if(!expiredKey.startsWith(READY_KEY_PREFIX)) return;
+        if (expiredKey.startsWith(READY_KEY_PREFIX)) {
+            // queue:ready:{sessionId}:{userId}
+            String[] parts = expiredKey.substring(READY_KEY_PREFIX.length()).split(":");
+            Integer sessionId = Integer.parseInt(parts[0]);
+            Integer userId = Integer.parseInt(parts[1]);
+            log.info("[Queue] READY 만료 감지 - sessionId: {}, userId: {}", sessionId, userId);
+            queueService.onReadyExpired(sessionId, userId);
 
-        // queue:ready:{sessionId}:{userId} 형태에서 sessionId, userId 추출
-        String[] parts = expiredKey.substring(READY_KEY_PREFIX.length()).split(":");
-        Integer sessionId = Integer.parseInt(parts[0]);
-        Integer userId = Integer.parseInt(parts[1]);
-
-        log.info("[Queue] READY 만료 감지 - sessionId: {}, userId: {}", sessionId, userId);
-
-        queueService.onReadyExpired(sessionId, userId);
+        } else if (expiredKey.startsWith(ENTERED_KEY_PREFIX)) {
+            // queue:entered:{sessionId}:{userId}
+            String[] parts = expiredKey.substring(ENTERED_KEY_PREFIX.length()).split(":");
+            Integer sessionId = Integer.parseInt(parts[0]);
+            Integer userId = Integer.parseInt(parts[1]);
+            log.info("[Queue] ENTERED 만료 감지 (결제 미완료) - sessionId: {}, userId: {}", sessionId, userId);
+            queueService.onEnteredExpired(sessionId, userId);
+        }
     }
 }

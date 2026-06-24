@@ -5,5 +5,6 @@ public enum QueueStatus {
     READY,
     ENTERED,
     EXPIRED,
-    CANCELLED
+    CANCELLED,
+    SOLD_OUT
 }

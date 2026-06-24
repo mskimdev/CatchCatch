@@ -403,6 +403,45 @@ public class PaymentService {
     }
 
 
+    // TODO - 부하 테스트를 위한 결제 우회(김민수) 삭제 예정
+    /**
+     * 포트원 검증 없이 결제를 완료 처리한다.
+     *
+     * prepare 단계까지 정상 완료된 Payment(READY 상태)를 받아
+     * 외부 PG 호출 없이 곧바로 PAID로 전환한다.
+     * Seat HELD→SOLD, Booking PENDING→PAID, ENTERED 슬롯 해제까지 한 번에 처리.
+     */
+    @Transactional
+    public PaymentResponse.CompleteDTO completePaymentBypass(Integer userId, String paymentId) {
+        Payment payment = paymentRepository.findByPaymentIdAndUserId(paymentId, userId)
+                .orElseThrow(() -> new NotFoundException("결제 내역을 찾을 수 없습니다."));
+
+        if (payment.getStatus() == PaymentStatus.PAID) {
+            throw new BadRequestException("이미 결제 완료된 내역입니다.");
+        }
+
+        if (payment.getStatus() != PaymentStatus.READY) {
+            throw new BadRequestException("결제 대기 상태가 아닙니다.");
+        }
+
+        Booking booking = payment.getBooking();
+
+        if (booking.getStatus() != Status.PENDING) {
+            throw new BadRequestException("결제 가능한 예매 상태가 아닙니다.");
+        }
+
+        for (BookingSeat bookingSeat : booking.getBookingSeats()) {
+            bookingSeat.getSeat().sell();
+        }
+
+        booking.completePayment();
+        payment.complete("loadtest-bypass");
+
+        queueService.releaseEnteredSlot(booking.getConcertSession().getId(), userId);
+
+        return new PaymentResponse.CompleteDTO(payment);
+    }
+
     /**
      * 결제 취소 처리
      * PAID -> CANCELED
