@@ -43,6 +43,9 @@ oauth:
 
 catchcatch:
   key: ${CATCHCATCH_KEY}
+  loadtest-api-key: ${LOADTEST_API_KEY:loadtest-secret}
+  queue:
+    concurrency-limit: 500
 
 sol:
   key: ${SOL_API_KEY}

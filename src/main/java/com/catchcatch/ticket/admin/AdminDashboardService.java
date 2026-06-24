@@ -1,14 +1,18 @@
 package com.catchcatch.ticket.admin;
 
+import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.booking.BookingRepository;
 import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.core.log.InMemoryErrorLogAppender;
+import com.catchcatch.ticket.core.session.ActiveUserCounter;
+import com.catchcatch.ticket.core.util.DateUtil;
 import com.catchcatch.ticket.operationlog.OperationLogService;
 import com.catchcatch.ticket.queue.QueueRedisRepository;
 import com.catchcatch.ticket.queue.QueueService;
 import com.catchcatch.ticket.seat.SeatRepository;
+import com.catchcatch.ticket.seat.SeatStatus;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.session.ConcertSessionRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,9 +20,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.text.NumberFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 @Service
@@ -35,6 +42,7 @@ public class AdminDashboardService {
     private final QueueService queueService;
     private final ConcertSessionRepository concertSessionRepository;
     private final OperationLogService operationLogService;
+    private final ActiveUserCounter activeUserCounter;
 
     public AdminDashboardResponse.SummaryDTO getSummary(String periodParam) {
         DashboardPeriod period = DashboardPeriod.from(periodParam);
@@ -44,19 +52,84 @@ public class AdminDashboardService {
         long bookingCount = bookingRepository.countByStatusAndPaidAtBetween(Status.PAID, from, to);
         Long totalSalesAmount = bookingRepository.sumTotalAmountByStatusAndPaidAtBetween(Status.PAID, from, to);
         long comingSoonConcertCount = concertRepository.countByConcertStatus(ConcertStatus.COMING_SOON);
+        long canceledCount = bookingRepository.countByStatusAndCanceledAtBetween(Status.CANCELED, from, to);
+        long pendingCount  = bookingRepository.countByStatusAndCreatedAtBetween(Status.PENDING, from, to);
 
         List<AdminDashboardResponse.ConcertSalesRateDTO> concertSalesRates = getAllConcertSalesRates()
                 .stream()
                 .limit(TOP_CONCERT_COUNT)
                 .toList();
 
+        // 이전 기간 대비 증감 (TODAY→전일, WEEK→전주, MONTH→전월)
+        long prevBookingCount = bookingRepository.countByStatusAndPaidAtBetween(Status.PAID, period.prevStartAt(), period.prevEndAt());
+        Long prevSalesAmount  = bookingRepository.sumTotalAmountByStatusAndPaidAtBetween(Status.PAID, period.prevStartAt(), period.prevEndAt());
+
+        long bookingCountDiff = bookingCount - prevBookingCount;
+        long salesAmountDiff  = (totalSalesAmount == null ? 0 : totalSalesAmount) - (prevSalesAmount == null ? 0 : prevSalesAmount);
+
         return new AdminDashboardResponse.SummaryDTO(
                 period,
                 bookingCount,
                 totalSalesAmount == null ? 0 : totalSalesAmount,
                 comingSoonConcertCount,
-                concertSalesRates
+                concertSalesRates,
+                bookingCountDiff,
+                salesAmountDiff,
+                canceledCount,
+                pendingCount
         );
+    }
+
+    public AdminDashboardResponse.ChartDataDTO getChartData(String periodParam) {
+        DashboardPeriod period = DashboardPeriod.from(periodParam);
+        var from = period.startAt();
+        var to = period.endAt();
+
+        List<Object[]> dailyStats         = bookingRepository.findDailyStats(from, to);
+        List<Object[]> dailyCanceledStats = bookingRepository.findDailyCanceledStats(from, to);
+
+        // 취소 데이터를 날짜→건수 Map으로 만들어 PAID 날짜 기준으로 병합
+        java.util.Map<String, Long> canceledByDate = dailyCanceledStats.stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        r -> r[0].toString(),
+                        r -> ((Number) r[1]).longValue()
+                ));
+
+        List<String> trendLabels         = dailyStats.stream().map(r -> r[0].toString()).toList();
+        List<Long> trendBookingCounts    = dailyStats.stream().map(r -> ((Number) r[1]).longValue()).toList();
+        List<Long> trendSalesAmounts     = dailyStats.stream().map(r -> r[2] == null ? 0L : ((Number) r[2]).longValue()).toList();
+        List<Long> trendCanceledCounts   = trendLabels.stream().map(d -> canceledByDate.getOrDefault(d, 0L)).toList();
+
+        List<AdminDashboardResponse.ConcertSalesRateDTO> salesRates = getAllConcertSalesRates().stream().limit(TOP_CONCERT_COUNT).toList();
+        List<String> salesRateLabels  = salesRates.stream().map(AdminDashboardResponse.ConcertSalesRateDTO::title).toList();
+        List<Integer> salesRateValues = salesRates.stream().map(AdminDashboardResponse.ConcertSalesRateDTO::salesRate).toList();
+
+        return new AdminDashboardResponse.ChartDataDTO(trendLabels, trendBookingCounts, trendSalesAmounts, trendCanceledCounts, salesRateLabels, salesRateValues);
+    }
+
+    public List<AdminDashboardResponse.TodaySessionDTO> getTodaySessions() {
+        return concertSessionRepository.findTodaySessions(LocalDate.now())
+                .stream()
+                .map(cs -> new AdminDashboardResponse.TodaySessionDTO(
+                        cs.getConcert().getTitle(),
+                        cs.getRound(),
+                        DateUtil.formatTime(cs.getSessionTime())
+                ))
+                .toList();
+    }
+
+    public List<AdminDashboardResponse.RecentBookingDTO> getRecentBookings() {
+        NumberFormat fmt = NumberFormat.getNumberInstance(Locale.KOREA);
+        return bookingRepository.findRecentPaid(Status.PAID, 5)
+                .stream()
+                .map(b -> new AdminDashboardResponse.RecentBookingDTO(
+                        b.getUser().getUsername(),
+                        b.getConcertSession().getConcert().getTitle(),
+                        b.getConcertSession().getRound(),
+                        fmt.format(b.getTotalAmount()),
+                        DateUtil.formatDateTime(b.getPaidAt())
+                ))
+                .toList();
     }
 
     /**
@@ -95,15 +168,17 @@ public class AdminDashboardService {
                 .map(Integer::parseInt)
                 .toList();
 
-        long totalWaiting = queueRedisRepository.countTotalWaiting();
-        long activeSessions = activeSessionIds.size();
-
         List<AdminDashboardResponse.SessionQueueDTO> sessionQueues = activeSessionIds.stream()
                 .map(this::toSessionQueueDTO)
                 .filter(Objects::nonNull)
                 .toList();
 
-        return new AdminDashboardResponse.QueueStatusDTO(totalWaiting, activeSessions, sessionQueues);
+        long totalWaiting  = sessionQueues.stream().mapToLong(AdminDashboardResponse.SessionQueueDTO::waitingCount).sum();
+        long totalReady    = sessionQueues.stream().mapToLong(AdminDashboardResponse.SessionQueueDTO::readyCount).sum();
+        long totalEntered  = sessionQueues.stream().mapToLong(AdminDashboardResponse.SessionQueueDTO::enteredCount).sum();
+        long activeSessions = sessionQueues.size();
+
+        return new AdminDashboardResponse.QueueStatusDTO(totalWaiting, totalReady, totalEntered, activeSessions, activeUserCounter.getCount(), sessionQueues);
     }
 
     /**
@@ -115,6 +190,10 @@ public class AdminDashboardService {
 
     /**
      * 전체(All) 뷰 - 모든 활성 회차를 합산한 지표
+     *
+     * 혼잡도는 capacity 크기를 가중치로 한 가중평균을 사용한다.
+     * 단순 합산(sum(inQueue) / sum(capacity))과 수학적으로 동일하지만,
+     * 회차별로 capacity가 다를 때 큰 회차가 전체 수치를 지배하는 것을 명시적으로 드러낸다.
      */
     public AdminDashboardResponse.OverallQueueStatusDTO getOverallQueueStatus() {
         List<Integer> activeSessionIds = queueRedisRepository.findActiveSessionIds()
@@ -122,7 +201,7 @@ public class AdminDashboardService {
                 .map(Integer::parseInt)
                 .toList();
 
-        long totalRequested = 0;
+        long totalInQueue = 0;
         long totalWaiting = 0;
         long totalActive = 0;
         long totalCapacity = 0;
@@ -132,15 +211,16 @@ public class AdminDashboardService {
             long activeCount = queueRedisRepository.countActiveBySession(sessionId);
             long capacity = queueService.getCapacity(sessionId);
 
-            totalRequested += waitingCount + activeCount;
+            totalInQueue += waitingCount + activeCount;
             totalWaiting += waitingCount;
             totalActive += activeCount;
             totalCapacity += capacity;
         }
 
-        int congestionRate = calculateRate(totalCapacity, totalActive);
+        // 혼잡도 = 전체 inQueue / 전체 capacity (capacity 가중 합산과 동일)
+        int congestionRate = calculateRate(totalCapacity, totalInQueue);
 
-        return new AdminDashboardResponse.OverallQueueStatusDTO(totalRequested, totalWaiting, totalActive, totalCapacity, congestionRate);
+        return new AdminDashboardResponse.OverallQueueStatusDTO(totalInQueue, totalWaiting, totalActive, totalCapacity, congestionRate);
     }
 
     private AdminDashboardResponse.SessionQueueDTO toSessionQueueDTO(Integer sessionId) {
@@ -152,8 +232,12 @@ public class AdminDashboardService {
         long waitingCount = queueRedisRepository.countWaitingBySession(sessionId);
         long readyCount = queueRedisRepository.countReadyBySession(sessionId);
         long enteredCount = queueRedisRepository.countEnteredBySession(sessionId);
-        long capacity = queueService.getCapacity(sessionId);
-        int congestionRate = calculateRate(capacity, readyCount + enteredCount);
+        long inQueueCount = waitingCount + readyCount + enteredCount;
+        long availableSeatCount = seatRepository.countByConcertSession_IdAndStatus(sessionId, SeatStatus.AVAILABLE);
+        long capacity = Math.min(queueService.getInfraConcurrencyLimit(), availableSeatCount);
+        long infraLimit = queueService.getInfraConcurrencyLimit();
+        // 혼잡도 = 대기열 전체 인원(WAITING 포함) / capacity
+        int congestionRate = calculateRate(capacity, inQueueCount);
 
         return new AdminDashboardResponse.SessionQueueDTO(
                 sessionId,
@@ -162,8 +246,10 @@ public class AdminDashboardService {
                 waitingCount,
                 readyCount,
                 enteredCount,
-                waitingCount + readyCount + enteredCount,
+                inQueueCount,
                 capacity,
+                infraLimit,
+                availableSeatCount,
                 congestionRate);
     }
 

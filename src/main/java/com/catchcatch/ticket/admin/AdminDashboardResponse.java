@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class AdminDashboardResponse {
 
@@ -19,14 +20,30 @@ public class AdminDashboardResponse {
             long totalSalesAmount,
             String totalSalesAmountFormatted,
             long comingSoonConcertCount,
-            List<ConcertSalesRateDTO> concertSalesRates
+            List<ConcertSalesRateDTO> concertSalesRates,
+            long bookingCountDiff,
+            String bookingCountDiffFormatted,
+            long salesAmountDiff,
+            String salesAmountDiffFormatted,
+            boolean bookingUp,
+            boolean salesUp,
+            String diffLabel,
+            // 취소율
+            long canceledCount,
+            int cancelRate,
+            // 결제 이탈(PENDING)
+            long pendingCount
     ) {
         public SummaryDTO(
                 DashboardPeriod period,
                 long bookingCount,
                 long totalSalesAmount,
                 long comingSoonConcertCount,
-                List<ConcertSalesRateDTO> concertSalesRates
+                List<ConcertSalesRateDTO> concertSalesRates,
+                long bookingCountDiff,
+                long salesAmountDiff,
+                long canceledCount,
+                long pendingCount
         ) {
             this(
                     period.name(),
@@ -37,10 +54,31 @@ public class AdminDashboardResponse {
                     totalSalesAmount,
                     NumberFormat.getNumberInstance(Locale.KOREA).format(totalSalesAmount),
                     comingSoonConcertCount,
-                    concertSalesRates
+                    concertSalesRates,
+                    bookingCountDiff,
+                    (bookingCountDiff >= 0 ? "+" : "") + bookingCountDiff,
+                    salesAmountDiff,
+                    (salesAmountDiff >= 0 ? "+" : "-") + NumberFormat.getNumberInstance(Locale.KOREA).format(Math.abs(salesAmountDiff)),
+                    bookingCountDiff >= 0,
+                    salesAmountDiff >= 0,
+                    period.diffLabel(),
+                    canceledCount,
+                    bookingCount + canceledCount == 0 ? 0
+                            : (int) Math.round(canceledCount * 100.0 / (bookingCount + canceledCount)),
+                    pendingCount
             );
         }
     }
+
+    // Chart.js 전용 — API로 분리해서 JSON 직렬화 문제 회피
+    public record ChartDataDTO(
+            List<String> trendLabels,
+            List<Long> trendBookingCounts,
+            List<Long> trendSalesAmounts,
+            List<Long> trendCanceledCounts,
+            List<String> salesRateLabels,
+            List<Integer> salesRateValues
+    ) {}
 
     public record ConcertSalesRateDTO(
             Integer concertId,
@@ -69,7 +107,10 @@ public class AdminDashboardResponse {
 
     public record QueueStatusDTO(
             long totalWaitingCount,
+            long totalReadyCount,
+            long totalEnteredCount,
             long activeSessionCount,
+            int activeUserCount,
             List<SessionQueueDTO> sessionQueues){}
 
     public record SessionQueueDTO(
@@ -79,18 +120,23 @@ public class AdminDashboardResponse {
             long waitingCount,
             long readyCount,
             long enteredCount,
-            long totalRequestedCount,
+            // 현재 대기열에 머물러 있는 인원(WAITING + READY + ENTERED) 합계
+            long inQueueCount,
             long capacity,
-            // 혼잡도(%) = (READY+ENTERED) / capacity * 100. capacity가 0이면 0으로 둔다.
+            // 인프라 동시 처리 상한 — 혼잡도 표시 기준 (좌석 수와 무관한 서버 한도)
+            long infraLimit,
+            long availableSeatCount,
+            // 혼잡도(%) = (WAITING + READY + ENTERED) / capacity * 100
             int congestionRate
     ){}
 
     // 전체(All) 뷰 - 모든 활성 회차를 합산한 지표
     public record OverallQueueStatusDTO(
-            long totalRequestedCount,
+            long inQueueCount,
             long waitingCount,
             long activeCount,
             long capacity,
+            // 혼잡도(%) = 각 회차별 (inQueue / capacity) 가중평균
             int congestionRate
     ){}
 
@@ -110,6 +156,22 @@ public class AdminDashboardResponse {
             this(level, message, DateUtil.formatDateTime(occurredAt), "ERROR".equals(level), "WARN".equals(level));
         }
     }
+
+    // 오늘 오픈 예정 회차
+    public record TodaySessionDTO(
+            String concertTitle,
+            String round,
+            String sessionTime
+    ) {}
+
+    // 최근 예매
+    public record RecentBookingDTO(
+            String userName,
+            String concertTitle,
+            String round,
+            String totalAmountFormatted,
+            String paidAt
+    ) {}
 
     public record OperationLogDTO(
             String level,
