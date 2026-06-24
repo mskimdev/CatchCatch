@@ -1,5 +1,7 @@
 package com.catchcatch.ticket.employee;
 
+import com.catchcatch.ticket.user.enums.Role;
+
 public class EmployeeResponse {
 
     public record ListDTO(
@@ -28,7 +30,7 @@ public class EmployeeResponse {
             String employeeNumber,
             String name,
             String department,
-            EmployeeRole role
+            Role role
     ) {
         public DetailDTO(Employee employee) {
             this(employee.getEmployeeNumber(), employee.getName(),

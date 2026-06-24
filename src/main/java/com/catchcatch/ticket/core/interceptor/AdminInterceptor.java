@@ -3,6 +3,7 @@ package com.catchcatch.ticket.core.interceptor;
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.HtmlUtil;
 import com.catchcatch.ticket.user.dto.SessionUser;
+import com.catchcatch.ticket.user.enums.Role;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -23,10 +24,25 @@ public class AdminInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        if (!sessionUser.isAdmin()) {
+        if (!sessionUser.hasAdminAccess()) {
             sendHtml(response, "static/html/error/forbidden.html");
             return false;
         }
+
+        // 3. 기능 권한 확인: 사원 관리나 유저 수정(ADMIN 전용 기능) 방어
+        String requestURI = request.getRequestURI();
+        String method = request.getMethod();
+
+        // 예: 사원 관리 기능은 오직 ADMIN만 가능
+        if ((requestURI.contains("/admin/employees"))
+                && ("POST".equals(method) || "PUT".equals(method) || "DELETE".equals(method))) {
+
+            if (sessionUser.getRole() != Role.ADMIN) {
+                sendHtml(response, "static/html/error/forbidden.html");
+                return false;
+            }
+        }
+
         return true;
     }
 

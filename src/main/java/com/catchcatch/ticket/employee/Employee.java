@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.employee;
 
+import com.catchcatch.ticket.user.enums.Role;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,7 +36,7 @@ public class Employee {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private EmployeeRole role;
+    private Role role;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -48,7 +49,7 @@ public class Employee {
     private Timestamp updatedAt;
 
     @Builder
-    public Employee(String employeeNumber, String accountId, String password, String name, String department, EmployeeRole role) {
+    public Employee(String employeeNumber, String accountId, String password, String name, String department, Role role) {
         this.employeeNumber = employeeNumber;
         this.accountId = accountId;
         this.password = password;
@@ -64,7 +65,7 @@ public class Employee {
     }
 
     // 정보 수정 메서드
-    public void update(String name, String department, EmployeeRole role) {
+    public void update(String name, String department, Role role) {
         this.name = name;
         this.department = department;
         this.role = role;
