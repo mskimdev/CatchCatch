@@ -232,3 +232,9 @@
         width: 170px;
     }
 }
+
+/* ── 실시간 대기열 모니터링 - 혼잡도 임계값 위험도 표시 ───────────── */
+.cc-congestion-warning { background: #fff8e1; }
+.cc-congestion-warning .small { color: #b8860b !important; }
+.cc-congestion-danger { background: #fdecea; }
+.cc-congestion-danger .small { color: #c0392b !important; }

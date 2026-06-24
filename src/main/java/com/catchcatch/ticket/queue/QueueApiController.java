@@ -49,6 +49,13 @@ public class QueueApiController {
         return sseEmitterRepository.subscribe("admin:queue-stats");
     }
 
+    // 어드민이 특정 회차를 선택해서 모니터링할 때만 구독하는 회차별 채널.
+    // 전역 채널과 별개로, 선택된 회차의 변경 사항만 받아볼 수 있다.
+    @GetMapping(value = "/admin/subscribe/{concertSessionId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter subscribeAdminSession(@PathVariable Integer concertSessionId){
+        return sseEmitterRepository.subscribe("admin:queue-stats:" + concertSessionId);
+    }
+
     private SessionUser getSessionUser(HttpSession session) {
         return (SessionUser) session.getAttribute(Define.SESSION_USER);
     }

@@ -58,10 +58,15 @@ public class QueueRedisRepository {
         return redisTemplate.opsForSet().members(QueueRedisKeys.activeSessions());
     }
 
-    // WAITING이 완전히 비면 active-sessions에서 제거 (스케줄러가 더 이상 순회 안 하도록)
+    // WAITING/READY/ENTERED가 모두 비어야 active-sessions에서 제거한다.
+    // (어드민 대시보드가 ENTERED까지 빠져나가는 과정을 끝까지 보여줄 수 있어야 하므로,
+    //  WAITING만 0이 됐다고 바로 빼면 안 된다.)
     public void removeFromActiveSessionsIfEmpty(Integer sessionId) {
-        Long size = redisTemplate.opsForZSet().size(QueueRedisKeys.waiting(sessionId));
-        if (size != null && size == 0) {
+        long waitingSize = countWaitingBySession(sessionId);
+        long readySize = countReadyBySession(sessionId);
+        long enteredSize = countEnteredBySession(sessionId);
+
+        if (waitingSize == 0 && readySize == 0 && enteredSize == 0) {
             redisTemplate.opsForSet().remove(QueueRedisKeys.activeSessions(), sessionId.toString());
         }
     }
