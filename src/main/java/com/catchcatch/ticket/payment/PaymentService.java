@@ -55,6 +55,9 @@ public class PaymentService {
     @Value("${portone.api-secret}")
     private String apiSecret;
 
+    @Value("${app.base-url}")
+    private String baseUrl;
+
     /**
      * 결제 진행 화면 조회
      *
@@ -371,6 +374,15 @@ public class PaymentService {
 
         notificationDispatcher.dispatchBookingConfirmed(booking);
         queueService.releaseEnteredSlot(booking.getConcertSession().getId(), user.getId());
+
+        if (reqDTO.shouldSendSms()) {
+            String phone = reqDTO.smsPhone().replaceAll("-", "").trim();
+            notificationDispatcher.dispatchBookingConfirmedSms(booking, phone, baseUrl);
+        }
+
+        if (reqDTO.shouldUpdateProfile() && user.getPhone() == null) {
+            user.updatePhone(reqDTO.smsPhone().trim());
+        }
 
         return new PaymentResponse.CompleteDTO(payment);
     }

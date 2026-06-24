@@ -33,12 +33,27 @@ public class PaymentRequest {
     }
 
     public record CompleteDTO (
-        String paymentId
+        String paymentId,
+        Boolean notifySms,
+        String smsPhone,
+        Boolean updateProfile
     ){
         public void validate() {
             if(this.paymentId == null || this.paymentId.isBlank()) {
                 throw new BadRequestException("결제 번호가 필요합니다.");
             }
+        }
+
+        public boolean shouldSendSms() {
+            return Boolean.TRUE.equals(notifySms)
+                    && smsPhone != null
+                    && !smsPhone.isBlank();
+        }
+
+        public boolean shouldUpdateProfile() {
+            return Boolean.TRUE.equals(updateProfile)
+                    && smsPhone != null
+                    && !smsPhone.isBlank();
         }
     }
 }

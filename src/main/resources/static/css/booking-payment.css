@@ -217,6 +217,12 @@
   margin-top: 10px;
 }
 
+.cc-pay-sms { margin-top: 20px; border-top: 1px solid var(--cc-line); padding-top: 18px; }
+.cc-sms-phone-wrap { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+.cc-sms-phone-wrap.is-hidden { display: none; }
+.cc-sms-phone-input { width: 100%; }
+.cc-sms-update-check { font-size: 13px; color: var(--cc-subtext); }
+
 .cc-notice-card {
   margin-top: 14px;
   padding: 20px;

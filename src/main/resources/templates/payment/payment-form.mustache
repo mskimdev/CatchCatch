@@ -148,6 +148,29 @@
                         </label>
                     </div>
                 </div>
+
+                <div class="cc-pay-sms">
+                    <label class="cc-check">
+                        <input type="checkbox" id="notifySms">
+                        <span>예매 내용 문자로 받기</span>
+                    </label>
+
+                    <div id="smsPhoneWrap" class="cc-sms-phone-wrap">
+                        <input class="cc-input cc-sms-phone-input"
+                               type="tel"
+                               id="smsPhone"
+                               value="{{payment.userPhone}}"
+                               placeholder="010-0000-0000"
+                               maxlength="13">
+
+                        {{^payment.userPhone}}
+                        <label class="cc-check cc-sms-update-check">
+                            <input type="checkbox" id="updateProfile">
+                            <span>이 번호로 프로필 업데이트</span>
+                        </label>
+                        {{/payment.userPhone}}
+                    </div>
+                </div>
             </form>
         </div>
     </div>
