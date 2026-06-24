@@ -51,6 +51,9 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             @Param("to") Timestamp to
     );
 
+    //티켓토큰찾기
+    Optional<Booking> findByTicketToken(String ticketToken);
+
     @Query("""
         select distinct b
         from Booking b
