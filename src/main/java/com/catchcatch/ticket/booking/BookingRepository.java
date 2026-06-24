@@ -50,6 +50,23 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             @Param("from") Timestamp from,
             @Param("to") Timestamp to
     );
+
+    @Query("""
+        select distinct b
+        from Booking b
+        join fetch b.user u
+        join fetch b.concertSession cs
+        join fetch cs.concert c
+        left join fetch c.venue v
+        left join fetch b.bookingSeats bs
+        left join fetch bs.seat s
+        where b.id = :bookingId
+          and u.id = :userId
+        """)
+    Optional<Booking> findDetailByIdAndUserId(
+            @Param("bookingId") Integer bookingId,
+            @Param("userId") Integer userId
+    );
 //
 //    /**
 //     * 특정 회차 + 상태 기준 예매 목록 조회

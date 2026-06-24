@@ -8,8 +8,11 @@ import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.concertlike.ConcertLike;
 import com.catchcatch.ticket.concertlike.ConcertLikeRepository;
 import com.catchcatch.ticket.core.exception.BadRequestException;
+import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.oauth.OAuthClientFactory;
 import com.catchcatch.ticket.oauth.OAuthUserInfo;
+import com.catchcatch.ticket.payment.Payment;
+import com.catchcatch.ticket.payment.PaymentRepository;
 import com.catchcatch.ticket.user.dto.UserRequest;
 import com.catchcatch.ticket.user.enums.OAuthProvider;
 import com.catchcatch.ticket.user.enums.Role;
@@ -32,6 +35,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final OAuthClientFactory oAuthClientFactory;
+    private final PaymentRepository paymentRepository;
 
     private final BookingRepository bookingRepository;
     private final ConcertLikeRepository concertLikeRepository;
@@ -168,5 +172,16 @@ public class UserService {
         return bookings.stream()
                 .map(BookingResponse.MyPageListDTO::new)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public BookingResponse.DetailDTO findBookingDetail(Integer userId, Integer bookingId) {
+        Booking booking = bookingRepository.findDetailByIdAndUserId(bookingId, userId)
+                .orElseThrow(() -> new NotFoundException("예매 내역을 찾을 수 없습니다."));
+
+        Payment payment = paymentRepository.findByBookingId(bookingId)
+                .orElse(null);
+
+        return new BookingResponse.DetailDTO(booking, payment);
     }
 }
