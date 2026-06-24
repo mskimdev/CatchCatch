@@ -1,6 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
     console.log("faq.js 실행됨");
 
+    const deleteSuccessMessage = sessionStorage.getItem("faqDeleteSuccess");
+    if (deleteSuccessMessage) {
+        sessionStorage.removeItem("faqDeleteSuccess");
+        CcUI.toast(deleteSuccessMessage);
+    }
+
     // FAQ 목록 삭제 버튼
     const deleteButtons = document.querySelectorAll(".btn-delete");
 
@@ -36,7 +42,10 @@ document.addEventListener("DOMContentLoaded", function () {
                             return;
                         }
 
-                        CcUI.toast(data?.body ?? data?.msg ?? "삭제되었습니다.");
+                        sessionStorage.setItem(
+                            "faqDeleteSuccess",
+                            data?.body ?? data?.msg ?? "FAQ가 삭제되었습니다."
+                        );
                         location.reload();
 
                     } catch (e) {

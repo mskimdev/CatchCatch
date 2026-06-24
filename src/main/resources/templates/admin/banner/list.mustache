@@ -107,6 +107,14 @@
 </div>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteSuccessMessage = sessionStorage.getItem('bannerDeleteSuccess');
+        if (deleteSuccessMessage) {
+            sessionStorage.removeItem('bannerDeleteSuccess');
+            CcUI.toast(deleteSuccessMessage);
+        }
+    });
+
     function deleteBanner(bannerId) {
         CcUI.confirm({
             title: '배너를 삭제하시겠습니까?',
@@ -122,8 +130,11 @@
                     CcUI.alert(data?.message || data?.msg || '배너 삭제에 실패했습니다.', 'error');
                     return;
                 }
-                CcUI.toast('배너가 삭제되었습니다.');
-                setTimeout(() => location.reload(), 700);
+                sessionStorage.setItem(
+                    'bannerDeleteSuccess',
+                    data?.body || data?.msg || '배너가 삭제되었습니다.'
+                );
+                location.reload();
             }
         });
     }
