@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 // QueueService가 사용할 저차원 Redis 연산을 모아둔다.
 // JPA Repository를 대체하는 역할이며, 이 클래스만 Redis 키 구조를 직접 알고 있다.
@@ -146,18 +147,31 @@ public class QueueRedisRepository {
 
     // ---------- ENTERED ----------
 
-    public void markEntered(Integer sessionId, Integer userId) {
-        redisTemplate.opsForSet().add(QueueRedisKeys.entered(sessionId), userId.toString());
+    // ENTERED 개별 키에 TTL을 걸어 결제 타임아웃 후 자동 해제되도록 한다.
+    public void markEntered(Integer sessionId, Integer userId, Duration ttl) {
+        redisTemplate.opsForValue().set(QueueRedisKeys.entered(sessionId, userId), "1", ttl);
+        redisTemplate.opsForSet().add(QueueRedisKeys.enteredSet(sessionId), userId.toString());
     }
 
     public boolean isEntered(Integer sessionId, Integer userId) {
-        Boolean isMember = redisTemplate.opsForSet().isMember(QueueRedisKeys.entered(sessionId), userId.toString());
-        return Boolean.TRUE.equals(isMember);
+        return Boolean.TRUE.equals(redisTemplate.hasKey(QueueRedisKeys.entered(sessionId, userId)));
     }
 
     // 결제완료/취소/만료로 예매 프로세스를 빠져나갈 때 ENTERED 상태를 해제한다.
     public void clearEntered(Integer sessionId, Integer userId) {
-        redisTemplate.opsForSet().remove(QueueRedisKeys.entered(sessionId), userId.toString());
+        redisTemplate.delete(QueueRedisKeys.entered(sessionId, userId));
+        redisTemplate.opsForSet().remove(QueueRedisKeys.enteredSet(sessionId), userId.toString());
+    }
+
+    // enteredSet에 남아있지만 TTL 만료된 항목을 정리한다. 스케줄러(안전망)가 주기적으로 호출.
+    public void pruneExpiredEntered(Integer sessionId) {
+        Set<String> userIds = redisTemplate.opsForSet().members(QueueRedisKeys.enteredSet(sessionId));
+        if (userIds == null) return;
+        for (String userId : userIds) {
+            if (!isEntered(sessionId, Integer.parseInt(userId))) {
+                redisTemplate.opsForSet().remove(QueueRedisKeys.enteredSet(sessionId), userId);
+            }
+        }
     }
 
     // READY + ENTERED 합산 (스케줄러의 capacity 계산용)
@@ -166,7 +180,11 @@ public class QueueRedisRepository {
     }
 
     public long countEnteredBySession(Integer sessionId) {
-        Long size = redisTemplate.opsForSet().size(QueueRedisKeys.entered(sessionId));
-        return size == null ? 0 : size;
+        // enteredSet에서 실제 살아있는 키만 집계
+        Set<String> userIds = redisTemplate.opsForSet().members(QueueRedisKeys.enteredSet(sessionId));
+        if (userIds == null || userIds.isEmpty()) return 0;
+        return userIds.stream()
+                .filter(uid -> isEntered(sessionId, Integer.parseInt(uid)))
+                .count();
     }
 }

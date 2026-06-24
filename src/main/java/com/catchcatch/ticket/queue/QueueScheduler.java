@@ -23,6 +23,7 @@ public class QueueScheduler {
             Integer sessionId = Integer.parseInt(sessionIdStr);
 
             queueRedisRepository.pruneExpiredReady(sessionId);
+            queueRedisRepository.pruneExpiredEntered(sessionId);
             queueService.promoteNext(sessionId, (int) queueRedisRepository.countWaitingBySession(sessionId));
         });
     }

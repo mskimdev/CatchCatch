@@ -18,7 +18,9 @@
     }
 
     const status = data.body;
-    numberEl.textContent = status.queueNumber;
+    // queueNumber는 최초 발급된 고정값이므로 "현재 순위"로 쓰지 않는다.
+    // waitingAhead(내 앞 대기자 수) + 1이 실시간으로 줄어드는 현재 순위다.
+    numberEl.textContent = (status.waitingAhead || 0) + 1;
     waitingAheadEl.textContent = status.waitingAhead;
     waitingBehindEl.textContent = status.waitingBehind;
     lastWaitingAhead = status.waitingAhead || 0;
@@ -35,8 +37,14 @@
         entering = false;
         messageEl.textContent = '입장 처리에 실패했습니다. 잠시 후 다시 시도해주세요.';
       }
+    } else if (status.status === 'SOLD_OUT') {
+      messageEl.textContent = '죄송합니다. 해당 공연의 좌석이 모두 매진되었습니다.';
+      numberEl.textContent = '-';
+      CcUI.alert('매진', 'warning', function () { location.href = '/concerts'; }, '해당 공연의 좌석이 모두 매진되었습니다.');
     } else if (status.status === 'EXPIRED' || status.status === 'CANCELLED') {
       messageEl.textContent = '대기열 입장 시간이 만료되었습니다. 다시 시도해주세요.';
+    } else if (status.waitingAhead === 0) {
+      messageEl.textContent = '곧 입장합니다. 잠시만 기다려주세요.';
     } else {
       messageEl.textContent = '순서를 기다리고 있습니다.';
     }

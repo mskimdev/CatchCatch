@@ -7,6 +7,7 @@ import com.catchcatch.ticket.seat.SeatRepository;
 import com.catchcatch.ticket.seat.SeatStatus;
 import com.catchcatch.ticket.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +20,13 @@ import java.util.Set;
 public class QueueService {
 
     private static final Duration READY_TTL = Duration.ofMinutes(10);
+    // 결제 화면 진입 후 결제를 완료하지 않으면 15분 후 자동 해제
+    private static final Duration ENTERED_TTL = Duration.ofMinutes(15);
     private static final String ADMIN_QUEUE_STATS_KEY = "admin:queue-stats";
 
-    // 좌석 선택~결제 단계에 동시 수용 가능한 인원(READY + ENTERED) 상한 - 시스템이 버틸 수 있는 고정값
-    private static final int FIXED_SYSTEM_LIMIT = 500;
+    // 인프라 상한: 회차 좌석 수와 무관하게 시스템이 동시에 수용할 수 있는 절대 한도
+    @Value("${catchcatch.queue.concurrency-limit}")
+    private int infraConcurrencyLimit;
 
     private final UserRepository userRepository;
     private final SseEmitterRepository sseEmitterRepository;
@@ -73,6 +77,11 @@ public class QueueService {
         }
 
         if (queueRedisRepository.isWaiting(concertSessionId, userId)) {
+            // 남은 AVAILABLE 좌석이 없으면 매진 — 대기 중인 사용자에게 즉시 알린다
+            long availableSeatCount = seatRepository.countByConcertSession_IdAndStatus(concertSessionId, SeatStatus.AVAILABLE);
+            if (availableSeatCount == 0) {
+                return Optional.of(new QueueResponse.StatusDTO(concertSessionId, QueueStatus.SOLD_OUT, null, 0, 0, null));
+            }
             long myNumber = queueRedisRepository.getQueueNumber(concertSessionId, userId).orElse(0L);
             long waitingAhead = queueRedisRepository.countWaitingAhead(concertSessionId, myNumber);
             long waitingBehind = calculateWaitingBehind(concertSessionId, waitingAhead);
@@ -111,7 +120,7 @@ public class QueueService {
 
         String token = queueRedisRepository.getReadyToken(concertSessionId, userId).orElse(null);
         queueRedisRepository.clearReady(concertSessionId, userId, token);
-        queueRedisRepository.markEntered(concertSessionId, userId);
+        queueRedisRepository.markEntered(concertSessionId, userId, ENTERED_TTL);
     }
 
     /**
@@ -173,11 +182,16 @@ public class QueueService {
         sseEmitterRepository.send(ADMIN_QUEUE_STATS_KEY + ":" + concertSessionId, "queue-stats-updated", "");
     }
 
-    // capacity = min(시스템이 버틸 수 있는 고정 상한, 남은 AVAILABLE 좌석 수)
-    // 어드민 대시보드의 혼잡도(활성인원/capacity) 계산에도 재사용된다.
+    // capacity = min(인프라 동시 수용 상한, 해당 회차의 AVAILABLE 좌석 수)
+    // 좌석 수가 작은 소규모 공연은 좌석 수가 실질 상한이 되고,
+    // 대규모 공연도 인프라 한도를 넘지 않는다.
     public long getCapacity(Integer concertSessionId) {
         long availableSeatCount = seatRepository.countByConcertSession_IdAndStatus(concertSessionId, SeatStatus.AVAILABLE);
-        return Math.min(FIXED_SYSTEM_LIMIT, availableSeatCount);
+        return Math.min(infraConcurrencyLimit, availableSeatCount);
+    }
+
+    public int getInfraConcurrencyLimit() {
+        return infraConcurrencyLimit;
     }
 
     // READY 토큰이 TTL 만료된 직후 호출된다.
@@ -185,6 +199,15 @@ public class QueueService {
     public void onReadyExpired(Integer concertSessionId, Integer userId) {
         queueRedisRepository.clearReady(concertSessionId, userId, null);
         promoteNext(concertSessionId, 1);
+    }
+
+    // ENTERED 키가 TTL 만료된 직후 호출된다 (결제 미완료로 타임아웃).
+    // enteredSet 정리 후 빈자리만큼 다음 대기자를 즉시 승격시킨다.
+    public void onEnteredExpired(Integer concertSessionId, Integer userId) {
+        queueRedisRepository.clearEntered(concertSessionId, userId);
+        promoteNext(concertSessionId, 1);
+        queueRedisRepository.removeFromActiveSessionsIfEmpty(concertSessionId);
+        notifyAdminQueueStats(concertSessionId);
     }
 
     // 결제완료/취소/만료로 예매 프로세스를 빠져나갈 때 호출된다.
