@@ -31,9 +31,14 @@ final class QueueRedisKeys {
         return "queue:token:" + entryToken;
     }
 
-    // ENTERED 유저 목록 (SET)
-    static String entered(Integer sessionId) {
-        return "queue:entered:" + sessionId;
+    // ENTERED 개별 키 (TTL 만료 = 자동 해제)
+    static String entered(Integer sessionId, Integer userId) {
+        return "queue:entered:" + sessionId + ":" + userId;
+    }
+
+    // 현재 ENTERED 상태인 유저 목록 (SET) - 개수 집계용. entered() 키와 함께 갱신/삭제한다.
+    static String enteredSet(Integer sessionId) {
+        return "queue:entered-set:" + sessionId;
     }
 
     // 대기자가 1명 이상 존재했던 회차 목록 (SET) - 스케줄러가 순회할 대상

@@ -75,6 +75,26 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             @Param("from") Timestamp from,
             @Param("to") Timestamp to
     );
+
+    //티켓토큰찾기
+    Optional<Booking> findByTicketToken(String ticketToken);
+
+    @Query("""
+        select distinct b
+        from Booking b
+        join fetch b.user u
+        join fetch b.concertSession cs
+        join fetch cs.concert c
+        left join fetch c.venue v
+        left join fetch b.bookingSeats bs
+        left join fetch bs.seat s
+        where b.id = :bookingId
+          and u.id = :userId
+        """)
+    Optional<Booking> findDetailByIdAndUserId(
+            @Param("bookingId") Integer bookingId,
+            @Param("userId") Integer userId
+    );
 //
 //    /**
 //     * 특정 회차 + 상태 기준 예매 목록 조회
@@ -126,6 +146,71 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 //            @Param("seatId") Integer seatId,
 //            @Param("statuses") List<Status> statuses
 //    );
+
+    /**
+     * 대시보드 - 일별 예매(PAID) 건수 + 매출 추이
+     * r[0]=stat_date, r[1]=bookingCount, r[2]=totalAmount
+     */
+    @Query(value = """
+            select cast(paid_at as date) as stat_date,
+                   count(id)             as bookingCount,
+                   sum(total_amount)     as totalAmount
+            from booking_tb
+            where status = 'PAID'
+              and paid_at between :from and :to
+            group by cast(paid_at as date)
+            order by cast(paid_at as date) asc
+            """, nativeQuery = true)
+    List<Object[]> findDailyStats(
+            @Param("from") Timestamp from,
+            @Param("to") Timestamp to
+    );
+
+    /**
+     * 대시보드 - 일별 취소(CANCELED) 건수 추이
+     * r[0]=stat_date, r[1]=canceledCount
+     */
+    @Query(value = """
+            select cast(canceled_at as date) as stat_date,
+                   count(id)                 as canceledCount
+            from booking_tb
+            where status = 'CANCELED'
+              and canceled_at between :from and :to
+            group by cast(canceled_at as date)
+            order by cast(canceled_at as date) asc
+            """, nativeQuery = true)
+    List<Object[]> findDailyCanceledStats(
+            @Param("from") Timestamp from,
+            @Param("to") Timestamp to
+    );
+
+    /**
+     * 대시보드 - 기간 내 취소 건수
+     */
+    long countByStatusAndCanceledAtBetween(Status status, Timestamp from, Timestamp to);
+
+    /**
+     * 대시보드 - 기간 내 결제 미완료(PENDING) 건수
+     */
+    long countByStatusAndCreatedAtBetween(Status status, Timestamp from, Timestamp to);
+
+    /**
+     * 대시보드 - 최근 예매 N건 (사용자/공연 정보 포함)
+     */
+    @Query("""
+            select b
+            from Booking b
+            join fetch b.user u
+            join fetch b.concertSession cs
+            join fetch cs.concert c
+            where b.status = :status
+            order by b.paidAt desc
+            limit :limit
+            """)
+    List<Booking> findRecentPaid(
+            @Param("status") Status status,
+            @Param("limit") int limit
+    );
 
     /**
      * 같은 사용자가 같은 회차에 이미 진행 중인(PENDING/PAID) 예매가 있는지 확인 (중복 예매 방지)

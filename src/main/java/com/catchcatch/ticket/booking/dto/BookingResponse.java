@@ -88,6 +88,8 @@ public class BookingResponse {
         private Integer userId;
         private Integer concertSessionId;
 
+        private String ticketToken;
+
         private List<Integer> seatIds;
         private Integer seatCount;
         private String seatName;
@@ -102,12 +104,30 @@ public class BookingResponse {
         private Timestamp createdAt;
         private Timestamp canceledAt;
 
+        // 추가: 공연 정보
+        private String concertTitle;
+        private String sessionText;
+        private String venueName;
+        private String venueAddress;
+
+        // 추가: 결제 상세 이동용
+        private Integer paymentId;          // DB payment id
+        private String portOnePaymentId;    // 포트원 결제 코드
+        private Boolean hasPayment;
+
+        // 추가: 예약자 정보
+        private String reserverName;
+        private String reserverPhone;
+        private String reserverEmail;
+
+
         public DetailDTO(Booking booking) {
             List<BookingSeat> bookingSeats = safeBookingSeats(booking);
+            ConcertSession concertSession = booking.getConcertSession();
 
             this.id = booking.getId();
             this.userId = booking.getUser().getId();
-            this.concertSessionId = booking.getConcertSession().getId();
+            this.concertSessionId = concertSession.getId();
 
             this.seatIds = bookingSeats.stream()
                     .map(bookingSeat -> bookingSeat.getSeat().getId())
@@ -118,6 +138,7 @@ public class BookingResponse {
 
             this.bookingNumber = booking.getBookingNumber();
             this.status = booking.getStatus();
+            this.ticketToken = booking.getTicketToken();
 
             this.totalPrice = calculateTotalPrice(bookingSeats);
             this.totalPriceText = formatPrice(this.totalPrice);
@@ -125,6 +146,77 @@ public class BookingResponse {
             this.expiresAt = booking.getExpiresAt();
             this.createdAt = booking.getCreatedAt();
             this.canceledAt = booking.getCanceledAt();
+
+            // 공연 정보
+            this.concertTitle = concertSession.getConcert().getTitle();
+            this.sessionText = formatSessionText(concertSession);
+            this.venueName = concertSession.getConcert().getVenue().getName();
+            this.venueAddress = concertSession.getConcert().getVenue().getAddress();
+
+            // 예약자 정보
+            this.reserverName = booking.getUser().getUsername();
+            this.reserverPhone = maskPhone(booking.getUser().getPhone());
+            this.reserverEmail = maskEmail(booking.getUser().getEmail());
+
+            // 기본값
+            // 기본값
+            this.paymentId = null;
+            this.portOnePaymentId = null;
+            this.hasPayment = false;
+        }
+
+        public DetailDTO(Booking booking, Payment payment) {
+            this(booking);
+
+            if (payment != null) {
+                this.paymentId = payment.getId();              // DB 결제 id
+                this.portOnePaymentId = payment.getPaymentId(); // 포트원 결제 코드
+                this.hasPayment = true;
+            }
+        }
+
+        private static String formatSessionText(ConcertSession concertSession) {
+            String date = concertSession.getSessionDate().toString();
+            String time = concertSession.getSessionTime().toString();
+
+            if (concertSession.getRound() != null && !concertSession.getRound().isBlank()) {
+                return date + " " + time + " (" + concertSession.getRound() + ")";
+            }
+
+            return date + " " + time;
+        }
+
+        private static String maskPhone(String phone) {
+            if (phone == null || phone.isBlank()) {
+                return "-";
+            }
+
+            if (phone.length() < 8) {
+                return phone;
+            }
+
+            return phone.replaceAll("(\\d{3})-?(\\d{2})\\d{2}-?(\\d{2})\\d{2}", "$1-$2**-$3**");
+        }
+
+        private static String maskEmail(String email) {
+            if (email == null || !email.contains("@")) {
+                return "-";
+            }
+
+            String[] parts = email.split("@");
+
+            if (parts.length != 2) {
+                return email;
+            }
+
+            String name = parts[0];
+            String domain = parts[1];
+
+            if (name.length() <= 2) {
+                return name.charAt(0) + "****@" + domain;
+            }
+
+            return name.substring(0, 2) + "****@" + domain;
         }
     }
 

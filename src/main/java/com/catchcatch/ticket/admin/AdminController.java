@@ -30,6 +30,8 @@ public class AdminController {
         model.addAttribute("queueStats", adminDashboardService.getQueueStatus());
         model.addAttribute("operationLogs", adminDashboardService.getOperationLogs());
         model.addAttribute("systemErrorStats", adminDashboardService.getSystemErrorStats());
+        model.addAttribute("todaySessions", adminDashboardService.getTodaySessions());
+        model.addAttribute("recentBookings", adminDashboardService.getRecentBookings());
         return "admin/index";
     }
 
@@ -75,4 +77,43 @@ public class AdminController {
     public AdminDashboardResponse.OverallQueueStatusDTO queueStatsOverall(){
         return adminDashboardService.getOverallQueueStatus();
     }
+
+    // Chart.js용 차트 데이터 (mustache JSON 직렬화 문제 회피)
+    @GetMapping("/api/chart-data")
+    @ResponseBody
+    public AdminDashboardResponse.ChartDataDTO chartData(@RequestParam(required = false) String period) {
+        return adminDashboardService.getChartData(period);
+    }
+
+    // 기간 버튼 클릭 시 페이지 이동 없이 KPI 카드 수치만 갱신
+    @GetMapping("/api/kpi-stats")
+    @ResponseBody
+    public AdminDashboardResponse.SummaryDTO kpiStats(@RequestParam(required = false) String period) {
+        return adminDashboardService.getSummary(period);
+    }
+
+    @GetMapping("/api/recent-bookings")
+    @ResponseBody
+    public List<AdminDashboardResponse.RecentBookingDTO> recentBookings() {
+        return adminDashboardService.getRecentBookings();
+    }
+
+    @GetMapping("/api/operation-logs")
+    @ResponseBody
+    public List<AdminDashboardResponse.OperationLogDTO> operationLogs() {
+        return adminDashboardService.getOperationLogs();
+    }
+
+    @GetMapping("/api/system-error-stats")
+    @ResponseBody
+    public AdminDashboardResponse.SystemErrorStatsDTO systemErrorStats() {
+        return adminDashboardService.getSystemErrorStats();
+    }
+
+    @GetMapping("/api/concert-sales-rates")
+    @ResponseBody
+    public List<AdminDashboardResponse.ConcertSalesRateDTO> concertSalesRates() {
+        return adminDashboardService.getAllConcertSalesRates();
+    }
+
 }

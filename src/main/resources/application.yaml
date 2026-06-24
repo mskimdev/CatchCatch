@@ -41,8 +41,15 @@ oauth:
     client-id: ${GOOGLE_CLIENT_ID}
     client-secret: ${GOOGLE_CLIENT_SECRET}
 
+kakao:
+  map:
+    js-key: ${KAKAO_MAP_JS_KEY}
+
 catchcatch:
   key: ${CATCHCATCH_KEY}
+  loadtest-api-key: ${LOADTEST_API_KEY:loadtest-secret}
+  queue:
+    concurrency-limit: 500
 
 sol:
   key: ${SOL_API_KEY}

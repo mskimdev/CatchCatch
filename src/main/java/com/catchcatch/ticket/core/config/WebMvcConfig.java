@@ -55,6 +55,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .excludePathPatterns(
                         "/api/concert/*/reviews",
                         "/api/concert/*/reviews/*"
+                        "/api/concert/**",
+                        "/api/queue/admin/**"
+                )
+                .excludePathPatterns(
+                        // 부하 테스트용 엔드포인트 - API 키 + 일반 유저 세션으로 인증하므로 어드민 세션 불필요
+                        "/api/queue/admin/entered/**",
+                        "/api/queue/admin/payment/bypass",
+                        "/api/queue/admin/seats"
                 );
     }
 
