@@ -60,7 +60,6 @@ public class ConcertResponse {
     } // end of ListDTO
 
 
-
     // ==========================================
     // 2. 상세 페이지(Detail)용 DTO
     // ==========================================
@@ -87,7 +86,7 @@ public class ConcertResponse {
             List<DateDTO> dates,
             List<PriceDTO> prices
     ) {
-        public static DetailDTO of(Concert concert, List<Seat> seats) {
+        public static DetailDTO of(Concert concert, List<Seat> seats, Long reviewCount) {
             String safeDateRange = (concert.getStartDate() != null && concert.getEndDate() != null)
                     ? concert.getStartDate() + "~" + concert.getEndDate() : "일정 미정";
             String safeVenueName = (concert.getVenue() != null) ? concert.getVenue().getName() : "공연장 미정";
@@ -123,7 +122,7 @@ public class ConcertResponse {
                     .detailTitle(concert.getDetailTitle())
                     .detailDescription1(concert.getDetailDescription1())
                     .detailDescription2(concert.getDetailDescription2())
-                    .reviewCount(0)
+                    .reviewCount(Math.toIntExact(reviewCount == null ? 0L : reviewCount))
                     .sessions(sessionDTOs)
                     .dates(concert.getSessions().stream()
                             .map(ConcertSession::getSessionDate)
@@ -189,7 +188,6 @@ public class ConcertResponse {
     } // end of PriceDTO
 
 
-
     // ==========================================
     // 3. 콘서트 일정(List)용 DTO
     // ==========================================
@@ -216,7 +214,7 @@ public class ConcertResponse {
             String address,
             String category
     ) {
-        public static OpenSoonConcertResponse from(Concert concert){
+        public static OpenSoonConcertResponse from(Concert concert) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분");
             String formattedDate = concert.getTicketOpenDate() != null
                     ? concert.getTicketOpenDate().format(formatter) : "미정";
@@ -237,7 +235,7 @@ public class ConcertResponse {
     @Builder
     public record OpenSoonPageResponse(
             String currentGenre,
-            List<OpenSoonConcertResponse> openSoonList){
+            List<OpenSoonConcertResponse> openSoonList) {
     } // end of OpenSoonPageResponse
 
 

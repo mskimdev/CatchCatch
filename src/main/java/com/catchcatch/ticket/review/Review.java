@@ -38,8 +38,8 @@ public class Review {
     @JoinColumn(name = "concert_id",nullable = false)
     private Concert concert;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_id",nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 
 
@@ -47,13 +47,17 @@ public class Review {
     @Column(nullable = false,length = 1000)
     private String content;
 
+    @Builder.Default
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Timestamp createdAt;
 
     // 수정 시
     public void updateReview(Double rating, String content){
-        if (rating != null && rating >= 1.0 && rating <= 5.0){
+        if (rating != null && rating >= 0.5 && rating <= 5.0){
             this.rating = rating;
         }
         if (content != null && !content.isBlank()){
