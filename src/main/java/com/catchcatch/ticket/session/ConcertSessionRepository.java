@@ -56,6 +56,18 @@ public interface ConcertSessionRepository extends JpaRepository<ConcertSession, 
     List<ConcertSession> findByConcertIdOrderBySessionDateAscSessionTimeAsc(Integer concertId);
 
     /**
+     * 대시보드 - 오늘 오픈(티켓 오픈) 예정 회차 목록
+     */
+    @Query("""
+            select cs
+            from ConcertSession cs
+            join fetch cs.concert c
+            where cs.sessionDate = :today
+            order by cs.sessionTime asc
+            """)
+    List<ConcertSession> findTodaySessions(@Param("today") LocalDate today);
+
+    /**
          특정 공연 ID에 속한 모든 회차(Session) 목록을 조회
      */
     @Query("SELECT cs FROM ConcertSession cs JOIN FETCH cs.concert WHERE cs.concert.id = :concertId")
