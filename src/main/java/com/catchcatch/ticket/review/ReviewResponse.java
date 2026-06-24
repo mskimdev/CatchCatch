@@ -19,6 +19,7 @@ public class ReviewResponse {
             String maskedUsername,
             Double rating,
             String content,
-            String createdAt
+            String createdAt,
+            Boolean mine
     ) {}
 }

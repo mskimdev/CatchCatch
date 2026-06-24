@@ -27,6 +27,7 @@ logging:
 spring:
   mustache:
     servlet:
+      cache: false
       expose-session-attributes: false
       expose-request-attributes: true
 

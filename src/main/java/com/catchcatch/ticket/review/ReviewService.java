@@ -2,50 +2,52 @@ package com.catchcatch.ticket.review;
 
 import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.booking.BookingRepository;
-import com.catchcatch.ticket.concert.core.Concert;
-import com.catchcatch.ticket.concert.repository.ConcertRepository;
+import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.core.exception.BadRequestException;
+import com.catchcatch.ticket.session.ConcertSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
 
     private final BookingRepository bookingRepository;
-    private final ConcertRepository concertRepository;
     private final ReviewRepository reviewRepository;
 
-
-    // 1. 리뷰 작성
     @Transactional
     public void saveReview(Integer userId, Integer concertId, ReviewRequest.SaveDTO dto) {
+        List<Booking> endedBookings = bookingRepository.findReviewableBookings(
+                        userId,
+                        concertId,
+                        Status.PAID,
+                        LocalDate.now()
+                )
+                .stream()
+                .filter(this::isConcertEnded)
+                .toList();
 
-        Booking booking = bookingRepository.findById(dto.bookingId())
-                .orElseThrow(() -> new BadRequestException("예매 내역을 찾을 수 없습니다."));
-
-        if (!booking.getUser().getId().equals(userId)) {
-            throw new BadRequestException("본인의 예매 내역이 아닙니다.");
+        if (endedBookings.isEmpty()) {
+            throw new BadRequestException("공연 관람 완료 후에만 후기를 작성할 수 있습니다.");
         }
 
-        // [검증 2] 해당 콘서트에 이미 리뷰를 썼는지 확인 (1예매 1리뷰)
-        if (reviewRepository.existsByBookingId(dto.bookingId())) {
-            throw new RuntimeException("이미 작성된 리뷰가 있습니다.");
-        }
-
-        Concert concert = concertRepository.findById(concertId)
-                .orElseThrow(() -> new BadRequestException("존재하지 않는 공연입니다."));
-
+        Booking booking = endedBookings.stream()
+                .filter(candidate -> !reviewRepository.existsByBookingId(candidate.getId()))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException("이미 작성 가능한 예매 건의 후기가 등록되어 있습니다."));
 
         Review review = Review.builder()
                 .user(booking.getUser())
-                .concert(concert)
+                .concert(booking.getConcertSession().getConcert())
                 .booking(booking)
                 .rating(dto.rating())
                 .content(dto.content())
@@ -54,13 +56,28 @@ public class ReviewService {
         reviewRepository.save(review);
     }
 
-    // 2. 리뷰 목록 조회
+    @Transactional
+    public void updateReview(Integer userId, Integer concertId, Long reviewId, ReviewRequest.UpdateDTO dto) {
+        Review review = reviewRepository.findByIdAndUser_IdAndConcert_Id(reviewId, userId, concertId)
+                .orElseThrow(() -> new BadRequestException("수정할 수 있는 후기가 없습니다."));
+
+        review.updateReview(dto.rating(), dto.content());
+    }
+
+    @Transactional
+    public void deleteReview(Integer userId, Integer concertId, Long reviewId) {
+        Review review = reviewRepository.findByIdAndUser_IdAndConcert_Id(reviewId, userId, concertId)
+                .orElseThrow(() -> new BadRequestException("삭제할 수 있는 후기가 없습니다."));
+
+        reviewRepository.delete(review);
+    }
+
     @Transactional(readOnly = true)
-    public ReviewResponse.ReviewListDTO getConcertReviews(Integer concertId, int page) {
+    public ReviewResponse.ReviewListDTO getConcertReviews(Integer concertId, Integer loginUserId, int page) {
         PageRequest pageRequest = PageRequest.of(page, 5);
         Page<Review> reviewPage = reviewRepository.findAllByConcertId(concertId, pageRequest);
 
-        Double avgRating = reviewRepository.findAverageRatingByConcertId(concertId.intValue())
+        Double avgRating = reviewRepository.findAverageRatingByConcertId(concertId)
                 .orElse(0.0);
 
         List<ReviewResponse.ReviewDetailDTO> reviewDTOs = reviewPage.getContent().stream()
@@ -69,16 +86,52 @@ public class ReviewService {
                         maskUsername(r.getUser().getUsername()),
                         r.getRating(),
                         r.getContent(),
-                        r.getCreatedAt().toString()
+                        r.getCreatedAt().toString(),
+                        loginUserId != null && r.getUser().getId().equals(loginUserId)
                 ))
-                .collect(Collectors.toList());
+                .toList();
 
         return new ReviewResponse.ReviewListDTO(avgRating, reviewPage.getTotalElements(), reviewDTOs);
     }
 
-    // 닉네임 마스킹
+    private boolean isConcertEnded(Booking booking) {
+        ConcertSession session = booking.getConcertSession();
+
+        LocalDateTime startAt = LocalDateTime.of(
+                session.getSessionDate(),
+                session.getSessionTime()
+        );
+
+        int runtimeMinutes = parseRuntimeMinutes(session.getConcert().getRuntime());
+        LocalDateTime endAt = startAt.plusMinutes(runtimeMinutes);
+
+        return LocalDateTime.now().isAfter(endAt);
+    }
+
+    private int parseRuntimeMinutes(String runtime) {
+        if (runtime == null || runtime.isBlank()) {
+            return 0;
+        }
+
+        Matcher matcher = Pattern.compile("\\d+").matcher(runtime);
+        return matcher.find() ? Integer.parseInt(matcher.group()) : 0;
+    }
+
     private String maskUsername(String username) {
-        if (username.length() <= 2) return username.charAt(0) + "*";
-        return username.charAt(0) + "*".repeat(username.length() - 2) + username.charAt(username.length() - 1);
+        if (username == null || username.isBlank()) {
+            return "익명";
+        }
+
+        if (username.length() <= 1) {
+            return username + "*";
+        }
+
+        if (username.length() == 2) {
+            return username.charAt(0) + "*";
+        }
+
+        return username.charAt(0)
+                + "*".repeat(username.length() - 2)
+                + username.charAt(username.length() - 1);
     }
 }

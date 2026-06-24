@@ -3,14 +3,14 @@ package com.catchcatch.ticket.review;
 import com.catchcatch.ticket.core.exception.UnauthorizedException;
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.Resp;
-import com.catchcatch.ticket.user.User;
+import com.catchcatch.ticket.user.dto.SessionUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-//@RequestMapping("")
+@RequestMapping("/api/concert")
 @RequiredArgsConstructor
 public class ReviewApiController {
 
@@ -23,9 +23,13 @@ public class ReviewApiController {
     @GetMapping("/{concertId}/reviews")
     public ResponseEntity<?> getConcertReviews(
             @PathVariable("concertId") Integer concertId,
-            @RequestParam(name = "page", defaultValue = "0") int page){
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @SessionAttribute(value = Define.SESSION_USER, required = false) SessionUser sessionUser
+    ) {
+        Integer loginUserId = sessionUser == null ? null : sessionUser.getId();
 
-        ReviewResponse.ReviewListDTO responseDTO = reviewService.getConcertReviews(concertId,page);
+        ReviewResponse.ReviewListDTO responseDTO =
+                reviewService.getConcertReviews(concertId, loginUserId, page);
 
         return Resp.ok(responseDTO);
     }
@@ -39,15 +43,49 @@ public class ReviewApiController {
     public ResponseEntity<?> saveReview(
             @PathVariable("concertId") Integer concertId,
             @Valid @RequestBody ReviewRequest.SaveDTO saveDTO,
-            @SessionAttribute(Define.SESSION_USER) User sessionUser
-    ){
-        if (sessionUser == null){
+            @SessionAttribute(value = Define.SESSION_USER, required = false) SessionUser sessionUser
+    ) {
+        if (sessionUser == null) {
             throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
         }
 
-        reviewService.saveReview(sessionUser.getId(),concertId,saveDTO);
+        reviewService.saveReview(sessionUser.getId(), concertId, saveDTO);
 
         return Resp.ok("후기가 등록되었습니다.");
     }
 
+
+    /**
+     * 리뷰 수정
+     */
+
+    @PutMapping("/{concertId}/reviews/{reviewId}")
+    public ResponseEntity<?> updateReview(
+            @PathVariable Integer concertId,
+            @PathVariable Long reviewId,
+            @Valid @RequestBody ReviewRequest.UpdateDTO updateDTO,
+            @SessionAttribute(value = Define.SESSION_USER, required = false) SessionUser sessionUser
+    ) {
+        if (sessionUser == null) {
+            throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
+        }
+        reviewService.updateReview(sessionUser.getId(), concertId, reviewId, updateDTO);
+        return Resp.ok("후기가 수정되었습니다.");
+    }
+
+    /**
+     * 리뷰 삭제
+     */
+    @DeleteMapping("/{concertId}/reviews/{reviewId}")
+    public ResponseEntity<?> deleteReview(
+            @PathVariable Integer concertId,
+            @PathVariable Long reviewId,
+            @SessionAttribute(value = Define.SESSION_USER, required = false) SessionUser sessionUser
+    ) {
+        if (sessionUser == null) {
+            throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
+        }
+        reviewService.deleteReview(sessionUser.getId(), concertId, reviewId);
+        return Resp.ok("후기가 삭제되었습니다.");
+    }
 }

@@ -1,5 +1,5 @@
 {{> layout/header}}
-<link rel="stylesheet" href="/css/concert-detail.css">
+<link rel="stylesheet" href="/css/concert-detail.css?v=review-ui-4">
 
 <main class="cc-main cc-detail-main">
     <div class="cc-container cc-detail-page">
@@ -61,10 +61,7 @@
                     </div>
                 </section>
 
-                <!-- 동적으로 리뷰가 렌더링될 빈 껍데기 컨테이너 -->
-                <section id="review-container" class="cc-review-section mt-5" style="display: none;">
-                    <!-- JS의 renderReviews()가 여기에 HTML을 그려줍니다 -->
-                </section>
+                <section id="review-container" class="cc-review-section mt-5" style="display: none;"></section>
             </div>
 
             <aside class="cc-detail-sidebar">
@@ -131,60 +128,59 @@
     </div>
 </main>
 
-<!-- ⭐️ 리뷰 작성 모달 창 (Bootstrap 기반) -->
-<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold" id="reviewModalLabel">관람 후기 작성</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<!-- 리뷰 작성/수정 모달 -->
+<div class="cc-review-modal" id="reviewModal" role="dialog" aria-modal="true" aria-labelledby="reviewModalLabel" hidden>
+    <div class="cc-review-modal__backdrop" data-review-modal-close></div>
+    <div class="cc-review-modal__dialog" role="document">
+        <div class="cc-review-modal__content">
+            <div class="cc-review-modal__header">
+                <h5 id="reviewModalLabel">관람 후기 작성</h5>
+                <button type="button" class="cc-review-modal__close" data-review-modal-close aria-label="닫기">×</button>
             </div>
-            <div class="modal-body">
+            <div class="cc-review-modal__body">
                 <form id="reviewForm">
-                    <!-- 테스트용: 마이페이지 연동 전까지 예매 ID를 직접 입력받음 -->
-                    <div class="mb-3">
-                        <label for="reviewBookingId" class="form-label fw-bold">예매 번호 (ID)</label>
-                        <input type="number" class="form-control" id="reviewBookingId" required placeholder="예: 1 (본인의 예매 번호 입력)">
-                        <small class="text-muted">※ 실제 환경에서는 마이페이지에서 자동으로 넘어옵니다.</small>
+                    <div class="cc-review-field">
+                        <label for="reviewRating">평점</label>
+                        <div class="cc-star-rating" id="reviewStarRating" role="group" aria-label="평점 선택">
+                            <button type="button" class="cc-star-rating__button" data-star-index="1" aria-label="1점"></button>
+                            <button type="button" class="cc-star-rating__button" data-star-index="2" aria-label="2점"></button>
+                            <button type="button" class="cc-star-rating__button" data-star-index="3" aria-label="3점"></button>
+                            <button type="button" class="cc-star-rating__button" data-star-index="4" aria-label="4점"></button>
+                            <button type="button" class="cc-star-rating__button" data-star-index="5" aria-label="5점"></button>
+                        </div>
+                        <input type="hidden" id="reviewRating" value="5.0" required>
+                        <small id="reviewRatingText">5.0점</small>
                     </div>
-                    <div class="mb-3">
-                        <label for="reviewRating" class="form-label fw-bold">평점</label>
-                        <select class="form-select" id="reviewRating" required>
-                            <option value="5.0">⭐⭐⭐⭐⭐ (5.0점)</option>
-                            <option value="4.5">⭐⭐⭐⭐.5 (4.5점)</option>
-                            <option value="4.0">⭐⭐⭐⭐ (4.0점)</option>
-                            <option value="3.0">⭐⭐⭐ (3.0점)</option>
-                            <option value="2.0">⭐⭐ (2.0점)</option>
-                            <option value="1.0">⭐ (1.0점)</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="reviewContent" class="form-label fw-bold">후기 내용</label>
-                        <textarea class="form-control" id="reviewContent" rows="4" required placeholder="공연 관람 후기를 자유롭게 남겨주세요. (최대 1000자)"></textarea>
+                    <div class="cc-review-field">
+                        <label for="reviewContent">후기 내용</label>
+                        <textarea class="cc-review-textarea" id="reviewContent" rows="5" required placeholder="공연 관람 후기를 자유롭게 남겨주세요. (최대 1000자)"></textarea>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                <button type="button" class="btn btn-primary" id="btn-submit-review">등록하기</button>
+            <div class="cc-review-modal__footer">
+                <button type="button" class="cc-btn cc-btn--outline" data-review-modal-close>취소</button>
+                <button type="button" class="cc-btn cc-btn--primary" id="btn-submit-review">등록하기</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    let lastReviewFocusTrigger = null;
+    let editingReviewId = null;
+    const reviewContentCache = new Map();
+
     document.addEventListener("DOMContentLoaded", function () {
-        initTabsAndReviews();       // 탭 및 리뷰 로직
-        initReviewSubmit();         // 리뷰 작성 모달 이벤트
+        initTabsAndReviews();
+        initReviewSubmit();
+        initReviewModal();
+        initReviewRating();
         initCalendarPicker();
         initSessionPicker();
         initBookingSectionToggle();
         initBookingStartSubmit();
     });
 
-    // =========================================================================
-    // [1. 탭 및 리뷰 로직 (수정된 URL 매핑 포함)]
-    // =========================================================================
     function initTabsAndReviews() {
         const tabs = document.querySelectorAll('.cc-tab');
         const detailSection = document.getElementById('detail');
@@ -200,7 +196,10 @@
                 if (detailSection) detailSection.style.display = 'none';
                 if (reviewContainer) {
                     reviewContainer.style.display = 'block';
-                    if (reviewContainer.innerHTML.trim() === '') fetchConcertReviews(concertId, 0);
+                    if (reviewContainer.dataset.loaded !== 'true') {
+                        renderReviewLoading();
+                        fetchConcertReviews(concertId, 0);
+                    }
                 }
             } else {
                 const detailTab = Array.from(tabs).find(t => t.getAttribute('href') === '#detail');
@@ -226,142 +225,377 @@
             });
         });
 
-        // "후기 작성" 버튼 클릭 이벤트 위임 (동적 렌더링된 버튼 처리)
         document.addEventListener('click', function(e) {
-            if (e.target && e.target.id === 'btn-write-review') {
-                // 모달 띄우기 (Bootstrap JS 활용)
-                const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
-                reviewModal.show();
+            const writeButton = e.target?.closest?.('#btn-write-review');
+            if (writeButton) {
+                lastReviewFocusTrigger = writeButton;
+                resetReviewModalMode();
+                document.getElementById('reviewForm')?.reset();
+                setReviewRating(5, true);
+                showReviewModal();
+                return;
+            }
+
+            const editButton = e.target?.closest?.('[data-review-edit]');
+            if (editButton) {
+                const reviewId = editButton.dataset.reviewId;
+                lastReviewFocusTrigger = editButton;
+                openReviewEditModal(
+                    reviewId,
+                    editButton.dataset.reviewRating,
+                    reviewContentCache.get(String(reviewId)) ?? ''
+                );
+                return;
+            }
+
+            const deleteButton = e.target?.closest?.('[data-review-delete]');
+            if (deleteButton) {
+                deleteReview(deleteButton.dataset.reviewId);
             }
         });
     }
 
-    // 서버 API 통신 (경로 일치 완료: /api/concert/...)
+    function initReviewModal() {
+        const reviewModalEl = document.getElementById('reviewModal');
+        if (!reviewModalEl) return;
+
+        reviewModalEl.querySelectorAll('[data-review-modal-close]').forEach(button => {
+            button.addEventListener('click', closeReviewModal);
+        });
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && !reviewModalEl.hidden) {
+                closeReviewModal();
+            }
+        });
+    }
+
+    function showReviewModal() {
+        const reviewModalEl = document.getElementById('reviewModal');
+        if (!reviewModalEl) return;
+
+        reviewModalEl.hidden = false;
+        document.body.classList.add('cc-review-modal-open');
+        requestAnimationFrame(() => document.getElementById('reviewContent')?.focus());
+    }
+
+    function closeReviewModal() {
+        const reviewModalEl = document.getElementById('reviewModal');
+        if (!reviewModalEl) return;
+
+        moveFocusOutOfReviewModal(reviewModalEl);
+        reviewModalEl.hidden = true;
+        document.body.classList.remove('cc-review-modal-open');
+        if (lastReviewFocusTrigger?.isConnected) {
+            lastReviewFocusTrigger.focus();
+        }
+        lastReviewFocusTrigger = null;
+    }
+
+    function moveFocusOutOfReviewModal(reviewModalEl) {
+        const activeElement = document.activeElement;
+        if (activeElement && reviewModalEl.contains(activeElement)) {
+            activeElement.blur();
+        }
+    }
+
+    function openReviewEditModal(reviewId, rating, content) {
+        editingReviewId = reviewId;
+        document.getElementById('reviewModalLabel').textContent = '관람 후기 수정';
+        document.getElementById('btn-submit-review').textContent = '수정하기';
+        setReviewRating(Number(rating) || 5, true);
+        document.getElementById('reviewContent').value = content ?? '';
+        showReviewModal();
+    }
+
+    function resetReviewModalMode() {
+        editingReviewId = null;
+        const title = document.getElementById('reviewModalLabel');
+        const submitButton = document.getElementById('btn-submit-review');
+        if (title) title.textContent = '관람 후기 작성';
+        if (submitButton) submitButton.textContent = '등록하기';
+        setReviewRating(5, true);
+    }
+
+    function initReviewRating() {
+        const ratingWidget = document.getElementById('reviewStarRating');
+        if (!ratingWidget) return;
+
+        ratingWidget.querySelectorAll('[data-star-index]').forEach(button => {
+            button.addEventListener('mousemove', event => {
+                renderStarInputRating(getPointerRating(event));
+            });
+
+            button.addEventListener('click', event => {
+                setReviewRating(getPointerRating(event), true);
+            });
+
+            button.addEventListener('keydown', event => {
+                const currentRating = Number(document.getElementById('reviewRating')?.value) || 5;
+                if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    setReviewRating(currentRating + 0.5, true);
+                }
+                if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
+                    event.preventDefault();
+                    setReviewRating(currentRating - 0.5, true);
+                }
+            });
+        });
+
+        ratingWidget.addEventListener('mouseleave', () => {
+            renderStarInputRating(Number(document.getElementById('reviewRating')?.value) || 5);
+        });
+
+        setReviewRating(Number(document.getElementById('reviewRating')?.value) || 5, true);
+    }
+
+    function getPointerRating(event) {
+        const starButton = event.currentTarget;
+        const starIndex = Number(starButton.dataset.starIndex);
+        const rect = starButton.getBoundingClientRect();
+        const isLeftHalf = event.clientX - rect.left <= rect.width / 2;
+        return starIndex - (isLeftHalf ? 0.5 : 0);
+    }
+
+    function setReviewRating(rating, persist) {
+        const normalizedRating = Math.min(5, Math.max(0.5, Math.round((Number(rating) || 5) * 2) / 2));
+        if (persist) {
+            const ratingInput = document.getElementById('reviewRating');
+            if (ratingInput) ratingInput.value = normalizedRating.toFixed(1);
+        }
+        renderStarInputRating(normalizedRating);
+    }
+
+    function renderStarInputRating(rating) {
+        const normalizedRating = Math.min(5, Math.max(0.5, Math.round((Number(rating) || 5) * 2) / 2));
+        document.querySelectorAll('#reviewStarRating [data-star-index]').forEach(button => {
+            const starIndex = Number(button.dataset.starIndex);
+            const fillRatio = Math.min(1, Math.max(0, normalizedRating - (starIndex - 1)));
+            button.style.setProperty('--fill', `${fillRatio * 100}%`);
+        });
+
+        const ratingText = document.getElementById('reviewRatingText');
+        if (ratingText) ratingText.textContent = `${normalizedRating.toFixed(1)}점`;
+    }
+
+    function renderReviewLoading() {
+        const reviewContainer = document.getElementById('review-container');
+        if (!reviewContainer) return;
+
+        reviewContainer.innerHTML = `
+            <div class="cc-card cc-review-empty">
+                <div class="cc-review-empty__icon" aria-hidden="true">...</div>
+                <h5>후기를 불러오는 중입니다.</h5>
+                <p>잠시만 기다려주세요.</p>
+            </div>`;
+    }
+
     async function fetchConcertReviews(concertId, page = 0) {
-        if (!concertId) return;
+        if (!concertId) {
+            renderReviewError();
+            return;
+        }
         try {
-            // 수정된 주소: /api/concert/{concertId}/reviews
-            const response = await apiGet(`/api/concert/${concertId}/reviews?page=${page}&size=5`);
-            if (response && response.data) {
-                renderReviews(response.data);
+            const { res, data } = await apiGet(`/api/concert/${concertId}/reviews?page=${page}&size=5`);
+            if (res?.ok && data?.body) {
+                renderReviews(data.body);
+            } else {
+                throw new Error(getApiErrorMessage(data, '후기 응답 형식이 올바르지 않습니다.'));
             }
         } catch (error) {
             console.error("리뷰 로드 실패:", error);
-            if(window.CcUI) CcUI.toast('리뷰를 불러오는 중 오류가 발생했습니다.');
+            const reviewContainer = document.getElementById('review-container');
+            if (reviewContainer) reviewContainer.dataset.loaded = 'false';
+            renderReviewError();
+            if(window.CcUI) CcUI.toast('후기를 불러오는 중 오류가 발생했습니다.', 'error');
         }
+    }
+
+    function renderReviewError() {
+        const reviewContainer = document.getElementById('review-container');
+        if (!reviewContainer) return;
+
+        reviewContainer.innerHTML = `
+            <div class="cc-card cc-review-empty">
+                <div class="cc-review-empty__icon" aria-hidden="true">!</div>
+                <h5>후기를 불러오지 못했습니다.</h5>
+                <p>잠시 후 다시 시도해주세요.</p>
+            </div>`;
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    function getApiErrorMessage(data, fallbackMessage) {
+        return data?.msg || data?.message || fallbackMessage;
+    }
+
+    function renderRatingStars(rating) {
+        const numericRating = Number(rating) || 0;
+        return Array.from({ length: 5 }, (_, index) => {
+            const fillRatio = Math.min(1, Math.max(0, numericRating - index));
+            return `<span class="cc-review-star" style="--fill:${fillRatio * 100}%">★</span>`;
+        }).join('');
     }
 
     function renderReviews(data) {
         const reviewContainer = document.getElementById('review-container');
         if (!reviewContainer) return;
 
+        reviewContainer.dataset.loaded = 'true';
+        reviewContentCache.clear();
+
+        const reviewTab = document.querySelector('.cc-tab[href="#review"]');
+        if (reviewTab) reviewTab.textContent = `후기 ${data.totalReviewCount || 0}`;
+
         if (!data.reviews || data.reviews.length === 0) {
             reviewContainer.innerHTML = `
-                <div class="d-flex justify-content-end mb-3">
-                    <button class="btn btn-outline-primary px-4" id="btn-write-review">✍️ 첫 후기 작성하기</button>
+                <div class="cc-review-toolbar">
+                    <button type="button" class="cc-btn cc-btn--outline cc-review-write-btn" id="btn-write-review">첫 후기 작성</button>
                 </div>
-                <div class="card shadow-sm"><div class="card-body p-5 text-center text-muted">
-                    <i class="far fa-comment-dots fa-3x mb-3 text-light"></i>
+                <div class="cc-card cc-review-empty">
+                    <div class="cc-review-empty__icon" aria-hidden="true">★</div>
                     <h5>아직 등록된 후기가 없습니다.</h5>
-                    <p>첫 번째 후기의 주인공이 되어주세요!</p>
-                </div></div>`;
+                    <p>공연을 관람한 뒤 첫 번째 후기를 남겨주세요.</p>
+                </div>`;
             return;
         }
 
         let html = `
-            <div class="card shadow-sm cc-review-card">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-end mb-4 border-bottom pb-3">
-                        <div>
-                            <h4 class="fw-bold mb-1">관람 후기</h4>
-                            <div class="d-flex align-items-center mt-2">
-                                <span class="text-warning fs-4 me-2">★</span>
-                                <span class="fs-4 fw-bold">${(data.averageRating || 0).toFixed(1)}</span>
-                                <span class="text-muted ms-2 mt-1">(${data.totalReviewCount}개의 후기)</span>
-                            </div>
+            <div class="cc-card cc-review-card">
+                <div class="cc-review-head">
+                    <div>
+                        <h4>관람 후기</h4>
+                        <div class="cc-review-summary" aria-label="평균 평점 ${(data.averageRating || 0).toFixed(1)}점">
+                            <span class="cc-review-summary__star" aria-hidden="true">★</span>
+                            <strong>${(data.averageRating || 0).toFixed(1)}</strong>
+                            <span>${data.totalReviewCount}개의 후기</span>
                         </div>
-                        <button class="btn btn-outline-primary px-4" id="btn-write-review">✍️ 후기 작성</button>
                     </div>
-                    <div class="list-group list-group-flush">
+                    <button type="button" class="cc-btn cc-btn--outline cc-review-write-btn" id="btn-write-review">후기 작성</button>
+                </div>
+                <div class="cc-review-list">
         `;
 
         data.reviews.forEach(review => {
-            html += `
-                <div class="list-group-item px-0 py-4 border-bottom">
-                    <div class="d-flex justify-content-between mb-2">
-                        <div class="d-flex align-items-center">
-                            <span class="fw-bold me-2">${review.maskedUsername}</span>
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill" style="font-size: 0.75rem;">
-                                실제 관람객
-                            </span>
+            const rating = Number(review.rating) || 0;
+            reviewContentCache.set(String(review.reviewId), review.content ?? '');
+
+            const reviewActions = review.mine ? `
+                        <div class="cc-review-actions">
+                            <button type="button"
+                                    class="cc-btn cc-btn--outline cc-review-action-btn"
+                                    data-review-edit
+                                    data-review-id="${review.reviewId}"
+                                    data-review-rating="${rating}">
+                                수정
+                            </button>
+                            <button type="button"
+                                    class="cc-btn cc-btn--outline cc-review-action-btn cc-review-action-btn--danger"
+                                    data-review-delete
+                                    data-review-id="${review.reviewId}">
+                                삭제
+                            </button>
                         </div>
-                        <span class="text-muted small">${review.createdAt}</span>
-                    </div>
-                    <div class="text-warning mb-2 fw-bold">평점: ${review.rating}점</div>
-                    <p class="mb-0 text-dark" style="line-height: 1.6;">${review.content}</p>
-                </div>
+            ` : '';
+
+            html += `
+                    <article class="cc-review-item">
+                        <div class="cc-review-item__meta">
+                            <div class="cc-review-author">
+                                <strong>${escapeHtml(review.maskedUsername)}</strong>
+                                <span class="cc-badge cc-review-badge">실관람객</span>
+                            </div>
+                            <time>${escapeHtml(review.createdAt)}</time>
+                        </div>
+                        <div class="cc-review-rating">
+                            <span class="cc-review-stars" aria-hidden="true">${renderRatingStars(rating)}</span>
+                            <strong>${rating.toFixed(1)}</strong>
+                        </div>
+                        <p>${escapeHtml(review.content)}</p>
+                        ${reviewActions}
+                    </article>
             `;
         });
 
-        html += `</div></div></div>`;
+        html += `</div></div>`;
         reviewContainer.innerHTML = html;
     }
 
-    // =========================================================================
-    // [2. 후기 작성 데이터 전송 (apiPost 활용)]
-    // =========================================================================
     function initReviewSubmit() {
         const btnSubmit = document.getElementById('btn-submit-review');
 
         btnSubmit?.addEventListener('click', async function() {
             const concertId = document.getElementById('hiddenConcertId')?.value;
-            const bookingId = document.getElementById('reviewBookingId').value;
             const rating = document.getElementById('reviewRating').value;
             const content = document.getElementById('reviewContent').value;
 
-            // 1. 프론트엔드 유효성 검사
-            if(!bookingId || !rating || !content.trim()) {
-                CcUI.alert('알림', '모든 항목을 입력해주세요.', 'warning');
+            if(!rating || !content.trim()) {
+                CcUI.alert('평점과 후기 내용을 입력해주세요.', 'warning');
                 return;
             }
 
-            // 2. DTO 구조에 맞춘 JSON 객체 생성
             const reqDTO = {
-                bookingId: parseInt(bookingId),
                 rating: parseFloat(rating),
                 content: content
             };
 
-            // 3. API 전송 (팀 공통 모듈 apiPost 사용 -> 내부에서 JSON.stringify 처리)
             try {
-                const res = await apiPost(`/api/concert/${concertId}/reviews`, reqDTO);
+                const isEditing = editingReviewId !== null;
+                const { res, data } = isEditing
+                    ? await apiPut(`/api/concert/${concertId}/reviews/${editingReviewId}`, reqDTO)
+                    : await apiPost(`/api/concert/${concertId}/reviews`, reqDTO);
 
-                // 성공 시 응답 처리 (팀의 Resp 구조에 맞춤)
-                if (res && res.code === 1) {
-                    CcUI.toast('후기가 성공적으로 등록되었습니다.');
-
-                    // 모달 창 닫기
-                    const reviewModalEl = document.getElementById('reviewModal');
-                    const modalInstance = bootstrap.Modal.getInstance(reviewModalEl);
-                    if (modalInstance) modalInstance.hide();
-
-                    // 폼 초기화 및 리뷰 목록 리로딩
+                if (res?.ok && data?.status === 200) {
+                    CcUI.toast(isEditing ? '후기가 수정되었습니다.' : '후기가 등록되었습니다.');
+                    closeReviewModal();
                     document.getElementById('reviewForm').reset();
+                    resetReviewModalMode();
                     fetchConcertReviews(concertId, 0);
                 } else {
-                    CcUI.alert('오류', res.msg || '리뷰 등록에 실패했습니다.', 'error');
+                    CcUI.alert(getApiErrorMessage(data, '후기 처리에 실패했습니다.'), 'error');
                 }
             } catch (error) {
-                console.error('리뷰 등록 에러:', error);
-                // api.js 내부에서 처리되지만, 만약 튕겨 나올 경우 대비
+                console.error('리뷰 처리 에러:', error);
+                CcUI.alert('후기 처리 중 오류가 발생했습니다.', 'error');
             }
         });
     }
 
-// =========================================================================
-    // [2. 달력 및 날짜 선택 모듈]
-    // 목적: 렌더링 된 커스텀 달력 UI에서 유저가 선택한 날짜를 처리합니다.
-    // =========================================================================
+    function deleteReview(reviewId) {
+        const concertId = document.getElementById('hiddenConcertId')?.value;
+        if (!concertId || !reviewId) return;
+
+        CcUI.confirm({
+            title: '후기를 삭제할까요?',
+            text: '삭제한 후기는 복구할 수 없습니다.',
+            confirmText: '삭제',
+            danger: true,
+            onConfirm: async () => {
+                try {
+                    const { res, data } = await apiDelete(`/api/concert/${concertId}/reviews/${reviewId}`);
+
+                    if (res?.ok && data?.status === 200) {
+                        CcUI.toast('후기가 삭제되었습니다.');
+                        fetchConcertReviews(concertId, 0);
+                    } else {
+                        CcUI.alert(getApiErrorMessage(data, '후기 삭제에 실패했습니다.'), 'error');
+                    }
+                } catch (error) {
+                    console.error('리뷰 삭제 에러:', error);
+                    CcUI.alert('후기 삭제 중 오류가 발생했습니다.', 'error');
+                }
+            }
+        });
+    }
+
     function initCalendarPicker() {
         const calendarPickers = document.querySelectorAll(".cc-calendar-picker");
 
@@ -384,15 +618,8 @@
             const availableMap = {};
             availableDates.forEach(date => availableMap[date.value] = date.label);
 
-            const minDate = new Date(availableDates[0].value + "T00:00:00");
-            const maxDate = new Date(availableDates[availableDates.length - 1].value + "T00:00:00");
-
             if (!dateSelect.value) dateSelect.value = availableDates[0].value;
             let viewDate = new Date(dateSelect.value + "T00:00:00");
-
-            function isSameMonth(dateA, dateB) {
-                return dateA.getFullYear() === dateB.getFullYear() && dateA.getMonth() === dateB.getMonth();
-            }
 
             function updateDateSummary() {
                 if (dateSummary) dateSummary.textContent = availableMap[dateSelect.value] || "";
@@ -457,7 +684,6 @@
         });
     }
 
-    // 텍스트에서 날짜 포맷 추출 정규식 헬퍼 함수
     function extractDateFromText(text) {
         if (!text) return "";
         const dotMatch = text.match(/(\d{4})\.(\d{2})\.(\d{2})/);
@@ -467,11 +693,6 @@
         return "";
     }
 
-
-    // =========================================================================
-    // [3. 회차 선택 로직 (Session Picker)]
-    // 목적: 달력에서 날짜를 선택하면, 해당 날짜에 열리는 회차만 보여줍니다.
-    // =========================================================================
     function initSessionPicker() {
         const sessionLists = document.querySelectorAll(".cc-session-card-list");
 
@@ -548,11 +769,6 @@
         sessionSummary.textContent = selectedOption ? selectedOption.textContent.trim() : "";
     }
 
-
-    // =========================================================================
-    // [4. 예매 폼 검증 및 UI 토글 (Form Validation & UI)]
-    // 목적: 우측의 예매 버튼을 눌렀을 때의 폼 유효성 체크와 아코디언 메뉴 동작
-    // =========================================================================
     function initBookingSectionToggle() {
         document.querySelectorAll("[data-section-toggle]").forEach(function (toggleButton) {
             toggleButton.addEventListener("click", function () {
@@ -572,20 +788,19 @@
 
                 if (!dateSelect || !dateSelect.value) {
                     event.preventDefault();
-                    if(window.CcUI) CcUI.alert('오류', '관람일을 선택해주세요.', 'error');
+                    if(window.CcUI) CcUI.alert('관람일을 선택해주세요.', 'error');
                     else alert("관람일을 선택해주세요.");
                     return;
                 }
 
                 if (!sessionSelect || !sessionSelect.value) {
                     event.preventDefault();
-                    if(window.CcUI) CcUI.alert('오류', '회차를 선택해주세요.', 'error');
+                    if(window.CcUI) CcUI.alert('회차를 선택해주세요.', 'error');
                     else alert("회차를 선택해주세요.");
                 }
             });
         });
     }
-</script>
 </script>
 
 {{> layout/footer}}

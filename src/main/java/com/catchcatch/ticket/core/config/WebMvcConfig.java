@@ -5,7 +5,6 @@ import com.catchcatch.ticket.core.interceptor.LoginInterceptor;
 import com.catchcatch.ticket.core.interceptor.SessionInterceptor;
 import com.samskivert.mustache.Mustache;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.mustache.MustacheResourceTemplateLoader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -52,6 +51,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/admin/**",
                         "/api/admin/**",
                         "/api/concert/**"
+                )
+                .excludePathPatterns(
+                        "/api/concert/*/reviews",
+                        "/api/concert/*/reviews/*"
                 );
     }
 

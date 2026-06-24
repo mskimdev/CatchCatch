@@ -20,4 +20,14 @@ public interface ReviewRepository extends JpaRepository<Review,Long> {
     @Query("SELECT AVG(r.rating) FROM Review r " +
             "WHERE r.concert.id = :concertId")
     Optional<Double> findAverageRatingByConcertId(@Param("concertId") Integer concertId);
+
+    // 권한 확인
+    long countByConcertId(Integer concertId);
+
+    Optional<Review> findByIdAndUser_IdAndConcert_Id(
+            Long reviewId,
+            Integer userId,
+            Integer concertId
+    );
+
 }

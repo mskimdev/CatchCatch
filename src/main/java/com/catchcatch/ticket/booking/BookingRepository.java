@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +20,30 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 //     * 사용자 기준 예매 목록 조회
 //     */
 //    List<Booking> findByUser_Id(Integer userId);
+
+
+    /**
+     * 종료된 회차에 대한 예매 조회
+     */
+    @Query("""
+        select distinct b
+        from Booking b
+        join fetch b.user u
+        join fetch b.concertSession cs
+        join fetch cs.concert c
+        where u.id = :userId
+          and c.id = :concertId
+          and b.status = :status
+          and cs.sessionDate <= :today
+        order by cs.sessionDate desc, cs.sessionTime desc, b.id desc
+        """)
+    List<Booking> findReviewableBookings(
+            @Param("userId") Integer userId,
+            @Param("concertId") Integer concertId,
+            @Param("status") Status status,
+            @Param("today") LocalDate today
+            );
+
 
     /**
      * 만료 대상 예매 조회

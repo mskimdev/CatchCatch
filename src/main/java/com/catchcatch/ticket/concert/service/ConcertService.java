@@ -4,18 +4,19 @@ import com.catchcatch.ticket.concert.banner.Banner;
 import com.catchcatch.ticket.concert.banner.BannerRepository;
 import com.catchcatch.ticket.concert.banner.BannerResponse;
 import com.catchcatch.ticket.concert.core.Concert;
-import com.catchcatch.ticket.concert.repository.ConcertRepository;
-import com.catchcatch.ticket.concert.dto.ConcertResponse;
 import com.catchcatch.ticket.concert.core.ConcertStatus;
+import com.catchcatch.ticket.concert.dto.ConcertResponse;
+import com.catchcatch.ticket.concert.repository.ConcertRepository;
+import com.catchcatch.ticket.review.ReviewRepository;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.seat.SeatRepository;
-import com.catchcatch.ticket.venue.VenueRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,6 +30,7 @@ public class ConcertService {
     private final ConcertRepository concertRepository;
     private final SeatRepository seatRepository;
     private final BannerRepository bannerRepository;
+    private final ReviewRepository reviewRepository;
 
     // ==========================================
     // 1. 홈페이지 관련 메서드
@@ -37,7 +39,7 @@ public class ConcertService {
     // 1. 추천 콘서트 (예매 가능)
     public List<ConcertResponse.ListDTO> getHomepageConcerts() {
 
-        Pageable pageable = PageRequest.of(0,8);
+        Pageable pageable = PageRequest.of(0, 8);
 
         List<Concert> concertList = concertRepository.findRecommendConcerts(ConcertStatus.OPEN, pageable);
         return concertList.stream()
@@ -48,7 +50,7 @@ public class ConcertService {
     // 2. 인기 콘서트
     public List<ConcertResponse.ListDTO> getPopularConcerts() {
 
-        Pageable pageable = PageRequest.of(0,8);
+        Pageable pageable = PageRequest.of(0, 8);
 
         List<Concert> popularList = concertRepository.findPopularConcerts(pageable);
         return popularList.stream()
@@ -97,8 +99,10 @@ public class ConcertService {
             seats = seatRepository.findByConcertSession_IdOrderBySeatNumberAsc(firstSessionId);
         }
 
+        long reviewCount = reviewRepository.countByConcertId(concertId);
+
         // 3. 엔티티 데이터를 DTO 팩토리 메서드로 넘겨 조립합니다.
-        return ConcertResponse.DetailDTO.of(concert, seats);
+        return ConcertResponse.DetailDTO.of(concert, seats, reviewCount);
     } // end of getConcertDetail
 
 
