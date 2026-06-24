@@ -103,24 +103,44 @@
 <script src="/js/core/api.js"></script>
 
 <script>
-    async function deleteConcert(id) {
-        if (!confirm('정말 삭제하시겠습니까?')) {
-            return;
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteSuccessMessage = sessionStorage.getItem('concertDeleteSuccess');
+        if (deleteSuccessMessage) {
+            sessionStorage.removeItem('concertDeleteSuccess');
+            CcUI.toast(deleteSuccessMessage);
         }
+    });
 
-        try {
-            let { res, data } = await apiDelete(`/api/concert/${id}`);
+    function deleteConcert(id) {
+        CcUI.confirm({
+            title: '공연을 삭제하시겠습니까?',
+            text: '삭제된 공연은 사용자 화면에 노출되지 않습니다.',
+            confirmText: '삭제',
+            cancelText: '취소',
+            danger: true,
+            onConfirm: async () => {
+                try {
+                    CcUI.loading.show('공연을 삭제하고 있습니다...');
+                    const { res, data } = await apiDelete(`/api/concert/${id}`);
+                    CcUI.loading.hide();
 
-            if(res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
-                alert('성공적으로 삭제되었습니다.');
-                window.location.reload();
-            } else {
-                alert('삭제에 실패했습니다: ' + (data && data.msg ? data.msg : '알 수 없는 오류'));
+                    if (res && res.ok) {
+                        sessionStorage.setItem(
+                            'concertDeleteSuccess',
+                            data?.body || data?.msg || '공연이 삭제되었습니다.'
+                        );
+                        window.location.reload();
+                        return;
+                    }
+
+                    CcUI.alert(data?.msg || '공연 삭제에 실패했습니다.', 'error');
+                } catch (error) {
+                    CcUI.loading.hide();
+                    console.error('삭제 요청 중 오류 발생:', error);
+                    CcUI.alert('삭제 처리 중 서버와 통신하지 못했습니다.', 'error');
+                }
             }
-        } catch (error) {
-            console.error('삭제 요청 중 오류 발생:', error);
-            alert('삭제 처리 중 서버와 통신에 실패했습니다.');
-        }
+        });
     }
 </script>
 </body>
