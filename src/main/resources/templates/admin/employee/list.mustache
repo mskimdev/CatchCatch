@@ -1,0 +1,255 @@
+{{> admin/layout/header}}
+
+<style>
+    /* Bootstrap 뱃지에 커스텀 색상 살짝 입히기 */
+    .badge-ACTIVE { background-color: #e3f2fd; color: #1976d2; }
+    .badge-SUSPENDED { background-color: #fff3e0; color: #f57c00; }
+    .badge-RESIGNED { background-color: #ffebee; color: #d32f2f; }
+</style>
+
+<body id="page-top">
+<div id="wrapper">
+    {{> admin/layout/sidebar}}
+
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            {{> admin/layout/topbar}}
+
+            <div class="container-fluid">
+                <!-- 페이지 헤더 -->
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">사원 계정 관리</h1>
+                    <!-- Bootstrap Modal 트리거 버튼 -->
+                    <button type="button" class="btn btn-sm btn-success shadow-sm" data-toggle="modal" data-target="#createModal">
+                        <i class="fas fa-plus fa-sm text-white-50"></i> 신규 사원 등록
+                    </button>
+                </div>
+
+                <!-- 사원 리스트 카드 -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">사원 리스트</h6>
+
+                        <!-- 우측 상단 검색 폼 -->
+                        <form action="/admin/employees" method="get" class="form-inline">
+                            <select name="type" class="form-control form-control-sm mr-2">
+                                <option value="name">이름</option>
+                                <option value="empNo">사번</option>
+                            </select>
+                            <input type="text" name="keyword" value="{{#keyword}}{{keyword}}{{/keyword}}" placeholder="검색어 입력" class="form-control form-control-sm mr-2">
+                            <button type="submit" class="btn btn-sm btn-primary">검색</button>
+                        </form>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover" width="100%" cellspacing="0">
+                                <thead class="thead-light">
+                                <tr class="text-center">
+                                    <th style="width: 15%;">사번</th>
+                                    <th style="width: 15%;">아이디</th>
+                                    <th style="width: 15%;">이름</th>
+                                    <th style="width: 15%;">부서</th>
+                                    <th style="width: 15%;">권한</th>
+                                    <th style="width: 10%;">상태</th>
+                                    <th style="width: 15%;">관리</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#employees}}
+                                    <tr>
+                                        <td class="align-middle text-center font-weight-bold">{{employeeNumber}}</td>
+                                        <td class="align-middle text-center">{{accountId}}</td>
+                                        <td class="align-middle text-center">{{name}}</td>
+                                        <td class="align-middle text-center">{{department}}</td>
+                                        <td class="align-middle text-center">
+                                            <span class="badge badge-secondary">{{role}}</span>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <span class="badge badge-{{status}} px-2 py-1">{{status}}</span>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <!-- 버튼 디자인 통일 (블록 형태로 위아래 배치) -->
+                                            <button type="button" class="btn btn-sm btn-outline-primary mb-1 d-block w-100"
+                                                    onclick="openUpdateModal('{{employeeNumber}}', '{{name}}', '{{department}}', '{{role}}')">
+                                                정보수정
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger d-block w-100"
+                                                    onclick="openStatusModal('{{employeeNumber}}', '{{name}}', '{{status}}')">
+                                                상태변경
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {{/employees}}
+                                {{^employees}}
+                                    <tr>
+                                        <td colspan="7" class="text-center py-5">
+                                            <div class="text-muted">등록된 사원이 없거나 검색 결과가 없습니다.</div>
+                                        </td>
+                                    </tr>
+                                {{/employees}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- /.container-fluid -->
+        </div>
+        <!-- End of Main Content -->
+
+        {{> admin/layout/footer}}
+    </div>
+</div>
+
+<!-- ============================================== -->
+<!-- Bootstrap Modals (팝업 영역) -->
+<!-- ============================================== -->
+
+<!-- 1. 신규 사원 등록 모달 -->
+<div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title font-weight-bold text-gray-800" id="createModalLabel">신규 사원 등록</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="/admin/employees/create" method="post">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="font-weight-bold">사번</label>
+                        <input type="text" class="form-control" name="employeeNumber" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-bold">아이디</label>
+                        <input type="text" class="form-control" name="accountId" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-bold">초기 비밀번호</label>
+                        <input type="password" class="form-control" name="password" placeholder="예: Catch1234!" required>
+                        <small class="form-text text-muted">※ 사원에게 전달할 임시 비밀번호를 입력하세요.</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-bold">이름</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-bold">부서</label>
+                        <input type="text" class="form-control" name="department" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-bold">권한</label>
+                        <select class="form-control" name="role">
+                            <option value="CLERK">일반 사원 (CLERK)</option>
+                            <option value="MANAGER">중간 관리자 (MANAGER)</option>
+                            <option value="SUPER_ADMIN">최고 관리자 (SUPER_ADMIN)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                    <button type="submit" class="btn btn-success">등록하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 2. 정보 수정 모달 -->
+<div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title font-weight-bold text-gray-800" id="updateModalLabel">사원 정보 수정</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="updateForm" method="post">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="font-weight-bold">이름</label>
+                        <input type="text" class="form-control" id="updateName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-bold">부서</label>
+                        <input type="text" class="form-control" id="updateDepartment" name="department" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-bold">권한</label>
+                        <select class="form-control" id="updateRole" name="role">
+                            <option value="CLERK">일반 사원</option>
+                            <option value="MANAGER">중간 관리자</option>
+                            <option value="SUPER_ADMIN">최고 관리자</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                    <button type="submit" class="btn btn-primary">수정완료</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 3. 상태 변경 모달 -->
+<div class="modal fade" id="statusModal" tabindex="-1" role="dialog" aria-labelledby="statusModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content border-left-danger">
+            <div class="modal-header">
+                <h5 class="modal-title font-weight-bold text-gray-800" id="statusModalLabel">상태 변경 (<span id="statusTargetName" class="text-primary"></span>)</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="statusForm" method="post">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="font-weight-bold">변경할 상태</label>
+                        <select class="form-control" id="updateStatus" name="status">
+                            <option value="ACTIVE">재직중 (ACTIVE)</option>
+                            <option value="SUSPENDED">계정정지 (SUSPENDED)</option>
+                            <option value="RESIGNED">퇴사처리 (RESIGNED)</option>
+                        </select>
+                    </div>
+                    <p class="text-danger small mb-0"><i class="fas fa-exclamation-triangle"></i> 퇴사 처리 시 해당 계정은 즉시 로그인할 수 없게 됩니다.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                    <button type="submit" class="btn btn-danger">상태변경</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. 정보 수정 모달 열기 (데이터 세팅 후 Bootstrap 모달 띄우기)
+    function openUpdateModal(empNo, name, department, role) {
+        const form = document.getElementById('updateForm');
+        form.action = `/admin/employees/${empNo}/update`;
+
+        document.getElementById('updateName').value = name;
+        document.getElementById('updateDepartment').value = department;
+        document.getElementById('updateRole').value = role;
+
+        // jQuery를 사용한 Bootstrap Modal 호출
+        $('#updateModal').modal('show');
+    }
+
+    // 2. 상태 변경 모달 열기
+    function openStatusModal(empNo, name, currentStatus) {
+        const form = document.getElementById('statusForm');
+        form.action = `/admin/employees/${empNo}/status`;
+
+        document.getElementById('statusTargetName').innerText = name;
+        document.getElementById('updateStatus').value = currentStatus;
+
+        $('#statusModal').modal('show');
+    }
+</script>
+</body>

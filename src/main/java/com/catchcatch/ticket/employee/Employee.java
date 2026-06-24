@@ -64,8 +64,10 @@ public class Employee {
     }
 
     // 정보 수정 메서드
-    public void updateInfo(String department, EmployeeRole role) {
+    public void update(String name, String department, EmployeeRole role) {
+        this.name = name;
         this.department = department;
         this.role = role;
     }
+
 }
