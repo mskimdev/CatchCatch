@@ -84,6 +84,9 @@ public class ConcertResponse {
             String detailDescription1,
             String detailDescription2,
             Integer reviewCount,
+            boolean comingSoon,
+            String ticketOpenIso,
+            String ticketOpenLabel,
             List<SessionDTO> sessions,
             List<DateDTO> dates,
             List<PriceDTO> prices
@@ -108,6 +111,12 @@ public class ConcertResponse {
                     .values().stream()
                     .collect(Collectors.toList());
 
+            boolean comingSoon = concert.getConcertStatus() == com.catchcatch.ticket.concert.core.ConcertStatus.COMING_SOON;
+            LocalDateTime openDt = concert.getTicketOpenDate();
+            String ticketOpenIso = openDt != null ? openDt.toString() : null;
+            String ticketOpenLabel = openDt != null
+                    ? openDt.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH:mm")) : "미정";
+
             return DetailDTO.builder()
                     .id(concert.getId())
                     .title(concert.getTitle())
@@ -125,6 +134,9 @@ public class ConcertResponse {
                     .detailDescription1(concert.getDetailDescription1())
                     .detailDescription2(concert.getDetailDescription2())
                     .reviewCount(Math.toIntExact(reviewCount == null ? 0L : reviewCount))
+                    .comingSoon(comingSoon)
+                    .ticketOpenIso(ticketOpenIso)
+                    .ticketOpenLabel(ticketOpenLabel)
                     .sessions(sessionDTOs)
                     .dates(concert.getSessions().stream()
                             .map(ConcertSession::getSessionDate)
