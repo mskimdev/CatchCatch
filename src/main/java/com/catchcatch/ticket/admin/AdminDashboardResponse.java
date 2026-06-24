@@ -76,7 +76,22 @@ public class AdminDashboardResponse {
             Integer concertSessionId,
             String concertTitle,
             String round,
-            long waitingCount
+            long waitingCount,
+            long readyCount,
+            long enteredCount,
+            long totalRequestedCount,
+            long capacity,
+            // 혼잡도(%) = (READY+ENTERED) / capacity * 100. capacity가 0이면 0으로 둔다.
+            int congestionRate
+    ){}
+
+    // 전체(All) 뷰 - 모든 활성 회차를 합산한 지표
+    public record OverallQueueStatusDTO(
+            long totalRequestedCount,
+            long waitingCount,
+            long activeCount,
+            long capacity,
+            int congestionRate
     ){}
 
     public record SystemErrorStatsDTO(

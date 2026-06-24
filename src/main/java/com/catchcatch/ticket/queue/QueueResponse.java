@@ -7,6 +7,7 @@ public class QueueResponse {
             QueueStatus status,
             Long queueNumber,
             long waitingAhead,
+            long waitingBehind,
             String entryToken
     ){}
 }

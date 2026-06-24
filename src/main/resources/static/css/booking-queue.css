@@ -44,7 +44,7 @@
 
 .cc-queue-status {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 12px;
   margin-bottom: 24px;
 }
@@ -80,5 +80,9 @@
 @media (max-width: 480px) {
   .cc-queue-card {
     padding: 36px 24px;
+  }
+
+  .cc-queue-status {
+    grid-template-columns: 1fr;
   }
 }
