@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.security.SecureRandom;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,10 @@ public class Booking {
     // QR 입장권 검증용 토큰
     @Column(name = "ticket_token", unique = true, length = 36)
     private String ticketToken;
+
+    // QR 인식 실패 시 직원이 직접 입력하는 짧은 입장 코드
+    @Column(name = "ticket_code", unique = true, length = 10)
+    private String ticketCode;
 
     // 입장 처리 시간
     @Column(name = "checked_in_at")
@@ -166,10 +171,28 @@ public class Booking {
         this.status = Status.EXPIRED;
     }
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final String TICKET_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
     @PrePersist
     public void prePersist() {
         if (this.ticketToken == null) {
             this.ticketToken = UUID.randomUUID().toString();
         }
+
+        if (this.ticketCode == null) {
+            this.ticketCode = generateTicketCode();
+        }
+    }
+
+    private String generateTicketCode() {
+        StringBuilder code = new StringBuilder();
+
+        for (int i = 0; i < 6; i++) {
+            int index = SECURE_RANDOM.nextInt(TICKET_CODE_CHARS.length());
+            code.append(TICKET_CODE_CHARS.charAt(index));
+        }
+
+        return code.toString();
     }
 }

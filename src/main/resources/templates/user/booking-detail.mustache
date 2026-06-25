@@ -53,6 +53,24 @@
                                     공연 당일 입장 시 직원에게 QR코드를 보여주세요.
                                 </p>
 
+                                <div class="cc-ticket-code-box">
+                                    <button type="button"
+                                            class="cc-ticket-code-toggle js-ticket-code-toggle">
+                                        입장 코드 보기
+                                    </button>
+
+                                    <p class="cc-ticket-code is-hidden js-ticket-code">
+                                        입장 코드
+                                        <strong>{{ticketCode}}</strong>
+                                    </p>
+
+                                    <a href="/staff/tickets/verify-code?code={{ticketCode}}"
+                                    target="_blank"
+                                    class="cc-ticket-test-link">
+                                    수동 검증 테스트
+                                    </a>
+                                </div>
+
                                 <a href="/staff/tickets/verify?token={{ticketToken}}"
                                 target="_blank"
                                 class="cc-ticket-test-link">

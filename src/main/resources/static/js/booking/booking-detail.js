@@ -62,7 +62,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. 카드 접기 / 펼치기
+    // 3. 입장 코드 보기 / 숨기기
+    const ticketCodeToggle = document.querySelector('.js-ticket-code-toggle');
+    const ticketCode = document.querySelector('.js-ticket-code');
+
+    if (ticketCodeToggle && ticketCode) {
+        ticketCodeToggle.addEventListener('click', () => {
+            const isHidden = ticketCode.classList.contains('is-hidden');
+
+            if (isHidden) {
+                ticketCode.classList.remove('is-hidden');
+                ticketCodeToggle.textContent = '입장 코드 숨기기';
+            } else {
+                ticketCode.classList.add('is-hidden');
+                ticketCodeToggle.textContent = '입장 코드 보기';
+            }
+
+            // 입장 코드 표시/숨김 후 카드 높이 다시 계산
+            const card = ticketCodeToggle.closest('.cc-detail-card--foldable');
+            const body = card?.querySelector('.cc-detail-section-body');
+
+            if (card && body && !card.classList.contains('is-collapsed')) {
+                body.style.maxHeight = body.scrollHeight + 'px';
+            }
+        });
+    }
+
+    // 4. 카드 접기 / 펼치기
     const foldableCards = document.querySelectorAll('.cc-detail-card--foldable');
 
     console.log('접기 가능한 카드 개수:', foldableCards.length);

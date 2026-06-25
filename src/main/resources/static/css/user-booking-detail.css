@@ -264,3 +264,47 @@
     border-color: #8a2be2;
     color: #6d28d9;
 }
+
+.cc-ticket-code-box {
+    margin-top: 8px;
+    text-align: center;
+}
+
+.cc-ticket-code-toggle {
+    height: 36px;
+    padding: 0 16px;
+    border: 1px solid #ddd;
+    border-radius: 999px;
+    background-color: #fafafa;
+    color: #333;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.cc-ticket-code-toggle:hover {
+    background-color: #f4f0ff;
+    border-color: #8a2be2;
+    color: #6d28d9;
+}
+
+.cc-ticket-code {
+    margin: 10px 0 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.cc-ticket-code strong {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background-color: #f4f0ff;
+    color: #6d28d9;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+.cc-ticket-code.is-hidden {
+    display: none;
+}
