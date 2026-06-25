@@ -1,5 +1,6 @@
 {{> admin/layout/header}}
 
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-bs4.min.css" rel="stylesheet">
 <style>
     .form-section-label {
         font-size: .75rem;
@@ -8,13 +9,6 @@
         letter-spacing: .05em;
         color: #858796;
         margin-bottom: .4rem;
-    }
-
-    #content-textarea {
-        min-height: 320px;
-        resize: vertical;
-        font-size: 14px;
-        line-height: 1.7;
     }
 </style>
 
@@ -29,7 +23,6 @@
             <div class="container-fluid">
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800">공지 등록</h1>
-
                     <a href="/admin/boards/notice" class="btn btn-sm btn-secondary shadow-sm">
                         <i class="fas fa-list fa-sm"></i> 목록으로
                     </a>
@@ -41,7 +34,6 @@
                             <div class="card-header py-3">
                                 <h6 class="m-0 font-weight-bold text-primary">공지 내용</h6>
                             </div>
-
                             <div class="card-body">
                                 <form id="notice-form" action="/admin/boards/notice/save" method="post">
                                     {{#_csrf}}
@@ -50,30 +42,19 @@
 
                                     <div class="form-group">
                                         <div class="form-section-label">제목</div>
-                                        <input type="text"
-                                               class="form-control"
-                                               name="title"
-                                               placeholder="공지사항 제목을 입력하세요"
-                                               maxlength="100"
-                                               required>
+                                        <input type="text" class="form-control" name="title"
+                                               placeholder="공지사항 제목을 입력하세요" maxlength="100" required>
                                     </div>
 
                                     <div class="form-group">
                                         <div class="form-section-label">내용</div>
-                                        <textarea id="content-textarea"
-                                                  class="form-control"
-                                                  name="content"
-                                                  placeholder="공지사항 내용을 입력하세요"
-                                                  required></textarea>
+                                        <textarea name="content" id="noticeContent"></textarea>
                                     </div>
 
                                     <div class="form-group mb-4">
                                         <div class="custom-control custom-checkbox">
-                                            <input type="checkbox"
-                                                   class="custom-control-input"
-                                                   id="isPinned"
-                                                   name="isPinned"
-                                                   value="true">
+                                            <input type="checkbox" class="custom-control-input"
+                                                   id="isPinned" name="isPinned" value="true">
                                             <label class="custom-control-label font-weight-bold" for="isPinned">
                                                 상단 고정
                                             </label>
@@ -99,14 +80,9 @@
                             <div class="card-header py-3">
                                 <h6 class="m-0 font-weight-bold text-primary">작성 안내</h6>
                             </div>
-
                             <div class="card-body text-muted small">
-                                <p class="mb-2">
-                                    공지사항은 사용자 고객센터 공지사항 화면에 노출됩니다.
-                                </p>
-                                <p class="mb-0">
-                                    중요한 안내만 상단 고정으로 설정해 주세요.
-                                </p>
+                                <p class="mb-2">공지사항은 사용자 고객센터 공지사항 화면에 노출됩니다.</p>
+                                <p class="mb-0">중요한 안내만 상단 고정으로 설정해 주세요.</p>
                             </div>
                         </div>
                     </div>
@@ -116,15 +92,34 @@
 
         {{> admin/layout/footer}}
 
+        <script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-bs4.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/lang/summernote-ko-KR.min.js"></script>
         <script>
+            $(document).ready(function () {
+            $('#noticeContent').summernote({
+                lang: 'ko-KR',
+                placeholder: '공지사항 내용을 입력하세요...',
+                height: 320,
+                toolbar: [
+                    ['style', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+                    ['fontsize', ['fontsize']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['insert', ['link', 'picture']],
+                    ['view', ['fullscreen', 'codeview']]
+                ]
+            });
+
             document.getElementById('notice-form').addEventListener('submit', function (e) {
-                if (!confirm('공지사항을 등록하시겠습니까?')) {
+                const html = $('#noticeContent').summernote('code').trim();
+                if (html === '<p><br></p>' || html === '') {
                     e.preventDefault();
+                    CcUI.alert('공지사항 내용을 입력해 주세요.', 'warning');
                     return;
                 }
-
                 document.getElementById('submit-btn').disabled = true;
             });
+            }); // document.ready
         </script>
     </div>
 </div>

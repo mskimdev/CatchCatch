@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.core.handler;
 
 import com.catchcatch.ticket.core.exception.*;
+import com.catchcatch.ticket.core.util.HtmlSanitizer;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import com.catchcatch.ticket.core.util.HtmlUtil;
@@ -51,14 +52,13 @@ public class GlobalExceptionHandler {
     public void handleAsyncTimeout() {
     }
 
-    // 기타 모든 RuntimeException 처리 (최후의 보루)
+    // 커스텀 예외로 처리되지 않은 RuntimeException의 최후 방어선
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String handleRuntimeException(RuntimeException e, HttpServletRequest request) {
         return logServerError(e, request);
     }
 
-    // 데이터베이스 관련 및 제약조건 위반 오류 처리
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public String handleDataIntegrityViolationException(DataIntegrityViolationException e,
@@ -67,14 +67,13 @@ public class GlobalExceptionHandler {
         return buildResponse(request, "데이터 제약 조건을 위반했습니다.");
     }
 
-    // 4xx: 클라이언트 측 문제 — 운영 노이즈를 줄이기 위해 DEBUG 레벨
+    // 4xx는 운영 노이즈를 줄이기 위해 DEBUG 레벨로 기록
     private String logClientError(Exception e, HttpServletRequest request) {
         log.debug("[{}] {} - {}", e.getClass().getSimpleName(), request.getRequestURL(), e.getMessage());
         String message = e.getMessage() != null ? e.getMessage() : "잘못된 요청입니다";
         return buildResponse(request, message);
     }
 
-    // 5xx: 서버 측 문제 — 스택 트레이스 포함해 ERROR 레벨로 기록
     private String logServerError(Exception e, HttpServletRequest request) {
         log.error("[{}] {} - {}", e.getClass().getSimpleName(), request.getRequestURL(), e.getMessage(), e);
         String message = e.getMessage() != null ? e.getMessage() : "서버 오류가 발생했습니다";
@@ -92,11 +91,11 @@ public class GlobalExceptionHandler {
 
         try {
             String html = HtmlUtil.load("static/html/error/alert.html");
-            String safeMessage = message.replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;");
+            String safeMessage = HtmlSanitizer.escapeHtml(message);
             return html.replace("{MESSAGE}", safeMessage).replace("{ACTION}", action);
         } catch (RuntimeException ex) {
             log.error("alert.html 로드 실패", ex);
-            return "<script>alert('" + message.replace("'", "\\'") + "'); " + action + "</script>";
+            return "<script>alert('" + HtmlSanitizer.escapeHtml(message).replace("'", "\\'") + "'); " + action + "</script>";
         }
     }
 }

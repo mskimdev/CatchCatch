@@ -25,43 +25,34 @@
             <div class="cc-info-section__head">
                 <div>
                     <p class="cc-info-kicker">{{kicker}}</p>
-                    <h2>{{pageTitle}} </h2>
+                    <h2>{{pageTitle}}</h2>
                 </div>
 
                 <form class="cc-info-filter" action="/events" method="get">
                     <button class="{{#ongoingActive}}is-active{{/ongoingActive}}"
-                            type="submit"
-                            name="status"
-                            value="ongoing">
-                        진행 중
-                    </button>
-
+                            type="submit" name="status" value="ongoing">진행 중</button>
                     <button class="{{#upcomingActive}}is-active{{/upcomingActive}}"
-                            type="submit"
-                            name="status"
-                            value="upcoming">
-                        예정
-                    </button>
-
+                            type="submit" name="status" value="upcoming">예정</button>
                     <button class="{{#endedActive}}is-active{{/endedActive}}"
-                            type="submit"
-                            name="status"
-                            value="ended">
-                        종료
-                    </button>
+                            type="submit" name="status" value="ended">종료</button>
                 </form>
             </div>
 
             <div class="cc-event-grid">
                 {{#eventList}}
                     <a class="cc-card cc-event-card" href="/events/{{id}}">
-                        <div class="cc-event-visual cc-event-visual--violet">
-                            <span>EVENT</span>
-                            <strong>
-                                {{rewardPoint}}P<br>
-                            </strong>
-                            <b>+</b>
-                        </div>
+                        {{#imageUrl}}
+                            <div class="cc-event-visual cc-event-visual--img">
+                                <img src="{{imageUrl}}" alt="{{title}}">
+                            </div>
+                        {{/imageUrl}}
+                        {{^imageUrl}}
+                            <div class="cc-event-visual cc-event-visual--violet">
+                                <span>EVENT</span>
+                                <strong>{{rewardPoint}}P</strong>
+                                <b>+</b>
+                            </div>
+                        {{/imageUrl}}
 
                         <div class="cc-event-card__body">
                             <span class="cc-badge cc-badge--fill">{{statusLabel}}</span>

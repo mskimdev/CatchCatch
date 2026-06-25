@@ -1,0 +1,174 @@
+{{> admin/layout/header}}
+
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-bs4.min.css" rel="stylesheet">
+<style>
+    .form-section-label {
+        font-size: .75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        color: #858796;
+        margin-bottom: .4rem;
+    }
+    #condition-concert-wrap { display: none; }
+</style>
+
+<body id="page-top">
+<div id="wrapper">
+    {{> admin/layout/sidebar}}
+
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            {{> admin/layout/topbar}}
+
+            <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">이벤트 수정</h1>
+                    <a href="/admin/events" class="btn btn-sm btn-secondary shadow-sm">
+                        <i class="fas fa-list fa-sm"></i> 목록으로
+                    </a>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">이벤트 정보 수정</h6>
+                            </div>
+                            <div class="card-body">
+                                <form id="event-form" action="/admin/events/{{event.id}}/edit" method="post">
+
+                                    <div class="form-group">
+                                        <div class="form-section-label">제목</div>
+                                        <input type="text" class="form-control" name="title"
+                                               value="{{event.title}}" maxlength="100" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="form-section-label">한 줄 설명</div>
+                                        <input type="text" class="form-control" name="description"
+                                               value="{{event.description}}" maxlength="200">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="form-section-label">썸네일 이미지 URL</div>
+                                        <input type="url" class="form-control" name="imageUrl"
+                                               value="{{event.imageUrl}}">
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <div class="form-section-label">지급 포인트</div>
+                                                <input type="number" class="form-control" name="rewardPoint"
+                                                       value="{{event.rewardPoint}}" min="0" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <div class="form-section-label">포인트 유효 개월</div>
+                                                <input type="number" class="form-control" name="pointValidMonths"
+                                                       value="{{event.pointValidMonths}}" min="1" required>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <div class="form-section-label">시작일</div>
+                                                <input type="date" class="form-control" name="startDate"
+                                                       value="{{event.startDate}}" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <div class="form-section-label">종료일</div>
+                                                <input type="date" class="form-control" name="endDate"
+                                                       value="{{event.endDate}}" required>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="form-section-label">참여 조건</div>
+                                        <select class="form-control" name="conditionType" id="conditionType"
+                                                data-current="{{event.conditionType}}">
+                                            <option value="NONE">누구나 참여 가능</option>
+                                            <option value="BOOKING_HISTORY">예매 이력 있는 회원</option>
+                                            <option value="SPECIFIC_CONCERT">특정 콘서트 예매자</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group" id="condition-concert-wrap">
+                                        <div class="form-section-label">대상 콘서트</div>
+                                        <select class="form-control" name="conditionConcertId"
+                                                data-current="{{event.conditionConcertId}}">
+                                            <option value="">콘서트를 선택하세요</option>
+                                            {{#concerts}}
+                                                <option value="{{id}}">{{title}}</option>
+                                            {{/concerts}}
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="form-section-label">유의사항 / 상세 안내 (HTML 에디터)</div>
+                                        <textarea name="noticeContent" id="noticeContent" style="display:none"></textarea>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary">수정</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{> admin/layout/footer}}
+
+        <script type="text/template" id="noticeContent-initial">{{{event.noticeContent}}}</script>
+        <script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-bs4.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/lang/summernote-ko-KR.min.js"></script>
+        <script>
+            $(document).ready(function () {
+            $('#noticeContent').summernote({
+                lang: 'ko-KR',
+                height: 260,
+                toolbar: [
+                    ['style', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+                    ['fontsize', ['fontsize']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['insert', ['link', 'picture']],
+                    ['view', ['fullscreen', 'codeview']]
+                ]
+            });
+            var initialContent = document.getElementById('noticeContent-initial').textContent;
+            $('#noticeContent').summernote('code', initialContent);
+
+            // 참여 조건 select 현재값 선택
+            const conditionSelect = document.getElementById('conditionType');
+            const currentCondition = conditionSelect.dataset.current;
+            if (currentCondition) {
+                conditionSelect.value = currentCondition;
+                if (currentCondition === 'SPECIFIC_CONCERT') {
+                    document.getElementById('condition-concert-wrap').style.display = 'block';
+                }
+            }
+
+            // 특정 콘서트 select 현재값 선택
+            const concertSelect = document.querySelector('[name="conditionConcertId"]');
+            const currentConcert = concertSelect.dataset.current;
+            if (currentConcert) concertSelect.value = currentConcert;
+
+            conditionSelect.addEventListener('change', function () {
+                const wrap = document.getElementById('condition-concert-wrap');
+                wrap.style.display = this.value === 'SPECIFIC_CONCERT' ? 'block' : 'none';
+            });
+            }); // document.ready
+        </script>
+    </div>
+</div>
+</body>
+</html>

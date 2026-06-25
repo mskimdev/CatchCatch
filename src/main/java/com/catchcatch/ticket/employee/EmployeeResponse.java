@@ -7,7 +7,7 @@ public class EmployeeResponse {
     public record ListDTO(
             Integer id,
             String employeeNumber,
-            String accountId,
+            String username,
             String name,
             String department,
             String role,
@@ -17,10 +17,10 @@ public class EmployeeResponse {
             this(
                     employee.getId(),
                     employee.getEmployeeNumber(),
-                    employee.getAccountId(),
+                    employee.getUser().getUsername(),
                     employee.getName(),
                     employee.getDepartment(),
-                    employee.getRole().toString(),
+                    employee.getUser().getRole().name(),
                     employee.getStatus().name()
             );
         }
@@ -33,8 +33,12 @@ public class EmployeeResponse {
             Role role
     ) {
         public DetailDTO(Employee employee) {
-            this(employee.getEmployeeNumber(), employee.getName(),
-                    employee.getDepartment(), employee.getRole());
+            this(
+                    employee.getEmployeeNumber(),
+                    employee.getName(),
+                    employee.getDepartment(),
+                    employee.getUser().getRole()
+            );
         }
     }
 }

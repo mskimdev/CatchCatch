@@ -4,7 +4,6 @@
 <main class="cc-main cc-detail-main">
     <div class="cc-container cc-detail-page">
         {{#concert}}
-            <!-- (기존 상세정보 UI 코드 생략 없이 동일하게 유지) -->
             <div class="cc-detail-content">
                 <section class="cc-detail-hero">
                     <div class="cc-poster-large">
@@ -15,22 +14,18 @@
                         <div class="cc-detail-category">{{category}}</div>
                         <div class="cc-detail-title-row">
                             <h1 class="cc-detail-title">{{title}}</h1>
-                            <div class="cc-detail-actions">
-                                <button type="button" class="cc-icon-btn" aria-label="관심 등록">♡</button>
-                                <button type="button" class="cc-icon-btn" aria-label="공유">⇧</button>
-                            </div>
                         </div>
                         <div class="cc-detail-tags">
                             <span class="cc-badge cc-badge--fill">{{category}}</span>
                             <span class="cc-badge cc-badge--gray">{{genre}}</span>
                         </div>
                         <div class="cc-info-list">
-                            <div class="cc-info-row"><span class="cc-info-row__label">📅 공연기간</span><span>{{dateRange}}</span></div>
-                            <div class="cc-info-row"><span class="cc-info-row__label">📍 공연장</span><span>{{venueName}}</span></div>
-                            <div class="cc-info-row"><span class="cc-info-row__label">⏱ 관람연령</span><span>{{ageLimit}}</span></div>
-                            <div class="cc-info-row"><span class="cc-info-row__label">🕒 관람시간</span><span>{{runtime}}</span></div>
-                            <div class="cc-info-row"><span class="cc-info-row__label">🏷 주최/주관</span><span>{{organizer}}</span></div>
-                            <div class="cc-info-row"><span class="cc-info-row__label">☎ 문의</span><span>{{contact}}</span></div>
+                            <div class="cc-info-row"><span class="cc-info-row__label">공연기간</span><span>{{dateRange}}</span></div>
+                            <div class="cc-info-row"><span class="cc-info-row__label">공연장</span><span>{{venueName}}</span></div>
+                            <div class="cc-info-row"><span class="cc-info-row__label">관람연령</span><span>{{ageLimit}}</span></div>
+                            <div class="cc-info-row"><span class="cc-info-row__label">관람시간</span><span>{{runtime}}</span></div>
+                            <div class="cc-info-row"><span class="cc-info-row__label">주최/주관</span><span>{{organizer}}</span></div>
+                            <div class="cc-info-row"><span class="cc-info-row__label">문의</span><span>{{contact}}</span></div>
                         </div>
                         <div class="cc-price-list">
                             <h3>가격정보</h3>
@@ -44,20 +39,30 @@
                     </article>
                 </section>
 
-                <!-- 탭 네비게이션 -->
                 <nav class="cc-tabs" aria-label="공연 상세 탭">
                     <a class="cc-tab is-active" href="#detail">상세정보</a>
-                    <a class="cc-tab" href="#venue">공연장 안내</a>
+                    <a class="cc-tab" href="#venue">공연장안내</a>
                     <a class="cc-tab" href="#refund">취소/환불</a>
                     <a class="cc-tab" href="#review">후기 {{reviewCount}}</a>
                 </nav>
 
-                <!-- 상세 정보 섹션 -->
-                <section id="detail" class="cc-detail-banner" style="--detail-img: url('{{detailBannerUrl}}')">
-                    <div class="cc-detail-banner__content">
-                        <h2>{{detailTitle}}</h2>
-                        <p>{{detailDescription1}}</p>
-                        <p>{{detailDescription2}}</p>
+                <section id="detail" class="cc-detail-content">
+                    <div class="cc-detail-content__inner">
+
+                        {{#detailDescription1}}
+                            <div class="cc-detail-auxiliary-desc side-box">
+                                <h4 class="desc-title">상세페이지 내용</h4>
+                                <div class="desc-text">{{{detailDescription1}}}</div>
+                            </div>
+                        {{/detailDescription1}}
+
+                        {{#detailDescription2}}
+                            <div class="cc-detail-auxiliary-desc info-box">
+                                <h4 class="desc-title">추가 공연정보 / 유의사항 및 안내</h4>
+                                <div class="desc-text">{{{detailDescription2}}}</div>
+                            </div>
+                        {{/detailDescription2}}
+
                     </div>
                 </section>
 
@@ -71,7 +76,6 @@
                         <input type="hidden" name="concertId" id="hiddenConcertId" value="{{id}}">
                         {{#_csrf}}<input type="hidden" name="{{parameterName}}" value="{{token}}">{{/_csrf}}
 
-                        <!-- 예매 폼 UI 유지 -->
                         <div class="cc-booking-panel">
                             <section class="cc-booking-section" data-booking-section>
                                 <button class="cc-booking-section__head" type="button" data-section-toggle>
@@ -86,9 +90,9 @@
                                     </select>
                                     <div class="cc-calendar-picker" data-calendar-for="sessionDate">
                                         <div class="cc-calendar-nav">
-                                            <button type="button" class="cc-calendar-arrow" data-calendar-prev aria-label="이전 달">‹</button>
+                                            <button type="button" class="cc-calendar-arrow" data-calendar-prev aria-label="이전 달">◀</button>
                                             <strong class="cc-calendar-title">날짜 선택</strong>
-                                            <button type="button" class="cc-calendar-arrow" data-calendar-next aria-label="다음 달">›</button>
+                                            <button type="button" class="cc-calendar-arrow" data-calendar-next aria-label="다음 달">▶</button>
                                         </div>
                                         <div class="cc-calendar-week">
                                             <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
@@ -121,19 +125,19 @@
                             </section>
                         </div>
                         {{#comingSoon}}
-                        <div class="cc-open-countdown" data-open-iso="{{ticketOpenIso}}">
-                            <p class="cc-open-countdown__label">예매 오픈까지</p>
-                            <div class="cc-open-countdown__blocks">
-                                <div class="cc-open-countdown__unit"><span id="cdDays">--</span><small>일</small></div>
-                                <div class="cc-open-countdown__sep">:</div>
-                                <div class="cc-open-countdown__unit"><span id="cdHours">--</span><small>시간</small></div>
-                                <div class="cc-open-countdown__sep">:</div>
-                                <div class="cc-open-countdown__unit"><span id="cdMinutes">--</span><small>분</small></div>
-                                <div class="cc-open-countdown__sep">:</div>
-                                <div class="cc-open-countdown__unit"><span id="cdSeconds">--</span><small>초</small></div>
+                            <div class="cc-open-countdown" data-open-iso="{{ticketOpenIso}}">
+                                <p class="cc-open-countdown__label">예매 오픈까지</p>
+                                <div class="cc-open-countdown__blocks">
+                                    <div class="cc-open-countdown__unit"><span id="cdDays">--</span><small>일</small></div>
+                                    <div class="cc-open-countdown__sep">:</div>
+                                    <div class="cc-open-countdown__unit"><span id="cdHours">--</span><small>시간</small></div>
+                                    <div class="cc-open-countdown__sep">:</div>
+                                    <div class="cc-open-countdown__unit"><span id="cdMinutes">--</span><small>분</small></div>
+                                    <div class="cc-open-countdown__sep">:</div>
+                                    <div class="cc-open-countdown__unit"><span id="cdSeconds">--</span><small>초</small></div>
+                                </div>
+                                <p class="cc-open-countdown__date">{{ticketOpenLabel}} 오픈</p>
                             </div>
-                            <p class="cc-open-countdown__date">{{ticketOpenLabel}} 오픈</p>
-                        </div>
                         {{/comingSoon}}
                         <button class="cc-btn cc-btn--primary cc-btn--full cc-booking-submit" type="submit" {{#comingSoon}}disabled{{/comingSoon}}>
                             {{#comingSoon}}예매 오픈 예정{{/comingSoon}}{{^comingSoon}}예매하기{{/comingSoon}}
@@ -145,7 +149,6 @@
     </div>
 </main>
 
-<!-- 리뷰 작성/수정 모달 -->
 <div class="cc-review-modal" id="reviewModal" role="dialog" aria-modal="true" aria-labelledby="reviewModalLabel" hidden>
     <div class="cc-review-modal__backdrop" data-review-modal-close></div>
     <div class="cc-review-modal__dialog" role="document">
@@ -504,9 +507,9 @@
                     <button type="button" class="cc-btn cc-btn--outline cc-review-write-btn" id="btn-write-review">첫 후기 작성</button>
                 </div>
                 <div class="cc-card cc-review-empty">
-                    <div class="cc-review-empty__icon" aria-hidden="true">★</div>
+                    <div class="cc-review-empty__icon" aria-hidden="true">📭</div>
                     <h5>아직 등록된 후기가 없습니다.</h5>
-                    <p>공연을 관람한 뒤 첫 번째 후기를 남겨주세요.</p>
+                    <p>공연을 관람한 뒤 첫 번째 후기를 남겨주세요!</p>
                 </div>`;
             return;
         }

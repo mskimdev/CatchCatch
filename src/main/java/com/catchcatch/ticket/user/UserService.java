@@ -89,6 +89,11 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public User findById(Integer userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("사용자 정보를 찾을 수 없습니다."));
+    }
+
     public User login(UserRequest.LoginDTO reqDTO) {
         User user = userRepository.findByEmail(reqDTO.email())
                 .orElseThrow(() -> new BadRequestException("이메일 또는 비밀번호가 올바르지 않습니다."));

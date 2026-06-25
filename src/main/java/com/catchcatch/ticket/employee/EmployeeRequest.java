@@ -8,12 +8,13 @@ import lombok.Builder;
 public class EmployeeRequest {
 
     public record CreateDTO(
-            @NotBlank(message = "사번을 입력해주세요.") String employeeNumber,
-            @NotBlank(message = "아이디를 입력해주세요.") String accountId,
+            @NotBlank(message = "아이디를 입력해주세요.") String username,
+            @NotBlank(message = "이메일을 입력해주세요.") String email,
             @NotBlank(message = "비밀번호를 입력해주세요.") String password,
+            @NotNull(message = "권한을 선택해주세요.") Role role,
+            @NotBlank(message = "사번을 입력해주세요.") String employeeNumber,
             @NotBlank(message = "이름을 입력해주세요.") String name,
-            @NotBlank(message = "부서를 입력해주세요.") String department,
-            @NotNull(message = "권한을 선택해주세요.") Role role
+            @NotBlank(message = "부서를 입력해주세요.") String department
     ) {
     }
 

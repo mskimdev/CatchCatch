@@ -2,9 +2,6 @@ package com.catchcatch.ticket.core.util;
 
 import org.springframework.ui.Model;
 
-/**
- * 프론트 예매 단계 설정
- */
 public class BookingStepUtil {
 
     private BookingStepUtil() {

@@ -6,6 +6,7 @@ import com.catchcatch.ticket.concertlike.ConcertLike;
 import com.catchcatch.ticket.seat.SeatGrade;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.venue.Venue;
+import jakarta.mail.Multipart;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -81,7 +82,10 @@ public class Concert {
     // [하단 배너 영역]
     private String detailBannerUrl;    // 배너 배경 이미지 URL
     private String detailTitle;        // 배너 제목 카피
+    @Column(columnDefinition = "TEXT")
     private String detailDescription1; // 배너 서브 설명 1
+
+    @Column(columnDefinition = "TEXT")
     private String detailDescription2; // 배너 서브 설명 2
 
     // ==========================================

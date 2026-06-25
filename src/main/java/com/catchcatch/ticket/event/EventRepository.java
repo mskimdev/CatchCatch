@@ -9,6 +9,28 @@ import java.util.List;
 
 public interface EventRepository extends JpaRepository<Event, Integer> {
 
+    // 예매 이력 조건 체크: 해당 유저가 이 서비스에서 한 번이라도 PAID 예매가 있는지
+    @Query("""
+        select case when count(b) > 0 then true else false end
+        from Booking b
+        where b.user.id = :userId
+          and b.status = com.catchcatch.ticket.booking.Status.PAID
+    """)
+    boolean existsPaidBookingByUser(@Param("userId") Integer userId);
+
+    // 특정 콘서트 예매 이력 조건 체크
+    @Query("""
+        select case when count(b) > 0 then true else false end
+        from Booking b
+        join b.concertSession cs
+        where b.user.id = :userId
+          and cs.concert.id = :concertId
+          and b.status = com.catchcatch.ticket.booking.Status.PAID
+    """)
+    boolean existsPaidBookingByUserAndConcert(@Param("userId") Integer userId,
+                                              @Param("concertId") Integer concertId);
+
+
     /**
      * 진행중 이벤트
      * startDate <= 현재시간 <= endDate

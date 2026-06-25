@@ -14,15 +14,6 @@ spring:
     retry:
       max-attempts: 2
 
-springdoc:
-  swagger-ui:
-    enabled: true
-    path:
-      - /swagger-ui.html
-  api-docs:
-    path:
-      - /v3/api-docs
-
 portone:
   store-id: ${PORTONE_STORE_ID}
   api-secret: ${PORTONE_API_SECRET}
