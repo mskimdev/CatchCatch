@@ -131,14 +131,9 @@
   font-weight: 950;
 }
 
-.cc-pay-method__icon--kakao {
-  background: #fee500;
-  color: #3c1e1e;
-}
-
-.cc-pay-method__icon--toss {
-  background: #0064ff;
-  color: #fff;
+.cc-pay-method__icon img {
+  width: 28px;
+  height: auto;
 }
 
 .cc-pay-agree {
