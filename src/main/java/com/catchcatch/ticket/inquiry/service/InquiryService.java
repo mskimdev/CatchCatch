@@ -6,8 +6,8 @@ import com.catchcatch.ticket.inquiry.Inquiry;
 import com.catchcatch.ticket.inquiry.dto.InquiryRequest;
 import com.catchcatch.ticket.inquiry.dto.InquiryResponse;
 import com.catchcatch.ticket.inquiry.enums.InquiryStatus;
-import com.catchcatch.ticket.inquiry.repository.InquiryQueryRepository;
 import com.catchcatch.ticket.inquiry.repository.InquiryRepository;
+import com.catchcatch.ticket.inquiry.repository.InquiryRepositoryCustom;
 import com.catchcatch.ticket.notification.service.NotificationDispatcher;
 import com.catchcatch.ticket.notification.service.NotificationService;
 import com.catchcatch.ticket.user.User;
@@ -24,7 +24,7 @@ import java.util.List;
 public class InquiryService {
 
     private final InquiryRepository inquiryRepository;
-    private final InquiryQueryRepository inquiryQueryRepository;
+    private final InquiryRepositoryCustom inquiryRepositoryCustom;
     private final UserService userService;
     private final NotificationDispatcher notificationDispatcher;
     private final NotificationService notificationService;
@@ -36,7 +36,7 @@ public class InquiryService {
     }
 
     public List<InquiryResponse.ListDTO> getList(InquiryStatus status, boolean publicOnly, boolean asc, boolean myOnly, Integer userId) {
-        return inquiryQueryRepository.findAllByFilter(status, publicOnly, asc, myOnly, userId).stream()
+        return inquiryRepositoryCustom.findAllByFilter(status, publicOnly, asc, myOnly, userId).stream()
                 .map(inquiry -> new InquiryResponse.ListDTO(inquiry, userId))
                 .toList();
     }

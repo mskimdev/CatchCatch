@@ -15,6 +15,7 @@
 INSERT INTO user_tb (username, password, email, phone, profile_image, oauth_provider, role, point, created_at, is_deleted)
 VALUES
     ('admin',    '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'admin@catchcatch.com',    '010-0000-0000', NULL, 'LOCAL', 'ADMIN', 0,     NOW(), false),
+    ('manager', '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'manager@catchcatch.com', '010-2222-2222', NULL, 'LOCAL', 'MANAGER', 0, NOW(), false),
     ('user1',    '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'user1@test.com',          '010-1111-1111', NULL, 'LOCAL', 'USER',  0,     NOW(), false),
     ('user2',    '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'user2@test.com',          '010-2222-2222', NULL, 'LOCAL', 'USER',  0,     NOW(), false),
     ('user3',    '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'user3@test.com',          '010-3333-3333', NULL, 'LOCAL', 'USER',  0,     NOW(), false),
@@ -619,10 +620,11 @@ VALUES
 -- ================
 --  employee_tb
 -- ================
-INSERT INTO employee_tb (employee_number, account_id, password, name, department, role, status, created_at, updated_at)
+INSERT INTO employee_tb
+(employee_number, name, department, status, user_id, created_at, updated_at)
 VALUES
-    ('EMP001', 'admin',    '$2a$10$WpPikpXqj9fC3k1PjL2B.euqIq.uL/fJ8R.R3A5x1aV2L7jM6J.uO', '김최고', '시스템관리팀', 'ADMIN',   'ACTIVE',    NOW(), NOW()),
-    ('EMP002', 'manager1', '$2a$10$WpPikpXqj9fC3k1PjL2B.euqIq.uL/fJ8R.R3A5x1aV2L7jM6J.uO', '이매니', '콘서트기획팀', 'MANAGER', 'ACTIVE',    NOW(), NOW()),
-    ('EMP003', 'clerk1',   '$2a$10$WpPikpXqj9fC3k1PjL2B.euqIq.uL/fJ8R.R3A5x1aV2L7jM6J.uO', '박사원', '고객지원팀',   'CLERK',   'ACTIVE',    NOW(), NOW()),
-    ('EMP004', 'clerk2',   '$2a$10$WpPikpXqj9fC3k1PjL2B.euqIq.uL/fJ8R.R3A5x1aV2L7jM6J.uO', '정정지', '마케팅팀',     'CLERK',   'SUSPENDED', NOW(), NOW()),
-    ('EMP005', 'clerk3',   '$2a$10$WpPikpXqj9fC3k1PjL2B.euqIq.uL/fJ8R.R3A5x1aV2L7jM6J.uO', '최퇴사', '영업팀',       'CLERK',   'RESIGNED',  NOW(), NOW());
+    ('EMP001', '김최고', '시스템관리팀', 'ACTIVE', 1, NOW(), NOW()),
+    ('EMP002', '이매니', '콘서트기획팀', 'ACTIVE', 2, NOW(), NOW()),
+    ('EMP003', '박사원', '고객지원팀', 'ACTIVE', 3, NOW(), NOW()),
+    ('EMP004', '정정지', '마케팅팀', 'SUSPENDED', 4, NOW(), NOW()),
+    ('EMP005', '최퇴사', '영업팀', 'RESIGNED', 5, NOW(), NOW());

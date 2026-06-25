@@ -11,9 +11,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
     // 사원번호 유무 확인
     boolean existsByEmployeeNumber(String employeeNumber);
 
-    // 아이디 유무 확인
-    boolean existsByAccountId(String accountId);
-
     // 이름으로 검색
     List<Employee> findByNameContaining(String name);
 
