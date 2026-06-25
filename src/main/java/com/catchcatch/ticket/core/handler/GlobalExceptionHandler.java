@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.core.handler;
 
 import com.catchcatch.ticket.core.exception.*;
+import com.catchcatch.ticket.core.util.HtmlSanitizer;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import com.catchcatch.ticket.core.util.HtmlUtil;
@@ -92,11 +93,11 @@ public class GlobalExceptionHandler {
 
         try {
             String html = HtmlUtil.load("static/html/error/alert.html");
-            String safeMessage = message.replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;");
+            String safeMessage = HtmlSanitizer.escapeHtml(message);
             return html.replace("{MESSAGE}", safeMessage).replace("{ACTION}", action);
         } catch (RuntimeException ex) {
             log.error("alert.html 로드 실패", ex);
-            return "<script>alert('" + message.replace("'", "\\'") + "'); " + action + "</script>";
+            return "<script>alert('" + HtmlSanitizer.escapeHtml(message).replace("'", "\\'") + "'); " + action + "</script>";
         }
     }
 }

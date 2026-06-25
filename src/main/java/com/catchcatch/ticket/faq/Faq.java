@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.faq;
 
 import com.catchcatch.ticket.core.util.DateUtil;
+import org.jsoup.Jsoup;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -53,7 +54,10 @@ public class Faq {
     }
 
     public String getFormattedCreatedAt() {
-
         return DateUtil.formatDateTime(createdAt);
+    }
+
+    public String getAnswerPreview() {
+        return Jsoup.parse(answer).text();
     }
 }

@@ -53,7 +53,7 @@ public class ChatController {
 
         SessionUser sessionUser = (SessionUser) headerAccessor.getSessionAttributes().get(Define.SESSION_USER);
 
-        if(sessionUser == null || !sessionUser.hasAdminAccess())
+        if(sessionUser == null || !sessionUser.isAdminGroup())
             throw new BadRequestException("관리자만 사용할 수 있습니다.");
 
         ChatMessageResponse.MessageDTO resDTO = chatService.send(

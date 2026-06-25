@@ -1,8 +1,11 @@
 package com.catchcatch.ticket.admin;
 
 import com.catchcatch.ticket.core.exception.BadRequestException;
+import com.catchcatch.ticket.core.exception.ForbiddenException;
 import com.catchcatch.ticket.core.exception.NotFoundException;
+import com.catchcatch.ticket.core.exception.UnauthorizedException;
 import com.catchcatch.ticket.employee.*;
+import com.catchcatch.ticket.user.enums.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -53,7 +56,10 @@ public class AdminEmployeeService {
 
     // 사원 정보 수정
     @Transactional
-    public EmployeeResponse.DetailDTO updateEmployeeInfo(String employeeNumber, EmployeeRequest.UpdateDTO reqDTO) {
+    public EmployeeResponse.DetailDTO updateEmployeeInfo(String employeeNumber, EmployeeRequest.UpdateDTO reqDTO, Role userRole) {
+        // 권한 확인
+        checkAuthorization(userRole);
+
         Employee employee = employeeRepository.findByEmployeeNumber(employeeNumber)
                 .orElseThrow(() -> new NotFoundException("사원번호와 일치하는 사원이 없습니다."));
 
@@ -66,7 +72,10 @@ public class AdminEmployeeService {
     // 사원 계정 정지 및 퇴사처리
     // 1. 사원 조회
     @Transactional
-    public void updateEmployeeStatus(String employeeNumber, EmployeeStatus status) {
+    public void updateEmployeeStatus(String employeeNumber, EmployeeStatus status, Role userRole) {
+        // 권한 확인
+        checkAuthorization(userRole);
+
         Employee employee = employeeRepository.findByEmployeeNumber(employeeNumber)
                 .orElseThrow(() -> new NotFoundException("사원번호와 일치하는 사원이 없습니다."));
 
@@ -78,7 +87,10 @@ public class AdminEmployeeService {
 
     // 신규 사원 추가
     @Transactional
-    public void createEmployee(EmployeeRequest.CreateDTO reqDTO) {
+    public void createEmployee(EmployeeRequest.CreateDTO reqDTO, Role userRole) {
+        // 권한 확인
+        checkAuthorization(userRole);
+
         // 1. 사번 중복 체크 (추가됨)
         if (employeeRepository.existsByEmployeeNumber(reqDTO.employeeNumber())) {
             throw new BadRequestException("이미 등록된 사번입니다.");
@@ -100,5 +112,12 @@ public class AdminEmployeeService {
                 .build();
 
         employeeRepository.save(employee);
+    }
+
+
+    public void checkAuthorization(Role userRole) {
+        if (userRole != Role.ADMIN) {
+            throw new UnauthorizedException("해당 권한을 가지고 있지 않습니다.");
+        }
     }
 }

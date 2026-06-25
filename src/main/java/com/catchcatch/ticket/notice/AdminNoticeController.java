@@ -58,7 +58,6 @@ public class AdminNoticeController {
 
     @GetMapping("/{id}/edit")
     public String updateForm(Model model, @PathVariable Integer id) {
-
         model.addAttribute("pageTitle", "공지사항 수정");
         model.addAttribute("notice", noticeService.findById(id));
         return "admin/board/notice/edit";

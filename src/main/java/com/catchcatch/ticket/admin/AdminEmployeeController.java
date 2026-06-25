@@ -1,7 +1,10 @@
 package com.catchcatch.ticket.admin;
 
+import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.employee.EmployeeRequest;
 import com.catchcatch.ticket.employee.EmployeeStatus;
+import com.catchcatch.ticket.user.dto.SessionUser;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,28 +30,32 @@ public class AdminEmployeeController {
 
     // 2. 신규 사원 등록 처리
     @PostMapping("/create")
-    public String createEmployee(@ModelAttribute EmployeeRequest.CreateDTO reqDTO) {
-        adminEmployeeService.createEmployee(reqDTO);
+    public String createEmployee(
+            @SessionAttribute(Define.SESSION_USER) SessionUser sessionUser,
+            @Valid @ModelAttribute EmployeeRequest.CreateDTO reqDTO) {
+        adminEmployeeService.createEmployee(reqDTO, sessionUser.getRole());
         return "redirect:/admin/employees";
     }
 
     // 3. 사원 정보 수정 처리
     @PostMapping("/{employeeNumber}/update")
     public String updateEmployee(
+            @SessionAttribute(Define.SESSION_USER) SessionUser sessionUser,
             @PathVariable String employeeNumber,
-            @ModelAttribute EmployeeRequest.UpdateDTO reqDTO) {
+            @Valid @ModelAttribute EmployeeRequest.UpdateDTO reqDTO) {
 
-        adminEmployeeService.updateEmployeeInfo(employeeNumber, reqDTO);
+        adminEmployeeService.updateEmployeeInfo(employeeNumber, reqDTO, sessionUser.getRole());
         return "redirect:/admin/employees";
     }
 
     // 4. 사원 상태 변경 (정지/퇴사) 처리
     @PostMapping("/{employeeNumber}/status")
     public String changeEmployeeStatus(
+            @SessionAttribute(Define.SESSION_USER) SessionUser sessionUser,
             @PathVariable String employeeNumber,
             @RequestParam EmployeeStatus status) {
 
-        adminEmployeeService.updateEmployeeStatus(employeeNumber, status);
+        adminEmployeeService.updateEmployeeStatus(employeeNumber, status, sessionUser.getRole());
         return "redirect:/admin/employees";
     }
 }

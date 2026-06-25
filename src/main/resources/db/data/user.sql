@@ -11,6 +11,12 @@ VALUES
      '010-0000-0000',
      NULL, 'LOCAL', 'ADMIN', 0, NOW(), false),
 
+    ('manager',
+     '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK',
+     'manager@catchcatch.com',
+     '010-7777-7777',
+     NULL, 'LOCAL', 'MANAGER', 0, NOW(), false),
+
     ('user1',
      '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK',
      'user1@test.com',
