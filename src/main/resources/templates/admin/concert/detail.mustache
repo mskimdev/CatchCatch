@@ -37,9 +37,9 @@
 
                                     <li class="mb-3 mt-3 p-3 bg-light rounded">
                                         <strong class="d-block mb-2"><i class="fas fa-ticket-alt"></i> 티켓 가격표</strong>
-                                        <span class="badge badge-danger p-2 mr-2">VIP</span> {{concert.priceVip}}원 &nbsp;
-                                        <span class="badge badge-primary p-2 mr-2">R</span> {{concert.priceR}}원 &nbsp;
-                                        <span class="badge badge-success p-2 mr-2">S</span> {{concert.priceS}}원 &nbsp;
+                                        <span class="badge badge-danger p-2 mr-2">VIP</span> {{concert.priceVip}}원&nbsp;
+                                        <span class="badge badge-primary p-2 mr-2">R</span> {{concert.priceR}}원&nbsp;
+                                        <span class="badge badge-success p-2 mr-2">S</span> {{concert.priceS}}원&nbsp;
                                         <span class="badge badge-secondary p-2 mr-2">A</span> {{concert.priceA}}원
                                     </li>
 
@@ -51,22 +51,48 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">사용자용 상세 페이지 소개 설정</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-12 form-group mb-4">
+                                    <label class="font-weight-bold text-danger">상세페이지 내용</label>
+                                    {{#concert.detailDescription1}}
+                                        <div class="p-3 border rounded bg-light text-dark" style="min-height: 100px;">{{{concert.detailDescription1}}}</div>
+                                    {{/concert.detailDescription1}}
+                                    {{^concert.detailDescription1}}
+                                        <div class="p-3 border rounded bg-light text-muted italic" style="min-height: 100px;">설정된 내용이 없습니다. (사용자 화면에서 숨겨짐)</div>
+                                    {{/concert.detailDescription1}}
+                                </div>
+
+                                <div class="col-md-12 form-group mb-4">
+                                    <label class="font-weight-bold text-info">추가 공연정보 / 유의사항 및 안내</label>
+                                    {{#concert.detailDescription2}}
+                                        <div class="p-3 border rounded bg-light text-dark" style="min-height: 100px;">{{{concert.detailDescription2}}}</div>
+                                    {{/concert.detailDescription2}}
+                                    {{^concert.detailDescription2}}
+                                        <div class="p-3 border rounded bg-light text-muted italic" style="min-height: 100px;">설정된 내용이 없습니다. (사용자 화면에서 숨겨짐)</div>
+                                    {{/concert.detailDescription2}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="card shadow mb-4">
                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-
                         <div>
                             <h6 class="m-0 font-weight-bold text-primary">회차(Session) 관리</h6>
                             <small class="text-danger mt-1 d-block">
-                                공연장 수정 시 회차를 반드시 재등록해주세요!
+                                공연 등록 후 회차를 반드시 추가해주세요.
                             </small>
                         </div>
-
                         <button class="btn btn-sm btn-success shadow-sm" data-toggle="modal" data-target="#addSessionModal">
                             <i class="fas fa-plus fa-sm"></i> 회차 추가
                         </button>
-
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -113,7 +139,7 @@
                                 <div class="modal-header">
                                     <h5 class="modal-title">새 회차 추가</h5>
                                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">×</span>
+                                        <span aria-hidden="true">&times;</span>
                                     </button>
                                 </div>
                                 <div class="modal-body">
@@ -147,7 +173,7 @@
                                 <div class="modal-header">
                                     <h5 class="modal-title">회차 수정</h5>
                                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">×</span>
+                                        <span aria-hidden="true">&times;</span>
                                     </button>
                                 </div>
                                 <div class="modal-body">
@@ -191,7 +217,7 @@
 
                             if (res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
                                 CcUI.toast('회차가 성공적으로 추가되었습니다.', 'success');
-                                setTimeout(() => window.location.reload(), 1000); // 1초 뒤 새로고침
+                                setTimeout(() => window.location.reload(), 1000); // 1초 후 새로고침
                             } else {
                                 CcUI.alert('회차 추가에 실패했습니다: ' + (data && data.msg ? data.msg : '알 수 없는 오류'));
                             }
@@ -225,7 +251,7 @@
 
                             if (res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
                                 CcUI.toast('성공적으로 수정되었습니다.', 'success');
-                                setTimeout(() => window.location.reload(), 1000); // 1초 뒤 새로고침
+                                setTimeout(() => window.location.reload(), 1000); // 1초 후 새로고침
                             } else {
                                 CcUI.alert('회차 수정에 실패했습니다: ' + (data && data.msg ? data.msg : '알 수 없는 오류'));
                             }
@@ -246,9 +272,9 @@
 
                                 if (res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
                                     CcUI.toast('성공적으로 삭제되었습니다.', 'success');
-                                    setTimeout(() => window.location.reload(), 1000); 
+                                    setTimeout(() => window.location.reload(), 1000);
                                 } else {
-                                    CcUI.alert('삭제에 실패했습니다. ');
+                                    CcUI.alert('삭제에 실패했습니다.');
                                 }
                             } catch (error) {
                                 console.error('회차 삭제 통신 에러:', error);

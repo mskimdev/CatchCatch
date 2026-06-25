@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ReviewRepository extends JpaRepository<Review,Long> {
@@ -29,5 +30,16 @@ public interface ReviewRepository extends JpaRepository<Review,Long> {
             Integer userId,
             Integer concertId
     );
+
+    @Query("""
+            select r
+            from Review r
+            join fetch r.user u
+            join fetch r.concert c
+            join fetch r.booking b
+            where (:concertId is null or c.id = :concertId)
+            order by r.createdAt desc
+            """)
+    List<Review> findAllForAdmin(@Param("concertId") Integer concertId);
 
 }
