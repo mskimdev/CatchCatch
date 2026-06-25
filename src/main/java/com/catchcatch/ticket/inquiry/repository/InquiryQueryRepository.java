@@ -11,7 +11,7 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-public class InquiryQueryRepository {
+public class InquiryQueryRepository implements InquiryRepositoryCustom{
 
     private final EntityManager em;
 
