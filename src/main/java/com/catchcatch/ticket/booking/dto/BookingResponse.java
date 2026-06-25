@@ -89,6 +89,7 @@ public class BookingResponse {
         private Integer concertSessionId;
 
         private String ticketToken;
+        private String ticketCode;
 
         private List<Integer> seatIds;
         private Integer seatCount;
@@ -139,6 +140,7 @@ public class BookingResponse {
             this.bookingNumber = booking.getBookingNumber();
             this.status = booking.getStatus();
             this.ticketToken = booking.getTicketToken();
+            this.ticketCode = booking.getTicketCode();
 
             this.totalPrice = calculateTotalPrice(bookingSeats);
             this.totalPriceText = formatPrice(this.totalPrice);
