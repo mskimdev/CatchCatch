@@ -6,6 +6,7 @@
     };
 
     const CONCERT_JSON_URL = "/json/seatmap/seatmap-concert-session.json";
+    const DEFAULT_CONCERT_IMAGE_URL = "/images/seatmap/generated/seatmap-concert-image.png";
 
     const STORAGE_KEYS = {
         seatButtonImage: [
@@ -25,12 +26,30 @@
             "concert_extractSettings",
             "concert_finalLayout",
             "concert_imageMeta",
-            "concert_stage",
-            "concert_overviewImage",
-            "concert_generated_overviewImage",
+            "concert_entryFromMain",
+
+            "concert_stage1_colorRegions",
+            "concert_stage1_angleRegions",
+            "concert_stage1_selectedAngleRegions",
+            "concert_stage1_sections",
+            "concert_stage1_seats",
+            "concert_stage1_layouts",
+            "concert_stage1_generatedImage",
+            "concert_stage1_baseLayoutsByGroup",
+            "concert_stage1_visualGroups",
+            "concert_stage1_selectedVisualGroupId",
+
+            "concert_stage2_sections",
+            "concert_stage2_selectedSections",
+            "concert_stage2_layouts",
+
             "concert_stage3_seats",
             "concert_stage3_layouts",
-            "concert_entryFromMain"
+            "concert_stage3_selectedSection",
+
+            "concert_stage4_sections",
+            "concert_stage4_finalImage",
+            "concert_stage4_result"
         ],
         small: [
             "small_originalImage",
@@ -66,6 +85,7 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         bindStartButtons();
+        bindResetButtons();
         bindFileInputs();
     });
 
@@ -85,6 +105,21 @@
                 }
 
                 toast("알 수 없는 제작 방식입니다.");
+            });
+        });
+    }
+
+    function bindResetButtons() {
+        document.querySelectorAll("[data-reset-type]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const type = button.dataset.resetType;
+
+                if (type === "concert") {
+                    resetConcertWork();
+                    return;
+                }
+
+                toast("알 수 없는 초기화 방식입니다.");
             });
         });
     }
@@ -160,183 +195,104 @@
         }
     }
 
-function applyConcertJson(json) {
-    const payload = normalizeConcertPayload(json);
-
-    if (payload.originalImage) {
-        localStorage.setItem("concert_originalImage", payload.originalImage);
-    }
-
-    if (payload.cleanImage) {
-        localStorage.setItem("concert_cleanImage", payload.cleanImage);
-    }
-
-    if (payload.buttonImage) {
-        localStorage.setItem("concert_buttonImage", payload.buttonImage);
-        localStorage.setItem("concert_overviewImage", payload.buttonImage);
-    }
-
-    if (!payload.buttonImage && payload.cleanImage) {
-        localStorage.setItem("concert_overviewImage", payload.cleanImage);
-    }
-
-    if (payload.buttonImageMeta) {
-        localStorage.setItem("concert_buttonImageMeta", JSON.stringify(payload.buttonImageMeta));
-    }
-
-    if (payload.sections) {
-        localStorage.setItem("concert_sections", JSON.stringify(payload.sections));
-    }
-
-    if (payload.seats) {
-        localStorage.setItem("concert_seats", JSON.stringify(payload.seats));
-    }
-
-    if (payload.extractSettings) {
-        localStorage.setItem("concert_extractSettings", JSON.stringify(payload.extractSettings));
-    }
-
-    if (payload.finalLayout) {
-        localStorage.setItem("concert_finalLayout", JSON.stringify(payload.finalLayout));
-    }
-
-    if (payload.imageMeta) {
-        localStorage.setItem("concert_imageMeta", JSON.stringify(payload.imageMeta));
-    }
-}
-
-function normalizeConcertPayload(json) {
-    const savedLocalStorage = json.localStorage || {};
-    const output = json.output || {};
-    const imageUrl = output.imageUrl || json.imageUrl || json.imageDataUrl || null;
-
-    const originalImage =
-        json.concert_originalImage ||
-        json.originalImage ||
-        json.sourceImage ||
-        json.seat_button_originalImage ||
-        savedLocalStorage.concert_originalImage ||
-        savedLocalStorage.seat_button_originalImage ||
-        imageUrl ||
-        null;
-
-    const cleanImage =
-        json.concert_cleanImage ||
-        json.cleanImage ||
-        savedLocalStorage.concert_cleanImage ||
-        savedLocalStorage.seat_button_resultImage ||
-        imageUrl ||
-        originalImage ||
-        null;
-
-    const buttonImage =
-        json.concert_buttonImage ||
-        json.buttonImage ||
-        json.resultImage ||
-        json.seat_button_resultImage ||
-        savedLocalStorage.concert_buttonImage ||
-        savedLocalStorage.seat_button_resultImage ||
-        imageUrl ||
-        cleanImage ||
-        originalImage ||
-        null;
-
-    return {
-        originalImage,
-        cleanImage,
-        buttonImage,
-
-        buttonImageMeta:
-            json.concert_buttonImageMeta ||
-            json.buttonImageMeta ||
-            json.imageMeta ||
-            json.seat_button_imageMeta ||
-            savedLocalStorage.concert_buttonImageMeta ||
-            savedLocalStorage.seat_button_imageMeta ||
-            null,
-
-        sections:
-            json.concert_sections ||
-            json.sections ||
-            savedLocalStorage.concert_sections ||
-            savedLocalStorage.seat_button_groups ||
-            json.groups ||
-            json.seat_button_groups ||
-            [],
-
-        seats:
-            json.concert_seats ||
-            json.seats ||
-            savedLocalStorage.concert_seats ||
-            [],
-
-        extractSettings:
-            json.concert_extractSettings ||
-            json.extractSettings ||
-            savedLocalStorage.concert_extractSettings ||
-            null,
-
-        finalLayout:
-            json.concert_finalLayout ||
-            json.finalLayout ||
-            savedLocalStorage.concert_finalLayout ||
-            null,
-
-        imageMeta:
-            json.concert_imageMeta ||
-            json.imageMeta ||
-            json.seat_button_imageMeta ||
-            savedLocalStorage.concert_imageMeta ||
-            savedLocalStorage.seat_button_imageMeta ||
-            json.image ||
-            null
-    };
-}
-
-    function getNestedLocalStorage(json) {
-        const candidates = [
-            json.localStorage,
-            json.storage,
-            json.pageState?.localStorage,
-            json.payload?.localStorage,
-            json.data?.localStorage
-        ];
-
-        for (const candidate of candidates) {
-            const parsed = parseMaybeJson(candidate);
-            if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-                return parsed;
-            }
+    function resetConcertWork() {
+        if (!confirm("콘서트 / 대형장 작업 데이터를 초기화할까요?\n\n브라우저에 저장된 Stage1~Stage4 작업 데이터만 삭제됩니다.")) {
+            return;
         }
 
-        return {};
+        clearWork("concert");
+        toast("콘서트 / 대형장 작업 데이터를 초기화했습니다.");
     }
 
-    function pickFirst(...values) {
-        for (const value of values) {
-            if (value == null) continue;
-            if (typeof value === "string" && value.trim() === "") continue;
-            return value;
+    function applyConcertJson(json) {
+        const payload = normalizeConcertPayload(json);
+        const imageUrl = payload.imageUrl || DEFAULT_CONCERT_IMAGE_URL;
+
+        localStorage.setItem("concert_originalImage", imageUrl);
+        localStorage.setItem("concert_buttonImage", imageUrl);
+        localStorage.setItem("concert_cleanImage", imageUrl);
+
+        if (payload.imageMeta) {
+            localStorage.setItem("concert_imageMeta", JSON.stringify(payload.imageMeta));
+            localStorage.setItem("concert_buttonImageMeta", JSON.stringify(payload.imageMeta));
         }
-        return null;
+
+        if (payload.sections) {
+            localStorage.setItem("concert_sections", JSON.stringify(payload.sections));
+        }
+
+        if (payload.seats) {
+            localStorage.setItem("concert_seats", JSON.stringify(payload.seats));
+        }
+
+        if (payload.extractSettings) {
+            localStorage.setItem("concert_extractSettings", JSON.stringify(payload.extractSettings));
+        }
+
+        if (payload.finalLayout) {
+            localStorage.setItem("concert_finalLayout", JSON.stringify(payload.finalLayout));
+        }
     }
 
-    function parseMaybeJson(value) {
-        if (typeof value !== "string") {
-            return value;
-        }
+    function normalizeConcertPayload(json) {
+        const output = json.output || {};
+        const input = json.input || {};
+        const meta = json.meta || {};
 
-        const trimmed = value.trim();
+        const imageUrl =
+            output.imageUrl ||
+            output.buttonImageUrl ||
+            output.resultImageUrl ||
+            output.resultImage ||
+            json.imageUrl ||
+            json.buttonImageUrl ||
+            json.resultImageUrl ||
+            json.concert_buttonImage ||
+            json.buttonImage ||
+            json.resultImage ||
+            json.seat_button_resultImage ||
+            DEFAULT_CONCERT_IMAGE_URL;
 
-        if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) {
-            return value;
-        }
+        return {
+            imageUrl,
 
-        try {
-            return JSON.parse(trimmed);
-        } catch (error) {
-            return value;
-        }
+            imageMeta:
+                output.imageMeta ||
+                json.concert_buttonImageMeta ||
+                json.buttonImageMeta ||
+                json.imageMeta ||
+                json.seat_button_imageMeta ||
+                meta.imageMeta ||
+                null,
+
+            sections:
+                output.sections ||
+                output.groups ||
+                json.concert_sections ||
+                json.sections ||
+                json.groups ||
+                json.seat_button_groups ||
+                [],
+
+            seats:
+                output.seats ||
+                json.concert_seats ||
+                json.seats ||
+                [],
+
+            extractSettings:
+                output.extractSettings ||
+                json.concert_extractSettings ||
+                json.extractSettings ||
+                input.extractSettings ||
+                null,
+
+            finalLayout:
+                output.finalLayout ||
+                json.concert_finalLayout ||
+                json.finalLayout ||
+                null
+        };
     }
 
     function showNeedButtonImageMessage() {

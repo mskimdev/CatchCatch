@@ -2,7 +2,7 @@
   "_comment": "SeatTrace 1단계 좌석 이미지 버튼 이미지화 결과입니다. 원본 도면을 단색 구역 이미지로 변환한 PNG와 HTML 미리보기 파일을 함께 저장합니다.",
   "service": "SeatTrace",
   "type": "button-image-result",
-  "savedAt": "2026-06-24T03:24:33.841Z",
+  "savedAt": "2026-06-25T02:44:03.669Z",
   "page": "button-image",
   "path": "/admin/seatmap/button-image",
   "output": {

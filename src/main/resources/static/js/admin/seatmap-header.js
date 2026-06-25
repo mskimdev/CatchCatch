@@ -1,51 +1,54 @@
 (() => {
-    const SAVE_URL = "/admin/seatmap/overwrite-save";
+    "use strict";
 
-    const STORAGE_KEYS = [
-        "seat_button_originalImage",
-        "seat_button_resultImage",
-        "seat_button_imageMeta",
-        "seat_button_groups",
-        "concert_originalImage",
-        "concert_cleanImage",
-        "concert_buttonImage",
-        "concert_buttonImageMeta",
-        "concert_sections",
-        "concert_seats",
-        "concert_extractSettings",
-        "concert_finalLayout",
-        "concert_imageMeta",
-        "concert_stage",
-        "concert_stage3_seats",
-        "concert_stage3_layouts",
-        "concert_generated_overviewImage",
-        "concert_layout_json",
-        "concert_booking_seats",
-        "concert_final_seats",
-        "small_originalImage",
-        "small_detectedSeats",
-        "small_seats",
-        "small_finalLayout"
-    ];
+    const SAVE_URL = "/admin/seatmap/temp-save";
+
+    const TEMP_PATHS = {
+        base: "/temp/seatmap/concert-session/",
+        seats: "/temp/seatmap/concert-session/seatmap-seats.json",
+        sections: "/temp/seatmap/concert-session/seatmap-sections.json",
+        image: "/temp/seatmap/concert-session/seatmap-image.png"
+    };
+
+    const STORAGE_KEYS = {
+        stage1Seats: "concert_stage1_seats",
+        stage1Sections: "concert_stage1_sections",
+        stage1Layouts: "concert_stage1_layouts",
+        stage1VisualGroups: "concert_stage1_visualGroups",
+        stage1GeneratedImage: "concert_stage1_generatedImage",
+        cleanImage: "concert_cleanImage",
+        concertSections: "concert_sections",
+        stage3Seats: "concert_stage3_seats",
+        stage3Layouts: "concert_stage3_layouts",
+        buttonImage: "concert_buttonImage",
+        originalImage: "concert_originalImage"
+    };
 
     document.addEventListener("DOMContentLoaded", () => {
+        initSaveInfo();
+
         const button = document.getElementById("seatmapHeaderSave");
 
         if (!button) {
             return;
         }
 
-        button.addEventListener("click", () => saveSeatmap(button));
+        button.addEventListener("click", () => saveSeatmapTemp(button));
     });
 
-    async function saveSeatmap(button) {
+    function initSaveInfo() {
+        updateSaveInfoIdle();
+    }
+
+    async function saveSeatmapTemp(button) {
         const originalText = button.textContent;
 
         try {
             button.disabled = true;
             button.textContent = "저장 중...";
+            updateSaveInfoSaving();
 
-            const payload = buildSavePayload();
+            const payload = await buildTempSavePayload();
 
             const response = await fetch(SAVE_URL, {
                 method: "POST",
@@ -57,188 +60,445 @@
             });
 
             if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || "저장 실패");
+                const text = await response.text();
+                throw new Error(text || "저장 실패");
             }
 
             const result = await response.json();
-            button.textContent = "저장 완료";
-            console.log("[SeatTrace] overwrite save result", result);
 
-            setTimeout(() => {
+            console.log("[SeatTrace] temp save result", result);
+
+            button.textContent = "저장 완료";
+            updateSaveInfoSuccess(result);
+
+            window.setTimeout(() => {
                 button.textContent = originalText;
                 button.disabled = false;
             }, 900);
         } catch (error) {
             console.error(error);
             button.textContent = "저장 실패";
+            updateSaveInfoError(error.message);
             alert("저장 실패: " + error.message);
 
-            setTimeout(() => {
+            window.setTimeout(() => {
                 button.textContent = originalText;
                 button.disabled = false;
             }, 1200);
         }
     }
 
-    function buildSavePayload() {
-        const imageDataUrl = getCurrentImageDataUrl();
-        const localStorageDump = dumpSeatmapLocalStorage();
-        const pageState = getPageState(localStorageDump, imageDataUrl);
-        const jsonText = JSON.stringify(pageState, null, 2);
-        const htmlText = buildPreviewHtml(imageDataUrl, pageState);
+    async function buildTempSavePayload() {
+        const imageDataUrl = await getCurrentImageDataUrl();
+        const source = collectStageData();
+        const seatJson = buildSeatJson(source);
+        const sectionJson = buildSectionJson(source);
 
         return {
             page: getPageName(),
-            imageDataUrl,
-            jsonText,
-            htmlText
+            seatJsonText: JSON.stringify(seatJson, null, 2),
+            sectionJsonText: JSON.stringify(sectionJson, null, 2),
+            imageDataUrl
         };
     }
 
-    function getCurrentImageDataUrl() {
+    function collectStageData() {
+        const visualGroups = normalizeArray(readJson(STORAGE_KEYS.stage1VisualGroups, []));
+        const sections = normalizeArray(
+            readJson(STORAGE_KEYS.stage1Sections, readJson(STORAGE_KEYS.concertSections, []))
+        );
+        const seatsBySection = normalizeSeatsBySection(
+            readJson(STORAGE_KEYS.stage1Seats, readJson(STORAGE_KEYS.stage3Seats, {}))
+        );
+        const layoutsBySection = readJson(STORAGE_KEYS.stage1Layouts, readJson(STORAGE_KEYS.stage3Layouts, {})) || {};
+        const canvasSize = getCanvasSize();
+
+        return {
+            visualGroups,
+            sections,
+            seatsBySection,
+            layoutsBySection,
+            width: canvasSize.width,
+            height: canvasSize.height
+        };
+    }
+
+    function buildSeatJson(source) {
+        const sectionMap = new Map();
+
+        source.sections.forEach((section) => {
+            sectionMap.set(String(section.id || section.name || section.label || ""), section);
+        });
+
+        const result = [];
+
+        Object.entries(source.seatsBySection).forEach(([sectionId, seats]) => {
+            const section = sectionMap.get(String(sectionId)) || { id: sectionId, name: sectionId, label: sectionId };
+
+            normalizeArray(seats).forEach((seat) => {
+                if (String(seat.status || "").toUpperCase() === "REMOVED") {
+                    return;
+                }
+
+                const normalized = normalizeSeatForSave(seat, section, sectionId);
+                result.push(normalized);
+            });
+        });
+
+        return result;
+    }
+
+    function normalizeSeatForSave(seat, section, sectionId) {
+        const floor = cleanIdPart(seat.floor || section.floor || "1");
+        const sectionName = cleanIdPart(seat.section || seat.sectionName || section.label || section.name || sectionId || "A");
+        const row = cleanIdPart(seat.row || seat.seatRow || 1);
+        const col = cleanIdPart(seat.col || seat.no || seat.seatCol || 1);
+        const grade = cleanIdPart(seat.grade || section.grade || "TEMP");
+        const status = cleanIdPart(seat.status || "AVAILABLE");
+        const x = roundNumber(seat.x);
+        const y = roundNumber(seat.y);
+        const size = roundNumber(seat.size || seat.seatSize || section.seatSize || 0);
+        const angle = roundNumber(seat.angle ?? section.angle ?? 0);
+        const id = seat.id || [floor, sectionName, row, col, grade, status, x, y, size, angle].join("-");
+
+        return {
+            id,
+            floor,
+            section: sectionName,
+            row: Number(row) || row,
+            col: Number(col) || col,
+            grade,
+            status,
+            x,
+            y,
+            size,
+            angle
+        };
+    }
+
+    function buildSectionJson(source) {
+        const visualGroups = source.visualGroups.length > 0
+            ? source.visualGroups
+            : source.sections;
+
+        return visualGroups.map((item, index) => {
+            const polygon = getSectionPolygon(item);
+            const bbox = getPolygonBbox(polygon);
+            const layout = source.layoutsBySection[item.id] || item.layout || {};
+            const seatIds = getSeatIdsForSectionLike(item, source.seatsBySection);
+            const label = item.label || item.name || (item.id ? String(item.id) : `구역 ${index + 1}`);
+            const color = item.color || item.renderColor || "#d9d9d9";
+            const angle = roundNumber(item.angle ?? layout.angle ?? 0);
+
+            return {
+                id: item.id || `vg-${index + 1}`,
+                name: item.name || label,
+                label,
+                floor: item.floor || "1",
+                grade: item.grade || "TEMP",
+                color,
+                polygon,
+                bbox,
+                button: {
+                    x: roundNumber(bbox.x + bbox.w / 2),
+                    y: roundNumber(bbox.y + bbox.h / 2),
+                    w: roundNumber(bbox.w),
+                    h: roundNumber(bbox.h),
+                    xPercent: percent(bbox.x + bbox.w / 2, source.width),
+                    yPercent: percent(bbox.y + bbox.h / 2, source.height),
+                    wPercent: percent(bbox.w, source.width),
+                    hPercent: percent(bbox.h, source.height),
+                    angle,
+                    label,
+                    color
+                },
+                sectionIds: normalizeArray(item.sectionIds || item.sections || item.regionIds || item.id),
+                seatIds
+            };
+        });
+    }
+
+    function getSeatIdsForSectionLike(item, seatsBySection) {
+        if (Array.isArray(item.seatIds)) {
+            return item.seatIds;
+        }
+
+        const sectionIds = normalizeArray(item.sectionIds || item.sections || item.regionIds || item.id)
+            .map((value) => String(value));
+        const result = [];
+
+        sectionIds.forEach((sectionId) => {
+            normalizeArray(seatsBySection[sectionId]).forEach((seat) => {
+                if (seat.id) {
+                    result.push(seat.id);
+                }
+            });
+        });
+
+        return result;
+    }
+
+    async function getCurrentImageDataUrl() {
+        const storedImage =
+            localStorage.getItem(STORAGE_KEYS.stage1GeneratedImage) ||
+            localStorage.getItem(STORAGE_KEYS.cleanImage);
+
+        if (storedImage && storedImage.startsWith("data:image")) {
+            return storedImage;
+        }
+
         const canvas = document.getElementById("canvas");
 
         if (canvas && canvas.width > 0 && canvas.height > 0) {
             try {
                 return canvas.toDataURL("image/png");
             } catch (error) {
-                console.warn("canvas image export failed", error);
+                console.warn("[SeatTrace] canvas export failed", error);
             }
         }
 
-        return localStorage.getItem("seat_button_resultImage")
-            || localStorage.getItem("concert_cleanImage")
-            || localStorage.getItem("concert_generated_overviewImage")
-            || localStorage.getItem("concert_buttonImage")
-            || localStorage.getItem("seat_button_originalImage")
-            || localStorage.getItem("concert_originalImage")
-            || "";
+        const imageUrl =
+            localStorage.getItem(STORAGE_KEYS.stage1GeneratedImage) ||
+            localStorage.getItem(STORAGE_KEYS.cleanImage) ||
+            localStorage.getItem(STORAGE_KEYS.buttonImage) ||
+            localStorage.getItem(STORAGE_KEYS.originalImage) ||
+            "";
+
+        if (imageUrl && imageUrl.startsWith("/")) {
+            return await urlToDataUrl(imageUrl);
+        }
+
+        return imageUrl || "";
     }
 
-    function dumpSeatmapLocalStorage() {
-        const result = {};
-
-        STORAGE_KEYS.forEach((key) => {
-            const value = localStorage.getItem(key);
-
-            if (value == null) {
-                return;
-            }
-
-            result[key] = parseMaybeJson(value);
+    async function urlToDataUrl(url) {
+        const response = await fetch(url, {
+            method: "GET",
+            cache: "no-store"
         });
 
-        return result;
+        if (!response.ok) {
+            throw new Error("이미지 URL을 읽지 못했습니다: " + url);
+        }
+
+        const blob = await response.blob();
+
+        return await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
     }
 
-    function parseMaybeJson(value) {
-        if (typeof value !== "string") {
-            return value;
+    function getSectionPolygon(section) {
+        const source = section.polygon || section.points || section.shape || [];
+
+        if (Array.isArray(source) && source.length > 0) {
+            return source.map((point) => ({
+                x: roundNumber(point.x),
+                y: roundNumber(point.y)
+            }));
         }
 
-        const trimmed = value.trim();
+        const bbox = section.bbox || section.button || section;
+        const x = Number(bbox.x || 0);
+        const y = Number(bbox.y || 0);
+        const w = Number(bbox.w || bbox.width || 0);
+        const h = Number(bbox.h || bbox.height || 0);
 
-        if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) {
-            return value;
-        }
-
-        try {
-            return JSON.parse(trimmed);
-        } catch (error) {
-            return value;
-        }
+        return [
+            { x, y },
+            { x: x + w, y },
+            { x: x + w, y: y + h },
+            { x, y: y + h }
+        ];
     }
 
-    function getPageState(localStorageDump, imageDataUrl) {
+    function getPolygonBbox(points) {
+        if (!points.length) {
+            return { x: 0, y: 0, w: 0, h: 0 };
+        }
+
+        const xs = points.map((point) => Number(point.x || 0));
+        const ys = points.map((point) => Number(point.y || 0));
+        const minX = Math.min(...xs);
+        const maxX = Math.max(...xs);
+        const minY = Math.min(...ys);
+        const maxY = Math.max(...ys);
+
         return {
-            service: "SeatTrace",
-            savedAt: new Date().toISOString(),
-            page: getPageName(),
-            path: location.pathname,
-            image: {
-                exists: Boolean(imageDataUrl),
-                width: getCanvasWidth(),
-                height: getCanvasHeight()
-            },
-            localStorage: localStorageDump
+            x: roundNumber(minX),
+            y: roundNumber(minY),
+            w: roundNumber(maxX - minX),
+            h: roundNumber(maxY - minY)
         };
     }
 
-    function getCanvasWidth() {
-        const canvas = document.getElementById("canvas");
-        return canvas ? canvas.width : 0;
+    function normalizeArray(value) {
+        if (Array.isArray(value)) {
+            return value;
+        }
+
+        if (value == null || value === "") {
+            return [];
+        }
+
+        return [value];
     }
 
-    function getCanvasHeight() {
+    function normalizeSeatsBySection(value) {
+        if (!value) {
+            return {};
+        }
+
+        if (Array.isArray(value)) {
+            const grouped = {};
+
+            value.forEach((seat) => {
+                const key = String(seat.sectionId || seat.section || seat.sectionName || "default");
+
+                if (!grouped[key]) {
+                    grouped[key] = [];
+                }
+
+                grouped[key].push(seat);
+            });
+
+            return grouped;
+        }
+
+        return value;
+    }
+
+    function readJson(key, fallback) {
+        try {
+            const value = localStorage.getItem(key);
+            return value ? JSON.parse(value) : fallback;
+        } catch (error) {
+            console.warn("[SeatTrace] localStorage parse failed:", key, error);
+            return fallback;
+        }
+    }
+
+    function getCanvasSize() {
         const canvas = document.getElementById("canvas");
-        return canvas ? canvas.height : 0;
+
+        if (canvas && canvas.width > 0 && canvas.height > 0) {
+            return {
+                width: canvas.width,
+                height: canvas.height
+            };
+        }
+
+        const meta = readJson("concert_imageMeta", {});
+
+        return {
+            width: Number(meta.width || 0),
+            height: Number(meta.height || 0)
+        };
+    }
+
+    function updateSaveInfoIdle() {
+        const box = document.getElementById("seatmapSaveInfo");
+        const title = document.getElementById("seatmapSaveInfoTitle");
+        const pathText = document.getElementById("seatmapSavePathText");
+
+        if (!box || !title || !pathText) {
+            return;
+        }
+
+        box.classList.remove("is-saving", "is-saved", "is-error");
+        title.textContent = "저장 대상: 좌석 JSON · 구역 JSON · 도형 이미지";
+        pathText.textContent = `${TEMP_PATHS.seats} · seatmap-sections.json · seatmap-image.png`;
+    }
+
+    function updateSaveInfoSaving() {
+        const box = document.getElementById("seatmapSaveInfo");
+        const title = document.getElementById("seatmapSaveInfoTitle");
+        const pathText = document.getElementById("seatmapSavePathText");
+
+        if (!box || !title || !pathText) {
+            return;
+        }
+
+        box.classList.remove("is-saved", "is-error");
+        box.classList.add("is-saving");
+        title.textContent = "저장 중: 좌석 JSON · 구역 JSON · 도형 이미지";
+        pathText.textContent = TEMP_PATHS.base;
+    }
+
+    function updateSaveInfoSuccess(result) {
+        const box = document.getElementById("seatmapSaveInfo");
+        const title = document.getElementById("seatmapSaveInfoTitle");
+        const pathText = document.getElementById("seatmapSavePathText");
+
+        if (!box || !title || !pathText) {
+            return;
+        }
+
+        const time = new Date().toLocaleTimeString("ko-KR", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        });
+
+        box.classList.remove("is-saving", "is-error");
+        box.classList.add("is-saved");
+        title.textContent = `최근 저장 완료: ${time} / 좌석 JSON · 구역 JSON · 도형 이미지`;
+        pathText.textContent = [
+            result.seatJsonUrl || TEMP_PATHS.seats,
+            result.sectionJsonUrl || TEMP_PATHS.sections,
+            result.imageUrl || TEMP_PATHS.image
+        ].join(" · ");
+    }
+
+    function updateSaveInfoError(message) {
+        const box = document.getElementById("seatmapSaveInfo");
+        const title = document.getElementById("seatmapSaveInfoTitle");
+        const pathText = document.getElementById("seatmapSavePathText");
+
+        if (!box || !title || !pathText) {
+            return;
+        }
+
+        box.classList.remove("is-saving", "is-saved");
+        box.classList.add("is-error");
+        title.textContent = "저장 실패";
+        pathText.textContent = message || "서버 저장 요청을 확인하세요.";
     }
 
     function getPageName() {
         const path = location.pathname;
 
-        if (path.includes("button-image")) {
-            return "button-image";
-        }
-
-        if (path.includes("concert/stage1")) {
-            return "concert-stage1";
-        }
-
-        if (path.includes("concert/stage2")) {
-            return "concert-stage2";
-        }
-
-        if (path.includes("concert/stage3")) {
-            return "concert-stage3";
-        }
-
-        if (path.includes("concert/stage4")) {
-            return "concert-stage4";
-        }
+        if (path.includes("button-image")) return "button-image";
+        if (path.includes("concert/stage1")) return "concert-stage1";
+        if (path.includes("concert/stage2")) return "concert-stage2";
+        if (path.includes("concert/stage3")) return "concert-stage3";
+        if (path.includes("concert/stage4")) return "concert-stage4";
 
         return "seatmap";
     }
 
-    function buildPreviewHtml(imageDataUrl, pageState) {
-        const escapedJson = escapeHtml(JSON.stringify(pageState, null, 2));
-        const imageHtml = imageDataUrl
-            ? `<img src="${imageDataUrl}" alt="SeatTrace saved image">`
-            : `<div class="empty">저장된 이미지가 없습니다.</div>`;
-
-        return `<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <title>SeatTrace 저장 미리보기</title>
-    <style>
-        body { margin: 0; padding: 24px; background: #f5f7fb; color: #111827; font-family: Arial, sans-serif; }
-        h1 { margin: 0 0 16px; font-size: 22px; }
-        .card { margin-bottom: 18px; padding: 18px; background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; }
-        img { max-width: 100%; height: auto; display: block; border: 1px solid #e5e7eb; background: #fff; }
-        pre { overflow: auto; white-space: pre-wrap; word-break: break-word; font-size: 12px; line-height: 1.5; }
-        .empty { padding: 50px; text-align: center; border: 1px dashed #cbd5e1; border-radius: 10px; color: #64748b; }
-    </style>
-</head>
-<body>
-    <h1>SeatTrace 저장 미리보기</h1>
-    <div class="card">
-        ${imageHtml}
-    </div>
-    <div class="card">
-        <pre>${escapedJson}</pre>
-    </div>
-</body>
-</html>`;
+    function cleanIdPart(value) {
+        return String(value ?? "")
+            .trim()
+            .replace(/\s+/g, "")
+            .replace(/-/g, "")
+            .replace(/[^\w가-힣]/g, "");
     }
 
-    function escapeHtml(value) {
-        return String(value)
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#039;");
+    function roundNumber(value) {
+        return Math.round(Number(value || 0) * 100) / 100;
+    }
+
+    function percent(value, total) {
+        const number = Number(total || 0);
+
+        if (!number) {
+            return 0;
+        }
+
+        return roundNumber(Number(value || 0) / number * 100);
     }
 })();

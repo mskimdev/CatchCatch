@@ -86,6 +86,97 @@
                             </button>
                         </div>
 
+                        <button type="button" class="btn btn--primary" id="go3">
+                            다음: 브러쉬 최종 보정
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="part3" class="button-image-step" data-step="3">
+                <button type="button" class="button-image-step__header" id="tab3">
+                    <span class="button-image-step__check" data-step="3">3</span>
+                    <span class="button-image-step__text">
+                        <b>브러쉬 보정</b>
+                        <small>찌꺼기 제거 + 색상 선택</small>
+                    </span>
+                    <span class="button-image-step__status">대기</span>
+                    <span class="button-image-step__arrow">⌄</span>
+                </button>
+
+                <div class="button-image-step__body">
+                    <div class="button-image-box">
+                        <div class="button-image-guide">
+                            자동 변환 후 남은 글자, 선, 작은 찌꺼기를 브러쉬로 정리하세요. 도면 색상을 직접 찍어 칠할 색상으로 사용할 수 있습니다.
+                        </div>
+
+                        <div class="button-image-tool-block">
+                            <strong>브러쉬 도구</strong>
+                            <small>브러쉬는 선택 색상으로 칠하고, 지우개는 배경색으로 지웁니다. 버튼을 꾹 누르면 확대/축소도 계속 진행됩니다.</small>
+
+                            <div class="button-image-row">
+                                <button type="button" class="btn btn--tool" id="brushTool">
+                                    브러쉬
+                                </button>
+                                <button type="button" class="btn btn--tool" id="eraseTool">
+                                    지우개
+                                </button>
+                            </div>
+
+                            <label class="button-image-input-label" for="regionColorInput">칠할 색상</label>
+                            <div class="button-image-color-row">
+                                <input type="color" id="regionColorInput" value="#ef5e94" title="직접 색상 선택">
+                                <button type="button" class="btn btn--tool" id="pickColorFromCanvas">
+                                    도면에서 색상 찍기
+                                </button>
+                            </div>
+
+                            <label class="button-image-input-label" for="brushSize">브러쉬 크기</label>
+                            <input type="range" id="brushSize" min="2" max="90" value="18">
+                            <div class="button-image-range-value">
+                                <span>작게</span>
+                                <b id="brushSizeText">18px</b>
+                                <span>크게</span>
+                            </div>
+                        </div>
+
+                        <div class="button-image-row">
+                            <button type="button" class="btn" id="restoreResultBase">
+                                브러쉬 전으로
+                            </button>
+                            <button type="button" class="btn btn--primary" id="go4">
+                                다음: 최종 구역 확인
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="part4" class="button-image-step" data-step="4">
+                <button type="button" class="button-image-step__header" id="tab4">
+                    <span class="button-image-step__check" data-step="4">4</span>
+                    <span class="button-image-step__text">
+                        <b>최종 구역 확인 / 저장</b>
+                        <small>저장될 구역 실선 표시</small>
+                    </span>
+                    <span class="button-image-step__status">대기</span>
+                    <span class="button-image-step__arrow">⌄</span>
+                </button>
+
+                <div class="button-image-step__body">
+                    <div class="button-image-box">
+                        <div class="button-image-guide">
+                            최종 저장될 좌석 구역만 실선으로 표시합니다. 텍스트는 표시하지 않고, 실선 내부의 단색 도형과 이미지가 저장됩니다.
+                        </div>
+
+                        <button type="button" class="btn btn--primary" id="previewSaveRegions">
+                            저장 구역 실선 표시
+                        </button>
+
+                        <button type="button" class="btn" id="backToBrush">
+                            브러쉬로 돌아가기
+                        </button>
+
                         <button type="button" class="btn btn--green" id="saveAndExitButton">
                             저장 및 나가기
                         </button>
@@ -93,9 +184,8 @@
                 </div>
             </section>
         </div>
-
         <div class="button-image-side-guide" id="buttonImageGuide">
-            자동 변환 후 구역을 보정하고 저장하면 메인으로 돌아갑니다.
+            자동 변환 후 브러쉬로 찌꺼기를 제거하고 최종 구역을 확인한 뒤 저장합니다.
         </div>
 
         <div class="button-image-hidden-compat" style="display:none">
@@ -103,14 +193,11 @@
             <button type="button" id="saveButtonImage"></button>
             <button type="button" id="serverSaveButtonImage"></button>
             <button type="button" id="go2"></button>
-            <button type="button" id="go3"></button>
             <button type="button" id="regionSelectStart"></button>
             <button type="button" id="regionRemoveText"></button>
             <button type="button" id="regionDominantFill"></button>
             <button type="button" id="regionApplyColor"></button>
             <button type="button" id="regionCleanFill"></button>
-            <input type="color" id="regionColorInput" value="#ef5e94">
-            <input type="text" id="regionGradeInput" value="R">
             <div id="buttonImageGroups"></div>
             <strong id="selectedGroupName"></strong>
             <input type="color" id="groupOutputColor" value="#f7f7f7">
@@ -120,12 +207,7 @@
             <button type="button" id="clearSelectedSamples"></button>
             <button type="button" id="clearAllSamples"></button>
             <input type="number" id="cleanupArea" value="30" min="1">
-            <input type="range" id="brushSize" min="4" max="90" value="22">
             <button type="button" id="cleanupPieces"></button>
-            <button type="button" id="brushTool"></button>
-            <button type="button" id="eraseTool"></button>
-            <button type="button" id="restoreResultBase"></button>
-            <button type="button" id="downloadButtonImage"></button>
         </div>
     </aside>
 

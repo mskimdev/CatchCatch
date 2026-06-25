@@ -8,9 +8,11 @@ public class SeatMapRequest {
 
     @Getter
     @Setter
-    public static class SaveDTO {
-        private String fileName;
-        private String json;
+    public static class TempSaveDTO {
+        private String page;
+        private String seatJsonText;
+        private String sectionJsonText;
+        private String imageDataUrl;
     }
 
     @Getter

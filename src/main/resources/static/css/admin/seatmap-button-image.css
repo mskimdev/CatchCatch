@@ -766,3 +766,86 @@
         display: none;
     }
 }
+/* 브러쉬 보정 / 확대 홀딩 UX */
+.button-image-input-label {
+    display: block;
+    margin: 2px 0 -3px;
+    color: #334155;
+    font-size: 11px;
+    font-weight: 950;
+}
+
+.button-image-tool-block input[type="color"] {
+    width: 100%;
+    height: 36px;
+    padding: 3px;
+    border: 1px solid #dbe2ea;
+    border-radius: 7px;
+    background: #ffffff;
+    cursor: pointer;
+}
+
+.button-image-tool-block input[type="range"] {
+    width: 100%;
+    accent-color: #7c3aed;
+}
+
+.button-image-command-btn {
+    user-select: none;
+    touch-action: none;
+}
+
+.button-image-command-btn:active {
+    transform: translateY(1px);
+    background: #eef2ff;
+    border-color: #c4b5fd;
+    color: #4f46e5;
+}
+
+.button-image-canvas-box.is-brushing #overlay,
+.button-image-canvas-box.is-erasing #overlay {
+    cursor: none;
+}
+
+.button-image-brush-cursor.is-erase {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.10);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8), inset 0 0 0 1px rgba(239, 68, 68, 0.22);
+}
+
+
+/* v4: 브러쉬 색상 찍기 / 최종 구역 확인 */
+.button-image-color-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    align-items: center;
+}
+
+.button-image-color-row input[type="color"] {
+    width: 100%;
+    height: 44px;
+    padding: 4px;
+    border: 1px solid #ddd6fe;
+    border-radius: 8px;
+    background: #ffffff;
+    cursor: pointer;
+}
+
+.btn--tool.is-active,
+#pickColorFromCanvas.is-active {
+    border-color: #7c3aed;
+    background: #ede9fe;
+    color: #5b21b6;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+
+.button-image-canvas-box.is-picking-color #overlay {
+    cursor: crosshair;
+}
+
+.button-image-brush-cursor.is-picker {
+    border: 2px solid #facc15;
+    background: rgba(250, 204, 21, 0.12);
+    box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.05), 0 0 18px rgba(250, 204, 21, 0.45);
+}

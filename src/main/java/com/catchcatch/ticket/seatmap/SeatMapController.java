@@ -21,7 +21,7 @@ public class SeatMapController {
         return "admin/seatmap/main";
     }
 
-    // 이미지 저장하기
+    // 이미지 버튼화 이미지 저장
     @ResponseBody
     @PostMapping("/overwrite-save")
     public ResponseEntity<Map<String, String>> overwriteSave(
@@ -34,6 +34,13 @@ public class SeatMapController {
                 "jsonUrl", result.jsonUrl(),
                 "imageUrl", result.imageUrl()
         ));
+    }
+
+    // header 파일 저장
+    @PostMapping("/temp-save")
+    @ResponseBody
+    public SeatMapService.TempSaveResult tempSave(@RequestBody SeatMapRequest.TempSaveDTO req) {
+        return seatMapService.tempSave(req);
     }
 
     @GetMapping("/button-image")
@@ -96,15 +103,4 @@ public class SeatMapController {
         return "admin/seatmap/concert-stage4";
     }
 
-    @ResponseBody
-    @PostMapping("/json/save")
-    public ResponseEntity<Map<String, String>> saveSeatMapJson(
-            @RequestBody SeatMapRequest.SaveDTO req
-    ) {
-        String jsonUrl = seatMapService.saveJsonFile(req);
-
-        return ResponseEntity.ok(Map.of(
-                "jsonUrl", jsonUrl
-        ));
-    }
 }

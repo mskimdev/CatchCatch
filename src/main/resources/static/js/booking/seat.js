@@ -1,5 +1,18 @@
+const TEMP_SEATMAP = {
+    seatsUrl: "/temp/seatmap/concert-session/seatmap-seats.json",
+    sectionsUrl: "/temp/seatmap/concert-session/seatmap-sections.json",
+//    imageUrl: "/temp/seatmap/concert-session/seatmap-image.png"
+};
+
 document.addEventListener("DOMContentLoaded", () => {
-    const app = window.CATCHCATCH_BOOKING || {};
+    initCatchCatchBookingSeat().catch((error) => {
+        console.error("[CatchCatch] booking seat init failed", error);
+        alert("좌석 정보를 불러오지 못했습니다.");
+    });
+});
+
+async function initCatchCatchBookingSeat() {
+    const app = await loadBookingSeatApp();
     const rawSeats = Array.isArray(app.seats) ? app.seats : [];
     const rawZones = Array.isArray(app.zones) ? app.zones : [];
     const maxSelectCount = Number(app.maxSelectCount || 4);
@@ -133,13 +146,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const bookingStatus = normalizeText(seat.bookingStatus ?? seat.booking_status, "").toUpperCase();
         const id = normalizeText(seat.id ?? seat.seatId, `${floor}-${section}-${row}-${no}`);
 
+        const displaySectionLabel = normalizeText(seat.sectionLabel ?? seat.label ?? seat.zoneLabel, sectionOnly);
+
         return {
             raw: seat,
             id,
             floor,
             section,
             sectionOnly,
-            label: sectionOnly,
+            label: displaySectionLabel,
             row,
             no,
             grade,
@@ -155,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
             size: numberValue(seat.size, 14),
             angle: numberValue(seat.angle, 0),
             imageUrl: seat.imageUrl || seat.seatImageUrl || "",
-            seatNumber: seat.seatNumber || seat.name || `${floor} ${sectionOnly}구역 ${row}열 ${no}번`
+            seatNumber: seat.seatNumber || seat.name || `${floor} ${displaySectionLabel} ${row}열 ${no}번`
         };
     }
 
@@ -177,6 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
             angle: numberValue(zone.angle, 0),
             clip: zone.clip || zone.clipPath || "",
             radius: zone.radius || "2px",
+            color: zone.color || zone.renderColor || zone.fillColor || "",
             fontSize: numberValue(zone.fontSize, 24),
             order: numberValue(zone.order, index + 1)
         };
@@ -207,42 +223,40 @@ document.addEventListener("DOMContentLoaded", () => {
             return fromServer;
         }
 
-        const defaults = defaultZoneLayouts.map((zone, index) => normalizeZone(zone, index));
         const existingSections = Array.from(sectionMap.keys());
 
         if (existingSections.length === 0) {
-            return defaults;
+            return [];
         }
 
-        const defaultMap = new Map(defaults.map((zone) => [zone.section, zone]));
-        const zones = [];
+        return existingSections.map((section, index) => {
+            const sectionSeats = sectionMap.get(section) || [];
+            const firstSeat = sectionSeats[0] || {};
+            const xs = sectionSeats.map((seat) => numberValue(seat.x, 0));
+            const ys = sectionSeats.map((seat) => numberValue(seat.y, 0));
+            const minX = xs.length ? Math.min(...xs) : 0;
+            const maxX = xs.length ? Math.max(...xs) : 0;
+            const minY = ys.length ? Math.min(...ys) : 0;
+            const maxY = ys.length ? Math.max(...ys) : 0;
+            const imageWidth = numberValue(app.imageWidth, 0) || Math.max(maxX, 1);
+            const imageHeight = numberValue(app.imageHeight, 0) || Math.max(maxY, 1);
 
-        existingSections.forEach((section, index) => {
-            if (defaultMap.has(section)) {
-                zones.push(defaultMap.get(section));
-                return;
-            }
-
-            const firstSeat = sectionMap.get(section)[0];
-
-            zones.push({
+            return {
                 section,
-                label: firstSeat.sectionOnly,
-                floor: firstSeat.floor,
-                grade: firstSeat.grade,
-                x: 16 + (index % 5) * 18,
-                y: 30 + Math.floor(index / 5) * 18,
-                w: 16,
-                h: 12,
-                angle: 0,
+                label: firstSeat.label || firstSeat.sectionOnly || section,
+                floor: firstSeat.floor || "1",
+                grade: firstSeat.grade || "TEMP",
+                x: clampNumber(toPercent(minX, imageWidth), 0, 100),
+                y: clampNumber(toPercent(minY, imageHeight), 0, 100),
+                w: Math.max(1, clampNumber(toPercent(Math.max(maxX - minX, 1), imageWidth), 0, 100)),
+                h: Math.max(1, clampNumber(toPercent(Math.max(maxY - minY, 1), imageHeight), 0, 100)),
+                angle: numberValue(firstSeat.angle, 0),
                 clip: "",
                 radius: "2px",
-                fontSize: 24,
+                fontSize: 18,
                 order: 1000 + index
-            });
+            };
         });
-
-        return zones;
     }
 
     const zones = makeZones().sort((a, b) => a.order - b.order);
@@ -271,7 +285,46 @@ document.addEventListener("DOMContentLoaded", () => {
         if (zone.clip) {
             button.style.setProperty("--clip", zone.clip);
         }
+
+        if (zone.color) {
+            button.style.setProperty("--zone-color", zone.color);
+            button.style.backgroundColor = zone.color;
+        }
     }
+
+    function applySeatmapBackground(target, mini) {
+        if (!target || !app.seatImageUrl) {
+            return;
+        }
+
+        target.style.backgroundImage = `url("${app.seatImageUrl}")`;
+        target.style.backgroundRepeat = "no-repeat";
+        target.style.backgroundPosition = "center";
+        target.style.backgroundSize = mini ? "contain" : "contain";
+    }
+
+    function clearSeatmapBackground(target) {
+        if (!target) return;
+        target.style.backgroundImage = "";
+        target.style.backgroundRepeat = "";
+        target.style.backgroundPosition = "";
+        target.style.backgroundSize = "";
+    }
+
+    function hasSeatmapInfo() {
+        return seats.length > 0 && zones.length > 0;
+    }
+
+    function createEmptySeatmapMessage(message = "좌석 정보가 없습니다.") {
+        const box = document.createElement("div");
+        box.className = "cc-seatmap-empty";
+        box.innerHTML = `
+            <strong>${escapeHtml(message)}</strong>
+            <span>관리자 좌석도 저장 후 다시 확인해주세요.</span>
+        `;
+        return box;
+    }
+
 
     function createZoneButton(zone, mini) {
         const info = zoneSeatInfo(zone.section);
@@ -311,6 +364,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
         zoneButtonLayer.innerHTML = "";
 
+        if (!hasSeatmapInfo()) {
+            clearSeatmapBackground(zoneButtonLayer);
+            zoneButtonLayer.appendChild(createEmptySeatmapMessage());
+
+            if (mainGuideText) {
+                mainGuideText.textContent = "좌석 정보가 없습니다.";
+            }
+            return;
+        }
+
+        applySeatmapBackground(zoneButtonLayer, false);
+
         zones.forEach((zone) => {
             zoneButtonLayer.appendChild(createZoneButton(zone, false));
         });
@@ -326,6 +391,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!miniMap) return;
 
         miniMap.innerHTML = "";
+
+        if (!hasSeatmapInfo()) {
+            clearSeatmapBackground(miniMap);
+            miniMap.appendChild(createEmptySeatmapMessage("좌석 정보 없음"));
+            return;
+        }
+
+        applySeatmapBackground(miniMap, true);
 
         const stage = document.createElement("div");
         stage.className = "cc-stage-label";
@@ -383,7 +456,7 @@ document.addEventListener("DOMContentLoaded", () => {
         gradeList.innerHTML = "";
 
         if (grades.length === 0) {
-            gradeList.innerHTML = `<div class="cc-empty-selected">좌석 등급 정보가 없습니다.</div>`;
+            gradeList.innerHTML = `<div class="cc-empty-selected">좌석 정보가 없습니다.</div>`;
             return;
         }
 
@@ -501,8 +574,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const guide = document.createElement("div");
         guide.className = "cc-seat-canvas-guide";
-        guide.textContent = "현재 보고 계신 구역은 1층입니다.";
+        guide.textContent = sectionSeats.length > 0 ? "현재 보고 계신 구역입니다." : "좌석 정보가 없습니다.";
         canvasInner.appendChild(guide);
+
+        if (sectionSeats.length === 0) {
+            canvasInner.appendChild(createEmptySeatmapMessage());
+            seatCanvas.appendChild(canvasInner);
+
+            if (seatViewTitle) {
+                seatViewTitle.textContent = `${zone ? zone.label : currentSection} 구역`;
+            }
+            if (seatViewSubText) {
+                seatViewSubText.textContent = "좌석 정보가 없습니다.";
+            }
+            if (seatGuideText) {
+                seatGuideText.textContent = "좌석 정보가 없습니다.";
+            }
+            return;
+        }
 
         if (seatViewTitle) {
             seatViewTitle.textContent = `${zone ? zone.label : currentSection} 구역`;
@@ -727,6 +816,60 @@ document.addEventListener("DOMContentLoaded", () => {
         tick();
     }
 
+    function injectSeatmapEmptyStyle() {
+        if (document.getElementById("ccSeatmapEmptyStyle")) return;
+
+        const style = document.createElement("style");
+        style.id = "ccSeatmapEmptyStyle";
+        style.textContent = `
+            .cc-seatmap-empty {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                z-index: 10;
+                min-width: 220px;
+                padding: 18px 22px;
+                border: 1px solid #e5e7eb;
+                border-radius: 14px;
+                background: rgba(255, 255, 255, 0.92);
+                box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+                color: #0f172a;
+                text-align: center;
+                transform: translate(-50%, -50%);
+                pointer-events: none;
+            }
+
+            .cc-seatmap-empty strong {
+                display: block;
+                font-size: 18px;
+                font-weight: 900;
+            }
+
+            .cc-seatmap-empty span {
+                display: block;
+                margin-top: 6px;
+                color: #64748b;
+                font-size: 12px;
+                font-weight: 700;
+            }
+
+            #miniMap .cc-seatmap-empty {
+                min-width: 120px;
+                padding: 10px 12px;
+                border-radius: 10px;
+            }
+
+            #miniMap .cc-seatmap-empty strong {
+                font-size: 12px;
+            }
+
+            #miniMap .cc-seatmap-empty span {
+                display: none;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
     function renderAllSideOnly() {
         renderMiniMap();
         renderGradeList();
@@ -738,6 +881,8 @@ document.addEventListener("DOMContentLoaded", () => {
         renderAllSideOnly();
     }
 
+    injectSeatmapEmptyStyle();
+
     bindEvents();
     renderAll();
     showZoneView();
@@ -745,4 +890,340 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log("CatchCatch booking seats =", seats);
     console.log("CatchCatch booking zones =", zones);
-});
+}
+
+
+async function loadBookingSeatApp() {
+    const baseApp = window.CATCHCATCH_BOOKING || {};
+
+    console.log("[CatchCatch] booking-seat temp v3 loaded");
+
+    // 핵심: 서버/머스태치 샘플 데이터보다 temp 저장 결과를 먼저 사용한다.
+    // temp가 없으면 기본 샘플을 띄우지 않고 빈 좌석 상태로 둔다.
+    try {
+        const [seatResponse, sectionResponse] = await Promise.all([
+            fetch(`${TEMP_SEATMAP.seatsUrl}?v=${Date.now()}`, { cache: "no-store" }),
+            fetch(`${TEMP_SEATMAP.sectionsUrl}?v=${Date.now()}`, { cache: "no-store" })
+        ]);
+
+        const tempSeats = seatResponse.ok ? await seatResponse.json() : [];
+        const tempSections = sectionResponse.ok ? await sectionResponse.json() : [];
+        const imageUrl = TEMP_SEATMAP.imageUrl;
+        const imageSize = await readImageSize(imageUrl);
+
+        const convertedTemp = convertTempSeatmapToBookingData(tempSeats, tempSections, imageSize);
+
+        if (convertedTemp.hasData) {
+            const nextApp = {
+                ...baseApp,
+                seats: convertedTemp.seats,
+                zones: convertedTemp.zones,
+                seatImageUrl: imageUrl,
+                imageWidth: imageSize.width || convertedTemp.imageWidth || 0,
+                imageHeight: imageSize.height || convertedTemp.imageHeight || 0,
+                maxSelectCount: Number(baseApp.maxSelectCount || 4)
+            };
+
+            window.CATCHCATCH_BOOKING = nextApp;
+            return nextApp;
+        }
+
+        console.warn("[CatchCatch] temp seatmap is empty. sample fallback blocked.", {
+            seatsStatus: seatResponse.status,
+            sectionsStatus: sectionResponse.status,
+            tempSeatCount: Array.isArray(tempSeats) ? tempSeats.length : 0,
+            tempSectionCount: Array.isArray(tempSections) ? tempSections.length : 0
+        });
+    } catch (error) {
+        console.warn("[CatchCatch] temp seatmap load failed. sample fallback blocked.", error);
+    }
+
+    // 실제 서버 좌석 데이터를 쓰고 싶은 경우에만 머스태치에서 useServerSeatData: true 를 명시한다.
+    // 기본값은 false. 즉 정보가 없으면 샘플 대신 '좌석 정보가 없습니다.' 표시.
+    if (baseApp.useServerSeatData === true && Array.isArray(baseApp.seats) && baseApp.seats.length > 0) {
+        return {
+            ...baseApp,
+            seats: baseApp.seats,
+            zones: Array.isArray(baseApp.zones) ? baseApp.zones : [],
+            seatImageUrl: baseApp.seatImageUrl || "",
+            maxSelectCount: Number(baseApp.maxSelectCount || 4)
+        };
+    }
+
+    const emptyApp = {
+        ...baseApp,
+        seats: [],
+        zones: [],
+        seatImageUrl: "",
+        imageWidth: 0,
+        imageHeight: 0,
+        maxSelectCount: Number(baseApp.maxSelectCount || 4)
+    };
+
+    window.CATCHCATCH_BOOKING = emptyApp;
+    return emptyApp;
+}
+
+function convertTempSeatmapToBookingData(tempSeats, tempSections, imageSize = { width: 0, height: 0 }) {
+    const sourceSeats = convertTempSeatsToBookingSeats(tempSeats);
+    const sourceSeatMap = new Map(sourceSeats.map((seat) => [String(seat.id), seat]));
+    const sections = normalizeArray(tempSections);
+    const hasSections = sections.length > 0;
+    const hasSeats = sourceSeats.length > 0;
+
+    if (!hasSections && !hasSeats) {
+        return {
+            seats: [],
+            zones: [],
+            imageWidth: imageSize.width || 0,
+            imageHeight: imageSize.height || 0,
+            hasData: false
+        };
+    }
+
+    const zones = convertTempSectionsToBookingZones(sections, imageSize);
+
+    if (!hasSections) {
+        return {
+            seats: sourceSeats,
+            zones: [],
+            imageWidth: imageSize.width || 0,
+            imageHeight: imageSize.height || 0,
+            hasData: hasSeats
+        };
+    }
+
+    const groupedSeats = [];
+    const usedIds = new Set();
+
+    sections.forEach((section, index) => {
+        const groupSection = getTempSectionKey(section, index);
+        const groupLabel = section.label || section.name || groupSection;
+        const floor = section.floor || "1";
+        const grade = section.grade || "TEMP";
+        const price = toNumber(section.price || section.seatPrice, 0);
+        const seatIds = normalizeArray(section.seatIds || section.seats || []);
+
+        seatIds.forEach((seatRef) => {
+            const seatId = typeof seatRef === "string" ? seatRef : String(seatRef?.id || seatRef?.seatId || "");
+            const source = sourceSeatMap.get(seatId);
+            if (!source) return;
+
+            usedIds.add(seatId);
+            groupedSeats.push({
+                ...source,
+                section: groupSection,
+                sectionName: groupSection,
+                sectionLabel: groupLabel,
+                floor: source.floor || floor,
+                grade: source.grade && source.grade !== "TEMP" ? source.grade : grade,
+                price: source.price || price,
+                seatNumber: `${floor} ${groupLabel} ${source.row}열 ${source.col || source.no}번`
+            });
+        });
+    });
+
+    // seatIds가 없는 section JSON이 들어온 경우를 대비해 원본 좌석은 버리지 않는다.
+    if (groupedSeats.length === 0 && sourceSeats.length > 0) {
+        groupedSeats.push(...sourceSeats);
+    }
+
+    return {
+        seats: groupedSeats,
+        zones,
+        imageWidth: imageSize.width || inferSeatmapSize(sections).width || 0,
+        imageHeight: imageSize.height || inferSeatmapSize(sections).height || 0,
+        hasData: groupedSeats.length > 0 && zones.length > 0
+    };
+}
+
+function getTempSectionKey(section, index) {
+    return String(section.id || section.section || section.name || section.label || `vg-${index + 1}`);
+}
+
+function convertTempSeatsToBookingSeats(items) {
+    return normalizeArray(items).map((item) => {
+        if (item && typeof item === "object" && item.id && (item.x !== undefined || item.seatId !== undefined)) {
+            return {
+                id: item.id || item.seatId,
+                floor: item.floor || "1",
+                section: item.section || item.sectionName || item.zone || item.zoneName || "A",
+                row: item.row || item.rowName || "1",
+                col: item.col || item.no || item.seatNo || "1",
+                no: item.col || item.no || item.seatNo || "1",
+                grade: item.grade || item.seatGrade || "A",
+                status: item.status || item.seatStatus || "AVAILABLE",
+                x: toNumber(item.x, 0),
+                y: toNumber(item.y, 0),
+                size: toNumber(item.size, 14),
+                angle: toNumber(item.angle || item.gridAngle, 0),
+                price: toNumber(item.price || item.seatPrice, 0)
+            };
+        }
+
+        const id = typeof item === "string" ? item : String(item?.id || "");
+        const parts = id.split("-");
+        const angleText = parts.slice(9).join("-") || "0";
+
+        return {
+            id,
+            floor: parts[0] || "1",
+            section: parts[1] || "A",
+            row: parts[2] || "1",
+            col: parts[3] || "1",
+            no: parts[3] || "1",
+            grade: parts[4] || "A",
+            status: parts[5] || "AVAILABLE",
+            x: toNumber(parts[6], 0),
+            y: toNumber(parts[7], 0),
+            size: toNumber(parts[8], 14),
+            angle: toNumber(angleText, 0),
+            price: 0
+        };
+    }).filter((seat) => seat.id);
+}
+
+function convertTempSectionsToBookingZones(sections, imageSize) {
+    const list = normalizeArray(sections);
+    const fallbackSize = inferSeatmapSize(list);
+    const width = imageSize.width || fallbackSize.width || 1;
+    const height = imageSize.height || fallbackSize.height || 1;
+
+    return list.map((section, index) => {
+        const polygon = normalizePolygon(section.polygon || section.points || section.seatShape || []);
+        const bbox = normalizeBbox(section.bbox || getPolygonBbox(polygon));
+        const button = section.button || {};
+        const name = getTempSectionKey(section, index);
+        const label = section.label || section.name || name;
+        const floor = section.floor || "1";
+        const grade = section.grade || "TEMP";
+        const zoneX = bbox.w > 0 ? bbox.x : toNumber(button.x, 20);
+        const zoneY = bbox.h > 0 ? bbox.y : toNumber(button.y, 40);
+        const zoneW = bbox.w > 0 ? bbox.w : toNumber(button.w || button.width, 12);
+        const zoneH = bbox.h > 0 ? bbox.h : toNumber(button.h || button.height, 10);
+
+        return {
+            section: name,
+            label,
+            floor,
+            grade,
+            color: section.color || section.renderColor || section.fillColor || button.color || "",
+            x: toPercent(zoneX, width),
+            y: toPercent(zoneY, height),
+            w: Math.max(1, toPercent(zoneW, width)),
+            h: Math.max(1, toPercent(zoneH, height)),
+            angle: toNumber(button.angle || section.angle || section.gridAngle, 0),
+            clip: polygon.length >= 3 && bbox.w > 0 && bbox.h > 0 ? polygonToClipPath(polygon, bbox) : "",
+            radius: section.radius || "2px",
+            fontSize: toNumber(section.fontSize, 24),
+            order: toNumber(section.order, index + 1)
+        };
+    });
+}
+
+function normalizeArray(value) {
+    if (Array.isArray(value)) {
+        return value;
+    }
+
+    if (value && typeof value === "object") {
+        return Object.values(value);
+    }
+
+    return [];
+}
+
+function readImageSize(url) {
+    return new Promise((resolve) => {
+        if (!url) {
+            resolve({ width: 0, height: 0 });
+            return;
+        }
+
+        const image = new Image();
+        image.onload = () => resolve({ width: image.naturalWidth || 0, height: image.naturalHeight || 0 });
+        image.onerror = () => resolve({ width: 0, height: 0 });
+        image.src = `${url}${url.includes("?") ? "&" : "?"}v=${Date.now()}`;
+    });
+}
+
+function inferSeatmapSize(sections) {
+    let width = 0;
+    let height = 0;
+
+    sections.forEach((section) => {
+        const polygon = normalizePolygon(section.polygon || section.points || section.seatShape || []);
+        const bbox = normalizeBbox(section.bbox || getPolygonBbox(polygon));
+        width = Math.max(width, bbox.x + bbox.w, toNumber(section.button?.x, 0) + toNumber(section.button?.w, 0));
+        height = Math.max(height, bbox.y + bbox.h, toNumber(section.button?.y, 0) + toNumber(section.button?.h, 0));
+    });
+
+    return { width, height };
+}
+
+function normalizePolygon(points) {
+    if (!Array.isArray(points)) {
+        return [];
+    }
+
+    return points
+        .map((point) => ({ x: toNumber(point.x, 0), y: toNumber(point.y, 0) }))
+        .filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y));
+}
+
+function normalizeBbox(bbox) {
+    return {
+        x: toNumber(bbox?.x, 0),
+        y: toNumber(bbox?.y, 0),
+        w: toNumber(bbox?.w ?? bbox?.width, 0),
+        h: toNumber(bbox?.h ?? bbox?.height, 0)
+    };
+}
+
+function getPolygonBbox(points) {
+    if (!points.length) {
+        return { x: 0, y: 0, w: 0, h: 0 };
+    }
+
+    const xs = points.map((point) => point.x);
+    const ys = points.map((point) => point.y);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+
+    return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+}
+
+function polygonToClipPath(points, bbox) {
+    const items = points.map((point) => {
+        const x = bbox.w ? ((point.x - bbox.x) / bbox.w) * 100 : 0;
+        const y = bbox.h ? ((point.y - bbox.y) / bbox.h) * 100 : 0;
+        return `${roundCss(clampNumber(x, 0, 100))}% ${roundCss(clampNumber(y, 0, 100))}%`;
+    });
+
+    return `polygon(${items.join(", ")})`;
+}
+
+function toPercent(value, base) {
+    const number = toNumber(value, 0);
+
+    if (Math.abs(number) <= 100 && base <= 100) {
+        return number;
+    }
+
+    return (number / Math.max(1, base)) * 100;
+}
+
+function toNumber(value, fallback) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : fallback;
+}
+
+function clampNumber(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}
+
+function roundCss(value) {
+    return Math.round(value * 100) / 100;
+}
