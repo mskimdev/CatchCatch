@@ -171,7 +171,7 @@
                     danger: true,
                     onConfirm: async () => {
                         CcUI.loading.show('문의를 삭제하고 있습니다...');
-                        const { res, data } = await apiDelete(`/api/admin/boards/inquiry/${id}`);
+                        const { res, data } = await apiDelete(`/api/admin/inquiries/${id}`);
                         CcUI.loading.hide();
 
                         if (!res || !res.ok) {

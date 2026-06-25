@@ -29,13 +29,19 @@ public class AdminLogAspect {
 
     @Around("@annotation(adminLog)")
     public Object logAdminAction(ProceedingJoinPoint joinPoint, AdminLog adminLog) throws Throwable {
-        Object result = joinPoint.proceed();
-
         String actor = resolveActor();
         String detail = resolveMessage(joinPoint, adminLog.value());
-        operationLogService.log(adminLog.level(), actor, "관리자 '" + actor + "' " + detail);
 
-        return result;
+        try {
+            Object result = joinPoint.proceed();
+            operationLogService.log(adminLog.level(), actor, "관리자 '" + actor + "' " + detail);
+            return result;
+        } catch (Throwable e) {
+            // 예외 발생 시 ERROR 레벨로 실패 기록
+            operationLogService.log(OperationLogLevel.ERROR, actor,
+                    "관리자 '" + actor + "' " + detail + " [실패] " + e.getMessage());
+            throw e;
+        }
     }
 
     private String resolveMessage(ProceedingJoinPoint joinPoint, String template) {
@@ -52,15 +58,10 @@ public class AdminLogAspect {
     private String resolveActor() {
         ServletRequestAttributes attributes =
                 (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        if (attributes == null) {
-            return UNKNOWN_ACTOR;
-        }
+        if (attributes == null) return UNKNOWN_ACTOR;
 
-        HttpServletRequest request = attributes.getRequest();
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            return UNKNOWN_ACTOR;
-        }
+        HttpSession session = attributes.getRequest().getSession(false);
+        if (session == null) return UNKNOWN_ACTOR;
 
         SessionUser sessionUser = (SessionUser) session.getAttribute(Define.SESSION_USER);
         return sessionUser != null ? sessionUser.getUsername() : UNKNOWN_ACTOR;

@@ -25,7 +25,7 @@ document.getElementById('submitBtn').addEventListener('click', async function ()
     if (!content) return CcUI.toast('내용을 입력해주세요.', 'warning');
 
     CcUI.loading.show();
-    const { res} = await apiPut(`/api/support/inquiries/${id}`, { category, title, content, isPublic, notifyEmail, notifySms });
+    const { res } = await apiPut(`/api/inquiries/${id}`, { category, title, content, isPublic, notifyEmail, notifySms });
     CcUI.loading.hide();
 
     if (res && res.ok) {

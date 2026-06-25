@@ -61,7 +61,7 @@ public class AdminFaqController {
         model.addAttribute("answer", "");
 
         if (inquiryId != null) {
-            InquiryResponse.AdminDetailDTO inquiry = inquiryService.findByIdForAdmin(inquiryId);
+            InquiryResponse.AdminDetailDTO inquiry = inquiryService.getAdminDetail(inquiryId);
 
             model.addAttribute("question", inquiry.title());
             model.addAttribute("answer", inquiry.reply() == null ? "" : inquiry.reply());
