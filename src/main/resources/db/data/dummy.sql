@@ -50,6 +50,13 @@ FROM SYSTEM_RANGE(1, 5000) AS t(x);
 --   7~206 = realuser1~200
 --   207~5206 = loadgen1~5000
 
+-- 후기 테스트 전용 계정
+-- 비밀번호: ssar1234
+INSERT INTO user_tb (username, password, email, phone, profile_image, oauth_provider, role, point, created_at, is_deleted)
+VALUES
+    ('sarr', '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'sarr@naver.com', '010-7777-7777', NULL, 'LOCAL', 'USER', 0, NOW(), false);
+--   5207=sarr (후기 테스트)
+
 
 -- ================
 --  venue_tb
@@ -184,6 +191,18 @@ VALUES
     (10, '2026-07-30', '19:00:00', '1회차', NOW(), false),  -- session_id 15
     (11, '2026-12-31', '20:00:00', '1회차', NOW(), false),  -- session_id 16 (k6A)
     (12, '2026-12-31', '21:00:00', '1회차', NOW(), false);  -- session_id 17 (k6B)
+
+-- 후기 작성 테스트용 종료 회차
+-- sarr/ssar가 어떤 콘서트 상세에서도 후기 작성 조건을 통과할 수 있도록 모든 콘서트에 과거 회차를 추가한다.
+INSERT INTO concert_session_tb (concert_id, session_date, session_time, round, created_at, is_deleted)
+SELECT
+    c.id,
+    DATEADD('DAY', -7, CURRENT_DATE),
+    TIME '10:00:00',
+    '후기 테스트',
+    NOW(),
+    false
+FROM concert_tb c;
 
 
 -- ================
@@ -322,6 +341,26 @@ SELECT
     CASE WHEN MOD(x, 10) NOT IN (0, 1, 2) THEN DATEADD('MINUTE', 5 - MOD(x * 13, 4320) * 60, NOW()) ELSE NULL END,
     CASE WHEN MOD(x, 10) IN (1, 2) THEN DATEADD('HOUR', 1 - MOD(x * 13, 4320), NOW()) ELSE NULL END
 FROM SYSTEM_RANGE(1, 500) AS t(x);
+
+-- sarr/ssar 후기 작성 테스트용 결제 완료 예매
+-- 각 콘서트별 3건씩 만들어 반복 테스트가 가능하도록 한다.
+INSERT INTO booking_tb (user_id, concert_session_id, booking_number, status, total_amount, created_at, expires_at, paid_at, canceled_at)
+SELECT
+    u.id,
+    cs.id,
+    'BK-REVIEW-' || UPPER(u.username) || '-' || LPAD(CAST(c.id AS VARCHAR), 2, '0') || '-' || CAST(n.n AS VARCHAR),
+    'PAID',
+    90000,
+    DATEADD('DAY', -6, NOW()),
+    NULL,
+    DATEADD('DAY', -6, NOW()),
+    NULL
+FROM user_tb u
+JOIN concert_tb c ON 1 = 1
+JOIN concert_session_tb cs ON cs.concert_id = c.id
+    AND cs.round = '후기 테스트'
+JOIN SYSTEM_RANGE(1, 3) AS n(n) ON 1 = 1
+WHERE u.username IN ('sarr', 'ssar');
 
 
 -- ================

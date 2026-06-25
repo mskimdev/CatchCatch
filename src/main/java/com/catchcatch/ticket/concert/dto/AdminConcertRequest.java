@@ -73,7 +73,6 @@ public class AdminConcertRequest {
             String ageLimit,
             String contact,
             String runtime,
-            String detailBannerUrl,
             MultipartFile posterImage,
 
             List<SessionCreateRequest> sessions
@@ -212,16 +211,14 @@ public class AdminConcertRequest {
 
             String description,
 
-            @NotBlank(message = "상세 설명1을 입력해주세요.")
             String detailDescription1,
 
-            @NotBlank(message = "상세 설명2를 입력해주세요.")
             String detailDescription2,
 
             String posterUrl,
 
             String concertStatus,
-            String posterImageBase64        // 기존 파일 경로 유지/변경용
+            String posterImageBase64     // 기존 파일 경로 유지/변경용
     ) {
     }
 
@@ -236,8 +233,11 @@ public class AdminConcertRequest {
             String concertStatus,
             LocalDateTime ticketOpenDate,
             String genre,
+            String category,
             String ageLimit,        // 예: 만 15세 이상
             String runtime,
+            String organizer,
+            String contact,
             String detailTitle,
             String detailDescription1,
             String detailDescription2,
@@ -280,8 +280,11 @@ public class AdminConcertRequest {
                     .concertStatus(concert.getConcertStatus() != null ? concert.getConcertStatus().name() : "COMING_SOON")
                     .ticketOpenDate(concert.getTicketOpenDate())
                     .genre(concert.getGenre())
+                    .category(concert.getCategory())
                     .ageLimit(concert.getAgeLimit())
                     .runtime(concert.getRuntime())
+                    .organizer(concert.getOrganizer())
+                    .contact(concert.getContact())
                     .posterUrl(concert.getPosterUrl())
                     .detailTitle(concert.getDetailTitle())
                     .detailDescription1(concert.getDetailDescription1())

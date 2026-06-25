@@ -22,4 +22,39 @@ public class ReviewResponse {
             String createdAt,
             Boolean mine
     ) {}
+
+    public record AdminPageDTO(
+            List<ConcertOptionDTO> concerts,
+            List<AdminReviewDTO> reviews,
+            Integer selectedConcertId,
+            String selectedConcertTitle,
+            boolean hasSelectedConcert,
+            int reviewCount,
+            String averageRating
+    ) {}
+
+    public record ConcertOptionDTO(
+            Integer id,
+            String title,
+            boolean selected
+    ) {}
+
+    public record AdminReviewDTO(
+            Long reviewId,
+            Integer concertId,
+            String concertTitle,
+            Integer bookingId,
+            String bookingNumber,
+            Integer userId,
+            String username,
+            String userEmail,
+            Double rating,
+            String content,
+            String createdAt
+    ) {}
+
+    public record AdminBookingOptionDTO(
+            Integer bookingId,
+            String label
+    ) {}
 }
