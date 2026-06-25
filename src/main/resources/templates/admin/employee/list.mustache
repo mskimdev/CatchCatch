@@ -117,7 +117,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form action="/admin/employees/create" method="post">
+            <form id="createForm" action="/admin/employees/create" method="post">
                 <div class="modal-body">
                     <div class="form-group">
                         <label class="font-weight-bold">사번</label>
@@ -226,30 +226,5 @@
         </div>
     </div>
 </div>
-
-<script>
-    // 1. 정보 수정 모달 열기 (데이터 세팅 후 Bootstrap 모달 띄우기)
-    function openUpdateModal(empNo, name, department, role) {
-        const form = document.getElementById('updateForm');
-        form.action = `/admin/employees/${empNo}/update`;
-
-        document.getElementById('updateName').value = name;
-        document.getElementById('updateDepartment').value = department;
-        document.getElementById('updateRole').value = role;
-
-        // jQuery를 사용한 Bootstrap Modal 호출
-        $('#updateModal').modal('show');
-    }
-
-    // 2. 상태 변경 모달 열기
-    function openStatusModal(empNo, name, currentStatus) {
-        const form = document.getElementById('statusForm');
-        form.action = `/admin/employees/${empNo}/status`;
-
-        document.getElementById('statusTargetName').innerText = name;
-        document.getElementById('updateStatus').value = currentStatus;
-
-        $('#statusModal').modal('show');
-    }
-</script>
+<script src="/js/employee/employee.js"></script>
 </body>

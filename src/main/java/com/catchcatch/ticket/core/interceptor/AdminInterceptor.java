@@ -24,23 +24,9 @@ public class AdminInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        if (!sessionUser.hasAdminAccess()) {
+        if (!sessionUser.isAdminGroup()) {
             sendHtml(response, "static/html/error/forbidden.html");
             return false;
-        }
-
-        // 3. 기능 권한 확인: 사원 관리나 유저 수정(ADMIN 전용 기능) 방어
-        String requestURI = request.getRequestURI();
-        String method = request.getMethod();
-
-        // 예: 사원 관리 기능은 오직 ADMIN만 가능
-        if ((requestURI.contains("/admin/employees"))
-                && ("POST".equals(method) || "PUT".equals(method) || "DELETE".equals(method))) {
-
-            if (sessionUser.getRole() != Role.ADMIN) {
-                sendHtml(response, "static/html/error/forbidden.html");
-                return false;
-            }
         }
 
         return true;
