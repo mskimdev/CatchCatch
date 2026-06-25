@@ -63,6 +63,11 @@ public class Concert {
     @Column(nullable = false)
     private boolean isDeleted = false;
 
+    @Builder.Default
+    @Column(name = "review_enabled", nullable = false)
+    @ColumnDefault("true")
+    private boolean reviewEnabled = true;
+
     // ==========================================
     // 화면(detail.mustache) 구성을 위해 추가된 상세 필드들
     // ==========================================

@@ -3,6 +3,8 @@ package com.catchcatch.ticket.review;
 import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.booking.BookingRepository;
 import com.catchcatch.ticket.booking.Status;
+import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.session.ConcertSession;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +25,17 @@ public class ReviewService {
 
     private final BookingRepository bookingRepository;
     private final ReviewRepository reviewRepository;
+    private final ConcertRepository concertRepository;
 
     @Transactional
     public void saveReview(Integer userId, Integer concertId, ReviewRequest.SaveDTO dto) {
+        Concert concert = concertRepository.findById(concertId)
+                .orElseThrow(() -> new BadRequestException("존재하지 않는 콘서트입니다."));
+
+        if (!concert.isReviewEnabled()) {
+            throw new BadRequestException("현재 이 콘서트는 후기 작성이 제한되어 있습니다.");
+        }
+
         List<Booking> endedBookings = bookingRepository.findReviewableBookings(
                         userId,
                         concertId,
@@ -74,6 +84,9 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public ReviewResponse.ReviewListDTO getConcertReviews(Integer concertId, Integer loginUserId, int page) {
+        Concert concert = concertRepository.findById(concertId)
+                .orElseThrow(() -> new BadRequestException("존재하지 않는 콘서트입니다."));
+
         PageRequest pageRequest = PageRequest.of(page, 5);
         Page<Review> reviewPage = reviewRepository.findAllByConcertId(concertId, pageRequest);
 
@@ -91,7 +104,12 @@ public class ReviewService {
                 ))
                 .toList();
 
-        return new ReviewResponse.ReviewListDTO(avgRating, reviewPage.getTotalElements(), reviewDTOs);
+        return new ReviewResponse.ReviewListDTO(
+                avgRating,
+                reviewPage.getTotalElements(),
+                concert.isReviewEnabled(),
+                reviewDTOs
+        );
     }
 
     private boolean isConcertEnded(Booking booking) {
