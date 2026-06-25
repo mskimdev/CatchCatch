@@ -74,6 +74,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
      */
     List<Booking> findByStatusAndExpiresAtBefore(Status status, Timestamp now);
 
+    Optional<Booking> findByTicketCode(String ticketCode);
     /**
      * 대시보드 - 특정 기간에 결제 완료된 예매 수
      */
@@ -356,4 +357,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
         where b.id = :bookingId
         """)
     Optional<Booking> findDetailById(@Param("bookingId") Integer bookingId);
+
+
+
 }

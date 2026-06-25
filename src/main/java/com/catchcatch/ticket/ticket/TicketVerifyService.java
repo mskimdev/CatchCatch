@@ -84,4 +84,13 @@ public class TicketVerifyService {
                 booking.getUser().getUsername()
         );
     }
+
+    @Transactional(readOnly = true)
+    public String findTokenByTicketCode(String ticketCode) {
+        Booking booking = bookingRepository.findByTicketCode(ticketCode.trim().toUpperCase())
+                .orElseThrow(() -> new BadRequestException("존재하지 않는 입장 코드입니다."));
+
+        return booking.getTicketToken();
+    }
+
 }
