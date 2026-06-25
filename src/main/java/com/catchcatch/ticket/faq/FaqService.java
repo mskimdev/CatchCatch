@@ -52,7 +52,7 @@ public class FaqService {
         faq.update(
                 dto.category(),
                 dto.question(),
-                dto.answer()
+                dto.sanitizedAnswer()
         );
     }
 

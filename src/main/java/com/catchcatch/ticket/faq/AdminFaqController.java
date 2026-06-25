@@ -1,7 +1,6 @@
 package com.catchcatch.ticket.faq;
 
 import com.catchcatch.ticket.core.util.Resp;
-import com.catchcatch.ticket.inquiry.Inquiry;
 import com.catchcatch.ticket.inquiry.dto.InquiryResponse;
 import com.catchcatch.ticket.inquiry.service.InquiryService;
 import com.catchcatch.ticket.operationlog.AdminLog;
@@ -12,6 +11,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 
 @Controller
@@ -73,9 +74,12 @@ public class AdminFaqController {
     @GetMapping("/admin/boards/faq/{id}/edit")
     public String faqEditForm(@PathVariable Integer id, Model model) {
         Faq faq = faqService.findById(id);
+        String answerB64 = Base64.getEncoder().encodeToString(
+                faq.getAnswer().getBytes(StandardCharsets.UTF_8));
 
         model.addAttribute("pageTitle", "FAQ 수정");
         model.addAttribute("faq", faq);
+        model.addAttribute("answerB64", answerB64);
 
         model.addAttribute("isMember", faq.getCategory() == FaqCategory.MEMBER);
         model.addAttribute("isBooking", faq.getCategory() == FaqCategory.BOOKING);

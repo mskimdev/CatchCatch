@@ -1,20 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("faq.js 실행됨");
-
     const deleteSuccessMessage = sessionStorage.getItem("faqDeleteSuccess");
     if (deleteSuccessMessage) {
         sessionStorage.removeItem("faqDeleteSuccess");
         CcUI.toast(deleteSuccessMessage);
     }
 
-    // FAQ 목록 삭제 버튼
     const deleteButtons = document.querySelectorAll(".btn-delete");
-
-    // FAQ 수정 폼
     const editForm = document.getElementById("faq-edit-form");
-
-    console.log("FAQ 삭제 버튼 개수:", deleteButtons.length);
-    console.log("FAQ 수정 폼 존재 여부:", editForm !== null);
 
     // =========================
     // FAQ 삭제 처리
@@ -69,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
            const category = editForm.querySelector('[name="category"]').value;
            const question = editForm.querySelector('[name="question"]').value.trim();
-           const answer = editForm.querySelector('[name="answer"]').value.trim();
+           const answer = $('#faqAnswer').summernote('code').trim();
 
            if (!category) {
                CcUI.alert("카테고리를 선택해주세요.", "warning");
@@ -86,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function () {
                return;
            }
 
-           if (answer === "") {
+           if (answer === '<p><br></p>' || answer === '') {
                CcUI.alert("답변을 입력해주세요.", "warning");
                return;
            }

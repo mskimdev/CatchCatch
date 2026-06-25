@@ -135,12 +135,69 @@
     background: #5b2ee8;
 }
 
+/* 썸네일 이미지 */
+.cc-event-detail__thumb {
+    border-radius: 28px;
+    overflow: hidden;
+    min-height: 360px;
+}
+
+.cc-event-detail__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 참여 조건 info가 3개가 되면 1열 추가 */
+.cc-event-detail__info {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* 유의사항 섹션 */
+.cc-event-notice {
+    margin-top: 36px;
+    padding: 30px 34px;
+    background: #fbf9ff;
+    border: 1px solid #eee9ff;
+    border-radius: 24px;
+}
+
+.cc-event-notice__title {
+    margin: 0 0 18px;
+    font-size: 18px;
+    font-weight: 900;
+    color: #1f1733;
+}
+
+.cc-event-notice__body {
+    color: #4a4060;
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.cc-event-notice__body p { margin: 0 0 10px; }
+.cc-event-notice__body ul, .cc-event-notice__body ol { padding-left: 20px; }
+.cc-event-notice__body li { margin-bottom: 6px; }
+
+/* 이벤트 카드 이미지 비주얼 */
+.cc-event-visual--img {
+    overflow: hidden;
+    padding: 0;
+}
+
+.cc-event-visual--img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 @media (max-width: 800px) {
     .cc-event-detail {
         grid-template-columns: 1fr;
     }
 
-    .cc-event-detail__visual {
+    .cc-event-detail__visual,
+    .cc-event-detail__thumb {
         min-height: 220px;
     }
 
