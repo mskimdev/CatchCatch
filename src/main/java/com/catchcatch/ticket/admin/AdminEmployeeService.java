@@ -5,6 +5,8 @@ import com.catchcatch.ticket.core.exception.ForbiddenException;
 import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.core.exception.UnauthorizedException;
 import com.catchcatch.ticket.employee.*;
+import com.catchcatch.ticket.user.User;
+import com.catchcatch.ticket.user.UserRepository;
 import com.catchcatch.ticket.user.enums.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 public class AdminEmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     // 전체 사원 조회
@@ -63,7 +66,9 @@ public class AdminEmployeeService {
         Employee employee = employeeRepository.findByEmployeeNumber(employeeNumber)
                 .orElseThrow(() -> new NotFoundException("사원번호와 일치하는 사원이 없습니다."));
 
-        employee.update(reqDTO.name(), reqDTO.department(), reqDTO.role());
+        employee.update(reqDTO.name(), reqDTO.department());
+
+        employee.getUser().changeRole(reqDTO.role());
 
         return new EmployeeResponse.DetailDTO(employee);
     }
@@ -91,26 +96,37 @@ public class AdminEmployeeService {
         // 권한 확인
         checkAuthorization(userRole);
 
-        // 1. 사번 중복 체크 (추가됨)
+        // 1. 사번 중복 체크
         if (employeeRepository.existsByEmployeeNumber(reqDTO.employeeNumber())) {
             throw new BadRequestException("이미 등록된 사번입니다.");
         }
 
         // 2. 아이디 중복 체크
-        if (employeeRepository.existsByAccountId(reqDTO.accountId())) {
+        if (userRepository.existsByUsername(reqDTO.username())) {
             throw new BadRequestException("이미 사용 중인 아이디입니다.");
         }
 
-        // 3. 엔티티 생성 및 저장
-        Employee employee = Employee.builder()
-                .employeeNumber(reqDTO.employeeNumber())
-                .accountId(reqDTO.accountId())
+        // 3. 이메일 중복 체크
+        if (userRepository.existsByEmail(reqDTO.email())) {
+            throw new BadRequestException("이미 등록된 이메일입니다.");
+        }
+
+        // User 생성
+        User newUser = User.builder()
+                .username(reqDTO.username())
+                .email(reqDTO.email())
                 .password(passwordEncoder.encode(reqDTO.password()))
-                .name(reqDTO.name())
-                .department(reqDTO.department())
                 .role(reqDTO.role())
                 .build();
+        userRepository.save(newUser);
 
+        // 3. Employee 생성
+        Employee employee = Employee.builder()
+                .user(newUser)
+                .employeeNumber(reqDTO.employeeNumber())
+                .name(reqDTO.name())
+                .department(reqDTO.department())
+                .build();
         employeeRepository.save(employee);
     }
 

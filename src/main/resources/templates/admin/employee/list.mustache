@@ -123,23 +123,33 @@
                         <label class="font-weight-bold">사번</label>
                         <input type="text" class="form-control" name="employeeNumber" required>
                     </div>
+
                     <div class="form-group">
-                        <label class="font-weight-bold">아이디</label>
-                        <input type="text" class="form-control" name="accountId" required>
+                        <label class="font-weight-bold">계정 아이디</label>
+                        <input type="text" class="form-control" name="username" required>
                     </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">사내 이메일</label>
+                        <input type="email" class="form-control" name="email" placeholder="예: catch@ticket.com" required>
+                    </div>
+
                     <div class="form-group">
                         <label class="font-weight-bold">초기 비밀번호</label>
                         <input type="password" class="form-control" name="password" placeholder="예: Catch1234!" required>
                         <small class="form-text text-muted">※ 사원에게 전달할 임시 비밀번호를 입력하세요.</small>
                     </div>
+
                     <div class="form-group">
                         <label class="font-weight-bold">이름</label>
                         <input type="text" class="form-control" name="name" required>
                     </div>
+
                     <div class="form-group">
                         <label class="font-weight-bold">부서</label>
                         <input type="text" class="form-control" name="department" required>
                     </div>
+
                     <div class="form-group">
                         <label class="font-weight-bold">권한</label>
                         <select class="form-control" name="role">
@@ -149,6 +159,7 @@
                         </select>
                     </div>
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
                     <button type="submit" class="btn btn-success">등록하기</button>
