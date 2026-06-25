@@ -54,7 +54,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 )
                 .excludePathPatterns(
                         "/api/concert/*/reviews",
-                        "/api/concert/*/reviews/*"
                         "/api/concert/**",
                         "/api/queue/admin/**"
                 )
