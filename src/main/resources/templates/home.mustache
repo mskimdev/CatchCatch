@@ -56,15 +56,15 @@
                 <a class="cc-more" href="/concerts/open-soon">전체보기 ›</a>
             </div>
             <div class="cc-open-grid">
-                {{#comingSoonConcerts}}
-                    <a class="cc-card cc-open-card" href="{{imageUrl}}">
+                {{#openSchedules}}
+                    <a class="cc-card cc-open-card" href="#">
                         <div class="cc-open-card__meta"><span
                                 class="cc-badge cc-badge--fill">{{dayLabel}}</span> {{openTime}} <span
                                 class="cc-open-card__small">{{saleType}}</span></div>
                         <p class="cc-open-card__title">{{title}}</p>
                     </a>
-                {{/comingSoonConcerts}}
-                {{^comingSoonConcerts}}
+                {{/openSchedules}}
+                {{^openSchedules}}
                     <a class="cc-card cc-open-card" href="/concerts/11">
                         <div class="cc-open-card__meta"><span class="cc-badge cc-badge--fill">Today</span> 오늘 19:00
                             <span class="cc-open-card__small">일반 예매</span></div>
@@ -81,7 +81,7 @@
                         <div class="cc-open-card__meta">6.01 (일) 18:00 <span class="cc-open-card__small">일반 예매</span>
                         </div>
                         <p class="cc-open-card__title">DAY6 4TH WORLD TOUR &lt;FOREVER&gt;</p></a>
-                {{/comingSoonConcerts}}
+                {{/openSchedules}}
             </div>
         </section>
 

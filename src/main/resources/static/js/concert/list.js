@@ -11,6 +11,18 @@ function initFilterState() {
   document.querySelectorAll(`.cc-chip-status[href*="status=${currentStatus}"]`).forEach(el => el.classList.add('is-active'));
 }
 
+function initFilterLinks() {
+  document.querySelectorAll('.cc-filter-item, .cc-chip').forEach(link => {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      const linkParams = new URLSearchParams(new URL(this.href, window.location.origin).search);
+      const current = new URLSearchParams(window.location.search);
+      linkParams.forEach((value, key) => current.set(key, value));
+      window.location.href = '/concerts?' + current.toString();
+    });
+  });
+}
+
 async function initHeartStates() {
   const buttons = document.querySelectorAll('.cc-heart[data-concert-id]');
   if (!buttons.length) return;
@@ -65,6 +77,7 @@ function initHeartToggle() {
 
 document.addEventListener('DOMContentLoaded', function () {
   initFilterState();
+  initFilterLinks();
   initHeartStates();
   initHeartToggle();
 });

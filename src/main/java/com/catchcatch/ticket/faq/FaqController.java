@@ -21,6 +21,7 @@ public class FaqController {
 
         List<Faq> faqs = faqService.findFaqs(category, keyword);
 
+        model.addAttribute("navFaq", true);
         model.addAttribute("pageTitle", "FAQ");
         model.addAttribute("keyword", keyword == null ? "" : keyword);
         model.addAttribute("faqs", faqs);

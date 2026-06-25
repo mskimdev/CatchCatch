@@ -99,6 +99,10 @@ public class User {
 
 
 
+    public void updatePhone(String phone) {
+        this.phone = phone;
+    }
+
     // 포인트 적립
     public void addPoint(Integer amount) {
         if (amount == null || amount <= 0) {

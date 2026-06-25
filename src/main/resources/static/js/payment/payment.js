@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const payMethodLabels = document.querySelectorAll(".cc-pay-method");
 
     initPaymentCountdown();
+    initSmsToggle();
 
     if (cancelBtn) {
         cancelBtn.addEventListener("click", async function () {
@@ -153,12 +154,15 @@ document.addEventListener("DOMContentLoaded", function () {
              * amount가 0이면 PortOne 결제창을 띄우면 안 됨.
              * 바로 서버에 결제 완료 검증 요청.
              */
+            const smsPayload = getSmsPayload();
+
             if (prepareData.amount === 0) {
                 const completeRes = await fetch("/api/payments/complete", {
                     method: "POST",
                     headers: headers,
                     body: JSON.stringify({
-                        paymentId: prepareData.paymentId
+                        paymentId: prepareData.paymentId,
+                        ...smsPayload
                     })
                 });
 
@@ -224,7 +228,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 method: "POST",
                 headers: headers,
                 body: JSON.stringify({
-                    paymentId: prepareData.paymentId
+                    paymentId: prepareData.paymentId,
+                    ...smsPayload
                 })
             });
 
@@ -389,6 +394,31 @@ function initPointUse() {
     }
 
     updatePointSummary();
+}
+
+function initSmsToggle() {
+    const notifySmsEl = document.querySelector("#notifySms");
+    const smsPhoneWrap = document.querySelector("#smsPhoneWrap");
+
+    if (!notifySmsEl || !smsPhoneWrap) return;
+
+    smsPhoneWrap.classList.add("is-hidden");
+
+    notifySmsEl.addEventListener("change", function () {
+        smsPhoneWrap.classList.toggle("is-hidden", !notifySmsEl.checked);
+    });
+}
+
+function getSmsPayload() {
+    const notifySmsEl = document.querySelector("#notifySms");
+    const smsPhoneEl = document.querySelector("#smsPhone");
+    const updateProfileEl = document.querySelector("#updateProfile");
+
+    const notifySms = notifySmsEl ? notifySmsEl.checked : false;
+    const smsPhone = smsPhoneEl ? smsPhoneEl.value.trim() : null;
+    const updateProfile = updateProfileEl ? updateProfileEl.checked : false;
+
+    return { notifySms, smsPhone, updateProfile };
 }
 
 function getUsedPoint() {

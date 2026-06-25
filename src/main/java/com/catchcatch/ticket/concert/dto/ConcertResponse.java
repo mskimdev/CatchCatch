@@ -7,9 +7,11 @@ import com.catchcatch.ticket.session.ConcertSession;
 import lombok.Builder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class ConcertResponse {
@@ -82,6 +84,9 @@ public class ConcertResponse {
             String detailDescription1,
             String detailDescription2,
             Integer reviewCount,
+            boolean comingSoon,
+            String ticketOpenIso,
+            String ticketOpenLabel,
             List<SessionDTO> sessions,
             List<DateDTO> dates,
             List<PriceDTO> prices
@@ -106,6 +111,12 @@ public class ConcertResponse {
                     .values().stream()
                     .collect(Collectors.toList());
 
+            boolean comingSoon = concert.getConcertStatus() == com.catchcatch.ticket.concert.core.ConcertStatus.COMING_SOON;
+            LocalDateTime openDt = concert.getTicketOpenDate();
+            String ticketOpenIso = openDt != null ? openDt.toString() : null;
+            String ticketOpenLabel = openDt != null
+                    ? openDt.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH:mm")) : "미정";
+
             return DetailDTO.builder()
                     .id(concert.getId())
                     .title(concert.getTitle())
@@ -123,6 +134,9 @@ public class ConcertResponse {
                     .detailDescription1(concert.getDetailDescription1())
                     .detailDescription2(concert.getDetailDescription2())
                     .reviewCount(Math.toIntExact(reviewCount == null ? 0L : reviewCount))
+                    .comingSoon(comingSoon)
+                    .ticketOpenIso(ticketOpenIso)
+                    .ticketOpenLabel(ticketOpenLabel)
                     .sessions(sessionDTOs)
                     .dates(concert.getSessions().stream()
                             .map(ConcertSession::getSessionDate)
@@ -202,6 +216,51 @@ public class ConcertResponse {
             List<ConcertResponse.ListDTO> concerts
     ) {
     } // end of ConcertListResponseDTO
+
+
+    // ==========================================
+    // 4. 홈 오픈 예정 섹션용 DTO
+    // ==========================================
+    public record HomeOpenScheduleDTO(
+            Integer id,
+            String dayLabel,
+            String openTime,
+            String saleType,
+            String title
+    ) {
+        public static HomeOpenScheduleDTO from(Concert concert) {
+            LocalDateTime openDt = concert.getTicketOpenDate();
+            String dayLabel, openTime;
+
+            if (openDt == null) {
+                dayLabel = "미정";
+                openTime = "";
+            } else {
+                LocalDate today = LocalDate.now();
+                LocalDate openDate = openDt.toLocalDate();
+                String timeStr = openDt.format(DateTimeFormatter.ofPattern("HH:mm"));
+
+                if (openDate.equals(today)) {
+                    dayLabel = "Today";
+                    openTime = "오늘 " + timeStr;
+                } else if (openDate.equals(today.plusDays(1))) {
+                    dayLabel = "Tomorrow";
+                    openTime = "내일 " + timeStr;
+                } else {
+                    dayLabel = openDate.format(DateTimeFormatter.ofPattern("M.dd (E)", Locale.KOREAN));
+                    openTime = timeStr;
+                }
+            }
+
+            return new HomeOpenScheduleDTO(
+                    concert.getId(),
+                    dayLabel,
+                    openTime,
+                    "일반 예매",
+                    concert.getTitle()
+            );
+        }
+    } // end of HomeOpenScheduleDTO
 
 
     @Builder

@@ -120,7 +120,24 @@
                                 </div>
                             </section>
                         </div>
-                        <button class="cc-btn cc-btn--primary cc-btn--full cc-booking-submit" type="submit">예매하기</button>
+                        {{#comingSoon}}
+                        <div class="cc-open-countdown" data-open-iso="{{ticketOpenIso}}">
+                            <p class="cc-open-countdown__label">예매 오픈까지</p>
+                            <div class="cc-open-countdown__blocks">
+                                <div class="cc-open-countdown__unit"><span id="cdDays">--</span><small>일</small></div>
+                                <div class="cc-open-countdown__sep">:</div>
+                                <div class="cc-open-countdown__unit"><span id="cdHours">--</span><small>시간</small></div>
+                                <div class="cc-open-countdown__sep">:</div>
+                                <div class="cc-open-countdown__unit"><span id="cdMinutes">--</span><small>분</small></div>
+                                <div class="cc-open-countdown__sep">:</div>
+                                <div class="cc-open-countdown__unit"><span id="cdSeconds">--</span><small>초</small></div>
+                            </div>
+                            <p class="cc-open-countdown__date">{{ticketOpenLabel}} 오픈</p>
+                        </div>
+                        {{/comingSoon}}
+                        <button class="cc-btn cc-btn--primary cc-btn--full cc-booking-submit" type="submit" {{#comingSoon}}disabled{{/comingSoon}}>
+                            {{#comingSoon}}예매 오픈 예정{{/comingSoon}}{{^comingSoon}}예매하기{{/comingSoon}}
+                        </button>
                     </form>
                 </div>
             </aside>
@@ -179,7 +196,33 @@
         initSessionPicker();
         initBookingSectionToggle();
         initBookingStartSubmit();
+        initCountdown();
     });
+
+    function initCountdown() {
+        const container = document.querySelector('[data-open-iso]');
+        if (!container) return;
+
+        const openTime = new Date(container.dataset.openIso).getTime();
+        const elDays    = document.getElementById('cdDays');
+        const elHours   = document.getElementById('cdHours');
+        const elMinutes = document.getElementById('cdMinutes');
+        const elSeconds = document.getElementById('cdSeconds');
+
+        function pad(n) { return String(n).padStart(2, '0'); }
+
+        function tick() {
+            const diff = openTime - Date.now();
+            if (diff <= 0) { location.reload(); return; }
+            elDays.textContent    = Math.floor(diff / 86400000);
+            elHours.textContent   = pad(Math.floor((diff % 86400000) / 3600000));
+            elMinutes.textContent = pad(Math.floor((diff % 3600000) / 60000));
+            elSeconds.textContent = pad(Math.floor((diff % 60000) / 1000));
+        }
+
+        tick();
+        setInterval(tick, 1000);
+    }
 
     function initTabsAndReviews() {
         const tabs = document.querySelectorAll('.cc-tab');

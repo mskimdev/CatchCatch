@@ -14,6 +14,7 @@ public class NoticeController {
 
     @GetMapping("/support/notices")
     public String noticeList(Model model){
+        model.addAttribute("navNotice", true);
         model.addAttribute("notices", noticeService.findAll());
 
         return "support/notice-list";
@@ -21,6 +22,7 @@ public class NoticeController {
 
     @GetMapping("/support/notices/{id}")
     public String noticeDetail(@PathVariable Integer id, Model model){
+        model.addAttribute("navNotice", true);
         model.addAttribute("notice", noticeService.findById(id));
 
         return "support/notice-detail";

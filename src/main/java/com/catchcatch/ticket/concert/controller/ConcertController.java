@@ -27,12 +27,13 @@ public class ConcertController {
         List<BannerResponse.HomeBannerDTO> heroBanners = concertService.getHeroBanners();
         List<ConcertResponse.ListDTO> recommendConcerts = concertService.getHomepageConcerts();
         List<ConcertResponse.ListDTO> popularConcerts = concertService.getPopularConcerts();
-        List<ConcertResponse.ListDTO> comingSoonConcerts = concertService.getComingSoonConcerts();
+        List<ConcertResponse.HomeOpenScheduleDTO> openSchedules = concertService.getHomeOpenSchedules();
 
         model.addAttribute("heroBanners", heroBanners);
         model.addAttribute("recommendConcerts", recommendConcerts);
         model.addAttribute("popularConcerts", popularConcerts);
-        model.addAttribute("comingSoonConcerts", comingSoonConcerts);
+        model.addAttribute("openSchedules", openSchedules);
+        model.addAttribute("openCount", openSchedules.size());
 
         return "home";
     }

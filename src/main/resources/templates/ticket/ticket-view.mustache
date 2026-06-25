@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>입장권 | CatchCatch</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/catchcatch-purple.css">
+    <style>
+        body { background: #f4f4f8; display: flex; justify-content: center; padding: 40px 16px; }
+        .cc-ticket-view { width: 100%; max-width: 380px; }
+        .cc-ticket-view__header { text-align: center; margin-bottom: 24px; }
+        .cc-ticket-view__header h1 { font-size: 22px; color: var(--cc-primary-dark); margin: 0 0 4px; }
+        .cc-ticket-view__header p { color: var(--cc-subtext); font-size: 14px; margin: 0; }
+        .cc-ticket-card { background: #fff; border-radius: 18px; box-shadow: var(--cc-shadow); overflow: hidden; }
+        .cc-ticket-card__info { padding: 24px; }
+        .cc-ticket-card__number { font-size: 12px; color: var(--cc-muted); margin: 0 0 6px; }
+        .cc-ticket-card__title { font-size: 18px; font-weight: 950; margin: 0 0 16px; }
+        .cc-ticket-card__row { display: flex; justify-content: space-between; font-size: 14px; padding: 8px 0; border-top: 1px solid var(--cc-line); }
+        .cc-ticket-card__row span:first-child { color: var(--cc-subtext); }
+        .cc-ticket-card__row span:last-child { font-weight: 800; text-align: right; }
+        .cc-ticket-card__qr { background: #f8f8fc; border-top: 1px dashed var(--cc-line); padding: 28px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .cc-ticket-card__qr p { font-size: 12px; color: var(--cc-muted); margin: 0; text-align: center; }
+        .cc-ticket-error { text-align: center; padding: 60px 20px; color: var(--cc-subtext); }
+    </style>
+</head>
+<body>
+<div class="cc-ticket-view">
+    {{#error}}
+    <div class="cc-ticket-error">
+        <p>{{error}}</p>
+    </div>
+    {{/error}}
+
+    {{^error}}
+    <div class="cc-ticket-view__header">
+        <h1>CatchCatch</h1>
+        <p>입장권</p>
+    </div>
+
+    <div class="cc-ticket-card">
+        <div class="cc-ticket-card__info">
+            <p class="cc-ticket-card__number">예매번호 {{bookingNumber}}</p>
+            <h2 class="cc-ticket-card__title">{{concertTitle}}</h2>
+            <div class="cc-ticket-card__row">
+                <span>일시</span><span>{{sessionText}}</span>
+            </div>
+            <div class="cc-ticket-card__row">
+                <span>장소</span><span>{{venueName}}</span>
+            </div>
+            <div class="cc-ticket-card__row">
+                <span>좌석</span><span>{{seatText}}</span>
+            </div>
+        </div>
+
+        <div class="cc-ticket-card__qr">
+            <div id="ticket-qr" data-token="{{ticketToken}}"></div>
+            <p>공연 당일 입장 시 직원에게 QR코드를 보여주세요.</p>
+        </div>
+    </div>
+    {{/error}}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="/js/booking/ticket-qr.js"></script>
+</body>
+</html>
