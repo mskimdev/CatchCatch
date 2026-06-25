@@ -4,6 +4,7 @@ import com.catchcatch.ticket.core.util.Resp;
 import com.catchcatch.ticket.operationlog.AdminLog;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,16 +28,9 @@ public class AdminReviewController {
         return "admin/review/list";
     }
 
-    @GetMapping("/api/admin/reviews/candidates")
-    public ResponseEntity<?> reviewCandidateBookings(@RequestParam Integer concertId) {
-        return Resp.ok(adminReviewService.getReviewCandidateBookings(concertId));
-    }
-
-    @AdminLog("후기 등록 (bookingId=#{#req.bookingId})")
     @PostMapping("/api/admin/reviews")
-    public ResponseEntity<?> createReview(@Valid @RequestBody ReviewRequest.AdminSaveDTO req) {
-        adminReviewService.createReview(req);
-        return Resp.ok("후기가 등록되었습니다.");
+    public ResponseEntity<?> createReviewDisabled() {
+        return Resp.fail(HttpStatus.METHOD_NOT_ALLOWED, "관리자 후기 등록 기능은 비활성화되어 있습니다.");
     }
 
     @AdminLog("후기 수정 (id=#{#reviewId})")
@@ -47,10 +41,20 @@ public class AdminReviewController {
         return Resp.ok("후기가 수정되었습니다.");
     }
 
-    @AdminLog("후기 삭제 (id=#{#reviewId})")
     @DeleteMapping("/api/admin/reviews/{reviewId}")
-    public ResponseEntity<?> deleteReview(@PathVariable Long reviewId) {
-        adminReviewService.deleteReview(reviewId);
-        return Resp.ok("후기가 삭제되었습니다.");
+    public ResponseEntity<?> deleteReviewDisabled(@PathVariable Long reviewId) {
+        return Resp.fail(HttpStatus.METHOD_NOT_ALLOWED, "관리자 후기 삭제 기능은 비활성화되어 있습니다.");
+    }
+
+    @AdminLog("콘서트 후기 작성 상태 변경 (concertId=#{#concertId})")
+    @PutMapping("/api/admin/reviews/concerts/{concertId}/status")
+    public ResponseEntity<?> updateReviewWriteStatus(
+            @PathVariable Integer concertId,
+            @Valid @RequestBody ReviewRequest.AdminReviewStatusDTO req
+    ) {
+        adminReviewService.updateReviewEnabled(concertId, req);
+        return Resp.ok(Boolean.TRUE.equals(req.reviewEnabled())
+                ? "후기 작성이 허용되었습니다."
+                : "후기 작성이 차단되었습니다.");
     }
 }

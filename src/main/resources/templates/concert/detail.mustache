@@ -189,6 +189,7 @@
     let lastReviewFocusTrigger = null;
     let editingReviewId = null;
     const reviewContentCache = new Map();
+    let reviewWriteEnabled = {{#concert.reviewEnabled}}true{{/concert.reviewEnabled}}{{^concert.reviewEnabled}}false{{/concert.reviewEnabled}};
 
     document.addEventListener("DOMContentLoaded", function () {
         initTabsAndReviews();
@@ -274,6 +275,11 @@
         document.addEventListener('click', function(e) {
             const writeButton = e.target?.closest?.('#btn-write-review');
             if (writeButton) {
+                if (!reviewWriteEnabled) {
+                    CcUI.alert('현재 이 콘서트는 후기 작성이 제한되어 있습니다.', 'warning');
+                    return;
+                }
+
                 lastReviewFocusTrigger = writeButton;
                 resetReviewModalMode();
                 document.getElementById('reviewForm')?.reset();
@@ -491,12 +497,21 @@
         }).join('');
     }
 
+    function renderReviewWriteControl(label) {
+        if (reviewWriteEnabled) {
+            return `<button type="button" class="cc-btn cc-btn--outline cc-review-write-btn" id="btn-write-review">${label}</button>`;
+        }
+
+        return `<span class="cc-badge cc-badge--gray">후기 작성 제한</span>`;
+    }
+
     function renderReviews(data) {
         const reviewContainer = document.getElementById('review-container');
         if (!reviewContainer) return;
 
         reviewContainer.dataset.loaded = 'true';
         reviewContentCache.clear();
+        reviewWriteEnabled = data.reviewEnabled !== false;
 
         const reviewTab = document.querySelector('.cc-tab[href="#review"]');
         if (reviewTab) reviewTab.textContent = `후기 ${data.totalReviewCount || 0}`;
@@ -504,12 +519,12 @@
         if (!data.reviews || data.reviews.length === 0) {
             reviewContainer.innerHTML = `
                 <div class="cc-review-toolbar">
-                    <button type="button" class="cc-btn cc-btn--outline cc-review-write-btn" id="btn-write-review">첫 후기 작성</button>
+                    ${renderReviewWriteControl('첫 후기 작성')}
                 </div>
                 <div class="cc-card cc-review-empty">
                     <div class="cc-review-empty__icon" aria-hidden="true">📭</div>
                     <h5>아직 등록된 후기가 없습니다.</h5>
-                    <p>공연을 관람한 뒤 첫 번째 후기를 남겨주세요!</p>
+                    <p>${reviewWriteEnabled ? '공연을 관람한 뒤 첫 번째 후기를 남겨주세요!' : '현재 이 콘서트는 후기 작성이 제한되어 있습니다.'}</p>
                 </div>`;
             return;
         }
@@ -525,7 +540,7 @@
                             <span>${data.totalReviewCount}개의 후기</span>
                         </div>
                     </div>
-                    <button type="button" class="cc-btn cc-btn--outline cc-review-write-btn" id="btn-write-review">후기 작성</button>
+                    ${renderReviewWriteControl('후기 작성')}
                 </div>
                 <div class="cc-review-list">
         `;

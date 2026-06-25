@@ -8,6 +8,7 @@ public class ReviewResponse {
     public record ReviewListDTO(
             Double averageRating,
             Long totalReviewCount,
+            boolean reviewEnabled,
             List<ReviewDetailDTO> reviews
     ) {
         // 엔티티 리스트를 DTO로 변환하는 정적 팩토리 메서드 구현 예정
@@ -29,6 +30,7 @@ public class ReviewResponse {
             Integer selectedConcertId,
             String selectedConcertTitle,
             boolean hasSelectedConcert,
+            boolean reviewEnabled,
             int reviewCount,
             String averageRating
     ) {}
@@ -53,8 +55,4 @@ public class ReviewResponse {
             String createdAt
     ) {}
 
-    public record AdminBookingOptionDTO(
-            Integer bookingId,
-            String label
-    ) {}
 }

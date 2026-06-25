@@ -44,27 +44,6 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             @Param("today") LocalDate today
             );
 
-    @Query("""
-            select distinct b
-            from Booking b
-            join fetch b.user u
-            join fetch b.concertSession cs
-            join fetch cs.concert c
-            where c.id = :concertId
-              and b.status = :status
-              and not exists (
-                  select r.id
-                  from Review r
-                  where r.booking.id = b.id
-              )
-            order by b.createdAt desc
-            """)
-    List<Booking> findAdminReviewCandidateBookings(
-            @Param("concertId") Integer concertId,
-            @Param("status") Status status
-    );
-
-
     /**
      * 만료 대상 예매 조회
      *

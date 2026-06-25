@@ -13,15 +13,25 @@
         background: #fffaf0;
     }
 
+    .review-stat-card.review-stat-card--status {
+        border-color: #1cc88a;
+        background: #f2fff9;
+    }
+
+    .review-stat-card.review-stat-card--blocked {
+        border-color: #e74a3b;
+        background: #fff5f4;
+    }
+
     .review-content-cell {
-        max-width: 420px;
+        max-width: 460px;
         white-space: pre-wrap;
         word-break: break-word;
     }
 
     .review-action-cell {
-        width: 170px;
-        min-width: 170px;
+        width: 110px;
+        min-width: 110px;
         white-space: nowrap;
     }
 </style>
@@ -37,13 +47,6 @@
             <div class="container-fluid">
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800">후기 관리</h1>
-
-                    <button type="button"
-                            class="btn btn-primary btn-sm shadow-sm"
-                            id="openCreateReviewModal"
-                            {{^page.hasSelectedConcert}}disabled{{/page.hasSelectedConcert}}>
-                        <i class="fas fa-plus fa-sm"></i> 후기 등록
-                    </button>
                 </div>
 
                 <div class="card shadow mb-4">
@@ -88,6 +91,31 @@
                             <i class="fas fa-star fa-2x text-gray-300"></i>
                         </div>
                     </div>
+
+                    <div class="col-xl-4 col-md-8 mb-3">
+                        <div class="review-stat-card {{#page.reviewEnabled}}review-stat-card--status{{/page.reviewEnabled}}{{^page.reviewEnabled}}review-stat-card--blocked{{/page.reviewEnabled}} d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="text-xs font-weight-bold text-uppercase mb-1 {{#page.reviewEnabled}}text-success{{/page.reviewEnabled}}{{^page.reviewEnabled}}text-danger{{/page.reviewEnabled}}">
+                                    후기 작성 상태
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                    {{#page.hasSelectedConcert}}
+                                        {{#page.reviewEnabled}}작성 허용{{/page.reviewEnabled}}{{^page.reviewEnabled}}작성 차단{{/page.reviewEnabled}}
+                                    {{/page.hasSelectedConcert}}
+                                    {{^page.hasSelectedConcert}}콘서트 선택 필요{{/page.hasSelectedConcert}}
+                                </div>
+                            </div>
+                            {{#page.hasSelectedConcert}}
+                                <button type="button"
+                                        class="btn {{#page.reviewEnabled}}btn-outline-danger{{/page.reviewEnabled}}{{^page.reviewEnabled}}btn-outline-success{{/page.reviewEnabled}} btn-sm"
+                                        id="toggleReviewWriteStatus"
+                                        data-concert-id="{{page.selectedConcertId}}"
+                                        data-review-enabled="{{page.reviewEnabled}}">
+                                    {{#page.reviewEnabled}}작성 차단{{/page.reviewEnabled}}{{^page.reviewEnabled}}작성 허용{{/page.reviewEnabled}}
+                                </button>
+                            {{/page.hasSelectedConcert}}
+                        </div>
+                    </div>
                 </div>
 
                 <div class="card shadow mb-4">
@@ -125,12 +153,12 @@
                                         <td class="align-middle text-center">{{createdAt}}</td>
                                         <td class="align-middle text-center review-action-cell">
                                             <textarea id="review-content-{{reviewId}}" class="d-none">{{content}}</textarea>
-                                            <button type="button"
-                                                    class="btn btn-warning btn-sm js-review-edit"
-                                                    data-review-id="{{reviewId}}"
-                                                    data-rating="{{rating}}">
-                                                <i class="fas fa-edit"></i> 수정
-                                            </button>
+<!--                                            <button type="button"-->
+<!--                                                    class="btn btn-warning btn-sm js-review-edit"-->
+<!--                                                    data-review-id="{{reviewId}}"-->
+<!--                                                    data-rating="{{rating}}">-->
+<!--                                                <i class="fas fa-edit"></i> 수정-->
+<!--                                            </button>-->
                                             <button type="button"
                                                     class="btn btn-danger btn-sm js-review-delete"
                                                     data-review-id="{{reviewId}}">
@@ -149,37 +177,6 @@
                                 등록된 후기가 없습니다.
                             </div>
                         {{/reviews}}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal fade" id="createReviewModal" tabindex="-1" role="dialog" aria-labelledby="createReviewModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="createReviewModalLabel">후기 등록</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label for="createBookingId">예매 선택</label>
-                            <select class="form-control" id="createBookingId"></select>
-                        </div>
-                        <div class="form-group">
-                            <label for="createRating">평점</label>
-                            <input type="number" class="form-control" id="createRating" min="0.5" max="5" step="0.5" value="5">
-                        </div>
-                        <div class="form-group mb-0">
-                            <label for="createContent">후기 내용</label>
-                            <textarea class="form-control" id="createContent" rows="6" maxlength="1000"></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
-                        <button type="button" class="btn btn-primary" id="createReviewSubmit">등록</button>
                     </div>
                 </div>
             </div>
@@ -231,97 +228,52 @@
             });
         </script>
         <script>
-            const concertFilter = document.getElementById('concertFilter');
-            const createBookingId = document.getElementById('createBookingId');
-
-            function selectedConcertId() {
-                return concertFilter.value ? Number(concertFilter.value) : null;
-            }
-
             function alertApiError(result, fallbackMessage) {
                 const message = result && result.data && result.data.msg ? result.data.msg : fallbackMessage;
                 CcUI.alert(message, 'error');
             }
 
-            async function loadReviewCandidates() {
-                const concertId = selectedConcertId();
+            document.getElementById('toggleReviewWriteStatus')?.addEventListener('click', function () {
+                const button = this;
+                const concertId = button.dataset.concertId;
+                const currentEnabled = button.dataset.reviewEnabled === 'true';
+                const nextEnabled = !currentEnabled;
 
-                if (!concertId) {
-                    CcUI.alert('후기를 등록할 콘서트를 먼저 선택해주세요.', 'warning');
-                    return false;
-                }
+                CcUI.confirm({
+                    title: nextEnabled ? '후기 작성을 허용하시겠습니까?' : '후기 작성을 차단하시겠습니까?',
+                    text: nextEnabled
+                            ? '선택한 콘서트 상세페이지에서 사용자가 새 후기를 작성할 수 있습니다.'
+                            : '선택한 콘서트 상세페이지에서 새 후기 작성 버튼이 숨겨지고 등록 API도 차단됩니다.',
+                    confirmText: nextEnabled ? '허용' : '차단',
+                    cancelText: '취소',
+                    danger: !nextEnabled,
+                    onConfirm: async function () {
+                        const result = await apiPut('/api/admin/reviews/concerts/' + encodeURIComponent(concertId) + '/status', {
+                            reviewEnabled: nextEnabled
+                        });
 
-                const result = await apiGet('/api/admin/reviews/candidates?concertId=' + encodeURIComponent(concertId));
+                        if (!result.res || !result.res.ok) {
+                            alertApiError(result, '후기 작성 상태 변경에 실패했습니다.');
+                            return;
+                        }
 
-                if (!result.res || !result.res.ok) {
-                    alertApiError(result, '예매 후보를 불러오지 못했습니다.');
-                    return false;
-                }
-
-                const bookings = result.data && result.data.body ? result.data.body : [];
-                createBookingId.innerHTML = '';
-
-                if (bookings.length === 0) {
-                    const option = document.createElement('option');
-                    option.value = '';
-                    option.textContent = '등록 가능한 결제 완료 예매가 없습니다.';
-                    createBookingId.appendChild(option);
-                    return true;
-                }
-
-                bookings.forEach(function (booking) {
-                    const option = document.createElement('option');
-                    option.value = booking.bookingId;
-                    option.textContent = booking.label;
-                    createBookingId.appendChild(option);
-                });
-
-                return true;
-            }
-
-            document.getElementById('openCreateReviewModal')?.addEventListener('click', async function () {
-                const loaded = await loadReviewCandidates();
-                if (loaded) {
-                    document.getElementById('createRating').value = '5';
-                    document.getElementById('createContent').value = '';
-                    $('#createReviewModal').modal('show');
-                }
-            });
-
-            document.getElementById('createReviewSubmit').addEventListener('click', async function () {
-                const concertId = selectedConcertId();
-                const bookingId = createBookingId.value ? Number(createBookingId.value) : null;
-                const rating = Number(document.getElementById('createRating').value);
-                const content = document.getElementById('createContent').value.trim();
-
-                if (!concertId || !bookingId || !rating || !content) {
-                    CcUI.alert('예매, 평점, 후기 내용을 모두 입력해주세요.', 'warning');
-                    return;
-                }
-
-                const result = await apiPost('/api/admin/reviews', { concertId, bookingId, rating, content });
-
-                if (!result.res || !result.res.ok) {
-                    alertApiError(result, '후기 등록에 실패했습니다.');
-                    return;
-                }
-
-                CcUI.alert(result.data.body || '후기가 등록되었습니다.', 'success', function () {
-                    location.reload();
+                        CcUI.alert(result.data.body || '후기 작성 상태가 변경되었습니다.', 'success', function () {
+                            location.reload();
+                        });
+                    }
                 });
             });
 
-            document.addEventListener('click', function (event) {
-                const editButton = event.target.closest('.js-review-edit');
-                const deleteButton = event.target.closest('.js-review-delete');
+<!--            document.addEventListener('click', function (event) {-->
+<!--                const editButton = event.target.closest('.js-review-edit');-->
 
-                if (editButton) {
-                    const reviewId = editButton.dataset.reviewId;
-                    document.getElementById('editReviewId').value = reviewId;
-                    document.getElementById('editRating').value = editButton.dataset.rating;
-                    document.getElementById('editContent').value = document.getElementById('review-content-' + reviewId).value;
-                    $('#editReviewModal').modal('show');
-                }
+<!--                if (editButton) {-->
+<!--                    const reviewId = editButton.dataset.reviewId;-->
+<!--                    document.getElementById('editReviewId').value = reviewId;-->
+<!--                    document.getElementById('editRating').value = editButton.dataset.rating;-->
+<!--                    document.getElementById('editContent').value = document.getElementById('review-content-' + reviewId).value;-->
+<!--                    $('#editReviewModal').modal('show');-->
+<!--                }-->
 
                 if (deleteButton) {
                     const reviewId = deleteButton.dataset.reviewId;

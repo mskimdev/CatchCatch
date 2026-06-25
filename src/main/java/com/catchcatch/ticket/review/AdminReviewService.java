@@ -1,12 +1,9 @@
 package com.catchcatch.ticket.review;
 
 import com.catchcatch.ticket.booking.Booking;
-import com.catchcatch.ticket.booking.BookingRepository;
-import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.core.exception.BadRequestException;
-import com.catchcatch.ticket.session.ConcertSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -25,7 +22,6 @@ public class AdminReviewService {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private final ReviewRepository reviewRepository;
-    private final BookingRepository bookingRepository;
     private final ConcertRepository concertRepository;
 
     @Transactional(readOnly = true)
@@ -53,56 +49,22 @@ public class AdminReviewService {
                 .findFirst()
                 .orElse("전체 콘서트");
 
+        boolean reviewEnabled = concerts.stream()
+                .filter(concert -> Objects.equals(concert.getId(), effectiveConcertId))
+                .map(Concert::isReviewEnabled)
+                .findFirst()
+                .orElse(true);
+
         return new ReviewResponse.AdminPageDTO(
                 concertOptions,
                 reviews,
                 effectiveConcertId,
                 selectedConcertTitle,
                 selectedConcertExists,
+                reviewEnabled,
                 reviews.size(),
                 formatAverageRating(reviews)
         );
-    }
-
-    @Transactional(readOnly = true)
-    public List<ReviewResponse.AdminBookingOptionDTO> getReviewCandidateBookings(Integer concertId) {
-        if (concertId == null) {
-            throw new BadRequestException("콘서트를 선택해주세요.");
-        }
-
-        return bookingRepository.findAdminReviewCandidateBookings(concertId, Status.PAID).stream()
-                .map(this::toBookingOptionDTO)
-                .toList();
-    }
-
-    @Transactional
-    public void createReview(ReviewRequest.AdminSaveDTO dto) {
-        Booking booking = bookingRepository.findDetailById(dto.bookingId())
-                .orElseThrow(() -> new BadRequestException("후기를 등록할 예매를 찾을 수 없습니다."));
-
-        Concert concert = booking.getConcertSession().getConcert();
-
-        if (!Objects.equals(concert.getId(), dto.concertId())) {
-            throw new BadRequestException("선택한 콘서트와 예매 정보가 일치하지 않습니다.");
-        }
-
-        if (booking.getStatus() != Status.PAID) {
-            throw new BadRequestException("결제 완료된 예매에만 후기를 등록할 수 있습니다.");
-        }
-
-        if (reviewRepository.existsByBookingId(booking.getId())) {
-            throw new BadRequestException("이미 후기가 등록된 예매입니다.");
-        }
-
-        Review review = Review.builder()
-                .user(booking.getUser())
-                .concert(concert)
-                .booking(booking)
-                .rating(dto.rating())
-                .content(dto.content())
-                .build();
-
-        reviewRepository.save(review);
     }
 
     @Transactional
@@ -114,11 +76,11 @@ public class AdminReviewService {
     }
 
     @Transactional
-    public void deleteReview(Long reviewId) {
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new BadRequestException("삭제할 후기를 찾을 수 없습니다."));
+    public void updateReviewEnabled(Integer concertId, ReviewRequest.AdminReviewStatusDTO dto) {
+        Concert concert = concertRepository.findById(concertId)
+                .orElseThrow(() -> new BadRequestException("콘서트를 찾을 수 없습니다."));
 
-        reviewRepository.delete(review);
+        concert.setReviewEnabled(Boolean.TRUE.equals(dto.reviewEnabled()));
     }
 
     private ReviewResponse.AdminReviewDTO toAdminReviewDTO(Review review) {
@@ -139,16 +101,6 @@ public class AdminReviewService {
         );
     }
 
-    private ReviewResponse.AdminBookingOptionDTO toBookingOptionDTO(Booking booking) {
-        return new ReviewResponse.AdminBookingOptionDTO(
-                booking.getId(),
-                booking.getBookingNumber()
-                        + " / " + nullToBlank(booking.getUser().getUsername())
-                        + " (" + nullToBlank(booking.getUser().getEmail()) + ")"
-                        + " / " + formatSession(booking.getConcertSession())
-        );
-    }
-
     private String formatAverageRating(List<ReviewResponse.AdminReviewDTO> reviews) {
         if (reviews.isEmpty()) {
             return "0.0";
@@ -162,17 +114,6 @@ public class AdminReviewService {
                 .orElse(0.0);
 
         return String.format(Locale.US, "%.1f", average);
-    }
-
-    private String formatSession(ConcertSession session) {
-        if (session == null) {
-            return "";
-        }
-
-        String date = session.getSessionDate() == null ? "" : session.getSessionDate().toString();
-        String time = session.getSessionTime() == null ? "" : session.getSessionTime().toString();
-        String round = session.getRound() == null || session.getRound().isBlank() ? "" : " (" + session.getRound() + ")";
-        return date + " " + time + round;
     }
 
     private String formatTimestamp(Timestamp timestamp) {
