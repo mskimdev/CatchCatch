@@ -77,10 +77,8 @@ public class User {
     @ColumnDefault("false")
     private boolean isDeleted;
 
-    public boolean hasAdminAccess() {
-        return Role.ADMIN.equals(this.role) ||
-                Role.MANAGER.equals(this.role) ||
-                Role.CLERK.equals(this.role);
+    public boolean isAdminGroup() {
+        return role.isCategory("ADMIN");
     }
 
     @Builder

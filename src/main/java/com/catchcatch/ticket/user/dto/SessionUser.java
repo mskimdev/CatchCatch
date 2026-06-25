@@ -40,9 +40,15 @@ public class SessionUser {
         this.point = updatedPoint;
     }
 
-    public boolean hasAdminAccess() {
-        return Role.ADMIN.equals(this.role) ||
-                Role.MANAGER.equals(this.role) ||
-                Role.CLERK.equals(this.role);
+    public boolean hasAdminAccess(String category) {
+        return role.isCategory(category);
+    }
+
+    public boolean isAdminGroup() {
+        return role.isCategory("ADMIN");
+    }
+
+    public boolean isUserGroup() {
+        return role.isCategory("USER");
     }
 }
