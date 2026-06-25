@@ -10,12 +10,8 @@ import java.io.PrintWriter;
 
 @Slf4j
 public class RespFilter {
-    private static ObjectMapper om = new ObjectMapper();
+    private static final ObjectMapper om = new ObjectMapper();
 
-    /**
-     * 필터에서 발생한 에러를 JSON 으로 직접 응답해주는 공통 메서드
-     *
-     */
     public static void fail(HttpServletResponse response, int status, String msg) throws IOException {
         response.setStatus(status);
         response.setContentType("application/json;charset=utf-8");

@@ -28,11 +28,6 @@ public class DateUtil {
         return time.format(TIME_FORMATTER);
     }
 
-    /**
-     * "yyyy-MM-dd" 형식의 날짜 문자열을 Timestamp로 변환.
-     * 시작일은 00:00:00, 종료일은 23:59:59로 처리하려면 호출 쪽에서 직접 조정.
-     */
-    // input[type=date] 용 "yyyy-MM-dd" 형식
     public static String formatForInput(Timestamp timestamp) {
         if (timestamp == null) return "";
         return timestamp.toLocalDateTime().format(DATE_INPUT_FORMATTER);

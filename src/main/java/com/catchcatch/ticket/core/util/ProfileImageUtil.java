@@ -21,7 +21,7 @@ public class ProfileImageUtil {
     public static String save(MultipartFile file) {
         if (file == null || file.isEmpty()) return null;
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new BadRequestException("프로필 이미지는 5MB 이하로 업로드해주세요.");
+            throw new BadRequestException("프로필 이미지는 50MB 이하로 업로드해주세요.");
         }
 
         String extension = getExtension(file.getOriginalFilename());
@@ -60,7 +60,7 @@ public class ProfileImageUtil {
             throw new BadRequestException("이미지 인코딩이 올바르지 않습니다.");
         }
         if (imageBytes.length > MAX_FILE_SIZE) {
-            throw new BadRequestException("프로필 이미지는 5MB 이하로 업로드해주세요.");
+            throw new BadRequestException("프로필 이미지는 50MB 이하로 업로드해주세요.");
         }
         String filename = UUID.randomUUID() + "." + extension;
         try {

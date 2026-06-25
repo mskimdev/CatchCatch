@@ -5,15 +5,11 @@ import com.catchcatch.ticket.concert.service.AdminConcertService;
 import com.catchcatch.ticket.core.util.Resp;
 import com.catchcatch.ticket.session.ConcertSessionRequest;
 import com.catchcatch.ticket.operationlog.AdminLog;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Concert API",description = "콘서트 관리 API (REST)")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/concert")
@@ -24,10 +20,6 @@ public class ConcertApiController {
     /*
         1. 콘서트 수정 (PUT)
      */
-    @Operation(summary = "콘서트 정보 수정",description = "관리자가 콘서트 정보를 수정합니다.")
-    @ApiResponse(responseCode = "200", description = "수정성공")
-    @ApiResponse(responseCode = "400", description = "유효성 검사 실패")
-    @ApiResponse(responseCode = "401", description = "인증 실패 ( 세션 없음 )")
     @AdminLog("공연 정보 수정 (#{#reqDTO.title})")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateConcert(
@@ -47,9 +39,6 @@ public class ConcertApiController {
     /*
         2. 콘서트 삭제 (DELETE)
      */
-    @Operation(summary = "콘서트 정보 삭제",description = "관리자가 콘서를 삭제(비활성화)합니다.")
-    @ApiResponse(responseCode = "200", description = "삭제 성공")
-    @ApiResponse(responseCode = "401", description = "인증 실패 ( 세션 없음 )")
     @AdminLog("공연 삭제 (id=#{#id})")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteConcert(
