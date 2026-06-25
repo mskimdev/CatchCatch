@@ -86,3 +86,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+$('#createModal').on('hidden.bs.modal', function () {
+    const form = document.getElementById('createForm');
+    if (form) {
+        form.reset();
+    }
+});

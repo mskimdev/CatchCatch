@@ -131,5 +131,9 @@ public class User {
         this.point -= amount;
     }
 
+    public void changeRole(Role newRole) {
+        this.role = newRole;
+    }
+
 
 }
