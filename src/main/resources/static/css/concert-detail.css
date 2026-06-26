@@ -1,1063 +1,346 @@
 /* concert-detail.css — 콘서트 상세 페이지 전용 */
 
-.cc-open-countdown {
-  border: 1.5px solid #e2e6ef;
-  border-radius: 14px;
-  padding: 18px 16px 14px;
-  margin-bottom: 16px;
-  text-align: center;
+html, body, .cc-main, .cc-detail-main {
+    overflow: visible;
+    overflow-x: clip;
 }
 
-.cc-open-countdown__label {
-  margin: 0 0 12px;
-  font-size: 11px;
-  font-weight: 850;
-  color: #aaa;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.cc-open-countdown__blocks {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-
-.cc-open-countdown__unit {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 52px;
-  background: #f4f6ff;
-  border-radius: 10px;
-  padding: 10px 6px 7px;
-}
-
-.cc-open-countdown__unit span {
-  font-size: 22px;
-  font-weight: 950;
-  color: #4353ff;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.cc-open-countdown__unit small {
-  font-size: 10px;
-  font-weight: 750;
-  color: #9ca3af;
-  margin-top: 5px;
-}
-
-.cc-open-countdown__sep {
-  font-size: 16px;
-  font-weight: 950;
-  color: #cfd5e3;
-  padding-bottom: 16px;
-}
-
-.cc-open-countdown__date {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 750;
-  color: #bbb;
-}
-
-.cc-booking-submit:disabled {
-  background: #f4f6ff;
-  color: #4353ff;
-  border: 1.5px solid #c5cbf7;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.cc-detail-main {
-  overflow-x: hidden;
-}
-
+/* =========================================================
+   1. 전체 페이지 레이아웃 (PC: 좌 7 우 3 / 모바일: 1단)
+   ========================================================= */
 .cc-detail-page {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 410px;
-  gap: 48px;
-  align-items: start;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    position: relative;
 }
 
-.cc-detail-content {
-  min-width: 0;
+/* 좌측 묶음 (포스터, 정보, 탭, 본문, 리뷰) */
+.cc-left-wrapper {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
 }
 
+/* 우측 묶음 (PC용 Sticky 사이드바 예매창) */
+.cc-detail-sidebar {
+    flex: 0 0 360px;
+    width: 360px;
+    position: sticky;
+    top: 110px;
+    z-index: 10;
+    margin-top: 0;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+}
+
+.cc-detail-sidebar::-webkit-scrollbar { width: 6px; }
+.cc-detail-sidebar::-webkit-scrollbar-thumb { background-color: #ddd; border-radius: 10px; }
+
+
+/* =========================================================
+   2. 포스터 및 상단 정보 영역 (Hero)
+   ========================================================= */
 .cc-detail-hero {
-  display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
-  gap: 28px;
-  align-items: start;
+    display: flex;
+    align-items: stretch; /* 높이 맞춤 */
+    gap: 40px;
+    width: 100%;
 }
 
 .cc-poster-large {
-  overflow: hidden;
-  border-radius: 18px;
-  background: #0f1224;
-  box-shadow: var(--cc-shadow);
+    flex: 0 0 45%;
+    border-radius: 5%; /* 라운드 제거 */
+    background: #0f1224;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    overflow: hidden;
 }
 
 .cc-poster-large img {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 3 / 4.25;
-  object-fit: cover;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 여백 없이 꽉 채우기 */
+    display: block;
 }
 
 .cc-detail-info {
-  padding-top: 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0;
 }
 
-.cc-detail-category {
-  color: var(--cc-muted);
-  font-weight: 800;
-  margin-bottom: 8px;
-}
+.cc-detail-category { color: #ff3b30; font-weight: 800; margin-bottom: 8px; font-size: 15px; }
 
+/* 타이틀과 하트 아이콘(PC용) 한 줄 배치 */
 .cc-detail-title-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 18px;
-}
-
-.cc-detail-title {
-  flex: 1;
-  margin: 0;
-  font-size: 30px;
-  line-height: 1.24;
-  letter-spacing: 0;
-  overflow-wrap: anywhere;
-}
-
-.cc-detail-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.cc-detail-tags {
-  display: flex;
-  gap: 8px;
-  margin: 15px 0 26px;
-}
-
-.cc-price-list {
-  margin-top: 24px;
-}
-
-.cc-price-list h3 {
-  margin: 0 0 12px;
-}
-
-.cc-price-row {
-  display: grid;
-  grid-template-columns: 110px 1fr;
-  align-items: center;
-  margin: 10px 0;
-  font-weight: 850;
-}
-
-.cc-detail-banner {
-  position: relative;
-  overflow: hidden;
-  min-height: 290px;
-  border-radius: 20px;
-  margin-top: 28px;
-  background: #121323;
-  color: #fff;
-}
-
-.cc-detail-banner::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: linear-gradient(90deg, rgba(9,10,22,.78), rgba(9,10,22,.24)), var(--detail-img, linear-gradient(135deg,#121323,#2d1955));
-  background-size: cover;
-  background-position: center;
-}
-
-.cc-detail-banner__content {
-  position: relative;
-  z-index: 1;
-  padding: 58px;
-  max-width: 560px;
-}
-
-.cc-detail-banner h2 {
-  margin: 0 0 16px;
-  font-size: 30px;
-}
-
-.cc-detail-banner p {
-  margin: 8px 0;
-  color: rgba(255,255,255,.86);
-  font-weight: 650;
-}
-
-/* 오른쪽 예매 사이드바 */
-.cc-detail-sidebar {
-  position: sticky;
-  top: 96px;
-  align-self: start;
-  width: 410px;
-}
-
-.cc-quick-booking {
-  padding: 20px;
-  border-radius: 18px;
-  box-shadow: 0 18px 42px rgba(43, 21, 91, .08);
-}
-
-.cc-quick-booking h3 {
-  margin: 0 0 16px;
-  font-size: 18px;
-  font-weight: 950;
-}
-
-/* 관람일 + 회차 통합 패널 */
-.cc-booking-panel {
-  border: 1px solid #cfd5e3;
-  border-radius: 18px;
-  overflow: hidden;
-  background: #fff;
-}
-
-.cc-booking-section {
-  background: #fff;
-}
-
-.cc-booking-section + .cc-booking-section {
-  border-top: 1px solid #e2e6ef;
-}
-
-.cc-booking-section__head {
-  width: 100%;
-  min-height: 62px;
-  padding: 18px 24px;
-  border: 0;
-  background: #fff;
-  display: grid;
-  grid-template-columns: auto 1fr 26px;
-  align-items: center;
-  gap: 12px;
-  text-align: left;
-  cursor: pointer;
-}
-
-.cc-section-title {
-  font-size: 18px;
-  font-weight: 950;
-  color: #111;
-}
-
-.cc-selected-summary {
-  font-size: 17px;
-  font-weight: 950;
-  color: #111;
-  text-align: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.cc-toggle-icon {
-  width: 24px;
-  height: 24px;
-  position: relative;
-}
-
-.cc-toggle-icon::before,
-.cc-toggle-icon::after {
-  content: "";
-  position: absolute;
-  top: 11px;
-  width: 12px;
-  height: 2px;
-  background: #222;
-  border-radius: 99px;
-  transition: transform .18s ease;
-}
-
-.cc-toggle-icon::before {
-  left: 3px;
-  transform: rotate(-45deg);
-}
-
-.cc-toggle-icon::after {
-  right: 3px;
-  transform: rotate(45deg);
-}
-
-.cc-booking-section.is-collapsed .cc-toggle-icon::before {
-  transform: rotate(45deg);
-}
-
-.cc-booking-section.is-collapsed .cc-toggle-icon::after {
-  transform: rotate(-45deg);
-}
-
-.cc-booking-section__body {
-  padding: 0 24px 22px;
-}
-
-.cc-booking-section.is-collapsed .cc-booking-section__body {
-  display: none;
-}
-
-/* 달력 */
-.cc-calendar-picker {
-  width: 100%;
-}
-
-.cc-calendar-nav {
-  display: grid;
-  grid-template-columns: 38px 1fr 38px;
-  align-items: center;
-  margin: 0 0 14px;
-}
-
-.cc-calendar-title {
-  text-align: center;
-  font-size: 20px;
-  font-weight: 950;
-  color: #111;
-  letter-spacing: .03em;
-}
-
-.cc-calendar-arrow {
-  width: 38px;
-  height: 38px;
-  border: 0;
-  background: transparent;
-  color: #c8c8c8;
-  font-size: 36px;
-  line-height: 1;
-  font-weight: 300;
-}
-
-.cc-calendar-arrow:hover:not(:disabled) {
-  color: #4353ff;
-}
-
-.cc-calendar-arrow:disabled {
-  opacity: .35;
-  cursor: default;
-}
-
-.cc-calendar-week {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  height: 38px;
-  align-items: center;
-  border-radius: 999px;
-  background: #f5f5f7;
-  margin-bottom: 14px;
-}
-
-.cc-calendar-week span {
-  text-align: center;
-  font-size: 14px;
-  font-weight: 850;
-  color: #555;
-}
-
-.cc-calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  row-gap: 9px;
-}
-
-.cc-calendar-day {
-  width: 36px;
-  height: 36px;
-  margin: 0 auto;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: #c8c8c8;
-  font-size: 16px;
-  font-weight: 950;
-  cursor: default;
-}
-
-.cc-calendar-day.is-empty {
-  visibility: hidden;
-}
-
-.cc-calendar-day.is-sunday {
-  color: #f2b2b2;
-}
-
-.cc-calendar-day.is-available {
-  color: #111;
-  cursor: pointer;
-}
-
-.cc-calendar-day.is-available:hover {
-  background: #eef0ff;
-  color: #4353ff;
-}
-
-.cc-calendar-day.is-selected {
-  background: #4353ff;
-  color: #fff;
-}
-
-.cc-calendar-day.is-selected.is-sunday {
-  color: #fff;
-}
-
-/* 회차 */
-.cc-session-card-list {
-  display: grid;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-
-.cc-session-card {
-  width: 100%;
-  min-height: 54px;
-  border: 1.5px solid #4353ff;
-  border-radius: 8px;
-  background: #fff;
-  color: #4353ff;
-  text-align: left;
-  padding: 0 24px;
-  font-size: 18px;
-  font-weight: 950;
-}
-
-.cc-session-card:hover {
-  background: #f4f6ff;
-}
-
-.cc-session-card.is-selected {
-  background: #4353ff;
-  color: #fff;
-}
-
-.cc-seat-remain {
-  font-size: 15px;
-  line-height: 1.7;
-  color: #111;
-  font-weight: 750;
-  word-break: keep-all;
-}
-
-.cc-seat-remain b {
-  font-weight: 950;
-}
-
-.cc-seat-remain .is-zero {
-  color: #cfcfcf;
-}
-
-/* 버튼/가격 */
-.cc-booking-submit {
-  height: 64px;
-  margin-top: 24px;
-  border-radius: 12px;
-  font-size: 22px;
-  font-weight: 950;
-}
-
-.cc-price-box {
-  margin-top: 12px;
-  padding: 18px;
-  border-radius: 16px;
-  background: #faf7ff;
-}
-
-.cc-price-box strong {
-  display: block;
-  margin-bottom: 12px;
-  font-weight: 950;
-}
-
-.cc-price-box__row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 8px;
-  font-size: 14px;
-  font-weight: 850;
-}
-
-.cc-price-box__row b {
-  font-weight: 950;
-}
-
-body.cc-review-modal-open {
-  overflow: hidden;
-}
-
-.cc-review-modal[hidden] {
-  display: none;
-}
-
-.cc-review-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-}
-
-.cc-review-modal__backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(17, 13, 29, .52);
-  backdrop-filter: blur(3px);
-}
-
-.cc-review-modal__dialog {
-  position: relative;
-  z-index: 1;
-  width: min(520px, 100%);
-  max-height: min(720px, calc(100vh - 48px));
-  overflow: auto;
-}
-
-.cc-review-modal__content {
-  overflow: hidden;
-  border: 1px solid var(--cc-line);
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 24px 70px rgba(23, 19, 33, .24);
-}
-
-.cc-review-modal__header {
-  min-height: 68px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--cc-line);
-}
-
-.cc-review-modal__header h5 {
-  margin: 0;
-  color: var(--cc-text);
-  font-size: 20px;
-  font-weight: 950;
-}
-
-.cc-review-modal__close {
-  width: 36px;
-  height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--cc-muted);
-  font-size: 24px;
-  line-height: 1;
-}
-
-.cc-review-modal__close:hover {
-  background: var(--cc-primary-softer);
-  color: var(--cc-primary-dark);
-}
-
-.cc-review-modal__body {
-  padding: 22px 24px 8px;
-}
-
-.cc-review-field {
-  display: grid;
-  gap: 8px;
-  margin-bottom: 18px;
-}
-
-.cc-review-field label {
-  color: var(--cc-text);
-  font-size: 14px;
-  font-weight: 950;
-}
-
-.cc-review-field small {
-  color: var(--cc-muted);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.cc-star-rating {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  width: max-content;
-}
-
-.cc-star-rating__button {
-  --fill: 100%;
-  position: relative;
-  width: 36px;
-  height: 36px;
-  border: 0;
-  background: transparent;
-  color: #d9d5e4;
-  cursor: pointer;
-}
-
-.cc-star-rating__button::before,
-.cc-star-rating__button::after {
-  content: "★";
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-  line-height: 1;
-}
-
-.cc-star-rating__button::before {
-  color: #d9d5e4;
-}
-
-.cc-star-rating__button::after {
-  width: var(--fill);
-  overflow: hidden;
-  color: var(--cc-orange);
-}
-
-.cc-star-rating__button:focus-visible {
-  outline: 3px solid rgba(124, 58, 237, .22);
-  outline-offset: 2px;
-  border-radius: 8px;
-}
-
-.cc-review-input,
-.cc-review-select,
-.cc-review-textarea {
-  width: 100%;
-  border: 1.5px solid var(--cc-line-strong);
-  border-radius: 12px;
-  background: #fff;
-  color: var(--cc-text);
-  font: inherit;
-  font-weight: 750;
-  outline: 0;
-  transition: border-color .18s ease, box-shadow .18s ease;
-}
-
-.cc-review-input,
-.cc-review-select {
-  height: 48px;
-  padding: 0 14px;
-}
-
-.cc-review-textarea {
-  min-height: 132px;
-  resize: vertical;
-  padding: 13px 14px;
-  line-height: 1.6;
-}
-
-.cc-review-input:focus,
-.cc-review-select:focus,
-.cc-review-textarea:focus {
-  border-color: var(--cc-primary);
-  box-shadow: 0 0 0 4px rgba(124, 58, 237, .10);
-}
-
-.cc-review-modal__footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 18px 24px 24px;
-}
-
-.cc-review-section {
-  scroll-margin-top: 104px;
-}
-
-.cc-review-toolbar {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 14px;
-}
-
-.cc-review-card {
-  overflow: hidden;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, .94);
-}
-
-.cc-review-head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 26px 28px 22px;
-  border-bottom: 1px solid var(--cc-line);
-}
-
-.cc-review-head h4 {
-  margin: 0 0 10px;
-  color: var(--cc-text);
-  font-size: 22px;
-  font-weight: 950;
-  letter-spacing: 0;
-}
-
-.cc-review-summary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--cc-muted);
-  font-weight: 800;
-}
-
-.cc-review-summary__star {
-  color: var(--cc-orange);
-  font-size: 24px;
-  line-height: 1;
-}
-
-.cc-review-summary strong {
-  color: var(--cc-text);
-  font-size: 25px;
-  font-weight: 950;
-}
-
-.cc-review-write-btn {
-  height: 44px;
-  flex-shrink: 0;
-  border-radius: 12px;
-}
-
-.cc-review-list {
-  display: grid;
-}
-
-.cc-review-item {
-  padding: 24px 28px;
-}
-
-.cc-review-item + .cc-review-item {
-  border-top: 1px solid var(--cc-line);
-}
-
-.cc-review-item__meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 10px;
-}
-
-.cc-review-author {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  min-width: 0;
-}
-
-.cc-review-author strong {
-  overflow: hidden;
-  color: var(--cc-text);
-  font-size: 16px;
-  font-weight: 950;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.cc-review-badge {
-  color: #16715f;
-  background: #ecfdf7;
-  border-color: #b8eadb;
-}
-
-.cc-review-item time {
-  flex-shrink: 0;
-  color: var(--cc-muted);
-  font-size: 13px;
-  font-weight: 750;
-}
-
-.cc-review-rating {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.cc-review-stars {
-  display: inline-flex;
-  gap: 2px;
-  color: #d9d5e4;
-  font-size: 18px;
-  line-height: 1;
-}
-
-.cc-review-star {
-  position: relative;
-  display: inline-block;
-  color: #d9d5e4;
-}
-
-.cc-review-star::before {
-  content: "★";
-  position: absolute;
-  inset: 0;
-  width: var(--fill);
-  overflow: hidden;
-  color: var(--cc-orange);
-}
-
-.cc-review-stars .is-filled {
-  color: var(--cc-orange);
-}
-
-.cc-review-rating strong {
-  color: var(--cc-primary-dark);
-  font-size: 14px;
-  font-weight: 950;
-}
-
-.cc-review-item p {
-  margin: 0;
-  color: var(--cc-subtext);
-  font-size: 15px;
-  font-weight: 650;
-  line-height: 1.75;
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
-}
-
-.cc-review-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.cc-review-action-btn {
-  height: 36px;
-  min-width: 64px;
-  padding: 0 14px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 900;
-}
-
-.cc-review-action-btn--danger {
-  color: #d33b3b;
-  border-color: #f0b8b8;
-  background: #fff7f7;
-}
-
-.cc-review-action-btn--danger:hover {
-  color: #fff;
-  border-color: #d33b3b;
-  background: #d33b3b;
-}
-
-.cc-review-empty {
-  padding: 56px 28px;
-  border-radius: 18px;
-  text-align: center;
-  background: rgba(255, 255, 255, .94);
-}
-
-.cc-review-empty__icon {
-  width: 52px;
-  height: 52px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-  border-radius: 50%;
-  color: var(--cc-orange);
-  background: #fff8e8;
-  border: 1px solid #f6dfac;
-  font-size: 24px;
-}
-
-.cc-review-empty h5 {
-  margin: 0 0 8px;
-  color: var(--cc-text);
-  font-size: 19px;
-  font-weight: 950;
-}
-
-.cc-review-empty p {
-  margin: 0;
-  color: var(--cc-muted);
-  font-weight: 750;
-}
-
-@media (max-width: 1280px) {
-  .cc-detail-page {
-    grid-template-columns: minmax(0, 1fr) 380px;
-    gap: 32px;
-  }
-
-  .cc-detail-sidebar {
-    width: 380px;
-  }
-
-  .cc-detail-hero {
-    grid-template-columns: 300px minmax(0, 1fr);
-  }
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 15px;
+}
+.cc-detail-title { margin: 0; font-size: 32px; font-weight: 900; line-height: 1.3; word-break: keep-all; flex: 1; }
+
+/* PC용 하트 버튼 */
+.cc-btn-heart {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 48px; height: 48px; flex-shrink: 0;
+    border: 1.5px solid #ccc; border-radius: 50%;
+    background: #fff; color: #ff3b30; font-size: 24px;
+    cursor: pointer; transition: all 0.2s;
+}
+.cc-btn-heart:hover { border-color: #ff3b30; background: #fff5f5; }
+
+.cc-detail-tags { display: flex; gap: 8px; margin-bottom: 24px; }
+
+.cc-info-list {
+    padding: 24px 0;
+    border-top: 1px solid #e5e5e5;
+    border-bottom: 1px solid #e5e5e5;
+}
+.cc-info-row { display: flex; margin-bottom: 14px; font-size: 16px; line-height: 1.5; }
+.cc-info-row:last-child { margin-bottom: 0; }
+.cc-info-row__label { width: 100px; color: #777; font-weight: bold; flex-shrink: 0; }
+.cc-info-row span:last-child { color: #222; font-weight: 600; }
+
+.cc-price-list { margin-top: auto; padding-top: 24px; }
+.cc-price-list h3 { margin: 0 0 12px; font-size: 18px; font-weight: 900; }
+.cc-price-row { display: flex; align-items: center; gap: 15px; margin-bottom: 8px; font-size: 15px; }
+.cc-price-row span { color: #666; width: 60px; }
+.cc-price-row strong { color: #111; font-weight: 900; font-size: 17px; }
+
+
+/* =========================================================
+   3. 본문 탭 및 상세 영역
+   ========================================================= */
+.cc-detail-content-body { width: 100%; margin-top: 10px; }
+.cc-detail-content__inner { display: grid; gap: 20px; }
+.cc-detail-auxiliary-desc { padding: 30px; border: 1px solid #e5e5e5; border-radius: 16px; background: #fafafa; }
+.side-box { border-left: 5px solid #cc0000; }
+.info-box { border-left: 5px solid #007bff; }
+.desc-title { margin: 0 0 20px; font-size: 19px; font-weight: 950; }
+.desc-text { color: #333; font-size: 16px; font-weight: 500; line-height: 1.8; white-space: pre-wrap; word-break: keep-all;}
+.desc-text img { max-width: 100%; height: auto; margin: 20px auto; border-radius: 12px; display: block; }
+
+
+/* =========================================================
+   4. 예매창 공통 모듈 (PC 사이드바 & 모바일 바텀시트 공용)
+   ========================================================= */
+.cc-quick-booking { padding: 20px; border-radius: 18px; box-shadow: 0 18px 42px rgba(43, 21, 91, .08); background: #fff; }
+.cc-quick-booking h3 { margin: 0 0 16px; font-size: 18px; font-weight: 950; }
+
+.cc-booking-panel { border: 1px solid #cfd5e3; border-radius: 16px; overflow: hidden; background: #fff; }
+.cc-booking-section { background: #fff; }
+.cc-booking-section + .cc-booking-section { border-top: 1px solid #e2e6ef; }
+
+.cc-booking-section__head { width: 100%; min-height: 62px; padding: 16px 20px; border: 0; background: #fff; display: grid; grid-template-columns: 1fr 24px; align-items: center; gap: 6px 16px; text-align: left; cursor: pointer; }
+.cc-section-title { grid-column: 1 / 2; font-size: 13px; font-weight: 800; color: #777; }
+.cc-selected-summary { grid-column: 1 / 2; font-size: 16px; font-weight: 950; color: #111; line-height: 1.4; word-break: keep-all; overflow: visible; white-space: normal;}
+.cc-toggle-icon { grid-column: 2 / 3; grid-row: 1 / 3; align-self: center; width: 24px; height: 24px; position: relative; }
+.cc-toggle-icon::before, .cc-toggle-icon::after { content: ""; position: absolute; top: 11px; width: 12px; height: 2.5px; background: #222; border-radius: 99px; transition: transform .2s ease; }
+.cc-toggle-icon::before { left: 3px; transform: rotate(-45deg); }
+.cc-toggle-icon::after { right: 3px; transform: rotate(45deg); }
+.cc-booking-section.is-collapsed .cc-toggle-icon::before { transform: rotate(45deg); }
+.cc-booking-section.is-collapsed .cc-toggle-icon::after { transform: rotate(-45deg); }
+.cc-booking-section__body { padding: 0 20px 20px; }
+.cc-booking-section.is-collapsed .cc-booking-section__body { display: none; }
+
+.cc-calendar-nav { display: grid; grid-template-columns: 38px 1fr 38px; align-items: center; margin: 0 0 14px; }
+.cc-calendar-title { text-align: center; font-size: 18px; font-weight: 950; color: #111; }
+.cc-calendar-arrow { width: 38px; height: 38px; border: 0; background: transparent; font-size: 24px; cursor: pointer; }
+.cc-calendar-arrow:hover:not(:disabled) { color: #4353ff; }
+.cc-calendar-week { display: grid; grid-template-columns: repeat(7, 1fr); height: 36px; align-items: center; border-radius: 999px; background: #f5f5f7; margin-bottom: 12px; }
+.cc-calendar-week span { text-align: center; font-size: 13px; font-weight: 850; color: #555; }
+.cc-calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 8px; }
+.cc-calendar-day { width: 34px; height: 34px; margin: 0 auto; border: 0; border-radius: 50%; font-size: 15px; font-weight: 950; background: transparent; cursor: pointer;}
+.cc-calendar-day.is-empty { visibility: hidden; }
+.cc-calendar-day.is-sunday { color: #f2b2b2; }
+.cc-calendar-day.is-available { color: #111;}
+.cc-calendar-day.is-available:hover { background: #eef0ff; color: #4353ff; }
+.cc-calendar-day.is-selected { background: #4353ff; color: #fff; }
+
+.cc-session-card-list { display: grid; gap: 10px; margin-bottom: 14px; }
+.cc-session-card { width: 100%; min-height: 50px; border: 1.5px solid #4353ff; border-radius: 8px; background: #fff; color: #4353ff; padding: 0 20px; font-size: 16px; font-weight: 950; text-align: left;}
+.cc-session-card:hover { background: #f4f6ff; }
+.cc-session-card.is-selected { background: #4353ff; color: #fff; }
+
+.cc-seat-remain { font-size: 14px; color: #111; font-weight: 750; }
+.cc-seat-remain b { font-weight: 950; }
+.cc-seat-remain .is-zero { color: #cfcfcf; }
+
+.cc-booking-submit { height: 56px; border-radius: 12px; font-size: 18px; font-weight: 950; width: 100%; margin-top: 20px; border: 0;}
+.cc-booking-submit:disabled { background: #f4f6ff; color: #4353ff; border: 1.5px solid #c5cbf7; cursor: not-allowed; }
+
+.cc-open-countdown { border: 1.5px solid #e2e6ef; border-radius: 14px; padding: 18px 16px 14px; margin-bottom: 16px; text-align: center; }
+.cc-open-countdown__label { margin: 0 0 12px; font-size: 11px; font-weight: 850; color: #aaa; letter-spacing: 0.1em; text-transform: uppercase; }
+.cc-open-countdown__blocks { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 12px; }
+.cc-open-countdown__unit { display: flex; flex-direction: column; align-items: center; min-width: 52px; background: #f4f6ff; border-radius: 10px; padding: 10px 6px 7px; }
+.cc-open-countdown__unit span { font-size: 22px; font-weight: 950; color: #4353ff; line-height: 1; font-variant-numeric: tabular-nums; }
+.cc-open-countdown__unit small { font-size: 10px; font-weight: 750; color: #9ca3af; margin-top: 5px; }
+.cc-open-countdown__sep { font-size: 16px; font-weight: 950; color: #cfd5e3; padding-bottom: 16px; }
+.cc-open-countdown__date { margin: 0; font-size: 12px; font-weight: 750; color: #bbb; }
+
+
+/* =========================================================
+   5. 완벽 복구된 리뷰(Review) UI 스타일
+   ========================================================= */
+body.cc-review-modal-open { overflow: hidden; }
+.cc-review-modal[hidden] { display: none; }
+.cc-review-modal { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 24px; }
+.cc-review-modal__backdrop { position: absolute; inset: 0; background: rgba(17, 13, 29, .52); backdrop-filter: blur(3px); }
+.cc-review-modal__dialog { position: relative; z-index: 1; width: min(520px, 100%); max-height: min(720px, calc(100vh - 48px)); overflow: auto; }
+.cc-review-modal__content { overflow: hidden; border: 1px solid #e5e5e5; border-radius: 18px; background: #fff; box-shadow: 0 24px 70px rgba(23, 19, 33, .24); }
+.cc-review-modal__header { min-height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 24px; border-bottom: 1px solid #e5e5e5; }
+.cc-review-modal__header h5 { margin: 0; color: #111; font-size: 20px; font-weight: 950; }
+.cc-review-modal__close { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; border: 0; border-radius: 10px; background: transparent; color: #888; font-size: 24px; line-height: 1; }
+.cc-review-modal__close:hover { background: #f4f6ff; color: #4353ff; }
+.cc-review-modal__body { padding: 22px 24px 8px; }
+.cc-review-field { display: grid; gap: 8px; margin-bottom: 18px; }
+.cc-review-field label { color: #111; font-size: 14px; font-weight: 950; }
+.cc-review-field small { color: #888; font-size: 12px; font-weight: 700; }
+
+.cc-star-rating { display: inline-flex; align-items: center; gap: 4px; width: max-content; }
+.cc-star-rating__button { --fill: 100%; position: relative; width: 36px; height: 36px; border: 0; background: transparent; color: #d9d5e4; cursor: pointer; padding: 0;}
+.cc-star-rating__button::before, .cc-star-rating__button::after { content: "★"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-start; font-size: 32px; line-height: 1; }
+.cc-star-rating__button::before { color: #d9d5e4; width: 100% }
+.cc-star-rating__button::after { width: var(--fill); overflow: hidden; color: #ff9800; white-space: nowrap;}
+.cc-star-rating__button:focus-visible { outline: 3px solid rgba(67, 83, 255, .22); outline-offset: 2px; border-radius: 8px; }
+
+.cc-review-input, .cc-review-select, .cc-review-textarea { width: 100%; border: 1.5px solid #cbbbe6; border-radius: 12px; background: #fff; color: #111; font: inherit; font-weight: 750; outline: 0; transition: border-color .18s ease, box-shadow .18s ease; }
+.cc-review-input, .cc-review-select { height: 48px; padding: 0 14px; }
+.cc-review-textarea { min-height: 132px; resize: vertical; padding: 13px 14px; line-height: 1.6; }
+.cc-review-input:focus, .cc-review-select:focus, .cc-review-textarea:focus { border-color: #4353ff; box-shadow: 0 0 0 4px rgba(67, 83, 255, .10); }
+.cc-review-modal__footer { display: flex; justify-content: flex-end; gap: 10px; padding: 18px 24px 24px; }
+
+.cc-review-section { scroll-margin-top: 104px; }
+.cc-review-toolbar { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+.cc-review-card { overflow: hidden; border-radius: 18px; background: rgba(255, 255, 255, .94); }
+.cc-review-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding: 26px 28px 22px; border-bottom: 1px solid #e5e5e5; }
+.cc-review-head h4 { margin: 0 0 10px; color: #111; font-size: 22px; font-weight: 950; letter-spacing: 0; }
+.cc-review-summary { display: flex; align-items: center; gap: 8px; color: #888; font-weight: 800; }
+.cc-review-summary__star { color: #ff9800; font-size: 24px; line-height: 1; }
+.cc-review-summary strong { color: #111; font-size: 25px; font-weight: 950; }
+.cc-review-write-btn { height: 44px; flex-shrink: 0; border-radius: 12px; }
+
+.cc-review-list { display: grid; }
+.cc-review-item { padding: 24px 28px; }
+.cc-review-item + .cc-review-item { border-top: 1px solid #e5e5e5; }
+.cc-review-item__meta { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 10px; }
+.cc-review-author { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.cc-review-author strong { overflow: hidden; color: #111; font-size: 16px; font-weight: 950; text-overflow: ellipsis; white-space: nowrap; }
+.cc-review-badge { color: #16715f; background: #ecfdf7; border-color: #b8eadb; padding: 2px 6px; border-radius: 4px; font-size: 11px;}
+.cc-review-item time { flex-shrink: 0; color: #888; font-size: 13px; font-weight: 750; }
+
+.cc-review-rating { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.cc-review-stars { display: inline-flex; gap: 2px; color: #d9d5e4; font-size: 18px; line-height: 1; }
+.cc-review-star { position: relative; display: inline-block; color: #d9d5e4; }
+.cc-review-star::before { content: "★"; position: absolute; top: 0px; left: 0; width: var(--fill); overflow: hidden; color: #ff9800; white-space: nowrap;}
+.cc-review-stars .is-filled { color: #ff9800; }
+.cc-review-rating strong { color: #4353ff; font-size: 14px; font-weight: 950; }
+.cc-review-item p { margin: 0; color: #555; font-size: 15px; font-weight: 650; line-height: 1.75; overflow-wrap: anywhere; white-space: pre-wrap; }
+
+.cc-review-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.cc-review-action-btn { height: 36px; min-width: 64px; padding: 0 14px; border-radius: 10px; font-size: 13px; font-weight: 900; }
+.cc-review-action-btn--danger { color: #d33b3b; border-color: #f0b8b8; background: #fff7f7; }
+.cc-review-action-btn--danger:hover { color: #fff; border-color: #d33b3b; background: #d33b3b; }
+
+.cc-review-empty { padding: 56px 28px; border-radius: 18px; text-align: center; background: rgba(255, 255, 255, .94); }
+.cc-review-empty__icon { width: 52px; height: 52px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; border-radius: 50%; color: #ff9800; background: #fff8e8; border: 1px solid #f6dfac; font-size: 24px; }
+.cc-review-empty h5 { margin: 0 0 8px; color: #111; font-size: 19px; font-weight: 950; }
+.cc-review-empty p { margin: 0; color: #888; font-weight: 750; }
+
+
+/* =========================================================
+   6. 반응형 디자인 (모바일 전용 1단 레이아웃 및 바텀시트)
+   ========================================================= */
+
+/* PC 모드에서는 모바일 전용 팝업 헤더 & 하단 플로팅 바 감추기 */
+.cc-mobile-sidebar-header,
+.cc-mobile-fixed-footer {
+    display: none;
 }
 
 @media (max-width: 1080px) {
-  .cc-detail-page {
-    grid-template-columns: 1fr;
-  }
+    /* 1. 레이아웃 1단으로 변경 (사이드바 해제) */
+    .cc-detail-page {
+        display: block;
+        padding: 20px 16px 120px; /* 하단 바 영역만큼 여백 확보 */
+    }
 
-  .cc-detail-sidebar {
-    position: static;
-    width: 100%;
-    max-width: 420px;
-  }
-}
+    .cc-left-wrapper {
+        display: block;
+    }
 
-@media (max-width: 900px) {
-  .cc-detail-hero {
-    grid-template-columns: 1fr;
-  }
+    /* 2. 모바일 하트/타이틀 재정렬 */
+    .cc-detail-hero {
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+        margin-bottom: 30px;
+    }
 
-  .cc-poster-large {
-    max-width: 340px;
-    width: 100%;
-  }
+    .cc-poster-large { width: 100%; max-width: 360px; }
+    .cc-detail-info { padding: 0; width: 100%; }
+    .cc-detail-title { font-size: 26px; line-height: 1.4; }
 
-  .cc-detail-title-row {
-    gap: 12px;
-  }
-}
+    .cc-detail-title-row { align-items: center; }
 
-@media (max-width: 600px) {
-  .cc-detail-title-row {
-    flex-direction: column;
-  }
+    /* 3. 모바일 전용 하단 고정 예매버튼 표시 */
+    .cc-mobile-fixed-footer {
+        display: flex;
+        gap: 10px; /* 버튼과 하트 아이콘 사이 간격 */
+        position: fixed;
+        inset: auto 0 0 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
+        border-top: 1px solid #e5e5e5;
+        z-index: 1900;
+        box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
+    }
 
-  .cc-detail-title {
-    font-size: 24px;
-  }
+    .cc-mobile-fixed-footer .cc-btn {
+        flex: 1; /* 예매 버튼이 남은 공간 꽉 채움 */
+    }
 
-  .cc-detail-tags {
-    flex-wrap: wrap;
-    margin-bottom: 22px;
-  }
+    /* 4. 예매창을 바텀시트(Bottom Sheet) 모달로 변환 */
+    .cc-detail-sidebar {
+        position: fixed;
+        inset: auto 0 0 0;
+        width: 100%;
+        max-width: none;
+        max-height: 80vh;
+        background: #fff;
+        z-index: 2000; /* 전체 요소를 덮음 */
+        border-radius: 24px 24px 0 0;
+        box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+        transform: translateY(100%); /* 기본 숨김 */
+        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        display: flex;
+        flex-direction: column;
+    }
 
-  .cc-detail-banner {
-    min-height: 250px;
-    border-radius: 18px;
-  }
+    .cc-detail-sidebar.is-open { transform: translateY(0); } /* 오픈 클래스 */
 
-  .cc-detail-banner__content {
-    padding: 34px 24px;
-  }
+    /* 바텀시트 전용 헤더 표시 */
+    .cc-mobile-sidebar-header { display: flex; }
+    .cc-quick-booking { box-shadow: none; padding: 20px 24px; }
 
-  .cc-detail-banner h2 {
-    font-size: 24px;
-  }
-
-  .cc-quick-booking {
-    padding: 16px;
-  }
-
-  .cc-booking-section__head {
-    padding: 16px 18px;
-  }
-
-  .cc-booking-section__body {
-    padding: 0 18px 20px;
-  }
-
-  .cc-calendar-day {
-    width: 34px;
-    height: 34px;
-    font-size: 15px;
-  }
-
-  .cc-review-head {
-    align-items: flex-start;
-    flex-direction: column;
-    padding: 22px 20px 20px;
-  }
-
-  .cc-review-write-btn {
-    width: 100%;
-  }
-
-  .cc-review-item {
-    padding: 22px 20px;
-  }
-
-  .cc-review-item__meta {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .cc-review-actions {
-    justify-content: stretch;
-  }
-
-  .cc-review-action-btn {
-    flex: 1;
-  }
-
-  .cc-review-empty {
-    padding: 44px 20px;
-  }
-
-  /* 상세페이지 본문 영역 스타일 */
-  .cc-detail-content {
-      width: 100%;
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid #e5e5e5;
-  }
-
-  /* 메인 배너 이미지 통으로 맞추기 */
-  .cc-detail-main-banner {
-      width: 100%;
-      text-align: center;
-      margin-bottom: 30px;
-  }
-
-  .img-fluid-detail {
-      max-width: 100%; /* 부모 너비를 넘지 않음 */
-      height: auto;    /* 비율 유지 */
-      display: block;
-      margin: 0 auto;  /* 가운데 정렬 */
-  }
-
-  /* 보조 설명 박스 스타일링 */
-  .cc-detail-auxiliary-desc {
-      margin: 24px auto;
-      padding: 20px;
-      max-width: 800px; /* 텍스트 가독성을 위한 너비 제한 */
-      background-color: #f9f9f9;
-      border-radius: 8px;
-      border-left: 4px solid #cc0000; /* 포인트 컬러 */
-  }
-
-  .desc-title {
-      font-size: 1.1rem;
-      font-weight: bold;
-      margin-bottom: 10px;
-      color: #333;
-  }
-
-  .desc-text {
-      font-size: 0.95rem;
-      line-height: 1.6;
-      color: #666;
-      white-space: pre-wrap; /* 줄바꿈(\n) 인식 */
-  }
+    /* 5. 기타 모바일 디테일 */
+    .cc-tabs { margin: 20px 0; overflow-x: auto;}
+    .cc-booking-section__head { padding: 16px 20px; }
+    .cc-review-head { align-items: flex-start; flex-direction: column; padding: 22px 20px 20px; }
+    .cc-review-write-btn { width: 100%; }
+    .cc-review-item { padding: 22px 20px; }
+    .cc-review-item__meta { align-items: flex-start; flex-direction: column; gap: 6px; }
+    .cc-review-actions { justify-content: stretch; }
+    .cc-review-action-btn { flex: 1; }
+    .cc-review-empty { padding: 44px 20px; }
 }

@@ -1,10 +1,12 @@
 {{> layout/header}}
-<link rel="stylesheet" href="/css/concert-detail.css?v=review-ui-4">
+<link rel="stylesheet" href="/css/concert-detail.css?v=review-ui-14">
 
 <main class="cc-main cc-detail-main">
-    <div class="cc-container cc-detail-page">
+    <div class="cc-detail-page">
         {{#concert}}
-            <div class="cc-detail-content">
+
+            <div class="cc-left-wrapper">
+
                 <section class="cc-detail-hero">
                     <div class="cc-poster-large">
                         <img src="{{posterUrl}}" alt="{{title}} 포스터">
@@ -12,13 +14,17 @@
 
                     <article class="cc-detail-info">
                         <div class="cc-detail-category">{{category}}</div>
+
                         <div class="cc-detail-title-row">
                             <h1 class="cc-detail-title">{{title}}</h1>
+                            <button type="button" class="cc-btn-heart d-none d-lg-flex" aria-label="관심 등록">♡</button>
                         </div>
+
                         <div class="cc-detail-tags">
                             <span class="cc-badge cc-badge--fill">{{category}}</span>
                             <span class="cc-badge cc-badge--gray">{{genre}}</span>
                         </div>
+
                         <div class="cc-info-list">
                             <div class="cc-info-row"><span class="cc-info-row__label">공연기간</span><span>{{dateRange}}</span></div>
                             <div class="cc-info-row"><span class="cc-info-row__label">공연장</span><span>{{venueName}}</span></div>
@@ -27,11 +33,12 @@
                             <div class="cc-info-row"><span class="cc-info-row__label">주최/주관</span><span>{{organizer}}</span></div>
                             <div class="cc-info-row"><span class="cc-info-row__label">문의</span><span>{{contact}}</span></div>
                         </div>
+
                         <div class="cc-price-list">
                             <h3>가격정보</h3>
                             {{#prices}}
                                 <div class="cc-price-row">
-                                    <span><i class="cc-dot cc-dot--{{gradeClass}}"></i>{{gradeName}}</span>
+                                    <span>{{gradeName}}</span>
                                     <strong>{{priceText}}</strong>
                                 </div>
                             {{/prices}}
@@ -46,105 +53,117 @@
                     <a class="cc-tab" href="#review">후기 {{reviewCount}}</a>
                 </nav>
 
-                <section id="detail" class="cc-detail-content">
+                <section id="detail" class="cc-detail-content-body">
                     <div class="cc-detail-content__inner">
-
                         {{#detailDescription1}}
                             <div class="cc-detail-auxiliary-desc side-box">
-                                <h4 class="desc-title">상세페이지 내용</h4>
+                                <h4 class="desc-title" style="color: #cc0000;">상세페이지 내용</h4>
                                 <div class="desc-text">{{{detailDescription1}}}</div>
                             </div>
                         {{/detailDescription1}}
 
                         {{#detailDescription2}}
                             <div class="cc-detail-auxiliary-desc info-box">
-                                <h4 class="desc-title">추가 공연정보 / 유의사항 및 안내</h4>
+                                <h4 class="desc-title" style="color: #007bff;">추가 공연정보 / 유의사항 및 안내</h4>
                                 <div class="desc-text">{{{detailDescription2}}}</div>
                             </div>
                         {{/detailDescription2}}
-
                     </div>
                 </section>
 
-                <section id="review-container" class="cc-review-section mt-5" style="display: none;"></section>
+                <section id="review-container" class="cc-review-section mt-5" style="display: none; width: 100%;"></section>
+
+            </div> <aside class="cc-detail-sidebar" id="bookingSidebar">
+            <div class="cc-mobile-sidebar-header">
+                <h4>관람일 및 회차 선택</h4>
+                <button type="button" class="cc-mobile-sidebar-close" id="closeBookingBtn">×</button>
             </div>
 
-            <aside class="cc-detail-sidebar">
-                <div class="cc-card cc-quick-booking">
-                    <h3>빠른 예매</h3>
-                    <form class="bookingStartForm" action="/booking/start" method="post">
-                        <input type="hidden" name="concertId" id="hiddenConcertId" value="{{id}}">
-                        {{#_csrf}}<input type="hidden" name="{{parameterName}}" value="{{token}}">{{/_csrf}}
+            <div class="cc-quick-booking">
+                <h3>빠른 예매</h3>
+                <form class="bookingStartForm" action="/booking/start" method="post">
+                    <input type="hidden" name="concertId" id="hiddenConcertId" value="{{id}}">
+                    {{#_csrf}}<input type="hidden" name="{{parameterName}}" value="{{token}}">{{/_csrf}}
 
-                        <div class="cc-booking-panel">
-                            <section class="cc-booking-section" data-booking-section>
-                                <button class="cc-booking-section__head" type="button" data-section-toggle>
-                                    <span class="cc-section-title">관람일</span>
-                                    <span class="cc-selected-summary" data-selected-date-summary></span>
-                                    <span class="cc-toggle-icon" aria-hidden="true"></span>
-                                </button>
-                                <div class="cc-booking-section__body">
-                                    <select class="cc-select bookingDateSelect" id="sessionDate" name="sessionDate" hidden>
-                                        <option value="">날짜를 선택해주세요</option>
-                                        {{#dates}}<option value="{{value}}">{{label}}</option>{{/dates}}
-                                    </select>
-                                    <div class="cc-calendar-picker" data-calendar-for="sessionDate">
-                                        <div class="cc-calendar-nav">
-                                            <button type="button" class="cc-calendar-arrow" data-calendar-prev aria-label="이전 달">◀</button>
-                                            <strong class="cc-calendar-title">날짜 선택</strong>
-                                            <button type="button" class="cc-calendar-arrow" data-calendar-next aria-label="다음 달">▶</button>
-                                        </div>
-                                        <div class="cc-calendar-week">
-                                            <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
-                                        </div>
-                                        <div class="cc-calendar-grid"></div>
+                    <div class="cc-booking-panel">
+                        <section class="cc-booking-section" data-booking-section>
+                            <button class="cc-booking-section__head" type="button" data-section-toggle>
+                                <span class="cc-section-title">관람일</span>
+                                <span class="cc-selected-summary" data-selected-date-summary></span>
+                                <span class="cc-toggle-icon" aria-hidden="true"></span>
+                            </button>
+                            <div class="cc-booking-section__body">
+                                <select class="cc-select bookingDateSelect" id="sessionDate" name="sessionDate" hidden>
+                                    <option value="">날짜를 선택해주세요</option>
+                                    {{#dates}}<option value="{{value}}">{{label}}</option>{{/dates}}
+                                </select>
+                                <div class="cc-calendar-picker" data-calendar-for="sessionDate">
+                                    <div class="cc-calendar-nav">
+                                        <button type="button" class="cc-calendar-arrow" data-calendar-prev>◀</button>
+                                        <strong class="cc-calendar-title">날짜 선택</strong>
+                                        <button type="button" class="cc-calendar-arrow" data-calendar-next>▶</button>
                                     </div>
-                                </div>
-                            </section>
-
-                            <section class="cc-booking-section cc-booking-section--session" data-booking-section>
-                                <button class="cc-booking-section__head" type="button" data-section-toggle>
-                                    <span class="cc-section-title">회차</span>
-                                    <span class="cc-selected-summary" data-selected-session-summary></span>
-                                    <span class="cc-toggle-icon" aria-hidden="true"></span>
-                                </button>
-                                <div class="cc-booking-section__body">
-                                    <select class="cc-select bookingSessionSelect" id="sessionId" name="sessionId" hidden>
-                                        <option value="">회차를 선택해주세요</option>
-                                        {{#sessions}}<option value="{{id}}">{{label}}</option>{{/sessions}}
-                                    </select>
-                                    <div class="cc-session-card-list" data-session-picker-for="sessionId">
-                                        {{#sessions}}
-                                            <button type="button" class="cc-session-card" data-session-value="{{id}}">
-                                                <strong>{{label}}</strong>
-                                            </button>
-                                        {{/sessions}}
+                                    <div class="cc-calendar-week">
+                                        <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
                                     </div>
-                                    <div class="cc-seat-remain">VIP석 <b>108</b> / R석 <b>137</b> / S석 <b class="is-zero">0석</b></div>
+                                    <div class="cc-calendar-grid"></div>
                                 </div>
-                            </section>
-                        </div>
-                        {{#comingSoon}}
-                            <div class="cc-open-countdown" data-open-iso="{{ticketOpenIso}}">
-                                <p class="cc-open-countdown__label">예매 오픈까지</p>
-                                <div class="cc-open-countdown__blocks">
-                                    <div class="cc-open-countdown__unit"><span id="cdDays">--</span><small>일</small></div>
-                                    <div class="cc-open-countdown__sep">:</div>
-                                    <div class="cc-open-countdown__unit"><span id="cdHours">--</span><small>시간</small></div>
-                                    <div class="cc-open-countdown__sep">:</div>
-                                    <div class="cc-open-countdown__unit"><span id="cdMinutes">--</span><small>분</small></div>
-                                    <div class="cc-open-countdown__sep">:</div>
-                                    <div class="cc-open-countdown__unit"><span id="cdSeconds">--</span><small>초</small></div>
-                                </div>
-                                <p class="cc-open-countdown__date">{{ticketOpenLabel}} 오픈</p>
                             </div>
-                        {{/comingSoon}}
-                        <button class="cc-btn cc-btn--primary cc-btn--full cc-booking-submit" type="submit" {{#comingSoon}}disabled{{/comingSoon}}>
-                            {{#comingSoon}}예매 오픈 예정{{/comingSoon}}{{^comingSoon}}예매하기{{/comingSoon}}
-                        </button>
-                    </form>
-                </div>
-            </aside>
+                        </section>
+
+                        <section class="cc-booking-section cc-booking-section--session" data-booking-section>
+                            <button class="cc-booking-section__head" type="button" data-section-toggle>
+                                <span class="cc-section-title">회차</span>
+                                <span class="cc-selected-summary" data-selected-session-summary></span>
+                                <span class="cc-toggle-icon" aria-hidden="true"></span>
+                            </button>
+                            <div class="cc-booking-section__body">
+                                <select class="cc-select bookingSessionSelect" id="sessionId" name="sessionId" hidden>
+                                    <option value="">회차를 선택해주세요</option>
+                                    {{#sessions}}<option value="{{id}}">{{label}}</option>{{/sessions}}
+                                </select>
+                                <div class="cc-session-card-list" data-session-picker-for="sessionId">
+                                    {{#sessions}}
+                                        <button type="button" class="cc-session-card" data-session-value="{{id}}">
+                                            <strong>{{label}}</strong>
+                                        </button>
+                                    {{/sessions}}
+                                </div>
+                                <div class="cc-seat-remain">VIP석 <b>108</b> / R석 <b>137</b> / S석 <b class="is-zero">0석</b></div>
+                            </div>
+                        </section>
+                    </div>
+
+                    {{#comingSoon}}
+                        <div class="cc-open-countdown mt-4" data-open-iso="{{ticketOpenIso}}">
+                            <p class="cc-open-countdown__label">예매 오픈까지</p>
+                            <div class="cc-open-countdown__blocks">
+                                <div class="cc-open-countdown__unit"><span id="cdDays">--</span><small>일</small></div>
+                                <div class="cc-open-countdown__sep">:</div>
+                                <div class="cc-open-countdown__unit"><span id="cdHours">--</span><small>시간</small></div>
+                                <div class="cc-open-countdown__sep">:</div>
+                                <div class="cc-open-countdown__unit"><span id="cdMinutes">--</span><small>분</small></div>
+                                <div class="cc-open-countdown__sep">:</div>
+                                <div class="cc-open-countdown__unit"><span id="cdSeconds">--</span><small>초</small></div>
+                            </div>
+                            <p class="cc-open-countdown__date">{{ticketOpenLabel}} 오픈</p>
+                        </div>
+                    {{/comingSoon}}
+
+                    <button class="cc-btn cc-btn--primary cc-booking-submit" type="submit" {{#comingSoon}}disabled{{/comingSoon}}>
+                        {{#comingSoon}}예매 오픈 대기중{{/comingSoon}}{{^comingSoon}}좌석 선택하기{{/comingSoon}}
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+            <div class="cc-mobile-fixed-footer">
+                <button type="button" class="cc-btn-heart" aria-label="관심 등록" style="width: 56px; height: 56px;">♡</button>
+                <button type="button" class="cc-btn cc-btn--primary cc-btn--full" id="openBookingBtn" {{#comingSoon}}disabled{{/comingSoon}}>
+                    {{#comingSoon}}예매 오픈 예정{{/comingSoon}}{{^comingSoon}}예매하기 (일정 선택){{/comingSoon}}
+                </button>
+            </div>
+
         {{/concert}}
     </div>
 </main>
@@ -189,7 +208,6 @@
     let lastReviewFocusTrigger = null;
     let editingReviewId = null;
     const reviewContentCache = new Map();
-    let reviewWriteEnabled = {{#concert.reviewEnabled}}true{{/concert.reviewEnabled}}{{^concert.reviewEnabled}}false{{/concert.reviewEnabled}};
 
     document.addEventListener("DOMContentLoaded", function () {
         initTabsAndReviews();
@@ -201,7 +219,20 @@
         initBookingSectionToggle();
         initBookingStartSubmit();
         initCountdown();
+        initMobileBookingTrigger();
     });
+
+    function initMobileBookingTrigger() {
+        const sidebar = document.getElementById('bookingSidebar');
+        const openBtn = document.getElementById('openBookingBtn');
+        const closeBtn = document.getElementById('closeBookingBtn');
+        if (openBtn && sidebar) {
+            openBtn.addEventListener('click', () => sidebar.classList.add('is-open'));
+        }
+        if (closeBtn && sidebar) {
+            closeBtn.addEventListener('click', () => sidebar.classList.remove('is-open'));
+        }
+    }
 
     function initCountdown() {
         const container = document.querySelector('[data-open-iso]');
@@ -275,11 +306,6 @@
         document.addEventListener('click', function(e) {
             const writeButton = e.target?.closest?.('#btn-write-review');
             if (writeButton) {
-                if (!reviewWriteEnabled) {
-                    CcUI.alert('현재 이 콘서트는 후기 작성이 제한되어 있습니다.', 'warning');
-                    return;
-                }
-
                 lastReviewFocusTrigger = writeButton;
                 resetReviewModalMode();
                 document.getElementById('reviewForm')?.reset();
@@ -497,21 +523,12 @@
         }).join('');
     }
 
-    function renderReviewWriteControl(label) {
-        if (reviewWriteEnabled) {
-            return `<button type="button" class="cc-btn cc-btn--outline cc-review-write-btn" id="btn-write-review">${label}</button>`;
-        }
-
-        return `<span class="cc-badge cc-badge--gray">후기 작성 제한</span>`;
-    }
-
     function renderReviews(data) {
         const reviewContainer = document.getElementById('review-container');
         if (!reviewContainer) return;
 
         reviewContainer.dataset.loaded = 'true';
         reviewContentCache.clear();
-        reviewWriteEnabled = data.reviewEnabled !== false;
 
         const reviewTab = document.querySelector('.cc-tab[href="#review"]');
         if (reviewTab) reviewTab.textContent = `후기 ${data.totalReviewCount || 0}`;
@@ -519,12 +536,12 @@
         if (!data.reviews || data.reviews.length === 0) {
             reviewContainer.innerHTML = `
                 <div class="cc-review-toolbar">
-                    ${renderReviewWriteControl('첫 후기 작성')}
+                    <button type="button" class="cc-btn cc-btn--outline cc-review-write-btn" id="btn-write-review">첫 후기 작성</button>
                 </div>
                 <div class="cc-card cc-review-empty">
                     <div class="cc-review-empty__icon" aria-hidden="true">📭</div>
                     <h5>아직 등록된 후기가 없습니다.</h5>
-                    <p>${reviewWriteEnabled ? '공연을 관람한 뒤 첫 번째 후기를 남겨주세요!' : '현재 이 콘서트는 후기 작성이 제한되어 있습니다.'}</p>
+                    <p>공연을 관람한 뒤 첫 번째 후기를 남겨주세요!</p>
                 </div>`;
             return;
         }
@@ -536,11 +553,11 @@
                         <h4>관람 후기</h4>
                         <div class="cc-review-summary" aria-label="평균 평점 ${(data.averageRating || 0).toFixed(1)}점">
                             <span class="cc-review-summary__star" aria-hidden="true">★</span>
-                            <strong>${(data.averageRating || 0).toFixed(1)}</strong>
+                            <strong style="font-size:25px;">${(data.averageRating || 0).toFixed(1)}</strong>
                             <span>${data.totalReviewCount}개의 후기</span>
                         </div>
                     </div>
-                    ${renderReviewWriteControl('후기 작성')}
+                    <button type="button" class="cc-btn cc-btn--outline cc-review-write-btn" id="btn-write-review">후기 작성</button>
                 </div>
                 <div class="cc-review-list">
         `;
@@ -849,14 +866,14 @@
 
                 if (!dateSelect || !dateSelect.value) {
                     event.preventDefault();
-                    if(window.CcUI) CcUI.alert('관람일을 선택해주세요.', 'error');
+                    if (window.CcUI) CcUI.alert('관람일을 선택해주세요.', 'error');
                     else alert("관람일을 선택해주세요.");
                     return;
                 }
 
                 if (!sessionSelect || !sessionSelect.value) {
                     event.preventDefault();
-                    if(window.CcUI) CcUI.alert('회차를 선택해주세요.', 'error');
+                    if (window.CcUI) CcUI.alert('회차를 선택해주세요.', 'error');
                     else alert("회차를 선택해주세요.");
                 }
             });
