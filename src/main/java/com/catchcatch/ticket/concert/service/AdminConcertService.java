@@ -3,6 +3,7 @@ package com.catchcatch.ticket.concert.service;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
+import com.catchcatch.ticket.concert.enums.ConcertGenre;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.concertlike.ConcertLikeRepository;
 import com.catchcatch.ticket.core.exception.NotFoundException;
@@ -89,7 +90,7 @@ public class AdminConcertService {
         Concert concert = Concert.builder()
                 .title(dto.title())
                 .artist(dto.artist())
-                .genre(dto.genre())
+                .genre(ConcertGenre.fromCode(dto.genre()))
                 .venue(venue)
                 .ticketOpenDate(dto.ticketOpenDate())
                 .startDate(dto.startDate())

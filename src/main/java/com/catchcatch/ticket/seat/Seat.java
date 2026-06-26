@@ -30,7 +30,7 @@ public class Seat {
 
     // 층수
     @Column(name = "floor", nullable = false)
-    private Integer floor;      // 1층, 2층 등
+    private Integer floor;
 
     // 구역
     @Column(name = "section_name", nullable = false, length = 20)
@@ -47,22 +47,6 @@ public class Seat {
     // 화면 출력용 풀네임
     @Column(name = "seat_number", nullable = false, length = 20)
     private String seatNumber;
-
-    //x축
-    @Column(name = "x_label",nullable = false)
-    private Double xLabel;
-
-    //y축
-    @Column(name = "y_label",nullable = false)
-    private Double yLabel;
-
-    // 사이즈
-    @Column(name = "seat_size",nullable = false)
-    private Double seatSize;
-
-    @Column(name = "seat_angle",nullable = false)
-    private Double seatAngle;
-
 
     /**
      * VIP / R / S / A
@@ -92,8 +76,7 @@ public class Seat {
     @Builder
     public Seat(ConcertSession concertSession, Integer floor, String sectionName,
                 String seatRow, Integer seatCol, String seatNumber,
-                SeatGrade grade, Integer price, SeatStatus status,
-                Double xLabel, Double yLabel, Double seatSize, Double seatAngle) {
+                SeatGrade grade, Integer price, SeatStatus status) {
         this.concertSession = concertSession;
         this.floor = floor;
         this.sectionName = sectionName;
@@ -103,10 +86,6 @@ public class Seat {
         this.grade = grade;
         this.price = price;
         this.status = status != null ? status : SeatStatus.AVAILABLE;
-        this.xLabel = xLabel;
-        this.yLabel = yLabel;
-        this.seatSize = seatSize;
-        this.seatAngle = seatAngle;
     }
 
     /**

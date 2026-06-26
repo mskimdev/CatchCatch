@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.concert.core;
 
 import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
+import com.catchcatch.ticket.concert.enums.ConcertGenre;
 import com.catchcatch.ticket.concertlike.ConcertLike;
 import com.catchcatch.ticket.seat.SeatGrade;
 import com.catchcatch.ticket.session.ConcertSession;
@@ -71,7 +72,9 @@ public class Concert {
     // ==========================================
 
     // [상단 뱃지 영역]
-    private String genre;           // concert, musical, festival, fanmeeting, classic, etc
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private ConcertGenre genre;
 
     // [중앙 인포 리스트 영역]
     private LocalDate startDate;    // 공연 시작일
@@ -129,7 +132,11 @@ public class Concert {
     }
 
     public String getGenreLabel() {
-        return ConcertGenreLabel.of(this.genre);
+        return this.genre == null ? ConcertGenre.CONCERT.getLabel() : this.genre.getLabel();
+    }
+
+    public String getGenreCode() {
+        return this.genre == null ? ConcertGenre.CONCERT.getCode() : this.genre.getCode();
     }
 
     @Getter
@@ -144,7 +151,7 @@ public class Concert {
     public void update(AdminConcertRequest.UpdateRequestDTO dto, Venue newVenue, String updatePosterUrl) {
         this.title = dto.title();
         this.artist = dto.artist();
-        this.genre = dto.genre();
+        this.genre = ConcertGenre.fromCode(dto.genre());
         this.venue = newVenue;
         this.ticketOpenDate = dto.ticketOpenDate();
         this.startDate = dto.startDate();

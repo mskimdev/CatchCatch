@@ -1,7 +1,6 @@
 package com.catchcatch.ticket.concert.dto;
 
 import com.catchcatch.ticket.concert.core.Concert;
-import com.catchcatch.ticket.concert.core.ConcertGenreLabel;
 import com.catchcatch.ticket.session.ConcertSession;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Min;
@@ -129,7 +128,7 @@ public class AdminConcertRequest {
                     .artist(concert.getArtist())
                     .concertStatus(concert.getConcertStatus() != null ? concert.getConcertStatus().name() : "COMING_SOON")
                     .venueName(concert.getVenue() != null ? concert.getVenue().getName() : "공연장 미지정")
-                    .genre(concert.getGenre())
+                    .genre(concert.getGenreCode())
                     .ageLimit(concert.getAgeLimit())
                     .runtime(concert.getRuntime())
                     .priceVip(concert.getPriceVip())
@@ -276,8 +275,8 @@ public class AdminConcertRequest {
                     .venueName(concert.getVenue() != null ? concert.getVenue().getName() : "공연장 미지정")
                     .concertStatus(concert.getConcertStatus() != null ? concert.getConcertStatus().name() : "COMING_SOON")
                     .ticketOpenDate(concert.getTicketOpenDate())
-                    .genre(concert.getGenre())
-                    .genreLabel(ConcertGenreLabel.of(concert.getGenre()))
+                    .genre(concert.getGenreCode())
+                    .genreLabel(concert.getGenreLabel())
                     .ageLimit(concert.getAgeLimit())
                     .runtime(concert.getRuntime())
                     .organizer(concert.getOrganizer())

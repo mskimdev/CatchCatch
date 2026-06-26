@@ -1,7 +1,27 @@
 [
-  { "id": "1-VIP-A-1", "grade": "VIP", "status": "AVAILABLE" },
-  { "id": "1-VIP-A-2", "grade": "VIP", "status": "AVAILABLE" },
-  { "id": "1-R-B-1", "grade": "R", "status": "AVAILABLE" },
-  { "id": "1-R-B-2", "grade": "R", "status": "OBSTRUCTED" },
-  { "id": "2-S-C-1", "grade": "S", "status": "AVAILABLE" }
+  {
+    "id": "1-VIP-A-1",
+    "grade": "VIP",
+    "status": "AVAILABLE"
+  },
+  {
+    "id": "1-VIP-A-2",
+    "grade": "VIP",
+    "status": "AVAILABLE"
+  },
+  {
+    "id": "1-R-B-1",
+    "grade": "R",
+    "status": "AVAILABLE"
+  },
+  {
+    "id": "1-R-B-2",
+    "grade": "R",
+    "status": "OBSTRUCTED"
+  },
+  {
+    "id": "2-S-C-1",
+    "grade": "S",
+    "status": "AVAILABLE"
+  }
 ]
