@@ -5,6 +5,7 @@ import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.concert.dto.ConcertResponse;
 import com.catchcatch.ticket.concert.service.ConcertService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +22,9 @@ import java.util.List;
 public class ConcertController {
 
     private final ConcertService concertService;
+
+    @Value("${kakao.map.js-key}")
+    private String kakaoMapJsKey;
 
     @GetMapping("/")
     public String homePage(Model model) {
@@ -86,7 +90,10 @@ public class ConcertController {
     @GetMapping("/concerts/{id}")
     public String detail(@PathVariable Integer id, Model model) {
         ConcertResponse.DetailDTO responseDTO = concertService.getConcertDetail(id);
+
         model.addAttribute("concert", responseDTO);
+        model.addAttribute("kakaoMapJsKey", kakaoMapJsKey);
+
         return "concert/detail";
     }
 
