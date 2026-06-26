@@ -75,6 +75,7 @@ public class ConcertResponse {
             String genre,
             String dateRange,
             String venueName,
+            String venueAddress,
             String ageLimit,
             String runtime,
             String organizer,
@@ -96,6 +97,10 @@ public class ConcertResponse {
             String safeDateRange = (concert.getStartDate() != null && concert.getEndDate() != null)
                     ? concert.getStartDate() + "~" + concert.getEndDate() : "일정 미정";
             String safeVenueName = (concert.getVenue() != null) ? concert.getVenue().getName() : "공연장 미정";
+
+            String safeVenueAddress = (concert.getVenue() != null && concert.getVenue().getAddress() != null)
+                    ? concert.getVenue().getAddress()
+                    : "주소 미정";
 
             List<SessionDTO> sessionDTOs = new ArrayList<>();
             List<ConcertSession> concertSessions = concert.getSessions();
@@ -126,6 +131,7 @@ public class ConcertResponse {
                     .genre(concert.getGenre())
                     .dateRange(safeDateRange)
                     .venueName(safeVenueName)
+                    .venueAddress(safeVenueAddress)
                     .ageLimit(concert.getAgeLimit())
                     .runtime(concert.getRuntime())
                     .organizer(concert.getOrganizer())
