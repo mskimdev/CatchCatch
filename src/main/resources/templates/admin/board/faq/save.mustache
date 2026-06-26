@@ -26,7 +26,7 @@
                     </div>
 
                     <div class="card-body">
-                        <form action="/admin/boards/faq/save" method="post">
+                        <form id="faq-save-form" action="/admin/boards/faq/save" method="post">
                             {{#_csrf}}
                                 <input type="hidden" name="{{parameterName}}" value="{{token}}">
                             {{/_csrf}}
@@ -118,8 +118,9 @@
                     ]
                 });
 
-                document.querySelector('form[action="/admin/boards/faq/save"]').addEventListener('submit', function (e) {
+                document.getElementById('faq-save-form').addEventListener('submit', function (e) {
                     const answer = $('#faqAnswer').summernote('code').trim();
+
                     if (answer === '<p><br></p>' || answer === '') {
                         e.preventDefault();
                         CcUI.alert('답변을 입력해주세요.', 'warning');

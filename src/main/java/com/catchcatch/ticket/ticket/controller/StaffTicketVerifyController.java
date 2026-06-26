@@ -1,23 +1,26 @@
-package com.catchcatch.ticket.booking;
+package com.catchcatch.ticket.ticket.controller;
 
 import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.ticket.dto.TicketVerifyResponse;
-import com.catchcatch.ticket.ticket.TicketVerifyService;
+import com.catchcatch.ticket.ticket.service.TicketVerifyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 @Controller
 @RequiredArgsConstructor
-public class TicketVerifyController {
+@RequestMapping("/staff/tickets")
+public class StaffTicketVerifyController {
 
     private final TicketVerifyService ticketVerifyService;
 
-    @GetMapping("/staff/tickets/verify")
+    @GetMapping("/verify")
     public String verifyPage(@RequestParam String token, Model model) {
         TicketVerifyResponse result = ticketVerifyService.verify(token);
 
@@ -27,7 +30,7 @@ public class TicketVerifyController {
         return "staff/ticket-verify";
     }
 
-    @GetMapping("/staff/tickets/verify-code")
+    @GetMapping("/verify-code")
     public String verifyByCode(@RequestParam String code, Model model) {
         try {
             String token = ticketVerifyService.findTokenByTicketCode(code);
@@ -43,11 +46,5 @@ public class TicketVerifyController {
 
             return "staff/ticket-verify";
         }
-    }
-
-    @PostMapping("/api/staff/tickets/check-in")
-    @ResponseBody
-    public TicketVerifyResponse checkIn(@RequestParam String token) {
-        return ticketVerifyService.checkIn(token);
     }
 }
