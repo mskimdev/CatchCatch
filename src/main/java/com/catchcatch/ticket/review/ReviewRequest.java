@@ -27,20 +27,8 @@ public class ReviewRequest {
             String content
     ){}
 
-    public record AdminSaveDTO(
-            @NotNull(message = "콘서트를 선택해주세요.")
-            Integer concertId,
-
-            @NotNull(message = "후기를 등록할 예매를 선택해주세요.")
-            Integer bookingId,
-
-            @NotNull(message = "평점을 입력해주세요.")
-            @DecimalMin(value = "0.5", message = "평점은 최소 0.5점 이상이어야 합니다.")
-            @DecimalMax(value = "5.0", message = "평점은 최대 5.0점까지 가능합니다.")
-            Double rating,
-
-            @NotBlank(message = "후기 내용을 입력해주세요.")
-            @Size(max = 1000, message = "후기 내용은 1000자를 초과할 수 없습니다.")
-            String content
+    public record AdminReviewStatusDTO(
+            @NotNull(message = "후기 작성 허용 여부를 선택해주세요.")
+            Boolean reviewEnabled
     ){}
 }

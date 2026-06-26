@@ -84,6 +84,7 @@ public class ConcertResponse {
             String detailDescription1,
             String detailDescription2,
             Integer reviewCount,
+            boolean reviewEnabled,
             boolean comingSoon,
             String ticketOpenIso,
             String ticketOpenLabel,
@@ -134,6 +135,7 @@ public class ConcertResponse {
                     .detailDescription1(concert.getDetailDescription1())
                     .detailDescription2(concert.getDetailDescription2())
                     .reviewCount(Math.toIntExact(reviewCount == null ? 0L : reviewCount))
+                    .reviewEnabled(concert.isReviewEnabled())
                     .comingSoon(comingSoon)
                     .ticketOpenIso(ticketOpenIso)
                     .ticketOpenLabel(ticketOpenLabel)
