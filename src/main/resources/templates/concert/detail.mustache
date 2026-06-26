@@ -17,7 +17,10 @@
 
                         <div class="cc-detail-title-row">
                             <h1 class="cc-detail-title">{{title}}</h1>
-                            <button type="button" class="cc-btn-heart d-none d-lg-flex" aria-label="관심 등록">♡</button>
+                            <button type="button" class="cc-btn-heart d-none d-lg-flex {{#isLiked}}active{{/isLiked}}" aria-label="관심 등록" data-concert-id="{{id}}">
+                                {{#isLiked}}♥{{/isLiked}}
+                                {{^isLiked}}♡{{/isLiked}}
+                            </button>
                         </div>
 
                         <div class="cc-detail-tags">

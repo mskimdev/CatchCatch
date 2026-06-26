@@ -4,6 +4,8 @@ import com.catchcatch.ticket.concert.banner.BannerResponse;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.concert.dto.ConcertResponse;
 import com.catchcatch.ticket.concert.service.ConcertService;
+import com.catchcatch.ticket.core.util.Define;
+import com.catchcatch.ticket.user.dto.SessionUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -12,6 +14,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
 import java.util.List;
 
@@ -84,8 +87,12 @@ public class ConcertController {
 
     // 💡 변경됨: 동적 ID를 받아 데이터를 모델에 심어 반환
     @GetMapping("/concerts/{id}")
-    public String detail(@PathVariable Integer id, Model model) {
-        ConcertResponse.DetailDTO responseDTO = concertService.getConcertDetail(id);
+    public String detail(@PathVariable Integer id,
+                         @SessionAttribute(name = Define.SESSION_USER,required = false) SessionUser sessionUser,
+                         Model model) {
+        Integer userId = (sessionUser != null) ? sessionUser.getId() : null;
+        ConcertResponse.DetailDTO responseDTO = concertService.getConcertDetail(id,userId);
+
         model.addAttribute("concert", responseDTO);
         return "concert/detail";
     }

@@ -90,9 +90,10 @@ public class ConcertResponse {
             String ticketOpenLabel,
             List<SessionDTO> sessions,
             List<DateDTO> dates,
-            List<PriceDTO> prices
+            List<PriceDTO> prices,
+            boolean isLiked
     ) {
-        public static DetailDTO of(Concert concert, List<Seat> seats, Long reviewCount) {
+        public static DetailDTO of(Concert concert, List<Seat> seats, Long reviewCount, boolean isLiked) {
             String safeDateRange = (concert.getStartDate() != null && concert.getEndDate() != null)
                     ? concert.getStartDate() + "~" + concert.getEndDate() : "일정 미정";
             String safeVenueName = (concert.getVenue() != null) ? concert.getVenue().getName() : "공연장 미정";
@@ -102,7 +103,6 @@ public class ConcertResponse {
             for (int i = 0; i < concertSessions.size(); i++) {
                 sessionDTOs.add(SessionDTO.of(concertSessions.get(i), i + 1));
             }
-            // 💡 2. 낱개 좌석(Seat)들에서 등급별 가격 정보만 추출 및 중복 제거
             List<PriceDTO> priceDTOs = seats.stream()
                     .collect(Collectors.toMap(
                             Seat::getGrade,
@@ -147,6 +147,7 @@ public class ConcertResponse {
                             .map(DateDTO::of)
                             .collect(Collectors.toList()))
                     .prices(priceDTOs)
+                    .isLiked(isLiked)
                     .build();
         }
     } // end of DetailDTO
