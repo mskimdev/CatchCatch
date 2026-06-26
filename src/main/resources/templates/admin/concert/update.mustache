@@ -46,11 +46,14 @@
                                 </div>
                                 <div class="col-md-4 form-group">
                                     <label>장르</label>
-                                    <input type="text" name="genre" class="form-control" value="{{concert.genre}}" required>
-                                </div>
-                                <div class="col-md-4 form-group">
-                                    <label>카테고리</label>
-                                    <input type="text" name="category" class="form-control" value="{{concert.category}}" required>
+                                    <select name="genre" class="form-control" data-current-genre="{{concert.genre}}" required>
+                                        <option value="concert">콘서트</option>
+                                        <option value="musical">뮤지컬</option>
+                                        <option value="festival">페스티벌</option>
+                                        <option value="fanmeeting">팬미팅</option>
+                                        <option value="classic">클래식</option>
+                                        <option value="etc">기타</option>
+                                    </select>
                                 </div>
                             </div>
 
@@ -208,6 +211,11 @@
                     const concertId = concertIdText ? parseInt(concertIdText) : null;
                     const concertUpdateForm = document.getElementById('concertUpdateForm');
                     const posterFileInput = document.getElementById('posterUpdateFile');
+                    const genreSelect = concertUpdateForm?.querySelector('[name="genre"]');
+
+                    if (genreSelect && genreSelect.dataset.currentGenre) {
+                        genreSelect.value = genreSelect.dataset.currentGenre;
+                    }
 
                     if (posterFileInput) {
                         posterFileInput.addEventListener('change', function (e) {
@@ -233,7 +241,6 @@
                                             artist: formData.get('artist'),
                                             venueId: parseInt(formData.get('venueId')),
                                             genre: formData.get('genre'),
-                                            category: formData.get('category'),
                                             priceVip: parseInt(formData.get('priceVip')),
                                             priceR: parseInt(formData.get('priceR')),
                                             priceS: parseInt(formData.get('priceS')),

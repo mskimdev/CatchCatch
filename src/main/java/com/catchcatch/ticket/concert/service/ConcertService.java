@@ -7,9 +7,11 @@ import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.concert.dto.ConcertResponse;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
+import com.catchcatch.ticket.concertlike.ConcertLikeRepository;
 import com.catchcatch.ticket.review.ReviewRepository;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.seat.SeatRepository;
+import com.catchcatch.ticket.user.dto.SessionUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +33,7 @@ public class ConcertService {
     private final SeatRepository seatRepository;
     private final BannerRepository bannerRepository;
     private final ReviewRepository reviewRepository;
+    private final ConcertLikeRepository concertLikeRepository;
 
     // ==========================================
     // 1. 홈페이지 관련 메서드
@@ -85,14 +88,19 @@ public class ConcertService {
     /**
      * [상세 페이지용] 공연 상세 데이터 조회 (Concert + Sessions + Seats 통합)
      */
-    public ConcertResponse.DetailDTO getConcertDetail(Integer concertId) {
+    public ConcertResponse.DetailDTO getConcertDetail(Integer concertId, Integer sessionUserId) {
 
         // 1. 공연 및 회차 데이터 조회 (N+1 방지)
         Concert concert = concertRepository.findByIdWithDetails(concertId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공연입니다. ID: " + concertId));
 
-        // 2. 화면 하단 '가격 정보'를 렌더링하기 위해, 첫 번째 회차의 좌석 데이터를 조회합니다.
-        // (모든 회차의 가격/좌석 등급 구성이 동일하다고 가정합니다.)
+        // 좋아요 유무 확인
+        boolean isLiked = false;
+        if (sessionUserId != null){
+            isLiked = concertLikeRepository.existsByUserIdAndConcertId(sessionUserId,concertId);
+        }
+
+        // 2. 화면 하단 '가격 정보'를 렌더링하기 위해, 첫 번째 회차의 좌석 데이터를 조회.
         List<Seat> seats = new ArrayList<>();
         if (concert.getSessions() != null && !concert.getSessions().isEmpty()) {
             Integer firstSessionId = concert.getSessions().get(0).getId();
@@ -102,7 +110,7 @@ public class ConcertService {
         long reviewCount = reviewRepository.countByConcertId(concertId);
 
         // 3. 엔티티 데이터를 DTO 팩토리 메서드로 넘겨 조립합니다.
-        return ConcertResponse.DetailDTO.of(concert, seats, reviewCount);
+        return ConcertResponse.DetailDTO.of(concert, seats, reviewCount,isLiked);
     } // end of getConcertDetail
 
 

@@ -4,6 +4,7 @@ import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.booking.bookingSeat.BookingSeat;
 import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.concert.core.ConcertGenreLabel;
 import com.catchcatch.ticket.payment.Payment;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.session.ConcertSession;
@@ -39,7 +40,7 @@ public class BookingResponse {
         private Integer id;
         private String title;
         private String posterUrl;
-        private String category;
+        private String genreLabel;
         private String genre;
 
         private Integer sessionId;
@@ -59,7 +60,7 @@ public class BookingResponse {
                     .id(concert.getId())
                     .title(concert.getTitle())
                     .posterUrl(concert.getPosterUrl())
-                    .category(concert.getCategory())
+                    .genreLabel(ConcertGenreLabel.of(concert.getGenre()))
                     .genre(concert.getGenre())
                     .sessionId(concertSession.getId())
                     .sessionText(concertSession.getSessionDate() + " " + concertSession.getSessionTime())
