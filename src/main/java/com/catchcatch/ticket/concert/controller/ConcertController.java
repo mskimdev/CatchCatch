@@ -89,7 +89,6 @@ public class ConcertController {
         return "concert/list";
     }
 
-    // 💡 변경됨: 동적 ID를 받아 데이터를 모델에 심어 반환
     @GetMapping("/concerts/{id}")
     public String detail(@PathVariable Integer id,
                          @SessionAttribute(name = Define.SESSION_USER,required = false) SessionUser sessionUser,
