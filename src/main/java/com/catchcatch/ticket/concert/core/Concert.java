@@ -1,12 +1,10 @@
 package com.catchcatch.ticket.concert.core;
 
-import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
 import com.catchcatch.ticket.concertlike.ConcertLike;
 import com.catchcatch.ticket.seat.SeatGrade;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.venue.Venue;
-import jakarta.mail.Multipart;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -73,8 +71,7 @@ public class Concert {
     // ==========================================
 
     // [상단 뱃지 영역]
-    private String category;        // 예: "콘서트", "뮤지컬"
-    private String genre;           // 예: "록/메탈", "발라드"
+    private String genre;           // concert, musical, festival, fanmeeting, classic, etc
 
     // [중앙 인포 리스트 영역]
     private LocalDate startDate;    // 공연 시작일
@@ -131,6 +128,10 @@ public class Concert {
         };
     }
 
+    public String getGenreLabel() {
+        return ConcertGenreLabel.of(this.genre);
+    }
+
     @Getter
     @Setter
     public class ConcertSearchCondition {
@@ -144,8 +145,7 @@ public class Concert {
         this.title = dto.title();
         this.artist = dto.artist();
         this.genre = dto.genre();
-        this.category = dto.category();
-        this.venue = newVenue; // 새롭게 찾은 Venue 엔티티로 교체
+        this.venue = newVenue;
         this.ticketOpenDate = dto.ticketOpenDate();
         this.startDate = dto.startDate();
         this.endDate = dto.endDate();
@@ -157,7 +157,7 @@ public class Concert {
         this.description = dto.description();
         this.detailDescription1 = dto.detailDescription1();
         this.detailDescription2 = dto.detailDescription2();
-        this.posterUrl = updatePosterUrl; // 분기 처리된 포스터 URL 적용
+        this.posterUrl = updatePosterUrl;
         this.priceVip = dto.priceVip();
         this.priceR = dto.priceR();
         this.priceS = dto.priceS();

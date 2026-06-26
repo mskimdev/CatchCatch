@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.concert.dto;
 
 import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.concert.core.ConcertGenreLabel;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.seat.SeatGrade;
 import com.catchcatch.ticket.session.ConcertSession;
@@ -22,7 +23,7 @@ public class ConcertResponse {
     public record ListDTO(
             Integer id,
             String posterUrl,
-            String category,
+            String genreLabel,
             String title,
             String dateRange,
             String venueName,
@@ -32,7 +33,7 @@ public class ConcertResponse {
             String badge
     ) {
         public static ListDTO from(Concert concert) {
-            String category = concert.getCategory() != null ? concert.getCategory() : "콘서트";
+            String genreLabel = ConcertGenreLabel.of(concert.getGenre());
             String region = "미상";
             if (concert.getVenue().getAddress() != null && concert.getVenue().getAddress().length() >= 2) {
                 region = concert.getVenue().getAddress().substring(0, 2);
@@ -48,7 +49,7 @@ public class ConcertResponse {
             return new ListDTO(
                     concert.getId(),
                     concert.getPosterUrl(),
-                    category,
+                    genreLabel,
                     concert.getTitle(),
                     dataRange,
                     concert.getVenue().getName(),
@@ -71,7 +72,7 @@ public class ConcertResponse {
             Integer id,
             String title,
             String posterUrl,
-            String category,
+            String genreLabel,
             String genre,
             String dateRange,
             String venueName,
@@ -127,7 +128,7 @@ public class ConcertResponse {
                     .id(concert.getId())
                     .title(concert.getTitle())
                     .posterUrl(concert.getPosterUrl())
-                    .category(concert.getCategory())
+                    .genreLabel(ConcertGenreLabel.of(concert.getGenre()))
                     .genre(concert.getGenre())
                     .dateRange(safeDateRange)
                     .venueName(safeVenueName)
@@ -280,7 +281,7 @@ public class ConcertResponse {
             String ticketOpenDate,
             String venueName,
             String address,
-            String category
+            String genreLabel
     ) {
         public static OpenSoonConcertResponse from(Concert concert) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분");
@@ -294,7 +295,7 @@ public class ConcertResponse {
                     .ticketOpenDate(formattedDate)
                     .venueName(concert.getVenue().getName())
                     .address(concert.getVenue().getAddress())
-                    .category(concert.getCategory())
+                    .genreLabel(ConcertGenreLabel.of(concert.getGenre()))
                     .build();
         }
     } // OpenSoonConcertResponse

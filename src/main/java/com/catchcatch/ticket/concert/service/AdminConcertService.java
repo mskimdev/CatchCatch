@@ -90,7 +90,6 @@ public class AdminConcertService {
                 .title(dto.title())
                 .artist(dto.artist())
                 .genre(dto.genre())
-                .category(dto.category())
                 .venue(venue)
                 .ticketOpenDate(dto.ticketOpenDate())
                 .startDate(dto.startDate())
