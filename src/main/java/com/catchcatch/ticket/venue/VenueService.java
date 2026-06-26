@@ -18,6 +18,7 @@ import java.util.List;
 
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class VenueService {
 
@@ -26,18 +27,17 @@ public class VenueService {
 
     @Transactional
     public void save(VenueRequest.SaveDTO dto) {
-        dto.validate();
-
-        Venue venue = dto.toEntity(dto.getSeatMapFilePath());
+        Venue venue = dto.toEntity();
         venueRepository.save(venue);
     }
 
     public List<String> getSeatMapFiles() {
         List<String> filePaths = new ArrayList<>();
+
         try {
             ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
             Resource[] resources = resolver.getResources("classpath:static/json/seatmap/*.json");
-            
+
             for (Resource resource : resources) {
                 String filename = resource.getFilename();
                 if (filename != null) {
@@ -45,19 +45,16 @@ public class VenueService {
                 }
             }
         } catch (IOException e) {
-            log.error("Failed to load seatmap files from classpath", e);
+            log.error("좌석배치도 파일 목록 조회 실패", e);
         }
+
         return filePaths;
     }
 
-    // 전체 조회
-    @Transactional(readOnly = true)
     public List<Venue> findAll() {
         return venueRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
     }
 
-    // 검색 포함 조회
-    @Transactional(readOnly = true)
     public List<Venue> findAll(String keyword) {
         if (keyword == null || keyword.isBlank()) {
             return findAll();
@@ -66,26 +63,26 @@ public class VenueService {
         return venueRepository.findByNameContainingOrderByIdDesc(keyword);
     }
 
-    @Transactional
-    public void update(Integer id, VenueRequest.UpdateDTO dto) {
-        dto.validate();
-
-        Venue venue = venueRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공연장입니다."));
-
-        venue.update(dto.getName(), dto.getAddress(), dto.getTotalCapacity(), dto.getSeatMapFilePath());
-    }
-
-    // 공연장 단건 조회
     public Venue findById(Integer id) {
         return venueRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 공연장입니다."));
     }
 
     @Transactional
+    public void update(Integer id, VenueRequest.UpdateDTO dto) {
+        Venue venue = findById(id);
+
+        venue.update(
+                dto.name(),
+                dto.address(),
+                dto.totalCapacity(),
+                dto.seatMapFilePath()
+        );
+    }
+
+    @Transactional
     public void deleteById(Integer id) {
-        Venue venue = venueRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("등록된 공연장이 없습니다."));
+        Venue venue = findById(id);
 
         boolean isUsed = concertRepository.existsByVenueId(id);
 
