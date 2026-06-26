@@ -7,9 +7,9 @@
             <section class="cc-info-hero">
 
                 <aside class="cc-info-poster-card">
-                    {{#category}}
-                        <span class="cc-badge cc-badge--fill">{{category}}</span>
-                    {{/category}}
+                    {{#genreLabel}}
+                        <span class="cc-badge cc-badge--fill">{{genreLabel}}</span>
+                    {{/genreLabel}}
 
                     <div class="cc-info-poster">
                         <img src="{{posterUrl}}" alt="{{title}} 포스터">
@@ -24,13 +24,9 @@
                         <h1>{{title}}</h1>
 
                         <div class="cc-info-tags">
-                            {{#category}}
-                                <span class="cc-mini-badge">{{category}}</span>
-                            {{/category}}
-
-                            {{#genre}}
-                                <span class="cc-mini-badge is-muted">{{genre}}</span>
-                            {{/genre}}
+                            {{#genreLabel}}
+                                <span class="cc-mini-badge">{{genreLabel}}</span>
+                            {{/genreLabel}}
                         </div>
                     </div>
 

@@ -1,5 +1,5 @@
 {{> layout/header}}
-<link rel="stylesheet" href="/css/concert-detail.css?v=review-ui-14">
+<link rel="stylesheet" href="/css/concert-detail.css?v=detail-responsive-1">
 
 <main class="cc-main cc-detail-main">
     <div class="cc-detail-page">
@@ -13,16 +13,18 @@
                     </div>
 
                     <article class="cc-detail-info">
-                        <div class="cc-detail-category">{{category}}</div>
+                        <div class="cc-detail-category">{{genreLabel}}</div>
 
                         <div class="cc-detail-title-row">
                             <h1 class="cc-detail-title">{{title}}</h1>
-                            <button type="button" class="cc-btn-heart d-none d-lg-flex" aria-label="관심 등록">♡</button>
+                            <button type="button" class="cc-btn-heart d-none d-lg-flex {{#isLiked}}active{{/isLiked}}" aria-label="관심 등록" data-concert-id="{{id}}">
+                                {{#isLiked}}♥{{/isLiked}}
+                                {{^isLiked}}♡{{/isLiked}}
+                            </button>
                         </div>
 
                         <div class="cc-detail-tags">
-                            <span class="cc-badge cc-badge--fill">{{category}}</span>
-                            <span class="cc-badge cc-badge--gray">{{genre}}</span>
+                            <span class="cc-badge cc-badge--fill">{{genreLabel}}</span>
                         </div>
 
                         <div class="cc-info-list">
@@ -216,7 +218,13 @@
         </aside>
 
             <div class="cc-mobile-fixed-footer">
-                <button type="button" class="cc-btn-heart" aria-label="관심 등록" style="width: 56px; height: 56px;">♡</button>
+                <button type="button"
+                        class="cc-btn-heart {{#isLiked}}active{{/isLiked}}"
+                        aria-label="관심 등록"
+                        data-concert-id="{{id}}"
+                        style="width: 56px; height: 56px;">
+                    {{#isLiked}}♥{{/isLiked}}{{^isLiked}}♡{{/isLiked}}
+                </button>
                 <button type="button" class="cc-btn cc-btn--primary cc-btn--full" id="openBookingBtn" {{#comingSoon}}disabled{{/comingSoon}}>
                     {{#comingSoon}}예매 오픈 예정{{/comingSoon}}{{^comingSoon}}예매하기 (일정 선택){{/comingSoon}}
                 </button>
@@ -282,6 +290,7 @@
         initBookingStartSubmit();
         initCountdown();
         initMobileBookingTrigger();
+        initHeartToggle();
     });
 
     function initMobileBookingTrigger() {
@@ -1066,6 +1075,62 @@ function initAddressCopy() {
                 }
             });
         });
+    }
+
+    function initHeartToggle() {
+        const heartButtons = document.querySelectorAll('.cc-btn-heart[data-concert-id]');
+        if (heartButtons.length === 0) return;
+
+        heartButtons.forEach(button => {
+            button.addEventListener('click', async function () {
+                const concertId = this.dataset.concertId;
+                if (!concertId) return;
+
+                this.disabled = true;
+
+                try {
+                    const result = await apiPost(`/api/concerts/${concertId}/like`);
+                    const contentType = result.res?.headers?.get('content-type') || '';
+
+                    if (!result.res || result.res.status === 401 || contentType.includes('text/html') || !result.data) {
+                        showLoginRequiredMessage();
+                        return;
+                    }
+
+                    if (!result.res.ok || result.data.status !== 200) {
+                        const message = result.data.message || result.data.msg || '관심 공연 처리에 실패했습니다.';
+                        CcUI.alert(message, 'error');
+                        return;
+                    }
+
+                    const isLiked = result.data.body === true || result.data.body === 'true';
+                    syncHeartButtons(concertId, isLiked);
+                    CcUI.toast(isLiked ? '관심 공연으로 등록되었습니다.' : '관심 공연이 취소되었습니다.');
+                } catch (error) {
+                    console.error('관심등록 에러:', error);
+                    CcUI.alert('관심 공연 처리 중 오류가 발생했습니다.', 'error');
+                } finally {
+                    this.disabled = false;
+                }
+            });
+        });
+    }
+
+    function syncHeartButtons(concertId, isLiked) {
+        document.querySelectorAll(`.cc-btn-heart[data-concert-id="${concertId}"]`).forEach(button => {
+            button.classList.toggle('active', isLiked);
+            button.textContent = isLiked ? '♥' : '♡';
+            button.setAttribute('aria-pressed', String(isLiked));
+            button.setAttribute('aria-label', isLiked ? '관심 취소' : '관심 등록');
+        });
+    }
+
+    function showLoginRequiredMessage() {
+        if (window.CcUI) {
+            CcUI.alert('로그인 후 이용 가능합니다.', 'warning');
+        } else {
+            alert('로그인 후 이용 가능합니다.');
+        }
     }
 </script>
 

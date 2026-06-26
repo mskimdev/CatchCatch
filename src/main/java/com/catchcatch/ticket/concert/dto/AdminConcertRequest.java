@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.concert.dto;
 
 import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.concert.core.ConcertGenreLabel;
 import com.catchcatch.ticket.session.ConcertSession;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Min;
@@ -69,7 +70,6 @@ public class AdminConcertRequest {
             String detailTitle,
             String detailDescription1,
             String detailDescription2,
-            String category,
             String ageLimit,
             String contact,
             String runtime,
@@ -170,9 +170,6 @@ public class AdminConcertRequest {
             @NotBlank(message = "장르 정보가 필요합니다.")
             String genre,
 
-            @NotBlank(message = "카테고리 정보가 필요합니다.")
-            String category,
-
             @Min(value = 0, message = "VIP석 가격은 0원 이상이어야 합니다.")
             Integer priceVip,
 
@@ -233,7 +230,7 @@ public class AdminConcertRequest {
             String concertStatus,
             LocalDateTime ticketOpenDate,
             String genre,
-            String category,
+            String genreLabel,
             String ageLimit,        // 예: 만 15세 이상
             String runtime,
             String organizer,
@@ -280,7 +277,7 @@ public class AdminConcertRequest {
                     .concertStatus(concert.getConcertStatus() != null ? concert.getConcertStatus().name() : "COMING_SOON")
                     .ticketOpenDate(concert.getTicketOpenDate())
                     .genre(concert.getGenre())
-                    .category(concert.getCategory())
+                    .genreLabel(ConcertGenreLabel.of(concert.getGenre()))
                     .ageLimit(concert.getAgeLimit())
                     .runtime(concert.getRuntime())
                     .organizer(concert.getOrganizer())

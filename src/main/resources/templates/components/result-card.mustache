@@ -3,7 +3,7 @@
         <img src="{{posterUrl}}" alt="{{title}} 포스터">
     </a>
     <div class="cc-result-card__body">
-        <span class="cc-concert-card__category">{{#category}}{{category}}{{/category}}{{^category}}콘서트{{/category}}</span>
+        <span class="cc-concert-card__category">{{#genreLabel}}{{genreLabel}}{{/genreLabel}}{{^genreLabel}}콘서트{{/genreLabel}}</span>
         <h3 class="cc-result-card__title"><a href="concerts/{{id}}">{{title}}</a></h3>
         <p class="cc-result-card__line">{{dateRange}}</p>
         <p class="cc-result-card__line">{{venueName}}</p>
