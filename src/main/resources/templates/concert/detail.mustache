@@ -74,13 +74,71 @@
                     </div>
                 </section>
 
+                <section id="venue" class="cc-venue-section" style="display: none;">
+                    <div class="cc-card cc-venue-card">
+                        <h3>공연장 안내</h3>
+
+                        <div class="cc-venue-info">
+                            <strong>{{venueName}}</strong>
+                            <p>{{venueAddress}}</p>
+                        </div>
+
+                        <div id="concertVenueMap"
+                             class="cc-concert-map"
+                             data-address="{{venueAddress}}"
+                             data-venue-name="{{venueName}}">
+                        </div>
+
+                        <div class="cc-venue-address-row">
+                            <span>📍 {{venueAddress}}</span>
+                            <button type="button"
+                                    class="cc-address-copy-btn"
+                                    data-copy-address="{{venueAddress}}">
+                                주소복사
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="refund" class="cc-refund-section" style="display: none;">
+                    <div class="cc-card cc-refund-card">
+                        <h3 class="cc-refund-title">취소 및 환불 규정</h3>
+
+                        <div class="cc-refund-block">
+                            <p>· ① 예매 취소 조건보다 ② 취소 수수료 규정이 우선 적용됩니다.</p>
+                            <p>· 예매 당일 자정(밤 12시) 이전 취소 시 티켓 취소수수료가 없으며, 예매 수수료도 환불됩니다.(취소기한 내 한함)</p>
+                        </div>
+
+                        <div class="cc-refund-block">
+                            <h4>① 취소수수료 규정</h4>
+                            <p>· 관람일 기준 아래와 같이 취소 수수료가 적용됩니다.</p>
+
+                            <div class="cc-refund-fee-box">
+                                <p>· 관람일 10일전까지: <strong>장당 4,000원(티켓 금액의 10% 이내)</strong></p>
+                                <p>· 관람일 9일전~7일전까지: <strong>티켓금액의 10%</strong></p>
+                                <p>· 관람일 6일전~3일전까지: <strong>티켓금액의 20%</strong></p>
+                                <p>· 관람일 2일전 ~ 취소기한까지: <strong>티켓금액의 30%</strong></p>
+                            </div>
+                        </div>
+
+                        <div class="cc-refund-block">
+                            <h4>② 예매 취소 조건</h4>
+                            <p>· 예매 후 7일 이내 취소 시 티켓 금액 전액이 환불됩니다.(예매 수수료 제외)</p>
+                            <p>· 단, 관람일이 가까운 경우 취소수수료 규정이 우선 적용될 수 있습니다.</p>
+                            <p>· 공연 당일 또는 취소 가능 시간이 지난 경우 예매 취소가 제한될 수 있습니다.</p>
+                        </div>
+                    </div>
+                </section>
+
                 <section id="review-container" class="cc-review-section mt-5" style="display: none; width: 100%;"></section>
 
-            </div> <aside class="cc-detail-sidebar" id="bookingSidebar">
-            <div class="cc-mobile-sidebar-header">
-                <h4>관람일 및 회차 선택</h4>
-                <button type="button" class="cc-mobile-sidebar-close" id="closeBookingBtn">×</button>
             </div>
+
+            <aside class="cc-detail-sidebar" id="bookingSidebar">
+                <div class="cc-mobile-sidebar-header">
+                    <h4>관람일 및 회차 선택</h4>
+                    <button type="button" class="cc-mobile-sidebar-close" id="closeBookingBtn">×</button>
+                </div>
 
             <div class="cc-quick-booking">
                 <h3>빠른 예매</h3>
@@ -207,13 +265,17 @@
     </div>
 </div>
 
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{kakaoMapJsKey}}&autoload=false&libraries=services"></script>
 <script>
     let lastReviewFocusTrigger = null;
     let editingReviewId = null;
     const reviewContentCache = new Map();
+    let reviewWriteEnabled = {{#concert.reviewEnabled}}true{{/concert.reviewEnabled}}{{^concert.reviewEnabled}}false{{/concert.reviewEnabled}};
+    let concertVenueMapLoaded = false;
 
     document.addEventListener("DOMContentLoaded", function () {
         initTabsAndReviews();
+        initAddressCopy();
         initReviewSubmit();
         initReviewModal();
         initReviewRating();
@@ -264,51 +326,93 @@
 
     function initTabsAndReviews() {
         const tabs = document.querySelectorAll('.cc-tab');
-        const detailSection = document.getElementById('detail');
-        const reviewContainer = document.getElementById('review-container');
         const concertId = document.getElementById('hiddenConcertId')?.value;
         const hasReviewsParam = window.location.search.includes('reviews');
 
+        const sections = {
+            detail: document.getElementById('detail'),
+            venue: document.getElementById('venue'),
+            refund: document.getElementById('refund'),
+            review: document.getElementById('review-container')
+        };
+
+        function hideAllSections() {
+            Object.values(sections).forEach(section => {
+                if (section) section.style.display = 'none';
+            });
+        }
+
         function activateTab(tabType) {
             tabs.forEach(t => t.classList.remove('is-active'));
+
+            const activeHref = tabType === 'review' ? '#review' : `#${tabType}`;
+            const activeTab = Array.from(tabs).find(t => t.getAttribute('href') === activeHref);
+
+            if (activeTab) {
+                activeTab.classList.add('is-active');
+            }
+
+            hideAllSections();
+
             if (tabType === 'review') {
-                const reviewTab = Array.from(tabs).find(t => t.getAttribute('href') === '#review');
-                if (reviewTab) reviewTab.classList.add('is-active');
-                if (detailSection) detailSection.style.display = 'none';
-                if (reviewContainer) {
-                    reviewContainer.style.display = 'block';
-                    if (reviewContainer.dataset.loaded !== 'true') {
+                if (sections.review) {
+                    sections.review.style.display = 'block';
+
+                    if (sections.review.dataset.loaded !== 'true') {
                         renderReviewLoading();
                         fetchConcertReviews(concertId, 0);
                     }
                 }
-            } else {
-                const detailTab = Array.from(tabs).find(t => t.getAttribute('href') === '#detail');
-                if (detailTab) detailTab.classList.add('is-active');
-                if (reviewContainer) reviewContainer.style.display = 'none';
-                if (detailSection) detailSection.style.display = 'block';
+                return;
+            }
+
+            if (sections[tabType]) {
+                sections[tabType].style.display = 'block';
+            }
+
+            if (tabType === 'venue') {
+                initConcertVenueMap();
             }
         }
 
-        if (hasReviewsParam) activateTab('review');
+        if (hasReviewsParam) {
+            activateTab('review');
+        } else {
+            activateTab('detail');
+        }
 
         tabs.forEach(tab => {
             tab.addEventListener('click', function(e) {
                 e.preventDefault();
+
                 const targetHref = this.getAttribute('href');
-                if (targetHref === '#review') {
+                const tabType = targetHref.replace('#', '');
+
+                if (tabType === 'review') {
                     history.pushState(null, '', window.location.pathname + '?reviews');
                     activateTab('review');
-                } else if (targetHref === '#detail') {
+                    return;
+                }
+
+                if (tabType === 'detail') {
                     history.pushState(null, '', window.location.pathname);
                     activateTab('detail');
+                    return;
                 }
+
+                history.pushState(null, '', window.location.pathname + targetHref);
+                activateTab(tabType);
             });
         });
 
         document.addEventListener('click', function(e) {
             const writeButton = e.target?.closest?.('#btn-write-review');
             if (writeButton) {
+                if (!reviewWriteEnabled) {
+                    CcUI.alert('현재 이 콘서트는 후기 작성이 제한되어 있습니다.', 'warning');
+                    return;
+                }
+
                 lastReviewFocusTrigger = writeButton;
                 resetReviewModalMode();
                 document.getElementById('reviewForm')?.reset();
@@ -335,6 +439,90 @@
             }
         });
     }
+
+function initConcertVenueMap() {
+    if (concertVenueMapLoaded) return;
+
+    const mapContainer = document.getElementById('concertVenueMap');
+    if (!mapContainer) return;
+
+    const address = mapContainer.dataset.address;
+    const venueName = mapContainer.dataset.venueName;
+
+    if (!address) {
+        mapContainer.innerHTML = '<div class="cc-map-empty">공연장 주소를 찾을 수 없습니다.</div>';
+        return;
+    }
+
+    if (!window.kakao || !kakao.maps) {
+        mapContainer.innerHTML = '<div class="cc-map-empty">지도를 불러올 수 없습니다.</div>';
+        return;
+    }
+
+    kakao.maps.load(() => {
+        const geocoder = new kakao.maps.services.Geocoder();
+
+        geocoder.addressSearch(address, (result, status) => {
+            if (status !== kakao.maps.services.Status.OK || !result[0]) {
+                mapContainer.innerHTML = '<div class="cc-map-empty">주소 검색 결과가 없습니다.</div>';
+                return;
+            }
+
+            const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+            const map = new kakao.maps.Map(mapContainer, {
+                center: coords,
+                level: 4
+            });
+
+            const marker = new kakao.maps.Marker({
+                map: map,
+                position: coords
+            });
+
+            const infoWindow = new kakao.maps.InfoWindow({
+                content: `
+                    <div style="padding:8px 12px;font-size:13px;font-weight:700;white-space:nowrap;">
+                        ${venueName || '공연장'}
+                    </div>
+                `
+            });
+
+            infoWindow.open(map, marker);
+
+            setTimeout(() => {
+                map.relayout();
+                map.setCenter(coords);
+            }, 0);
+
+            concertVenueMapLoaded = true;
+        });
+    });
+}
+
+function initAddressCopy() {
+    document.addEventListener('click', async function(e) {
+        const copyButton = e.target?.closest?.('.cc-address-copy-btn');
+        if (!copyButton) return;
+
+        const address = copyButton.dataset.copyAddress;
+
+        if (!address) {
+            alert('복사할 주소가 없습니다.');
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(address);
+            alert('주소가 복사되었습니다.');
+        } catch (error) {
+            console.error('주소 복사 실패:', error);
+            alert('주소 복사에 실패했습니다.');
+        }
+    });
+}
+
+
 
     function initReviewModal() {
         const reviewModalEl = document.getElementById('reviewModal');

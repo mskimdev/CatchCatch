@@ -334,13 +334,239 @@ body.cc-review-modal-open { overflow: hidden; }
     .cc-quick-booking { box-shadow: none; padding: 20px 24px; }
 
     /* 5. 기타 모바일 디테일 */
-    .cc-tabs { margin: 20px 0; overflow-x: auto;}
-    .cc-booking-section__head { padding: 16px 20px; }
-    .cc-review-head { align-items: flex-start; flex-direction: column; padding: 22px 20px 20px; }
-    .cc-review-write-btn { width: 100%; }
-    .cc-review-item { padding: 22px 20px; }
-    .cc-review-item__meta { align-items: flex-start; flex-direction: column; gap: 6px; }
-    .cc-review-actions { justify-content: stretch; }
-    .cc-review-action-btn { flex: 1; }
-    .cc-review-empty { padding: 44px 20px; }
+    .cc-tabs {
+        margin: 20px 0;
+        overflow-x: auto;
+    }
+
+    .cc-detail-banner h2 {
+        font-size: 24px;
+    }
+
+    .cc-quick-booking {
+        padding: 16px;
+    }
+
+    .cc-booking-section__head {
+        padding: 16px 20px;
+    }
+
+    .cc-booking-section__body {
+        padding: 0 18px 20px;
+    }
+
+    .cc-calendar-day {
+        width: 34px;
+        height: 34px;
+        font-size: 15px;
+    }
+
+    .cc-review-head {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 22px 20px 20px;
+    }
+
+    .cc-review-write-btn {
+        width: 100%;
+    }
+
+    .cc-review-item {
+        padding: 22px 20px;
+    }
+
+    .cc-review-item__meta {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .cc-review-actions {
+        justify-content: stretch;
+    }
+
+    .cc-review-action-btn {
+        flex: 1;
+    }
+
+    .cc-review-empty {
+        padding: 44px 20px;
+    }
+
+    /* 상세페이지 본문 영역 스타일 */
+    .cc-detail-content {
+        width: 100%;
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e5e5;
+    }
+
+    /* 메인 배너 이미지 통으로 맞추기 */
+    .cc-detail-main-banner {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .img-fluid-detail {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+    }
+
+    /* 보조 설명 박스 스타일링 */
+    .cc-detail-auxiliary-desc {
+        margin: 24px auto;
+        padding: 20px;
+        max-width: 800px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        border-left: 4px solid #cc0000;
+    }
+
+    .desc-title {
+        font-size: 1.1rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .desc-text {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: #666;
+        white-space: pre-wrap;
+    }
+}
+
+/* 공연장 안내 / 지도 - PC, 모바일 공통 */
+.cc-venue-section,
+.cc-refund-section {
+    margin-top: 24px;
+}
+
+.cc-venue-card,
+.cc-refund-card {
+    padding: 28px;
+    border-radius: 16px;
+    background-color: #fff;
+    border: 1px solid #eee;
+    box-shadow: 0 6px 24px rgba(80, 45, 140, 0.08);
+}
+
+.cc-venue-card h3,
+.cc-refund-card h3 {
+    margin: 0 0 18px;
+    font-size: 22px;
+    font-weight: 800;
+    color: #111;
+}
+
+.cc-venue-info {
+    margin-bottom: 16px;
+}
+
+.cc-venue-info strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 18px;
+    font-weight: 800;
+    color: #222;
+}
+
+.cc-venue-info p {
+    margin: 0;
+    color: #555;
+    font-size: 15px;
+}
+
+.cc-concert-map {
+    width: 100%;
+    height: 390px;
+    margin-top: 16px;
+    border-radius: 14px;
+    overflow: hidden;
+    background-color: #f2f2f2;
+    border: 1px solid #eee;
+}
+
+.cc-map-empty {
+    height: 390px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #777;
+    font-size: 15px;
+}
+
+.cc-venue-address-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-top: 12px;
+    font-size: 14px;
+    color: #333;
+}
+
+.cc-address-copy-btn {
+    flex-shrink: 0;
+    border: none;
+    background: none;
+    color: #111;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.cc-address-copy-btn:hover {
+    color: #6d28d9;
+}
+
+/* 취소/환불 규정 - PC, 모바일 공통 */
+.cc-refund-title {
+    margin: 0 0 24px;
+    font-size: 24px;
+    font-weight: 900;
+    color: #111;
+}
+
+.cc-refund-block {
+    margin-top: 22px;
+}
+
+.cc-refund-block:first-of-type {
+    margin-top: 0;
+}
+
+.cc-refund-block h4 {
+    margin: 0 0 14px;
+    font-size: 18px;
+    font-weight: 900;
+    color: #111;
+}
+
+.cc-refund-block p {
+    margin: 9px 0;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #222;
+}
+
+.cc-refund-fee-box {
+    margin-top: 18px;
+    padding: 22px 28px;
+    border-radius: 16px;
+    background-color: #f7f7fb;
+}
+
+.cc-refund-fee-box p {
+    margin: 10px 0;
+    font-size: 15px;
+    color: #222;
+}
+
+.cc-refund-fee-box strong {
+    color: #4f46ff;
+    font-weight: 800;
 }
