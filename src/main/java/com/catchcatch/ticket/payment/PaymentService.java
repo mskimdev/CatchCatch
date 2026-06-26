@@ -22,9 +22,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -58,12 +60,7 @@ public class PaymentService {
     @Value("${app.base-url}")
     private String baseUrl;
 
-    /**
-     * 결제 진행 화면 조회
-     *
-     * GET /booking/payment?bookingId=...
-     * booking/payment.mustache에서 사용하는 payment DTO를 만든다.
-     */
+
     @Transactional(readOnly = true)
     public PaymentResponse.FormDTO getPaymentForm(Integer bookingId, Integer userId) {
         if (bookingId == null) {
@@ -92,24 +89,24 @@ public class PaymentService {
         return new PaymentResponse.FormDTO(booking, usablePoint, ticketFee);
     }
 
-    /**
-     * 결제 내역 조회
-     */
     @Transactional(readOnly = true)
-    public List<PaymentResponse.ListDTO> getPaymentList(Integer userId) {
-        if (userId == null) {
-            throw new BadRequestException("사용자 정보가 없습니다.");
-        }
+    public List<PaymentResponse.ListDTO> getPaymentList(
+            Integer userId, String keyword, String status) {
 
-        return paymentRepository.findListByUserId(userId)
-                .stream()
+        // String으로 들어온 status를 Enum으로 변환 (ALL이면 null)
+        PaymentStatus targetStatus = "ALL".equals(status) ? null : PaymentStatus.valueOf(status);
+
+        String targetKeyword = (keyword == null || keyword.trim().isEmpty()) ? null : keyword.trim();
+
+        List<Payment> paymentList =
+                paymentRepository.searchMyPayments(userId, targetKeyword, targetStatus);
+
+        return paymentList.stream()
                 .map(PaymentResponse.ListDTO::new)
-                .toList();
+                .collect(Collectors.toList());
     }
 
-    /**
-     * 결제 상세내역 조회
-     */
+
     @Transactional(readOnly = true)
     public PaymentResponse.DetailDTO getPaymentDetail(Integer paymentId, Integer userId) {
         if (paymentId == null) {
@@ -126,17 +123,7 @@ public class PaymentService {
         return new PaymentResponse.DetailDTO(payment);
     }
 
-    /**
-     * 결제 준비
-     *
-     * 1. 예매 정보 조회
-     * 2. 본인 예매인지 확인
-     * 3. 예매 상태 확인
-     * 4. 중복 결제 방지
-     * 5. 결제 금액 계산
-     * 6. paymentId 생성
-     * 7. Payment READY 저장
-     */
+
     @Transactional
     public PaymentResponse.PrepareDTO preparePayment(Integer userId, PaymentRequest.PrepareDTO reqDTO) {
         if (userId == null) {
@@ -244,9 +231,7 @@ public class PaymentService {
         );
     }
 
-    /**
-     * 결제 완료 화면 조회
-     */
+
     @Transactional(readOnly = true)
     public PaymentResponse.DetailDTO getCompleteForm(String paymentId, Integer userId) {
         if (paymentId == null || paymentId.isBlank()) {
@@ -267,21 +252,7 @@ public class PaymentService {
         return new PaymentResponse.DetailDTO(payment);
     }
 
-    /**
-     * 결제 완료 검증 및 결제 후 예매 상태 확정 처리
-     *
-     * Booking은 좌석 선택 후 다음 단계에서 이미 PENDING 상태로 생성되어 있다.
-     * 이 메서드는 새 예매를 생성하지 않고,
-     * 포트원 검증 성공 후 Payment / Booking / Seat 상태만 변경한다.
-     *
-     * 1. Payment READY 조회
-     * 2. 포트원 단건 조회
-     * 3. 결제 상태 검증
-     * 4. 결제 금액 검증
-     * 5. Seat HELD -> SOLD
-     * 6. Booking PENDING -> PAID
-     * 7. Payment READY -> PAID
-     */
+
     @Transactional
     public PaymentResponse.CompleteDTO completePayment(
             Integer userId,
@@ -387,9 +358,7 @@ public class PaymentService {
         return new PaymentResponse.CompleteDTO(payment);
     }
 
-    /**
-     * 포트원 단건 결제 조회
-     */
+
     private PaymentResponse.PortOnePayment getPortOnePayment(String paymentId) {
         RestTemplate restTemplate = new RestTemplate();
 
@@ -454,10 +423,7 @@ public class PaymentService {
         return new PaymentResponse.CompleteDTO(payment);
     }
 
-    /**
-     * 결제 취소 처리
-     * PAID -> CANCELED
-     */
+
     @Transactional
     public void cancel(String paymentId) {
         Payment payment = findPayment(paymentId);
@@ -469,12 +435,6 @@ public class PaymentService {
     }
 
 
-    /**
-     * 결제 가격 계산
-     *
-     * Booking 1개 안에 BookingSeat 여러 개가 들어가는 구조.
-     * 따라서 BookingSeat.price 합계가 결제 금액.
-     */
     private Integer calculatePaymentAmount(Booking booking) {
         if (booking.getBookingSeats() == null || booking.getBookingSeats().isEmpty()) {
             throw new BadRequestException("예매 좌석 정보가 없습니다.");
@@ -501,8 +461,6 @@ public class PaymentService {
             selectedChannelKey = kakaoPayChannelKey;
         } else if ("tosspay".equals(method)) {
             selectedChannelKey = tossPayChannelKey;
-        } else if ("vbank".equals(method)) {
-            selectedChannelKey = vbankChannelKey;
         } else {
             throw new BadRequestException("지원하지 않는 결제 수단입니다.");
         }
@@ -532,18 +490,13 @@ public class PaymentService {
         return concertTitle + " 외 " + (seatCount - 1) + "매";
     }
 
-    /**
-     * paymentId 생성
-     */
+
     private String generatePaymentId(Integer bookingId) {
         return "catchcatch_" + bookingId + "_" + System.currentTimeMillis() + "_" +
                 UUID.randomUUID().toString().substring(0, 8);
     }
 
 
-    /**
-     * 사용하려는 포인트가 유효한지 검증
-     */
     private void validateUsedPoint(User user, Integer originalAmount, Integer usedPoint) {
         if (usedPoint == null || usedPoint == 0) {
             return; // 포인트 사용 안 함
@@ -558,7 +511,5 @@ public class PaymentService {
             throw new BadRequestException("결제 금액보다 많은 포인트를 사용할 수 없습니다.");
         }
     }
-
-
 
 }
