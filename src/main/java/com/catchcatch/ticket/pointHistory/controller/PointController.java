@@ -35,7 +35,6 @@ public class PointController {
 
     /**
      * 만료 팝업 내에서 '전체 내역 보기' 버튼 클릭 시 호출
-     * 전체 내역 반환
      */
     @GetMapping("/history")
     public ResponseEntity<?> getPointHistory(HttpSession session) {

@@ -23,18 +23,14 @@ public class PointHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // 포인트 소유 사용자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // 어떤 이벤트 적립분인지
-    // EARN, USE, EXPIRE 모두 들어갈 수 있음
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_history_id")
     private EventHistory eventHistory;
 
-    // 결제에서 포인트를 사용한 경우 존재
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_id")
     private Payment payment;
@@ -43,17 +39,12 @@ public class PointHistory {
     @Column(nullable = false, length = 20)
     private PointHistoryType type;
 
-    // 이번 거래 변동량
-    // 적립: 양수, 사용/만료: 음수
     @Column(nullable = false)
     private Integer amount;
 
-    // 해당 이벤트 적립분의 거래 후 남은 잔액
-    // 예: 1000P 적립 후 300P 사용하면 USE row의 balance는 700
     @Column(nullable = false)
     private Integer balance;
 
-    // 해당 이벤트 적립분의 만료일
     @Column(name = "expired_at")
     private Timestamp expiredAt;
 

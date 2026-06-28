@@ -47,10 +47,8 @@ public class PointService {
                 LocalDateTime.now().plusMonths(validMonths)
         );
 
-        // 사용자 전체 포인트 증가
         user.addPoint(rewardPoint);
 
-        // 해당 이벤트 적립분 기록
         PointHistory pointHistory = PointHistory.builder()
                 .user(user)
                 .eventHistory(eventHistory)
@@ -70,19 +68,14 @@ public class PointService {
 
     /**
      * 결제 시 포인트 사용
-     * <p>
-     * 예:
-     * 여름 이벤트 1000P 보유 중 300P 사용
-     * -> USE row: amount = -300, balance = 700
      */
     @Transactional
-    public Integer usePoint(User user, Payment payment, Integer usePoint) {
+    public void usePoint(User user, Payment payment, Integer usePoint) {
 
         if (usePoint == null || usePoint <= 0) {
-            return user.getPoint();
+            return;
         }
 
-        // 사용 전 만료 포인트 정리
         expireUserPoint(user);
 
         if (user.getPoint() < usePoint) {
@@ -123,18 +116,11 @@ public class PointService {
             throw new RuntimeException("사용 가능한 포인트가 부족합니다.");
         }
 
-        // 사용자 전체 포인트 차감
         user.usePoint(usePoint);
-
-        return user.getPoint();
     }
 
     /**
      * 만료 포인트 처리
-     * <p>
-     * 예:
-     * 여름 이벤트 포인트 balance = 700, 만료일 지남
-     * -> EXPIRE row: amount = -700, balance = 0
      */
     @Transactional
     public void expireUserPoint(User user) {
@@ -180,8 +166,7 @@ public class PointService {
 
 
     /**
-     * 특정 사용자의 전체 포인트 이용 내역 조회 (기간 제한 없음)
-     * 모달창 내에서 '전체 내역 보기' 버튼을 눌렀을 때 호출
+     * 전체 포인트 이용 내역 조회
      */
     @Transactional(readOnly = true)
     public List<PointResponse.ListDTO> getAllPointHistoryList(Integer userId) {
@@ -198,7 +183,7 @@ public class PointService {
     }
 
     /**
-     * 30일 내 만료 예정 포인트 내역 조회 (중앙 작은 모달창/새 창용)
+     * 30일 내 만료 예정 포인트 내역 조회
      */
     @Transactional(readOnly = true)
     public List<PointResponse.ExpiringDTO> getExpiringPoints(Integer userId) {

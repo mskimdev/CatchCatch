@@ -12,22 +12,20 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/payments")
 public class PaymentApiController {
 
     private final PaymentService paymentService;
     private final UserRepository userRepository;
 
 
-    @PostMapping("/api/payments/prepare")
+    @PostMapping("/prepare")
     @ResponseBody
     public ResponseEntity<?> preparePayment(@RequestBody PaymentRequest.PrepareDTO reqDTO, HttpSession session) {
 
@@ -46,7 +44,7 @@ public class PaymentApiController {
     }
 
 
-    @PostMapping("/api/payments/complete")
+    @PostMapping("/complete")
     @ResponseBody
     public ResponseEntity<?> completePayment(
             @RequestBody PaymentRequest.CompleteDTO reqDTO,

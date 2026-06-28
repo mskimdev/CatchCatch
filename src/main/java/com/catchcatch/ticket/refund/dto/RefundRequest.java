@@ -11,6 +11,6 @@ public class RefundRequest {
      */
     public record PortOneCancelBody(
             Integer amount, // 취소할 금액
-            String reason   // 취소 사유
+            String reason
     ) {}
 }

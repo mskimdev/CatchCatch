@@ -14,6 +14,7 @@ import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
+@RequestMapping("/events")
 public class EventController {
 
     private final EventService eventService;
@@ -26,7 +27,7 @@ public class EventController {
      * /events?status=upcoming
      * /events?status=ended
      */
-    @GetMapping("/events")
+    @GetMapping
     public String getEventList(
             @RequestParam(defaultValue = "ongoing") String status,
             Model model
@@ -56,7 +57,7 @@ public class EventController {
     /**
      * 이벤트 상세 화면
      */
-    @GetMapping("/events/{id}")
+    @GetMapping("/{id}")
     public String getEventDetail(@PathVariable Integer id, HttpSession session, Model model) {
 
         SessionUser sessionUser = (SessionUser) session.getAttribute(Define.SESSION_USER);

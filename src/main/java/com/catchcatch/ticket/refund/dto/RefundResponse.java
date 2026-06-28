@@ -13,7 +13,7 @@ public class RefundResponse {
             String reason,             // 취소 사유
             String refundedAt          // 환불 완료 일시
     ) {
-        // 엔티티를 DTO로 변환하는 커스텀 생성자
+
         public DetailDTO(Refund refund, int actualRefundedPoint) {
             this(
                     refund.getId(),
@@ -22,7 +22,7 @@ public class RefundResponse {
                     actualRefundedPoint,
                     refund.getCancelFee(),
                     refund.getReason(),
-                    refund.getRefundedAt() != null ? refund.getRefundedAt().toString() : null // NullPointerException 방지
+                    refund.getRefundedAt() != null ? refund.getRefundedAt().toString() : null
             );
         }
     }

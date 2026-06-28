@@ -175,9 +175,6 @@ public class PaymentResponse {
 
     /**
      * 결제 화면 DTO
-     *
-     * booking/payment.mustache에서 사용하는 DTO.
-     * 이 단계에서는 아직 사용 포인트가 선택되지 않았으므로 usedPoint는 기본 0.
      */
     public record FormDTO(
             Integer bookingId,
@@ -304,8 +301,6 @@ public class PaymentResponse {
 
     /**
      * 결제 준비 응답 DTO
-     *
-     * amount는 포인트 차감 후 실제 포트원 결제창에 넘길 금액.
      */
     public record PrepareDTO(
             String paymentId,
@@ -320,7 +315,6 @@ public class PaymentResponse {
             Integer usedPoint,
             String usedPointText,
 
-            // 실제 결제 금액
             Integer amount,
             String amountText,
 
@@ -370,7 +364,6 @@ public class PaymentResponse {
             Integer usedPoint,
             String usedPointText,
 
-            // 실제 결제 금액
             Integer amount,
             String amountText,
 
@@ -403,8 +396,6 @@ public class PaymentResponse {
 
     /**
      * 포트원 단건조회 API 응답
-     *
-     * 이건 외부 API JSON 역직렬화용이라 record보다 class 유지 추천.
      */
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -582,7 +573,6 @@ public class PaymentResponse {
         return booking.getUser().getPoint();
     }
 
-    // --- 환불 처리를 위한 날짜 및 상태 계산 Helper 메서드 추가 ---
 
     private static Long calculateDaysUntilSession(Booking booking) {
         if (booking == null || booking.getConcertSession() == null || booking.getConcertSession().getSessionDate() == null) {
@@ -593,7 +583,7 @@ public class PaymentResponse {
             java.time.LocalDate sessionDate = java.time.LocalDate.parse(dateStr);
             return java.time.temporal.ChronoUnit.DAYS.between(java.time.LocalDate.now(), sessionDate);
         } catch (Exception e) {
-            return 0L; // 날짜 파싱 실패 시 기본값
+            return 0L;
         }
     }
 
@@ -603,11 +593,9 @@ public class PaymentResponse {
     }
 
     private static Boolean checkCancelable(Payment payment, Long daysUntilSession) {
-        // 이미 결제 완료(PAID) 상태가 아니라면 취소 버튼 숨김
         if (payment == null || payment.getStatus() != PaymentStatus.PAID) {
             return false;
         }
-        // 남은 기간이 3일 이하(3, 2, 1, 0...)면 취소 불가, 4일 이상 남았을 때만 버튼 노출
         return daysUntilSession > 3;
     }
 }

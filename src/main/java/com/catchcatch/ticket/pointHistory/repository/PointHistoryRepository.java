@@ -13,9 +13,6 @@ import java.util.List;
 
 public interface PointHistoryRepository extends JpaRepository<PointHistory, Integer> {
 
-    /**
-     * 사용자의 포인트 내역 전체 조회
-     */
     @Query("""
         select ph
         from PointHistory ph
@@ -77,8 +74,8 @@ public interface PointHistoryRepository extends JpaRepository<PointHistory, Inte
     );
 
     /**
-     * 특정 유저의 30일 이내 만료 예정 포인트 내역 조회
-     * 남은 포인트(balance)가 0보다 크고, 만료일이 현재~30일뒤 사이인 데이터를 만료 임박순으로 정렬합니다.
+     * 30일 이내 만료 예정 포인트 내역 조회
+     * 남은 포인트(balance)가 0보다 크고, 만료일이 현재~30일뒤 사이인 데이터를 만료 임박순으로 정렬
      */
     @Query("""
             select ph
