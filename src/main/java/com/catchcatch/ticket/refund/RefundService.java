@@ -46,7 +46,7 @@ public class RefundService {
 
 
         // 취소 수수료 계산
-        Integer cancelFee = PaymentPolicy.calculateCancelFee(payment.getAmount(), payment.getBooking().getConcertSession().getSessionDate());
+        Integer cancelFee = PaymentPolicy.calculateCancelFee(payment.getAmount(), payment.getBooking().getConcertSession().getSessionDate(),payment.getPaidAt());
         int pgPaidAmount = payment.getAmount(); // 포트원 실결제한 금액
         int usedPoint = payment.getUsedPoint() != null ? payment.getUsedPoint() : 0; // 사용한 포인트
 
