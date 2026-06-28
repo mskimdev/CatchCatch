@@ -40,10 +40,11 @@ public class EventService {
                 .toList();
     }
 
-    public EventResponse.DetailDTO getEventDetail(Integer eventId) {
+    public EventResponse.DetailDTO getEventDetail(Integer eventId, Integer userId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("이벤트를 찾을 수 없습니다."));
-        return new EventResponse.DetailDTO(event);
+        boolean alreadyJoined = userId != null && eventHistoryRepository.existsJoin(userId, eventId);
+        return new EventResponse.DetailDTO(event, alreadyJoined);
     }
 
     @Transactional

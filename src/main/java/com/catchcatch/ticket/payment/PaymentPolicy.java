@@ -26,7 +26,7 @@ public final class PaymentPolicy {
 
     // genre Enum 타입 수정 시 String --> 타입변경
     public static Integer calculateTicketFee(Booking booking) {
-        String genre = booking.getConcertSession().getConcert().getGenre();
+        String genre = String.valueOf(booking.getConcertSession().getConcert().getGenre());
         if ("CONCERT".equals(genre)) {
             return CONCERT_FEE;
         } else if ("FESTIVAL".equals(genre)) {

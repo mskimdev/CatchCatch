@@ -47,9 +47,10 @@ public class EventResponse {
             String endDate,
             boolean isActive,
             String conditionType,
-            String conditionLabel
+            String conditionLabel,
+            boolean alreadyJoined
     ) {
-        public DetailDTO(Event event) {
+        public DetailDTO(Event event, boolean alreadyJoined) {
             this(
                     event.getId(),
                     event.getTitle(),
@@ -61,7 +62,8 @@ public class EventResponse {
                     DateUtil.format(event.getEndDate()),
                     event.isActive(),
                     event.getConditionType().name(),
-                    getConditionLabel(event.getConditionType())
+                    getConditionLabel(event.getConditionType()),
+                    alreadyJoined
             );
         }
 
