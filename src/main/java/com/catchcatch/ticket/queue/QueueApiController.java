@@ -4,7 +4,7 @@ import java.util.List;
 import com.catchcatch.ticket.core.sse.SseEmitterRepository;
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.Resp;
-import com.catchcatch.ticket.payment.PaymentService;
+import com.catchcatch.ticket.payment.service.PaymentService;
 import com.catchcatch.ticket.seat.SeatRepository;
 import com.catchcatch.ticket.seat.SeatStatus;
 import com.catchcatch.ticket.user.dto.SessionUser;

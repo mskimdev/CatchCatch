@@ -2,7 +2,7 @@ package com.catchcatch.ticket.pointHistory;
 
 import com.catchcatch.ticket.eventhistory.EventHistory;
 import com.catchcatch.ticket.payment.Payment;
-import com.catchcatch.ticket.pointHistory.PointHistoryType;
+import com.catchcatch.ticket.pointHistory.enums.PointHistoryType;
 import com.catchcatch.ticket.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
