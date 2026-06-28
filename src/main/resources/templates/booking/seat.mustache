@@ -256,15 +256,7 @@
                             price: toNumber(seat.price || seat.seatPrice, 0),
 
                             status,
-                            bookingStatus: seat.bookingStatus || seat.booking_status || "",
-
-                            x: toNumber(seat.x || seat.xLabel, 0),
-                            y: toNumber(seat.y || seat.yLabel, 0),
-                            xLabel: toNumber(seat.xLabel || seat.x, 0),
-                            yLabel: toNumber(seat.yLabel || seat.y, 0),
-
-                            size: toNumber(seat.size, 16),
-                            angle: toNumber(seat.angle, 0)
+                            bookingStatus: seat.bookingStatus || seat.booking_status || ""
                         };
                     })
                     : [];
@@ -272,9 +264,7 @@
                 window.CATCHCATCH_SEAT_META = {
                     concertId: "{{concertId}}",
                     sessionId: "{{sessionId}}",
-                    maxSelectCount: 4,
-                    defaultSeatSize: 16,
-                    defaultSeatAngle: 0
+                    maxSelectCount: 4
                 };
             })();
         </script>

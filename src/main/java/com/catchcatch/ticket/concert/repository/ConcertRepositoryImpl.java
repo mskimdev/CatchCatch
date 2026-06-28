@@ -3,6 +3,7 @@ package com.catchcatch.ticket.concert.repository;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.concert.dto.ConcertResponse;
 import com.catchcatch.ticket.concert.core.ConcertStatus;
+import com.catchcatch.ticket.concert.enums.ConcertGenre;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -128,8 +129,12 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
         if (!StringUtils.hasText(genre) || "all".equals(genre)) {
             return null;
         }
+        ConcertGenre concertGenre = ConcertGenre.fromCodeOrNull(genre);
+        if (concertGenre == null) {
+            return null;
+        }
         // "concert", "musical" 등 특정 장르가 넘어왔을 때만 해당 장르를 필터링
-        return concert.genre.eq(genre);
+        return concert.genre.eq(concertGenre);
     }
 
     // 4. 지역 (region)

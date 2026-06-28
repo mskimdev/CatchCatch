@@ -2,6 +2,7 @@ package com.catchcatch.ticket.concert.controller;
 
 import com.catchcatch.ticket.concert.banner.BannerResponse;
 import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.concert.enums.ConcertGenre;
 import com.catchcatch.ticket.concert.dto.ConcertResponse;
 import com.catchcatch.ticket.concert.service.ConcertService;
 import com.catchcatch.ticket.core.util.Define;
@@ -55,14 +56,8 @@ public class ConcertController {
         if (StringUtils.hasText(condition.getKeyword())) {
             searchTitle = "'" + condition.getKeyword() + "'";
         } else if (StringUtils.hasText(condition.getGenre()) && !"all".equals(condition.getGenre())) {
-            searchTitle = switch (condition.getGenre()) {
-                case "concert" -> "콘서트";
-                case "festival" -> "페스티벌";
-                case "musical" -> "뮤지컬";
-                case "classic" -> "클래식";
-                case "fanmeeting" -> "팬미팅";
-                default -> "기타";
-            };
+            ConcertGenre genre = ConcertGenre.fromCodeOrNull(condition.getGenre());
+            searchTitle = genre != null ? genre.getLabel() : "기타";
         } else if (StringUtils.hasText(condition.getRegion()) && !"all".equals(condition.getRegion())) {
             searchTitle = switch (condition.getRegion()) {
                 case "seoul" -> "서울";

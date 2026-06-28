@@ -85,70 +85,70 @@ INSERT INTO concert_tb
 VALUES
     (1, '아이유 콘서트 2026 [HEREH]', '아이유',
      '아이유의 2026년 단독 콘서트. 새 앨범 수록곡을 포함한 화려한 무대.',
-     '/images/sample/poster-music.svg', 'OPEN', 'concert',
+     '/images/sample/poster-music.svg', 'OPEN', 'CONCERT',
      '2026-08-01', '2026-08-02', '2026-05-20 20:00:00', '만 7세 이상 관람가', '150분', 'EDAM 엔터테인먼트', '1544-1111',
      '/images/sample/detail-banner.svg', '여름밤을 수놓을 아름다운 목소리', '아이유와 함께하는 잊지 못할 특별한 시간', '놓칠 수 없는 단 이틀간의 공연',
      150000, 130000, 110000, 90000, NOW(), false),
 
     (2, '뮤지컬 <시카고> 오리지널 내한', '내한공연팀',
      '브로드웨이 역사상 가장 매혹적인 뮤지컬 시카고 내한 공연.',
-     '/images/sample/poster-music.svg', 'OPEN', 'musical',
+     '/images/sample/poster-music.svg', 'OPEN', 'MUSICAL',
      '2026-09-05', '2026-09-07', '2026-05-25 14:00:00', '만 15세 이상 관람가', '150분', '신시컴퍼니', '1544-2222',
      '/images/sample/detail-banner.svg', '가장 뜨겁고 섹시한 무대', '브로드웨이 오리지널 캐스트의 귀환', 'All That Jazz',
      0, 0, 0, 0, NOW(), false),
 
     (3, '조성진 피아노 리사이틀', '조성진',
      '세계적인 피아니스트 조성진의 2026년 전국투어 리사이틀.',
-     '/images/sample/poster-music.svg', 'COMING_SOON', 'classic',
+     '/images/sample/poster-music.svg', 'COMING_SOON', 'CLASSIC',
      '2026-10-10', '2026-10-11', '2026-07-10 18:00:00', '만 7세 이상 관람가', '100분', '크레디아', '1544-3333',
      '/images/sample/detail-banner.svg', '건반 위를 수놓는 완벽한 타건', '쇼팽 콩쿠르 우승자 조성진의 귀환', '영혼을 울리는 클래식의 밤',
      0, 0, 0, 0, NOW(), false),
 
     (4, '부산 재즈 페스티벌 2026', '다수 아티스트',
      '국내외 유명 재즈 아티스트들의 합동 페스티벌 공연.',
-     '/images/sample/poster-music.svg', 'OPEN', 'festival',
+     '/images/sample/poster-music.svg', 'OPEN', 'FESTIVAL',
      '2026-07-20', '2026-07-20', '2026-06-01 12:00:00', '전체 관람가', '240분', '부산문화재단', '1544-4444',
      '/images/sample/detail-banner.svg', '한여름 밤의 낭만적인 재즈 선율', '국내외 최정상급 재즈 뮤지션 총출동', '사직실내체육관에서 즐기는 감미로운 축제',
      0, 0, 0, 0, NOW(), false),
 
     (1, '박보검 데뷔 16주년 팬미팅', '박보검',
      '배우 박보검 데뷔 16주년 기념 공식 팬미팅.',
-     '/images/sample/poster-music.svg', 'CLOSED_SOON', 'fanmeeting',
+     '/images/sample/poster-music.svg', 'CLOSED_SOON', 'FANMEETING',
      '2026-06-25', '2026-06-25', '2026-05-01 20:00:00', '전체 관람가', '120분', '더블랙레이블', '1544-5555',
      '/images/sample/detail-banner.svg', '팬들과 함께하는 특별한 16주년', '보검복지부와 함께하는 따뜻한 시간', '놓칠 수 없는 단 하루',
      0, 0, 0, 0, NOW(), false),
 
     (2, 'DAY6 4TH WORLD TOUR <FOREVER>', 'DAY6',
      '마이데이를 위한 뜨거운 여정, 데이식스 월드투어 서울 공연.',
-     '/images/sample/poster-music.svg', 'COMING_SOON', 'concert',
+     '/images/sample/poster-music.svg', 'COMING_SOON', 'CONCERT',
      '2026-08-21', '2026-08-25', '2026-06-25 20:00:00', '만 7세 이상 관람가', '150분', 'JYP 엔터테인먼트', '1544-6666',
      '/images/sample/detail-banner.svg', '우리의 모든 순간이 영원이 되도록', 'FOREVER 뜨겁게 빛날 무대', '올림픽공원에서 펼쳐지는 벅찬 감동',
      0, 0, 0, 0, NOW(), false),
 
     (3, '세븐틴 WORLD TOUR <NEW_> IN SEOUL', '세븐틴',
      '새로운 챕터의 시작을 알리는 세븐틴의 월드투어 인 서울.',
-     '/images/sample/poster-triangle.svg', 'OPEN', 'concert',
+     '/images/sample/poster-triangle.svg', 'OPEN', 'CONCERT',
      '2026-07-06', '2026-07-08', '2026-05-15 20:00:00', '만 7세 이상 관람가', '180분', 'PLEDIS 엔터테인먼트', '1544-7777',
      '/images/sample/detail-banner.svg', '새로운 역사를 써 내려갈 완벽한 무대', '고척돔을 가득 채울 열기', '캐럿과 함께 여는 NEW 챕터',
      0, 0, 0, 0, NOW(), false),
 
     (4, '황치열 전국투어 콘서트 <별, 그대>', '황치열',
      '가슴 절절한 목소리로 돌아온 황치열의 2026년 전국투어.',
-     '/images/sample/poster-artist.svg', 'CLOSED_SOON', 'concert',
+     '/images/sample/poster-artist.svg', 'CLOSED_SOON', 'CONCERT',
      '2026-06-20', '2026-06-21', '2026-05-10 14:00:00', '만 7세 이상 관람가', '150분', 'TEN2 엔터테인먼트', '1544-8888',
      '/images/sample/detail-banner.svg', '밤하늘의 별처럼 쏟아지는 감동', '별, 그리고 당신을 위한 세레나데', '화이트데이에 전하는 특별한 선물',
      0, 0, 0, 0, NOW(), false),
 
     (5, 'aespa LIVE TOUR <SYNK : HYPER LINE>', 'aespa',
      '가상과 현실을 넘나드는 에스파의 메타버스 라이브 투어.',
-     '/images/sample/poster-aespa.svg', 'OPEN', 'concert',
+     '/images/sample/poster-aespa.svg', 'OPEN', 'CONCERT',
      '2026-08-11', '2026-08-12', '2026-06-02 20:00:00', '만 7세 이상 관람가', '150분', 'SM 엔터테인먼트', '1544-9999',
      '/images/sample/detail-banner.svg', '현실과 광야를 잇는 압도적인 세계관', 'SYNK : HYPER LINE', '인스파이어 아레나를 강타할 광야의 소리',
      0, 0, 0, 0, NOW(), false),
 
     (1, 'Cigarettes After Sex Live in Seoul', 'Cigarettes After Sex',
      '몽환적이고 감각적인 사운드의 대명사, CAS 내한 공연.',
-     '/images/sample/poster-cas.svg', 'OPEN', 'concert',
+     '/images/sample/poster-cas.svg', 'OPEN', 'CONCERT',
      '2026-07-30', '2026-07-30', '2026-05-30 12:00:00', '만 15세 이상 관람가', '120분', '프라이빗커브', '1544-0000',
      '/images/sample/detail-banner.svg', '당신의 밤을 적실 몽환적인 멜로디', '독보적인 분위기의 라이브', '잠실을 수놓을 짙은 감성',
      0, 0, 0, 0, NOW(), false),
@@ -156,14 +156,14 @@ VALUES
     -- k6 부하테스트 전용 콘서트 2개
     (6, 'k6 부하테스트 콘서트 A', 'k6',
      'k6 부하 테스트 전용 콘서트 데이터 A.',
-     '/images/sample/poster-music.svg', 'OPEN', 'concert',
+     '/images/sample/poster-music.svg', 'OPEN', 'CONCERT',
      '2026-12-31', '2026-12-31', '2026-01-01 00:00:00', '전체 관람가', '120분', 'k6', '000-0000-0000',
      '/images/sample/detail-banner.svg', 'k6 부하테스트 A', 'k6 부하 테스트 전용', 'k6 부하 테스트 전용',
      100000, 80000, 60000, 40000, NOW(), false),
 
     (7, 'k6 부하테스트 콘서트 B', 'k6',
      'k6 부하 테스트 전용 콘서트 데이터 B.',
-     '/images/sample/poster-music.svg', 'OPEN', 'concert',
+     '/images/sample/poster-music.svg', 'OPEN', 'CONCERT',
      '2026-12-31', '2026-12-31', '2026-01-01 00:00:00', '전체 관람가', '120분', 'k6', '000-0000-0000',
      '/images/sample/detail-banner.svg', 'k6 부하테스트 B', 'k6 부하 테스트 전용', 'k6 부하 테스트 전용',
      100000, 80000, 60000, 40000, NOW(), false);
@@ -208,99 +208,86 @@ FROM concert_tb c;
 
 -- ================
 --  seat_tb
---  session 1 (아이유 1회차): VIP 50 / R 100 / S 200 / A 150 = 500석
---  session 2 (아이유 2회차): VIP 50 / R 100 / S 200 / A 150 = 500석
---  session 3~15: 각 R 80 / S 120 / A 50 = 250석
---  session 16,17 (k6): 각 1000석 (A등급)
+--  session 1: VIP 50 / R 100 / S 200 / A 150 = 500
+--  session 2: VIP 50 / R 100 / S 200 / A 150 = 500
+--  session 3~15: each R 80 / S 120 / A 50 = 250
+--  session 16,17 (k6): each A 1000
 -- ================
 
--- session 1: VIP 50석
-INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, x_label, y_label, seat_size, seat_angle, updated_at)
-SELECT 1, 1, 'VIP', 'A', x, 'VIP A열 ' || x || '번', 'VIP', 150000,
-    CASE WHEN MOD(x, 3) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
-    CAST(60 + x * 14 AS DOUBLE), 120, 18, 0, NOW()
+-- session 1: VIP 50
+INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
+SELECT 1, 1, 'VIP', 'A', x, 'VIP A-' || x, 'VIP', 150000,
+    CASE WHEN MOD(x, 3) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
 FROM SYSTEM_RANGE(1, 50) AS t(x);
 
--- session 1: R 100석
-INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, x_label, y_label, seat_size, seat_angle, updated_at)
-SELECT 1, 1, 'R', 'B', x, 'R B열 ' || x || '번', 'R', 130000,
-    CASE WHEN MOD(x, 4) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
-    CAST(60 + x * 11 AS DOUBLE), 180, 18, 0, NOW()
+-- session 1: R 100
+INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
+SELECT 1, 1, 'R', 'B', x, 'R B-' || x, 'R', 130000,
+    CASE WHEN MOD(x, 4) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
 FROM SYSTEM_RANGE(1, 100) AS t(x);
 
--- session 1: S 200석
-INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, x_label, y_label, seat_size, seat_angle, updated_at)
-SELECT 1, 2, 'S', 'C', x, 'S C열 ' || x || '번', 'S', 110000,
-    CASE WHEN MOD(x, 5) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
-    CAST(60 + x * 9 AS DOUBLE), 240, 18, 0, NOW()
+-- session 1: S 200
+INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
+SELECT 1, 2, 'S', 'C', x, 'S C-' || x, 'S', 110000,
+    CASE WHEN MOD(x, 5) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
 FROM SYSTEM_RANGE(1, 200) AS t(x);
 
--- session 1: A 150석
-INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, x_label, y_label, seat_size, seat_angle, updated_at)
-SELECT 1, 2, 'A', 'D', x, 'A D열 ' || x || '번', 'A', 90000,
-    CASE WHEN MOD(x, 6) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
-    CAST(60 + x * 9 AS DOUBLE), 300, 18, 0, NOW()
+-- session 1: A 150
+INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
+SELECT 1, 2, 'A', 'D', x, 'A D-' || x, 'A', 90000,
+    CASE WHEN MOD(x, 6) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
 FROM SYSTEM_RANGE(1, 150) AS t(x);
 
--- session 2: VIP 50석
-INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, x_label, y_label, seat_size, seat_angle, updated_at)
-SELECT 2, 1, 'VIP', 'A', x, 'VIP A열 ' || x || '번', 'VIP', 150000,
-    CASE WHEN MOD(x, 4) = 0 THEN 'SOLD' WHEN MOD(x, 7) = 0 THEN 'HELD' ELSE 'AVAILABLE' END,
-    CAST(60 + x * 14 AS DOUBLE), 120, 18, 0, NOW()
+-- session 2: VIP 50
+INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
+SELECT 2, 1, 'VIP', 'A', x, 'VIP A-' || x, 'VIP', 150000,
+    CASE WHEN MOD(x, 4) = 0 THEN 'SOLD' WHEN MOD(x, 7) = 0 THEN 'HELD' ELSE 'AVAILABLE' END, NOW()
 FROM SYSTEM_RANGE(1, 50) AS t(x);
 
--- session 2: R 100석
-INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, x_label, y_label, seat_size, seat_angle, updated_at)
-SELECT 2, 1, 'R', 'B', x, 'R B열 ' || x || '번', 'R', 130000,
-    CASE WHEN MOD(x, 5) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
-    CAST(60 + x * 11 AS DOUBLE), 180, 18, 0, NOW()
+-- session 2: R 100
+INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
+SELECT 2, 1, 'R', 'B', x, 'R B-' || x, 'R', 130000,
+    CASE WHEN MOD(x, 5) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
 FROM SYSTEM_RANGE(1, 100) AS t(x);
 
--- session 2: S 200석
-INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, x_label, y_label, seat_size, seat_angle, updated_at)
-SELECT 2, 2, 'S', 'C', x, 'S C열 ' || x || '번', 'S', 110000,
-    CASE WHEN MOD(x, 6) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
-    CAST(60 + x * 9 AS DOUBLE), 240, 18, 0, NOW()
+-- session 2: S 200
+INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
+SELECT 2, 2, 'S', 'C', x, 'S C-' || x, 'S', 110000,
+    CASE WHEN MOD(x, 6) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
 FROM SYSTEM_RANGE(1, 200) AS t(x);
 
--- session 2: A 150석
-INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, x_label, y_label, seat_size, seat_angle, updated_at)
-SELECT 2, 2, 'A', 'D', x, 'A D열 ' || x || '번', 'A', 90000,
-    CASE WHEN MOD(x, 7) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
-    CAST(60 + x * 9 AS DOUBLE), 300, 18, 0, NOW()
+-- session 2: A 150
+INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
+SELECT 2, 2, 'A', 'D', x, 'A D-' || x, 'A', 90000,
+    CASE WHEN MOD(x, 7) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
 FROM SYSTEM_RANGE(1, 150) AS t(x);
 
--- session 3~15: 각 250석 (R 80 / S 120 / A 50)
-INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, x_label, y_label, seat_size, seat_angle, updated_at)
-SELECT sid, 1, 'R', 'A', x, 'R A열 ' || x || '번', 'R', 130000,
-    CASE WHEN MOD(x * sid, 5) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
-    CAST(60 + x * 11 AS DOUBLE), 180, 18, 0, NOW()
+-- session 3~15: each 250 seats (R 80 / S 120 / A 50)
+INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
+SELECT sid, 1, 'R', 'A', x, 'R A-' || x, 'R', 130000,
+    CASE WHEN MOD(x * sid, 5) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
 FROM (VALUES (3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),(14),(15)) AS s(sid)
 CROSS JOIN SYSTEM_RANGE(1, 80) AS t(x);
 
-INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, x_label, y_label, seat_size, seat_angle, updated_at)
-SELECT sid, 2, 'S', 'B', x, 'S B열 ' || x || '번', 'S', 110000,
-    CASE WHEN MOD(x * sid, 6) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
-    CAST(60 + x * 9 AS DOUBLE), 240, 18, 0, NOW()
+INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
+SELECT sid, 2, 'S', 'B', x, 'S B-' || x, 'S', 110000,
+    CASE WHEN MOD(x * sid, 6) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
 FROM (VALUES (3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),(14),(15)) AS s(sid)
 CROSS JOIN SYSTEM_RANGE(1, 120) AS t(x);
 
-INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, x_label, y_label, seat_size, seat_angle, updated_at)
-SELECT sid, 2, 'A', 'C', x, 'A C열 ' || x || '번', 'A', 90000,
-    CASE WHEN MOD(x * sid, 7) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
-    CAST(60 + x * 9 AS DOUBLE), 300, 18, 0, NOW()
+INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
+SELECT sid, 2, 'A', 'C', x, 'A C-' || x, 'A', 90000,
+    CASE WHEN MOD(x * sid, 7) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
 FROM (VALUES (3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),(14),(15)) AS s(sid)
 CROSS JOIN SYSTEM_RANGE(1, 50) AS t(x);
 
--- session 16,17 (k6): 각 1000석 A등급
-INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, x_label, y_label, seat_size, seat_angle, updated_at)
-SELECT 16, 1, 'A', 'A', x, 'A구역 A열 ' || x || '번', 'A', 40000, 'AVAILABLE',
-    CAST(x AS DOUBLE), 100, 20, 0, NOW()
+-- session 16,17 (k6): each 1000 A seats
+INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
+SELECT 16, 1, 'A', 'A', x, 'A A-' || x, 'A', 40000, 'AVAILABLE', NOW()
 FROM SYSTEM_RANGE(1, 1000) AS t(x);
 
-INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, x_label, y_label, seat_size, seat_angle, updated_at)
-SELECT 17, 1, 'A', 'A', x, 'A구역 A열 ' || x || '번', 'A', 40000, 'AVAILABLE',
-    CAST(x AS DOUBLE), 100, 20, 0, NOW()
+INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
+SELECT 17, 1, 'A', 'A', x, 'A A-' || x, 'A', 40000, 'AVAILABLE', NOW()
 FROM SYSTEM_RANGE(1, 1000) AS t(x);
 
 

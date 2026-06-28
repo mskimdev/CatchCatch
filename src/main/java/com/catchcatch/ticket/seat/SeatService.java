@@ -198,44 +198,28 @@ public class SeatService {
         List<Seat> seatEntities = new ArrayList<>();
         for (SeatRequest.SeatJsonDTO dto : jsonSeats) {
 
-            String[] parts = dto.getId().split("-");
-
-            if (parts.length != 10) {
+            ParsedSeat parsedSeat = parseSeatJson(dto);
+            if (parsedSeat == null) {
                 System.out.println("잘못된 좌석 ID 포맷: " + dto.getId());
                 continue;
             }
 
-            // 3. 파싱
-            Integer floor = Integer.parseInt(parts[0]);      // "1" -> 1
-            String sectionName = parts[1];
-            String seatRow = parts[2];
-            Integer seatCol = Integer.parseInt(parts[3]);
-            SeatGrade grade = SeatGrade.valueOf(parts[4]); // 5번째 조각 (VIP)
-            SeatStatus status = "obstructed".equalsIgnoreCase(parts[5]) ? SeatStatus.OBSTRUCTED : SeatStatus.AVAILABLE; // 6번째 조각
-            Double xLabel = Double.parseDouble(parts[6]);
-            Double yLabel = Double.parseDouble(parts[7]);
-            Double seatSize = Double.parseDouble(parts[8]);
-            Double seatAngle = Double.parseDouble(parts[9]);
-
             // 5. 가격 및 번호 세팅
-            Integer price = concert.getPriceByGrade(grade);
-            String fullSeatNumber = floor + "층 " + sectionName + "구역 " + seatRow + "열 " + seatCol + "번";
+            Integer price = concert.getPriceByGrade(parsedSeat.grade());
+            String fullSeatNumber = parsedSeat.floor() + "층 " + parsedSeat.sectionName() + "구역 "
+                    + parsedSeat.seatRow() + "열 " + parsedSeat.seatCol() + "번";
 
             // 6. 엔티티 조립
             seatEntities.add(Seat.builder()
                     .concertSession(session)
-                    .floor(floor)
-                    .sectionName(sectionName)
-                    .seatRow(seatRow)
-                    .seatCol(seatCol)
+                    .floor(parsedSeat.floor())
+                    .sectionName(parsedSeat.sectionName())
+                    .seatRow(parsedSeat.seatRow())
+                    .seatCol(parsedSeat.seatCol())
                     .seatNumber(fullSeatNumber)
-                    .grade(grade)
+                    .grade(parsedSeat.grade())
                     .price(price)
-                    .status(status)
-                    .xLabel(xLabel)
-                    .yLabel(yLabel)
-                    .seatSize(seatSize)
-                    .seatAngle(seatAngle)
+                    .status(parsedSeat.status())
                     .build());
         }
 
@@ -307,34 +291,95 @@ public class SeatService {
         List<Seat> newSeatEntities = new ArrayList<>();
         for (ConcertSession session : sessions) {
             for (SeatRequest.SeatJsonDTO dto : jsonSeats) {
-                String[] parts = dto.getId().split("-");
-                if (parts.length != 4) continue;
+                ParsedSeat parsedSeat = parseSeatJson(dto);
+                if (parsedSeat == null) continue;
 
-                Integer floor = Integer.parseInt(parts[0]);
-                String sectionName = parts[1];
-                String seatRow = parts[2];
-                Integer seatCol = Integer.parseInt(parts[3]);
-                String fullSeatNumber = floor + "층 " + sectionName + "구역 " + seatRow + "열 " + seatCol + "번";
+                String fullSeatNumber = parsedSeat.floor() + "층 " + parsedSeat.sectionName() + "구역 "
+                        + parsedSeat.seatRow() + "열 " + parsedSeat.seatCol() + "번";
 
-                SeatGrade grade = SeatGrade.valueOf(dto.getGrade());
-                Integer price = concert.getPriceByGrade(grade);
-                SeatStatus status = "obstructed".equalsIgnoreCase(dto.getStatus()) ? SeatStatus.OBSTRUCTED : SeatStatus.AVAILABLE;
+                Integer price = concert.getPriceByGrade(parsedSeat.grade());
 
                 newSeatEntities.add(Seat.builder()
                         .concertSession(session)
-                        .floor(floor)
-                        .sectionName(sectionName)
-                        .seatRow(seatRow)
-                        .seatCol(seatCol)
+                        .floor(parsedSeat.floor())
+                        .sectionName(parsedSeat.sectionName())
+                        .seatRow(parsedSeat.seatRow())
+                        .seatCol(parsedSeat.seatCol())
                         .seatNumber(fullSeatNumber)
-                        .grade(grade)
+                        .grade(parsedSeat.grade())
                         .price(price)
-                        .status(status)
+                        .status(parsedSeat.status())
                         .build());
             }
         }
 
         // 6. JDBC Template을 통한 고속 대량 삽입 실행
         seatJdbcRepository.batchInsertSeats(newSeatEntities);
+    }
+
+    private ParsedSeat parseSeatJson(SeatRequest.SeatJsonDTO dto) {
+        if (dto == null || dto.getId() == null || dto.getId().isBlank()) {
+            return null;
+        }
+
+        String[] parts = dto.getId().split("-");
+        if (parts.length != 4 && parts.length != 6 && parts.length != 10) {
+            return null;
+        }
+
+        try {
+            Integer floor = Integer.parseInt(parts[0]);
+            String sectionName = parts[1];
+            String seatRow = parts[2];
+            Integer seatCol = Integer.parseInt(parts[3]);
+            String gradeValue = parts.length >= 6 ? parts[4] : dto.getGrade();
+            String statusValue = parts.length >= 6 ? parts[5] : dto.getStatus();
+
+            return new ParsedSeat(
+                    floor,
+                    sectionName,
+                    seatRow,
+                    seatCol,
+                    parseGrade(gradeValue),
+                    parseStatus(statusValue)
+            );
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    private SeatGrade parseGrade(String grade) {
+        if (grade == null || grade.isBlank()) {
+            throw new IllegalArgumentException("좌석 등급이 없습니다.");
+        }
+
+        String normalized = grade.trim().toUpperCase()
+                .replace("석", "")
+                .replace("일반", "A")
+                .replace("GENERAL", "A");
+
+        return SeatGrade.valueOf(normalized);
+    }
+
+    private SeatStatus parseStatus(String status) {
+        if ("obstructed".equalsIgnoreCase(status)) {
+            return SeatStatus.OBSTRUCTED;
+        }
+
+        if (status == null || status.isBlank()) {
+            return SeatStatus.AVAILABLE;
+        }
+
+        return SeatStatus.valueOf(status.trim().toUpperCase());
+    }
+
+    private record ParsedSeat(
+            Integer floor,
+            String sectionName,
+            String seatRow,
+            Integer seatCol,
+            SeatGrade grade,
+            SeatStatus status
+    ) {
     }
 }
