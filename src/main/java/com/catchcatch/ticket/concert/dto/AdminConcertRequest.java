@@ -66,6 +66,7 @@ public class AdminConcertRequest {
             LocalDate endDate,
 
             String organizer,
+            String detailBannerUrl,
             String detailTitle,
             String detailDescription1,
             String detailDescription2,
@@ -207,6 +208,8 @@ public class AdminConcertRequest {
 
             String description,
 
+            String detailBannerUrl,
+
             String detailDescription1,
 
             String detailDescription2,
@@ -235,6 +238,7 @@ public class AdminConcertRequest {
             String organizer,
             String contact,
             String detailTitle,
+            String detailBannerUrl,
             String detailDescription1,
             String detailDescription2,
             String posterUrl,
@@ -283,6 +287,7 @@ public class AdminConcertRequest {
                     .contact(concert.getContact())
                     .posterUrl(concert.getPosterUrl())
                     .detailTitle(concert.getDetailTitle())
+                    .detailBannerUrl(concert.getDetailBannerUrl())
                     .detailDescription1(concert.getDetailDescription1())
                     .detailDescription2(concert.getDetailDescription2())
                     .startDate(concert.getStartDate())

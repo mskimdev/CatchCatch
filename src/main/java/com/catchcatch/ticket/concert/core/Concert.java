@@ -161,6 +161,7 @@ public class Concert {
         this.organizer = dto.organizer();
         this.contact = dto.contact();
         this.detailTitle = dto.detailTitle();
+        this.detailBannerUrl = dto.detailBannerUrl();
         this.description = dto.description();
         this.detailDescription1 = dto.detailDescription1();
         this.detailDescription2 = dto.detailDescription2();

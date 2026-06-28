@@ -100,6 +100,7 @@ public class AdminConcertService {
                 .organizer(dto.organizer())
                 .contact(dto.contact())
                 .detailTitle(dto.detailTitle())
+                .detailBannerUrl(dto.detailBannerUrl())
                 .description(dto.description())
                 .detailDescription1(dto.detailDescription1())
                 .detailDescription2(dto.detailDescription2())
