@@ -64,14 +64,15 @@ VALUES
 -- ================
 INSERT INTO venue_tb (name, address, total_capacity, seat_map_file_path, created_at)
 VALUES
-    ('올림픽공원 체조경기장', '서울특별시 송파구 올림픽로 424',          15000, '/json/seatmap/seatmap-concert-session.json', NOW()),
-    ('KSPO DOME',          '서울특별시 송파구 올림픽로 424',          15000, NULL, NOW()),
-    ('잠실실내체육관',         '서울특별시 송파구 올림픽로 25',           15000, NULL, NOW()),
-    ('부산 사직실내체육관',     '부산광역시 동래구 사직동 산 29',          12000, NULL, NOW()),
-    ('인천 남동체육관',        '인천광역시 남동구 장수동 503',            10000, NULL, NOW()),
-    ('k6 부하테스트 공연장 A', '서울특별시 송파구 올림픽로 000',           1000, NULL, NOW()),
-    ('k6 부하테스트 공연장 B', '서울특별시 송파구 올림픽로 001',           1000, NULL, NOW());
--- venue_id: 1~7
+    ('고척스카이돔',          '서울특별시 구로구 경인로 430',                25000, NULL, NOW()),
+    ('고려대학교 화정체육관',  '서울특별시 성북구 안암로 145',                6000,  '/json/seatmap/seatmap-concert-session.json', NOW()),
+    ('장충체육관',            '서울특별시 중구 을지로 241',                  8000,  NULL, NOW()),
+    ('세종문화회관 대극장',    '서울특별시 종로구 세종대로 175',               3000,  NULL, NOW()),
+    ('일산 킨텍스 제1전시장', '경기도 고양시 일산서구 킨텍스로 217-60',       20000, NULL, NOW()),
+    ('인천 파라다이스시티',    '인천광역시 중구 영종해안남로321번길 186',       15000, NULL, NOW()),
+    ('k6 부하테스트 공연장 A','서울특별시 송파구 올림픽로 000',               1000,  NULL, NOW()),
+    ('k6 부하테스트 공연장 B','서울특별시 송파구 올림픽로 001',               1000,  NULL, NOW());
+-- venue_id: 1=고척스카이돔, 2=고려대화정, 3=장충체육관, 4=세종문화회관, 5=킨텍스, 6=파라다이스시티, 7=k6A, 8=k6B
 
 
 -- ================
@@ -83,91 +84,93 @@ INSERT INTO concert_tb
  detail_banner_url, detail_title, detail_description1, detail_description2,
  price_vip, price_r, price_s, price_a, created_at, is_deleted)
 VALUES
-    (1, '아이유 콘서트 2026 [HEREH]', '아이유',
-     '아이유의 2026년 단독 콘서트. 새 앨범 수록곡을 포함한 화려한 무대.',
-     '/images/sample/poster-music.svg', 'OPEN', 'CONCERT',
-     '2026-08-01', '2026-08-02', '2026-05-20 20:00:00', '만 7세 이상 관람가', '150분', 'EDAM 엔터테인먼트', '1544-1111',
-     '/images/sample/detail-banner.svg', '여름밤을 수놓을 아름다운 목소리', '아이유와 함께하는 잊지 못할 특별한 시간', '놓칠 수 없는 단 이틀간의 공연',
-     150000, 130000, 110000, 90000, NOW(), false),
+    (2, 'Red Velvet FAN-CON 〈A Day in Red & Velvet〉', 'Red Velvet',
+     '레드벨벳의 공식 팬콘서트. 역대 최고의 셋리스트와 화려한 퍼포먼스로 레베럿과 함께하는 특별한 두 밤.',
+     '/images/posters/poster-redvelvet.jpg', 'OPEN', 'FANMEETING',
+     '2026-08-01', '2026-08-02', '2026-06-15 20:00:00', '전체 관람가', '120분', 'SM 엔터테인먼트', '1544-1111',
+     '/images/details/detail-redvelvet.jpg', '레드벨벳과 함께하는 특별한 여름',
+     '팬들이 직접 만들어가는 무대, Red Velvet FAN-CON', '고려대학교 화정체육관을 가득 채울 열기와 감동',
+     132000, 110000, 88000, 0, NOW(), false),
 
-    (2, '뮤지컬 <시카고> 오리지널 내한', '내한공연팀',
-     '브로드웨이 역사상 가장 매혹적인 뮤지컬 시카고 내한 공연.',
-     '/images/sample/poster-music.svg', 'OPEN', 'MUSICAL',
-     '2026-09-05', '2026-09-07', '2026-05-25 14:00:00', '만 15세 이상 관람가', '150분', '신시컴퍼니', '1544-2222',
-     '/images/sample/detail-banner.svg', '가장 뜨겁고 섹시한 무대', '브로드웨이 오리지널 캐스트의 귀환', 'All That Jazz',
-     0, 0, 0, 0, NOW(), false),
+    (4, '뮤지컬 〈베토벤〉', '뮤지컬 배우 앙상블',
+     '천재 음악가 베토벤의 삶과 음악을 무대 위에 펼쳐내는 대작 뮤지컬. 세종문화회관 대극장에서의 감동적인 공연.',
+     '/images/posters/poster-beethoven.jpg', 'OPEN', 'MUSICAL',
+     '2026-06-09', '2026-08-11', '2026-04-15 14:00:00', '만 7세 이상 관람가', '150분 (인터미션 20분)', '신시컴퍼니', '1544-2222',
+     '/images/details/detail-beethoven.jpg', '천재의 고뇌와 열정이 만들어낸 불멸의 선율',
+     '베토벤의 삶을 감동적으로 그려낸 대작 뮤지컬', '세종문화회관 대극장을 가득 채울 웅장한 무대',
+     0, 150000, 130000, 110000, NOW(), false),
 
-    (3, '조성진 피아노 리사이틀', '조성진',
-     '세계적인 피아니스트 조성진의 2026년 전국투어 리사이틀.',
-     '/images/sample/poster-music.svg', 'COMING_SOON', 'CLASSIC',
-     '2026-10-10', '2026-10-11', '2026-07-10 18:00:00', '만 7세 이상 관람가', '100분', '크레디아', '1544-3333',
-     '/images/sample/detail-banner.svg', '건반 위를 수놓는 완벽한 타건', '쇼팽 콩쿠르 우승자 조성진의 귀환', '영혼을 울리는 클래식의 밤',
-     0, 0, 0, 0, NOW(), false),
+    (1, '2027 후지이 카제 Prema 월드 투어 - 서울', '후지이 카제',
+     '고척스카이돔을 매진시킨 후지이 카제의 두 번째 내한공연. Prema 월드투어 서울 단독 공연.',
+     '/images/posters/poster-fujiikaze.jpg', 'COMING_SOON', 'CONCERT',
+     '2027-01-09', '2027-01-09', '2026-09-05 12:00:00', '전체 관람가', '120분', '현대카드', '1644-1234',
+     '/images/details/detail-fujiikaze.jpg', '다시 한번 고척돔을 가득 채울 그의 목소리',
+     '일본을 넘어 전 세계를 사로잡은 후지이 카제의 Prema 월드 투어', '단 하루뿐인 서울 공연, 놓치지 마세요',
+     165000, 143000, 121000, 99000, NOW(), false),
 
-    (4, '부산 재즈 페스티벌 2026', '다수 아티스트',
-     '국내외 유명 재즈 아티스트들의 합동 페스티벌 공연.',
-     '/images/sample/poster-music.svg', 'OPEN', 'FESTIVAL',
-     '2026-07-20', '2026-07-20', '2026-06-01 12:00:00', '전체 관람가', '240분', '부산문화재단', '1544-4444',
-     '/images/sample/detail-banner.svg', '한여름 밤의 낭만적인 재즈 선율', '국내외 최정상급 재즈 뮤지션 총출동', '사직실내체육관에서 즐기는 감미로운 축제',
-     0, 0, 0, 0, NOW(), false),
+    (5, '워터밤 서울 2026', '다수 아티스트',
+     '국내 최대 규모 물총 축제 워터밤! 역대 최대 라인업으로 돌아온 여름 대표 페스티벌. 3일간 킨텍스를 가득 채울 뜨거운 열기.',
+     '/images/posters/poster-waterbomb.jpg', 'OPEN', 'FESTIVAL',
+     '2026-07-24', '2026-07-26', '2026-05-20 12:00:00', '만 18세 이상 관람가', '360분', '워터밤 컴퍼니', '1544-7755',
+     '/images/details/detail-waterbomb.jpg', '2026년 여름, 가장 뜨거운 3일',
+     '역대 최강 라인업과 함께하는 대한민국 최대 물총 축제', '킨텍스를 흠뻑 적실 잊지 못할 여름 추억',
+     220000, 90000, 0, 0, NOW(), false),
 
-    (1, '박보검 데뷔 16주년 팬미팅', '박보검',
-     '배우 박보검 데뷔 16주년 기념 공식 팬미팅.',
-     '/images/sample/poster-music.svg', 'CLOSED_SOON', 'FANMEETING',
-     '2026-06-25', '2026-06-25', '2026-05-01 20:00:00', '전체 관람가', '120분', '더블랙레이블', '1544-5555',
-     '/images/sample/detail-banner.svg', '팬들과 함께하는 특별한 16주년', '보검복지부와 함께하는 따뜻한 시간', '놓칠 수 없는 단 하루',
-     0, 0, 0, 0, NOW(), false),
+    (6, '사운드 플래닛 페스티벌 2026', '다수 아티스트',
+     '국내외 정상급 뮤지션들이 총출동하는 대규모 음악 페스티벌. 인천 파라다이스시티에서 펼쳐지는 2일간의 음악 축제.',
+     '/images/posters/poster-soundplanet.jpg', 'OPEN', 'FESTIVAL',
+     '2026-09-05', '2026-09-06', '2026-05-15 20:00:00', '전체 관람가', '480분', '사운드 리퍼블리카', '1544-4455',
+     '/images/details/detail-soundplanet.png', '바다와 음악이 만나는 최고의 페스티벌',
+     '국내외 정상급 아티스트들의 2일간 릴레이 공연', '인천 파라다이스시티에서 즐기는 낭만적인 음악 축제',
+     0, 143000, 0, 0, NOW(), false),
 
-    (2, 'DAY6 4TH WORLD TOUR <FOREVER>', 'DAY6',
-     '마이데이를 위한 뜨거운 여정, 데이식스 월드투어 서울 공연.',
-     '/images/sample/poster-music.svg', 'COMING_SOON', 'CONCERT',
-     '2026-08-21', '2026-08-25', '2026-06-25 20:00:00', '만 7세 이상 관람가', '150분', 'JYP 엔터테인먼트', '1544-6666',
-     '/images/sample/detail-banner.svg', '우리의 모든 순간이 영원이 되도록', 'FOREVER 뜨겁게 빛날 무대', '올림픽공원에서 펼쳐지는 벅찬 감동',
-     0, 0, 0, 0, NOW(), false),
+    (3, 'ICN 〉 NTG : BIG Naughty Concert', 'BIG Naughty (서동현)',
+     '힙합 씬의 신성 BIG Naughty(서동현)의 단독 콘서트. 장충체육관을 가득 채울 에너지 넘치는 무대.',
+     '/images/posters/poster-bignaughty.jpg', 'CLOSED_SOON', 'CONCERT',
+     '2026-07-11', '2026-07-11', '2026-06-10 20:00:00', '만 7세 이상 관람가', '120분', 'BIGHIT MUSIC', '1544-3366',
+     '/images/details/detail-bignaughty.png', '힙합을 넘어선 음악적 진화',
+     'BIG Naughty의 모든 것을 담은 첫 단독 콘서트', '장충체육관을 뒤흔들 역대급 퍼포먼스',
+     110000, 99000, 0, 0, NOW(), false),
 
-    (3, '세븐틴 WORLD TOUR <NEW_> IN SEOUL', '세븐틴',
-     '새로운 챕터의 시작을 알리는 세븐틴의 월드투어 인 서울.',
-     '/images/sample/poster-triangle.svg', 'OPEN', 'CONCERT',
-     '2026-07-06', '2026-07-08', '2026-05-15 20:00:00', '만 7세 이상 관람가', '180분', 'PLEDIS 엔터테인먼트', '1544-7777',
-     '/images/sample/detail-banner.svg', '새로운 역사를 써 내려갈 완벽한 무대', '고척돔을 가득 채울 열기', '캐럿과 함께 여는 NEW 챕터',
-     0, 0, 0, 0, NOW(), false),
+    (3, 'David Byrne Who Is The Sky? Tour', 'David Byrne',
+     '토킹 헤즈 리더이자 전설적인 뮤지션 데이비드 번의 첫 단독 내한공연. 반세기를 아우르는 명곡들과의 만남.',
+     '/images/posters/poster-davidbyrne.png', 'OPEN', 'CONCERT',
+     '2026-08-21', '2026-08-21', '2026-05-30 12:00:00', '전체 관람가', '120분', '라이브네이션코리아', '1588-7828',
+     '/images/details/detail-davidbyrne.png', '살아있는 전설이 서울을 찾아옵니다',
+     'Talking Heads부터 솔로 명반까지, 데이비드 번의 50년 음악 여정', '경희대 평화의전당에서 펼쳐지는 단 하루의 공연',
+     0, 143000, 121000, 99000, NOW(), false),
 
-    (4, '황치열 전국투어 콘서트 <별, 그대>', '황치열',
-     '가슴 절절한 목소리로 돌아온 황치열의 2026년 전국투어.',
-     '/images/sample/poster-artist.svg', 'CLOSED_SOON', 'CONCERT',
-     '2026-06-20', '2026-06-21', '2026-05-10 14:00:00', '만 7세 이상 관람가', '150분', 'TEN2 엔터테인먼트', '1544-8888',
-     '/images/sample/detail-banner.svg', '밤하늘의 별처럼 쏟아지는 감동', '별, 그리고 당신을 위한 세레나데', '화이트데이에 전하는 특별한 선물',
-     0, 0, 0, 0, NOW(), false),
+    (2, '나상현씨밴드 클럽투어 ''여름빛 2026'' - 서울', '나상현씨밴드',
+     '인디 밴드 나상현씨밴드의 전국 클럽투어 서울 공연. 뜨거운 여름밤을 수놓을 소규모 라이브의 감동.',
+     '/images/posters/poster-nasanghyun.jpg', 'OPEN', 'CONCERT',
+     '2026-08-30', '2026-08-30', '2026-06-20 12:00:00', '전체 관람가', '100분', '인디레이블 소속', '02-1234-5678',
+     '/images/details/detail-nasanghyun.jpg', '여름밤과 가장 잘 어울리는 인디의 감성',
+     '나상현씨밴드와 함께하는 여름 마지막 날의 특별한 기억', '소규모 공연장에서만 느낄 수 있는 뜨거운 라이브',
+     0, 0, 44000, 33000, NOW(), false),
 
-    (5, 'aespa LIVE TOUR <SYNK : HYPER LINE>', 'aespa',
-     '가상과 현실을 넘나드는 에스파의 메타버스 라이브 투어.',
-     '/images/sample/poster-aespa.svg', 'OPEN', 'CONCERT',
-     '2026-08-11', '2026-08-12', '2026-06-02 20:00:00', '만 7세 이상 관람가', '150분', 'SM 엔터테인먼트', '1544-9999',
-     '/images/sample/detail-banner.svg', '현실과 광야를 잇는 압도적인 세계관', 'SYNK : HYPER LINE', '인스파이어 아레나를 강타할 광야의 소리',
-     0, 0, 0, 0, NOW(), false),
-
-    (1, 'Cigarettes After Sex Live in Seoul', 'Cigarettes After Sex',
-     '몽환적이고 감각적인 사운드의 대명사, CAS 내한 공연.',
-     '/images/sample/poster-cas.svg', 'OPEN', 'CONCERT',
-     '2026-07-30', '2026-07-30', '2026-05-30 12:00:00', '만 15세 이상 관람가', '120분', '프라이빗커브', '1544-0000',
-     '/images/sample/detail-banner.svg', '당신의 밤을 적실 몽환적인 멜로디', '독보적인 분위기의 라이브', '잠실을 수놓을 짙은 감성',
-     0, 0, 0, 0, NOW(), false),
+    (4, '정명훈x KBS교향악단x김선욱 〈베토벤+브람스〉', '정명훈, 김선욱',
+     '마에스트로 정명훈과 피아니스트 김선욱이 KBS교향악단과 함께하는 세기의 클래식 공연. 베토벤과 브람스의 걸작을 세종문화회관 대극장에서.',
+     '/images/posters/poster-myunghun.jpg', 'COMING_SOON', 'CLASSIC',
+     '2026-10-04', '2026-10-04', '2026-08-20 12:00:00', '만 7세 이상 관람가', '100분 (인터미션 20분)', '세종문화회관', '02-399-1000',
+     '/images/details/detail-myunghun.jpg', '두 거장이 함께하는 클래식의 밤',
+     '마에스트로 정명훈 x 피아니스트 김선욱 x KBS교향악단', '세종문화회관 대극장에서 만나는 베토벤과 브람스의 걸작',
+     120000, 100000, 80000, 60000, NOW(), false),
 
     -- k6 부하테스트 전용 콘서트 2개
-    (6, 'k6 부하테스트 콘서트 A', 'k6',
+    (7, 'k6 부하테스트 콘서트 A', 'k6',
      'k6 부하 테스트 전용 콘서트 데이터 A.',
      '/images/sample/poster-music.svg', 'OPEN', 'CONCERT',
      '2026-12-31', '2026-12-31', '2026-01-01 00:00:00', '전체 관람가', '120분', 'k6', '000-0000-0000',
      '/images/sample/detail-banner.svg', 'k6 부하테스트 A', 'k6 부하 테스트 전용', 'k6 부하 테스트 전용',
      100000, 80000, 60000, 40000, NOW(), false),
 
-    (7, 'k6 부하테스트 콘서트 B', 'k6',
+    (8, 'k6 부하테스트 콘서트 B', 'k6',
      'k6 부하 테스트 전용 콘서트 데이터 B.',
      '/images/sample/poster-music.svg', 'OPEN', 'CONCERT',
      '2026-12-31', '2026-12-31', '2026-01-01 00:00:00', '전체 관람가', '120분', 'k6', '000-0000-0000',
      '/images/sample/detail-banner.svg', 'k6 부하테스트 B', 'k6 부하 테스트 전용', 'k6 부하 테스트 전용',
      100000, 80000, 60000, 40000, NOW(), false);
--- concert_id: 1=아이유, 2=시카고, 3=조성진, 4=재즈, 5=박보검, 6=DAY6, 7=세븐틴, 8=황치열, 9=aespa, 10=CAS, 11=k6A, 12=k6B
+-- concert_id: 1=RedVelvet, 2=뮤지컬베토벤, 3=후지이카제, 4=워터밤, 5=사운드플래닛, 6=BIGNaughty, 7=DavidByrne, 8=나상현씨밴드, 9=정명훈클래식, 10=k6A, 11=k6B
 
 
 -- ================
@@ -175,23 +178,23 @@ VALUES
 -- ================
 INSERT INTO concert_session_tb (concert_id, session_date, session_time, round, created_at, is_deleted)
 VALUES
-    (1,  '2026-08-01', '18:00:00', '1회차', NOW(), false),  -- session_id 1
-    (1,  '2026-08-02', '18:00:00', '2회차', NOW(), false),  -- session_id 2
-    (2,  '2026-09-05', '19:00:00', '1회차', NOW(), false),  -- session_id 3
-    (2,  '2026-09-06', '19:00:00', '2회차', NOW(), false),  -- session_id 4
-    (2,  '2026-09-07', '17:00:00', '3회차', NOW(), false),  -- session_id 5
-    (3,  '2026-10-10', '18:00:00', '1회차', NOW(), false),  -- session_id 6
-    (3,  '2026-10-11', '18:00:00', '2회차', NOW(), false),  -- session_id 7
-    (4,  '2026-07-20', '17:00:00', '1회차', NOW(), false),  -- session_id 8
-    (5,  '2026-06-25', '18:00:00', '1회차', NOW(), false),  -- session_id 9
-    (7,  '2026-07-06', '18:00:00', '1회차', NOW(), false),  -- session_id 10
-    (7,  '2026-07-07', '18:00:00', '2회차', NOW(), false),  -- session_id 11
-    (7,  '2026-07-08', '18:00:00', '3회차', NOW(), false),  -- session_id 12
-    (9,  '2026-08-11', '18:00:00', '1회차', NOW(), false),  -- session_id 13
-    (9,  '2026-08-12', '18:00:00', '2회차', NOW(), false),  -- session_id 14
-    (10, '2026-07-30', '19:00:00', '1회차', NOW(), false),  -- session_id 15
-    (11, '2026-12-31', '20:00:00', '1회차', NOW(), false),  -- session_id 16 (k6A)
-    (12, '2026-12-31', '21:00:00', '1회차', NOW(), false);  -- session_id 17 (k6B)
+    (1,  '2026-08-01', '18:00:00', '1회차', NOW(), false),  -- session_id 1  (RedVelvet 1일차)
+    (1,  '2026-08-02', '18:00:00', '2회차', NOW(), false),  -- session_id 2  (RedVelvet 2일차)
+    (2,  '2026-07-11', '19:00:00', '1회차', NOW(), false),  -- session_id 3  (뮤지컬베토벤)
+    (2,  '2026-07-18', '19:00:00', '2회차', NOW(), false),  -- session_id 4  (뮤지컬베토벤)
+    (2,  '2026-08-08', '19:00:00', '3회차', NOW(), false),  -- session_id 5  (뮤지컬베토벤)
+    (3,  '2027-01-09', '18:00:00', '1회차', NOW(), false),  -- session_id 6  (후지이카제)
+    (4,  '2026-07-24', '17:00:00', '07.24', NOW(), false),  -- session_id 7  (워터밤 1일차)
+    (4,  '2026-07-25', '17:00:00', '07.25', NOW(), false),  -- session_id 8  (워터밤 2일차)
+    (4,  '2026-07-26', '17:00:00', '07.26', NOW(), false),  -- session_id 9  (워터밤 3일차)
+    (5,  '2026-09-05', '16:00:00', '1일차', NOW(), false),  -- session_id 10 (사운드플래닛 1일차)
+    (5,  '2026-09-06', '16:00:00', '2일차', NOW(), false),  -- session_id 11 (사운드플래닛 2일차)
+    (6,  '2026-07-11', '19:00:00', '1회차', NOW(), false),  -- session_id 12 (BIGNaughty)
+    (7,  '2026-08-21', '19:00:00', '1회차', NOW(), false),  -- session_id 13 (DavidByrne)
+    (8,  '2026-08-30', '20:00:00', '1회차', NOW(), false),  -- session_id 14 (나상현씨밴드)
+    (9,  '2026-10-04', '17:00:00', '1회차', NOW(), false),  -- session_id 15 (정명훈클래식)
+    (10, '2026-12-31', '20:00:00', '1회차', NOW(), false),  -- session_id 16 (k6A)
+    (11, '2026-12-31', '21:00:00', '1회차', NOW(), false);  -- session_id 17 (k6B)
 
 -- 후기 작성 테스트용 종료 회차
 -- sarr/ssar가 어떤 콘서트 상세에서도 후기 작성 조건을 통과할 수 있도록 모든 콘서트에 과거 회차를 추가한다.
@@ -208,9 +211,8 @@ FROM concert_tb c;
 
 -- ================
 --  seat_tb
---  session 1: VIP 50 / R 100 / S 200 / A 150 = 500
---  session 2: VIP 50 / R 100 / S 200 / A 150 = 500
---  session 3~15: each R 80 / S 120 / A 50 = 250
+--  session 1~2 (RedVelvet 1~2회차): VIP 50 / R 100 / S 200 / A 150 = 500
+--  session 3~15 (나머지 공연): each R 80 / S 120 / A 50 = 250
 --  session 16,17 (k6): each A 1000
 -- ================
 
@@ -458,13 +460,13 @@ WHERE b.status = 'PAID'
 
 -- ================
 --  concert_like_tb (공연 좋아요)
---  realuser 200명 × 콘서트 10개 중 일부 → MERGE로 중복 방지
+--  realuser 200명 × 콘서트 9개 중 일부 → MERGE로 중복 방지
 -- ================
 MERGE INTO concert_like_tb (user_id, concert_id, created_at)
 KEY (user_id, concert_id)
 SELECT
     7 + MOD(x - 1, 200),
-    1 + MOD(x - 1, 10),
+    1 + MOD(x - 1, 9),
     DATEADD('DAY', -MOD(x * 11, 90), NOW())
 FROM SYSTEM_RANGE(1, 600) AS t(x);
 
@@ -474,17 +476,17 @@ FROM SYSTEM_RANGE(1, 600) AS t(x);
 -- ================
 INSERT INTO operation_log_tb (actor, message, level, created_at)
 VALUES
-    ('admin',    '아이유 콘서트 1회차 좌석 배치 완료 (500석)',              'INFO', DATEADD('DAY',    -60, NOW())),
-    ('admin',    'aespa LIVE TOUR 공연 등록',                             'INFO', DATEADD('DAY',    -45, NOW())),
-    ('admin',    '조성진 리사이틀 상태 COMING_SOON 변경',                   'INFO', DATEADD('DAY',    -30, NOW())),
-    ('admin',    '황치열 콘서트 CLOSED_SOON 처리',                         'INFO', DATEADD('DAY',     -3, NOW())),
-    ('admin',    '박보검 팬미팅 대기열 강제 종료',                           'WARN', DATEADD('DAY',     -1, NOW())),
-    ('admin',    '수동 환불 처리 완료 (booking:3)',                         'INFO', DATEADD('HOUR',    -5, NOW())),
-    ('admin',    '공지사항 등록: 6월 서비스 점검 안내',                       'INFO', DATEADD('DAY',     -7, NOW())),
-    ('admin',    'FAQ 수정: 환불 정책 안내 업데이트',                        'INFO', DATEADD('DAY',    -14, NOW())),
-    ('admin',    '메인 배너 교체 - 아이유 콘서트 홍보',                       'INFO', DATEADD('DAY',    -10, NOW())),
-    ('admin',    '어뷰징 의심 계정 임시 비활성화 (user:15)',                  'WARN', DATEADD('HOUR',    -2, NOW())),
-    ('manager1', '세븐틴 콘서트 3회차 좌석 추가 배치',                        'INFO', DATEADD('DAY',     -5, NOW())),
+    ('admin',    'Red Velvet FAN-CON 〈A Day in Red & Velvet〉 1회차 좌석 배치 완료 (500석)', 'INFO', DATEADD('DAY', -60, NOW())),
+    ('admin',    '사운드 플래닛 페스티벌 2026 공연 등록',                     'INFO', DATEADD('DAY',    -45, NOW())),
+    ('admin',    '후지이 카제 Prema 월드 투어 상태 COMING_SOON 설정',          'INFO', DATEADD('DAY',    -30, NOW())),
+    ('admin',    'BIG Naughty 콘서트 CLOSED_SOON 처리 (공연 2주 전)',         'WARN', DATEADD('DAY',     -3, NOW())),
+    ('admin',    '워터밤 서울 2026 대기열 강제 종료',                         'WARN', DATEADD('DAY',     -1, NOW())),
+    ('admin',    '수동 환불 처리 완료 (booking:3)',                          'INFO', DATEADD('HOUR',    -5, NOW())),
+    ('admin',    '공지사항 등록: 6월 서비스 점검 안내',                        'INFO', DATEADD('DAY',     -7, NOW())),
+    ('admin',    'FAQ 수정: 환불 정책 안내 업데이트',                         'INFO', DATEADD('DAY',    -14, NOW())),
+    ('admin',    '메인 배너 교체 - Red Velvet FAN-CON 홍보',                 'INFO', DATEADD('DAY',    -10, NOW())),
+    ('admin',    '어뷰징 의심 계정 임시 비활성화 (user:15)',                   'WARN', DATEADD('HOUR',    -2, NOW())),
+    ('manager1', '뮤지컬 〈베토벤〉 3회차 좌석 추가 배치',                      'INFO', DATEADD('DAY',     -5, NOW())),
     ('manager1', '포인트 만료 배치 수동 실행',                               'INFO', DATEADD('HOUR',    -1, NOW())),
     ('manager1', '1:1 문의 답변 처리 (inquiry:12)',                         'INFO', DATEADD('HOUR',    -8, NOW())),
     ('admin',    '대기열 동시 처리 상한 500 → 600 임시 조정',                 'WARN', DATEADD('DAY',     -2, NOW())),
@@ -504,8 +506,8 @@ VALUES
      '<p>안정적인 서비스 제공을 위해 서버 점검을 실시합니다.</p><ul><li><strong>점검 일시:</strong> 2026년 6월 15일(월) 02:00 ~ 06:00</li><li><strong>점검 내용:</strong> 서버 인프라 업그레이드 및 안정성 개선</li></ul><p>점검 중에는 서비스 이용이 불가합니다. 이용에 불편을 드려 죄송합니다.</p>',
      true, 876, DATEADD('DAY', -10, NOW()), DATEADD('DAY', -10, NOW())),
 
-    (1, '아이유 콘서트 2026 추가 공연 안내',
-     '<p>폭발적인 반응에 힘입어 <strong>아이유 콘서트 2026 [HEREH] 추가 공연</strong>이 확정되었습니다.</p><ul><li><strong>추가 공연 예매 오픈:</strong> 7월 1일 오후 8시</li><li><strong>공연 장소:</strong> 올림픽공원 88잔디마당</li></ul><p>많은 관심 부탁드립니다.</p>',
+    (1, 'Red Velvet FAN-CON 〈A Day in Red & Velvet〉 예매 안내',
+     '<p>폭발적인 반응에 힘입어 <strong>Red Velvet FAN-CON 〈A Day in Red & Velvet〉</strong>의 예매가 시작되었습니다.</p><ul><li><strong>공연 일정:</strong> 2026년 8월 1~2일</li><li><strong>공연 장소:</strong> 고려대학교 화정체육관</li><li><strong>예매 오픈:</strong> 6월 15일 오후 8시</li></ul><p>많은 관심 부탁드립니다.</p>',
      false, 2341, DATEADD('DAY', -20, NOW()), DATEADD('DAY', -20, NOW())),
 
     (1, '포인트 적립 정책 변경 안내',
@@ -598,10 +600,10 @@ VALUES
 -- ================
 INSERT INTO banner_tb (image_url, eyebrow, title, highlight, description, button_text, link_url, display_order, is_active)
 VALUES
-    ('/images/sample/detail-banner.svg', '2026 여름 콘서트', '아이유 콘서트 [HEREH]',        '8월 1~2일 올림픽공원',    '아이유의 2026년 단독 콘서트. 새 앨범 수록곡을 포함한 화려한 무대.', '예매하기', '/concerts/1', 1, true),
-    ('/images/sample/detail-banner.svg', 'WORLD TOUR',     '세븐틴 <NEW_> IN SEOUL',       '7월 6~8일 잠실실내체육관', '새로운 챕터의 시작을 알리는 세븐틴의 월드투어 서울 공연.', '예매하기', '/concerts/7', 2, true),
-    ('/images/sample/detail-banner.svg', 'LIVE TOUR',      'aespa SYNK : HYPER LINE',     '8월 11~12일 인천',        '가상과 현실을 넘나드는 에스파의 메타버스 라이브 투어.', '예매하기', '/concerts/9', 3, true),
-    ('/images/sample/detail-banner.svg', '내한공연',         'Cigarettes After Sex in Seoul','7월 30일 단 하루',        '몽환적이고 감각적인 사운드의 대명사 CAS 내한 공연.', '예매하기', '/concerts/10', 4, true);
+    ('/images/sample/detail-banner.svg', '2026 여름 팬콘',  'Red Velvet FAN-CON 〈A Day in Red & Velvet〉', '8월 1~2일 고려대학교 화정체육관', '레드벨벳의 공식 팬콘서트. 역대 최고의 셋리스트와 화려한 퍼포먼스.',  '예매하기', '/concerts/1', 1, true),
+    ('/images/sample/detail-banner.svg', 'WORLD TOUR',      '2027 후지이 카제 Prema 월드 투어',              '2027.01.09 고척스카이돔',        '고척돔을 매진시킨 후지이 카제의 두 번째 내한. Prema 월드투어 서울 공연.', '예매하기', '/concerts/3', 2, true),
+    ('/images/sample/detail-banner.svg', 'FESTIVAL',        '워터밤 서울 2026',                              '7월 24~26일 킨텍스',             '국내 최대 규모 물총 축제! 역대 최대 라인업과 함께하는 여름의 절정.', '예매하기', '/concerts/4', 3, true),
+    ('/images/sample/detail-banner.svg', 'MUSIC FESTIVAL',  '사운드 플래닛 페스티벌 2026',                   '9월 5~6일 인천 파라다이스시티',   '국내외 정상급 뮤지션들이 총출동하는 대규모 2일 음악 페스티벌.',     '예매하기', '/concerts/5', 4, true);
 
 
 -- ================

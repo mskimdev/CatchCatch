@@ -57,6 +57,12 @@
 
                 <section id="detail" class="cc-detail-content-body">
                     <div class="cc-detail-content__inner">
+                        {{#detailBannerUrl}}
+                            <div class="cc-detail-banner">
+                                <img src="{{detailBannerUrl}}" alt="{{title}} 상세 이미지" style="width:100%;display:block;">
+                            </div>
+                        {{/detailBannerUrl}}
+
                         {{#detailDescription1}}
                             <div class="cc-detail-auxiliary-desc side-box">
                                 <h4 class="desc-title" style="color: #cc0000;">상세페이지 내용</h4>
