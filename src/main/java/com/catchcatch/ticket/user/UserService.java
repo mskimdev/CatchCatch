@@ -1,8 +1,8 @@
 package com.catchcatch.ticket.user;
 
 import com.catchcatch.ticket.booking.Booking;
-import com.catchcatch.ticket.booking.BookingRepository;
-import com.catchcatch.ticket.booking.Status;
+import com.catchcatch.ticket.booking.repository.BookingRepository;
+import com.catchcatch.ticket.booking.enums.Status;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.concertlike.ConcertLike;

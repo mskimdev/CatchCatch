@@ -1,6 +1,6 @@
 package com.catchcatch.ticket.payment;
 
-import com.catchcatch.ticket.booking.BookingService;
+import com.catchcatch.ticket.booking.service.BookingService;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.user.User;

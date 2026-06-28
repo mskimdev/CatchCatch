@@ -157,7 +157,8 @@
         finalPreview: {
             enabled: false,
             componentCount: 0
-        }
+        },
+        currentStep: 1
     };
 
     const $ = (id) => document.getElementById(id);
@@ -210,6 +211,7 @@
         bindClick("previewSaveRegions", showFinalSavePreview);
         bindClick("pickColorFromCanvas", toggleColorPickerMode);
         bindCanvasWheelZoom();
+        showUndoRedoButtonsV21();
         bindClick("undoAction", undo);
         bindClick("redoAction", redo);
         bindZoomButton("zoomIn", 1);
@@ -1658,13 +1660,7 @@
                 originalKey: STORAGE.original,
                 resultKey: STORAGE.result
             },
-            groups: state.groups.map((group) => ({
-                id: group.id,
-                name: group.name,
-                gradeName: group.gradeName,
-                color: group.output,
-                role: ROLE_NAME.get(group.role) || String(group.role)
-            })),
+            groups: buildGeneratedRegionGroupsForSave(),
             corrections: {
                 selectedRegionCount: state.region.selected.length,
                 selectedRegions: state.region.selected.map((region) => ({
@@ -2001,7 +1997,8 @@ SeatTrace 버튼 이미지화 결과 파일
             hasResult: state.hasResult,
             saved: state.saved,
             resultBaseDataUrl: state.resultBaseDataUrl,
-            stats: state.lastStats ? clone(state.lastStats) : null
+            stats: state.lastStats ? clone(state.lastStats) : null,
+            step: state.currentStep || 1
         };
 
         state.history = state.history.slice(0, state.historyIndex + 1);
@@ -2016,21 +2013,45 @@ SeatTrace 버튼 이미지화 결과 파일
     }
 
     function undo() {
-        if (state.historyIndex <= 0) {
+        const targetIndex = findHistoryIndexInCurrentStep(-1);
+
+        if (targetIndex < 0) {
+            updateHistoryButtons();
             return;
         }
 
-        state.historyIndex -= 1;
+        state.historyIndex = targetIndex;
         restoreHistory(state.history[state.historyIndex]);
     }
 
     function redo() {
-        if (state.historyIndex >= state.history.length - 1) {
+        const targetIndex = findHistoryIndexInCurrentStep(1);
+
+        if (targetIndex < 0) {
+            updateHistoryButtons();
             return;
         }
 
-        state.historyIndex += 1;
+        state.historyIndex = targetIndex;
         restoreHistory(state.history[state.historyIndex]);
+    }
+
+    function findHistoryIndexInCurrentStep(direction) {
+        const step = state.currentStep || 1;
+        const start = state.historyIndex + direction;
+
+        for (let i = start; i >= 0 && i < state.history.length; i += direction) {
+            const itemStep = state.history[i]?.step || 1;
+
+            if (itemStep === step) {
+                return i;
+            }
+
+            // 파트 경계를 넘어서 복원하지 않는다.
+            return -1;
+        }
+
+        return -1;
     }
 
     function restoreHistory(snapshot) {
@@ -2058,11 +2079,17 @@ SeatTrace 버튼 이미지화 결과 파일
         const redoButton = $("redoAction");
 
         if (undoButton) {
-            undoButton.disabled = state.historyIndex <= 0;
+            undoButton.disabled = findHistoryIndexInCurrentStep(-1) < 0;
+            undoButton.style.display = "";
+            undoButton.removeAttribute("aria-hidden");
+            undoButton.style.pointerEvents = "";
         }
 
         if (redoButton) {
-            redoButton.disabled = state.historyIndex >= state.history.length - 1;
+            redoButton.disabled = findHistoryIndexInCurrentStep(1) < 0;
+            redoButton.style.display = "";
+            redoButton.removeAttribute("aria-hidden");
+            redoButton.style.pointerEvents = "";
         }
     }
 
@@ -2149,8 +2176,10 @@ SeatTrace 버튼 이미지화 결과 파일
 
     function setStep(step) {
         const nextStep = Number(step) || 1;
+        state.currentStep = nextStep;
 
         if (nextStep > 1 && !state.hasResult) {
+            state.currentStep = 1;
             toast("먼저 파트 1에서 미리보기를 생성하세요.");
             return;
         }
@@ -2521,8 +2550,9 @@ SeatTrace 버튼 이미지화 결과 파일
 
         state.region.color = hex;
         setColorPickerMode(false, { silent: true });
-        setBrushMode("paint", { silent: true });
-        toast(`칠할 색상 변경: ${hex}`);
+        setBrushMode("none", { silent: true });
+        updateRegionToolUI();
+        toast(`지정 색상 선택: ${hex}`);
     }
 
     function updateBrushSize() {
@@ -4276,4 +4306,5810 @@ SeatTrace 버튼 이미지화 결과 파일
             toastElement.classList.remove("show");
         }, 2600);
     }
+
+
+    // ============================================================================
+    // v17 patch: 버튼 이미지화 흐름 재정리
+    // - 파트 1 = 단색화 및 내부 글자 제거
+    // - 파트 2 = 구역 미리보기 / 누락 브러쉬 보정
+    // - 파트 3 = 현재 보정 이미지 기준 최종 구역 병합 / 간격 정리
+    // - 파트 4 = 저장 및 나가기
+    // - 파트 이동 시 자동 변환을 다시 실행하지 않는다.
+    // ============================================================================
+
+    document.addEventListener("DOMContentLoaded", () => {
+        window.setTimeout(() => {
+            ensureFinalMergeToolsV17();
+            bindFinalMergeToolsV17();
+        }, 0);
+    });
+
+    function bindEvents() {
+        bindClick("generateButtonImage", () => runAutoConversion(false, { nextStep: 2 }));
+        bindClick("applyToConcert", () => runAutoConversion(true));
+        bindClick("saveButtonImage", saveButtonImageLocal);
+        bindClick("restoreSource", restoreSourceImage);
+        bindClick("restoreResultBase", restoreResultBase);
+        bindClick("clearAllSamples", resetAutoState);
+        bindClick("clearSelectedSamples", resetAutoState);
+        bindClick("cleanupPieces", () => runAutoConversion(false));
+
+        // 중요: 파트 이동에서 runAutoConversion을 다시 실행하지 않는다.
+        // 전체 정리/브러쉬 보정 결과가 다음 파트로 넘어갈 때 되돌아가던 원인 차단.
+        bindClick("go2", () => setStep(2));
+        bindClick("go3", () => setStep(3));
+        bindClick("go4", () => setStep(4));
+        bindClick("tab1", () => setStep(1));
+        bindClick("tab2", () => setStep(2));
+        bindClick("tab3", () => setStep(3));
+        bindClick("tab4", () => setStep(4));
+
+        bindClick("backToBrush", () => setStep(2));
+        bindClick("previewSaveRegions", showFinalSavePreview);
+        bindClick("pickColorFromCanvas", toggleColorPickerMode);
+
+        bindCanvasWheelZoom();
+        showUndoRedoButtonsV21();
+        bindClick("undoAction", undo);
+        bindClick("redoAction", redo);
+        bindZoomButton("zoomIn", 1);
+        bindZoomButton("zoomOut", -1);
+        bindClick("zoomReset", () => setZoom(1));
+        bindClick("serverSaveButtonImage", saveButtonImageToServer);
+        bindClick("saveAndExitButton", saveAndExit);
+
+        // 구역 보정 / 내부 글자 제거
+        bindClick("regionSelectStart", toggleRegionSelectTool);
+        bindClick("regionClear", clearSelectedRegions);
+        bindClick("regionRemoveText", removeTextInsideSelectedRegions);
+        bindClick("regionDominantFill", fillSelectedRegionsWithDominantColor);
+        bindClick("regionApplyColor", applySelectedRegionColor);
+        bindClick("regionCleanFill", cleanAndFillSelectedRegions);
+        bindClick("regionCleanAll", cleanAllCurrentSeatRegions);
+        bindInput("regionColorInput", updateRegionColorFromInput);
+        bindInput("regionGradeInput", updateRegionGradeFromInput);
+
+        // 브러쉬 보정
+        bindClick("straightenAllRegions", () => straightenSeatRegions(false));
+        bindClick("straightenSelectedRegions", () => straightenSeatRegions(true));
+        bindInput("straightenStrength", updateStraightenStrength);
+        bindClick("brushTool", () => setBrushMode(state.brush.mode === "paint" ? "none" : "paint"));
+        bindClick("eraseTool", () => setBrushMode(state.brush.mode === "erase" ? "none" : "erase"));
+        bindInput("brushSize", updateBrushSize);
+
+        document.querySelectorAll("[data-region-palette]").forEach((button) => {
+            button.addEventListener("click", () => handlePaletteButtonClick(button));
+        });
+
+        if (overlay) {
+            overlay.addEventListener("mousedown", onCanvasDown);
+            overlay.addEventListener("mousemove", onCanvasMove);
+            overlay.addEventListener("mouseup", onCanvasUp);
+            overlay.addEventListener("click", onCanvasClick);
+            overlay.addEventListener("mouseleave", onCanvasLeave);
+        }
+    }
+
+    function setStep(step) {
+        const nextStep = Number(step) || 1;
+        state.currentStep = nextStep;
+
+        if (nextStep > 1 && !state.hasResult) {
+            state.currentStep = 1;
+            toast("먼저 파트 1에서 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        if (nextStep !== 3) {
+            state.finalPreview.enabled = false;
+            if (state.finalPreview) {
+                state.finalPreview.dragging = false;
+                state.finalPreview.dragRect = null;
+            }
+        }
+
+        document.querySelectorAll(".button-image-step").forEach((section) => {
+            const itemStep = Number(section.dataset.step);
+            const header = section.querySelector(".button-image-step__header");
+            const status = section.querySelector(".button-image-step__status");
+
+            section.classList.toggle("is-active", itemStep === nextStep);
+            section.classList.toggle("is-done", itemStep < nextStep);
+
+            if (header) {
+                header.classList.toggle("active", itemStep === nextStep);
+            }
+
+            if (status) {
+                if (itemStep < nextStep) {
+                    status.textContent = "완료";
+                } else if (itemStep === nextStep) {
+                    status.textContent = nextStep === 1 ? "진행중" : nextStep === 2 ? "보정중" : nextStep === 3 ? "병합중" : "저장";
+                } else {
+                    status.textContent = "대기";
+                }
+            }
+        });
+
+        if (nextStep === 1) {
+            enableRegionSelectTool(false);
+            setBrushMode("none", { silent: true });
+            setColorPickerMode(false, { silent: true });
+            clearOverlay();
+        } else if (nextStep === 2) {
+            // 파트2는 현재 결과 이미지 위에서 누락 구역/찌꺼기를 브러쉬로 보정한다.
+            // 자동 변환을 다시 돌리지 않고 현재 canvas 그대로 사용한다.
+            enableRegionSelectTool(true);
+            updateBrushSize();
+            setColorPickerMode(false, { silent: true });
+            if (state.brush.mode === "none") {
+                setBrushMode("paint", { silent: true });
+            }
+            drawLiveRegionPreviewV17();
+        } else if (nextStep === 3) {
+            // 파트3은 파트2 브러쉬 보정이 끝난 현재 canvas를 기준으로 구역 병합을 한다.
+            enableRegionSelectTool(false);
+            setBrushMode("none", { silent: true });
+            setColorPickerMode(false, { silent: true });
+            showFinalSavePreview();
+        } else if (nextStep === 4) {
+            enableRegionSelectTool(false);
+            setBrushMode("none", { silent: true });
+            setColorPickerMode(false, { silent: true });
+            state.finalPreview.enabled = false;
+            clearOverlay();
+        }
+    }
+
+    function finishBrushStroke() {
+        if (!state.brush.down) {
+            return;
+        }
+
+        state.brush.down = false;
+
+        if (!state.brush.changed) {
+            return;
+        }
+
+        syncResultFromVisible();
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+        pushHistory(state.brush.mode === "erase" ? "지우개 보정" : "브러쉬 보정");
+        updateStats();
+
+        if (document.querySelector("#part2.button-image-step.is-active")) {
+            drawLiveRegionPreviewV17();
+        }
+
+        toast(state.brush.mode === "erase" ? "지우개 보정을 적용했습니다." : "브러쉬 보정을 적용했습니다.");
+    }
+
+    function drawLiveRegionPreviewV17() {
+        if (!overlayCtx || !canvas.width || !canvas.height) {
+            return;
+        }
+
+        clearOverlay();
+
+        if (!state.hasResult) {
+            return;
+        }
+
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const roleMap = buildCurrentCanvasRoleMap(image, canvas.width, canvas.height);
+        const minArea = Math.max(16, SETTINGS.componentRepresentativeMinArea || 10);
+        const components = extractAnySeatComponentsV17(roleMap, canvas.width, canvas.height)
+            .filter((component) => component.area >= minArea);
+
+        overlayCtx.save();
+        overlayCtx.strokeStyle = "rgba(15, 23, 42, 0.60)";
+        overlayCtx.lineWidth = Math.max(1, 1.2 / Math.max(1, state.zoom));
+
+        components.forEach((component) => {
+            const region = {
+                pixels: component.pixels,
+                pixelSet: new Set(component.pixels),
+                bounds: {
+                    x: component.minX,
+                    y: component.minY,
+                    w: component.maxX - component.minX + 1,
+                    h: component.maxY - component.minY + 1
+                }
+            };
+            drawFinalRegionBoundaryV17(region, "rgba(15, 23, 42, 0.58)", 1.2);
+        });
+
+        overlayCtx.restore();
+    }
+
+    function ensureFinalMergeToolsV17() {
+        const part3 = document.querySelector("#part3 .button-image-box") || document.querySelector("#part3 .button-image-step__body") || document.querySelector("#part3");
+
+        if (!part3 || document.getElementById("finalMergeSelectedRegions")) {
+            return;
+        }
+
+        const panel = document.createElement("div");
+        panel.className = "button-image-final-merge-tools";
+        panel.style.cssText = "display:flex;flex-direction:column;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #e5e7eb;";
+        panel.innerHTML = `
+            <div class="button-image-guide" style="margin:0;">
+                현재 보정된 이미지를 기준으로 저장 구역을 실선으로 표시합니다. 드래그는 여러 구역 병합, Shift+클릭은 선택 구역과 클릭 구역 병합입니다.
+            </div>
+            <button type="button" class="btn btn--primary" id="finalMergeSelectedRegions">선택 구역 병합</button>
+            <button type="button" class="btn" id="finalClearSelection">선택 해제</button>
+            <div class="button-image-selected" id="finalSelectionText">선택 구역: 없음</div>
+        `;
+
+        const nextButton = document.getElementById("go4");
+        if (nextButton && nextButton.parentNode === part3) {
+            part3.insertBefore(panel, nextButton);
+        } else {
+            part3.appendChild(panel);
+        }
+    }
+
+    function bindFinalMergeToolsV17() {
+        const mergeButton = document.getElementById("finalMergeSelectedRegions");
+        const clearButton = document.getElementById("finalClearSelection");
+
+        if (mergeButton && !mergeButton.dataset.boundFinalMergeV17) {
+            mergeButton.dataset.boundFinalMergeV17 = "true";
+            mergeButton.addEventListener("click", (event) => {
+                event.preventDefault();
+                mergeSelectedFinalRegionsV17();
+            });
+        }
+
+        if (clearButton && !clearButton.dataset.boundFinalMergeV17) {
+            clearButton.dataset.boundFinalMergeV17 = "true";
+            clearButton.addEventListener("click", (event) => {
+                event.preventDefault();
+                clearFinalRegionSelectionV17();
+            });
+        }
+
+        updateFinalMergeToolUIV17();
+    }
+
+    function showFinalSavePreview() {
+        if (!state.hasResult) {
+            toast("먼저 파트 1에서 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        ensureFinalMergeToolsV17();
+        bindFinalMergeToolsV17();
+
+        state.finalPreview.enabled = true;
+        state.finalPreview.selectedIds = [];
+        state.finalPreview.dragging = false;
+        state.finalPreview.dragStart = null;
+        state.finalPreview.dragRect = null;
+        state.finalPreview.suppressClick = false;
+
+        setBrushMode("none", { silent: true });
+        setColorPickerMode(false, { silent: true });
+
+        rebuildFinalPreviewRegionsV17();
+        drawFinalPreviewOverlayV17();
+        updateFinalMergeToolUIV17();
+        toast(`저장될 구역 ${state.finalPreview.componentCount || 0}개를 실선으로 표시했습니다.`);
+    }
+
+    function drawFinalSaveOutline() {
+        rebuildFinalPreviewRegionsV17();
+        drawFinalPreviewOverlayV17();
+        updateFinalMergeToolUIV17();
+    }
+
+    function rebuildFinalPreviewRegionsV17() {
+        if (!canvas.width || !canvas.height) {
+            state.finalPreview.regions = [];
+            state.finalPreview.componentCount = 0;
+            return;
+        }
+
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const roleMap = buildCurrentCanvasRoleMap(image, canvas.width, canvas.height);
+        const minArea = Math.max(16, SETTINGS.componentRepresentativeMinArea || 10);
+        const components = extractAnySeatComponentsV17(roleMap, canvas.width, canvas.height)
+            .filter((component) => component.area >= minArea)
+            .sort((a, b) => Math.abs(a.minY - b.minY) > 12 ? a.minY - b.minY : a.minX - b.minX);
+
+        state.finalPreview.regions = components.map((component, index) => {
+            const color = getDominantColorFromPixels(image, component.pixels);
+            const role = getDominantFinalRoleFromPixelsV17(roleMap, component.pixels);
+
+            return {
+                id: `final-${index + 1}`,
+                role,
+                color,
+                colorHex: rgbToHex(color.r, color.g, color.b),
+                pixels: component.pixels,
+                pixelSet: new Set(component.pixels),
+                area: component.area,
+                bounds: {
+                    x: component.minX,
+                    y: component.minY,
+                    w: component.maxX - component.minX + 1,
+                    h: component.maxY - component.minY + 1
+                }
+            };
+        });
+
+        const liveIds = new Set(state.finalPreview.regions.map((region) => region.id));
+        state.finalPreview.selectedIds = (state.finalPreview.selectedIds || []).filter((id) => liveIds.has(id));
+        state.finalPreview.componentCount = state.finalPreview.regions.length;
+    }
+
+    function drawFinalPreviewOverlayV17() {
+        clearOverlay();
+
+        if (!overlayCtx || !overlay) {
+            return;
+        }
+
+        const selected = new Set(state.finalPreview.selectedIds || []);
+        overlayCtx.save();
+
+        for (const region of state.finalPreview.regions || []) {
+            const isSelected = selected.has(region.id);
+            drawFinalRegionBoundaryV17(
+                region,
+                isSelected ? "rgba(124, 58, 237, 0.98)" : "rgba(15, 23, 42, 0.88)",
+                isSelected ? 2.6 : 1.4
+            );
+
+            if (isSelected) {
+                overlayCtx.fillStyle = "rgba(124, 58, 237, 0.10)";
+                overlayCtx.fillRect(region.bounds.x, region.bounds.y, region.bounds.w, region.bounds.h);
+            }
+        }
+
+        if (state.finalPreview.dragRect) {
+            const rect = state.finalPreview.dragRect;
+            overlayCtx.save();
+            overlayCtx.strokeStyle = "rgba(37, 99, 235, 0.95)";
+            overlayCtx.fillStyle = "rgba(37, 99, 235, 0.08)";
+            overlayCtx.lineWidth = 2;
+            overlayCtx.setLineDash([7, 5]);
+            overlayCtx.fillRect(rect.x, rect.y, rect.w, rect.h);
+            overlayCtx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+            overlayCtx.restore();
+        }
+
+        overlayCtx.restore();
+    }
+
+    function drawFinalRegionBoundaryV17(region, strokeStyle, lineWidth) {
+        const width = canvas.width;
+        const height = canvas.height;
+        const pixelSet = region.pixelSet || new Set(region.pixels || []);
+
+        overlayCtx.save();
+        overlayCtx.beginPath();
+        overlayCtx.strokeStyle = strokeStyle;
+        overlayCtx.lineWidth = Math.max(1, lineWidth / Math.max(1, state.zoom));
+
+        for (const index of region.pixels || []) {
+            const x = index % width;
+            const y = Math.floor(index / width);
+
+            if (x <= 0 || !pixelSet.has(index - 1)) {
+                overlayCtx.moveTo(x, y);
+                overlayCtx.lineTo(x, y + 1);
+            }
+
+            if (x >= width - 1 || !pixelSet.has(index + 1)) {
+                overlayCtx.moveTo(x + 1, y);
+                overlayCtx.lineTo(x + 1, y + 1);
+            }
+
+            if (y <= 0 || !pixelSet.has(index - width)) {
+                overlayCtx.moveTo(x, y);
+                overlayCtx.lineTo(x + 1, y);
+            }
+
+            if (y >= height - 1 || !pixelSet.has(index + width)) {
+                overlayCtx.moveTo(x, y + 1);
+                overlayCtx.lineTo(x + 1, y + 1);
+            }
+        }
+
+        overlayCtx.stroke();
+        overlayCtx.restore();
+    }
+
+    function onCanvasDown(event) {
+        const point = getCanvasPoint(event);
+
+        if (state.finalPreview.enabled && state.brush.mode === "none" && !state.brush.pickColor && point) {
+            event.preventDefault();
+            state.finalPreview.dragging = true;
+            state.finalPreview.dragStart = point;
+            state.finalPreview.dragRect = null;
+            state.finalPreview.suppressClick = false;
+            return;
+        }
+
+        if (state.brush.pickColor) {
+            event.preventDefault();
+            return;
+        }
+
+        if (state.brush.mode !== "none") {
+            if (!point) {
+                return;
+            }
+
+            event.preventDefault();
+            state.brush.down = true;
+            state.brush.changed = false;
+            paintBrushAt(point);
+            return;
+        }
+    }
+
+    function onCanvasMove(event) {
+        if (!state.imageReady || !sourceCanvas.width || !sourceCanvas.height) {
+            return;
+        }
+
+        const point = getCanvasPoint(event);
+        if (!point) {
+            hideLoupe();
+            return;
+        }
+
+        if (state.finalPreview.dragging && state.finalPreview.dragStart) {
+            event.preventDefault();
+            state.finalPreview.dragRect = normalizeCanvasRectV17(state.finalPreview.dragStart, point);
+            drawFinalPreviewOverlayV17();
+            return;
+        }
+
+        if (state.brush.pickColor) {
+            updateLoupe(point, event);
+            updateBrushCursor(point);
+            return;
+        }
+
+        updateBrushCursor(point);
+
+        if (state.brush.down && state.brush.mode !== "none") {
+            event.preventDefault();
+            paintBrushAt(point);
+            return;
+        }
+
+        updateLoupe(point, event);
+    }
+
+    function onCanvasUp(event) {
+        if (state.finalPreview.dragging) {
+            finishFinalPreviewDragV17(event);
+            return;
+        }
+
+        finishBrushStroke();
+    }
+
+    function onCanvasClick(event) {
+        const point = getCanvasPoint(event);
+
+        if (state.brush.pickColor) {
+            event.preventDefault();
+            if (point) {
+                sampleBrushColorAt(point);
+            }
+            return;
+        }
+
+        if (state.brush.mode !== "none") {
+            event.preventDefault();
+            return;
+        }
+
+        if (state.finalPreview.enabled) {
+            event.preventDefault();
+
+            if (state.finalPreview.suppressClick) {
+                state.finalPreview.suppressClick = false;
+                return;
+            }
+
+            if (point) {
+                selectFinalRegionByClickV17(point, event.shiftKey || event.ctrlKey || event.metaKey);
+            }
+            return;
+        }
+
+        if (!state.region.enabled) {
+            return;
+        }
+
+        if (!point) {
+            return;
+        }
+
+        event.preventDefault();
+        selectRegionByClick(point, event.shiftKey, event.ctrlKey || event.metaKey);
+    }
+
+    function onCanvasLeave() {
+        if (state.finalPreview.dragging) {
+            state.finalPreview.dragging = false;
+            state.finalPreview.dragStart = null;
+            state.finalPreview.dragRect = null;
+            drawFinalPreviewOverlayV17();
+        }
+
+        finishBrushStroke();
+        hideLoupe();
+    }
+
+    function finishFinalPreviewDragV17() {
+        const rect = state.finalPreview.dragRect;
+        state.finalPreview.dragging = false;
+        state.finalPreview.dragStart = null;
+        state.finalPreview.dragRect = null;
+
+        if (!rect || rect.w < 6 || rect.h < 6) {
+            drawFinalPreviewOverlayV17();
+            return;
+        }
+
+        const ids = (state.finalPreview.regions || [])
+            .filter((region) => rectOverlapV17(region.bounds, rect))
+            .map((region) => region.id);
+
+        state.finalPreview.suppressClick = true;
+
+        // 드래그는 병합을 바로 실행하지 않고, 2개 이상 구역을 선택하는 용도다.
+        // 실제 병합은 [선택 구역 병합] 버튼으로 확정한다.
+        state.finalPreview.selectedIds = ids;
+        drawFinalPreviewOverlayV17();
+        updateFinalMergeToolUIV17();
+        toast(ids.length > 0 ? `구역 ${ids.length}개를 선택했습니다.` : "선택된 구역이 없습니다.");
+    }
+
+    function selectFinalRegionByClickV17(point, mergeMode) {
+        const region = findFinalRegionAtPointV17(point);
+
+        if (!region) {
+            state.finalPreview.selectedIds = [];
+            drawFinalPreviewOverlayV17();
+            updateFinalMergeToolUIV17();
+            toast("최종 구역을 찾지 못했습니다.");
+            return;
+        }
+
+        if (mergeMode) {
+            // Shift/Ctrl 클릭은 즉시 병합이 아니라 다중 선택 토글이다.
+            // 2개 이상 선택 후 [선택 구역 병합]으로 확정한다.
+            const exists = state.finalPreview.selectedIds.includes(region.id);
+            state.finalPreview.selectedIds = exists
+                ? state.finalPreview.selectedIds.filter((id) => id !== region.id)
+                : [...state.finalPreview.selectedIds, region.id];
+        } else {
+            state.finalPreview.selectedIds = [region.id];
+        }
+
+        drawFinalPreviewOverlayV17();
+        updateFinalMergeToolUIV17();
+        toast(`구역 ${state.finalPreview.selectedIds.length}개 선택됨`);
+    }
+
+    function mergeSelectedFinalRegionsV17() {
+        mergeFinalRegionsByIdsV17(state.finalPreview.selectedIds || [], "선택 구역 병합");
+    }
+
+    function mergeFinalRegionsByIdsV17(ids, label = "최종 구역 병합") {
+        const uniqueIds = [...new Set(ids || [])];
+
+        if (uniqueIds.length < 2) {
+            toast("합칠 구역을 2개 이상 선택하세요.");
+            return;
+        }
+
+        const targets = (state.finalPreview.regions || []).filter((region) => uniqueIds.includes(region.id));
+
+        if (targets.length < 2) {
+            toast("합칠 구역을 2개 이상 선택하세요.");
+            return;
+        }
+
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const pixels = targets.flatMap((region) => region.pixels || []);
+        const color = getDominantColorFromPixels(image, pixels);
+        const hull = buildMergedRegionHullV17(targets);
+
+        if (!hull || hull.length < 3) {
+            toast("병합할 도형 외곽을 계산하지 못했습니다.");
+            return;
+        }
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(hull[0].x, hull[0].y);
+        for (let i = 1; i < hull.length; i += 1) {
+            ctx.lineTo(hull[i].x, hull[i].y);
+        }
+        ctx.closePath();
+        ctx.fillStyle = rgbToHex(color.r, color.g, color.b);
+        ctx.fill();
+        ctx.restore();
+
+        syncResultFromVisible();
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+        state.finalPreview.selectedIds = [];
+        pushHistory(label);
+        rebuildFinalPreviewRegionsV17();
+        drawFinalPreviewOverlayV17();
+        updateFinalMergeToolUIV17();
+        updateStats();
+        toast(`${targets.length}개 구역을 대표색 ${rgbToHex(color.r, color.g, color.b)}로 병합했습니다.`);
+    }
+
+    function clearFinalRegionSelectionV17() {
+        state.finalPreview.selectedIds = [];
+        drawFinalPreviewOverlayV17();
+        updateFinalMergeToolUIV17();
+        toast("최종 구역 선택을 해제했습니다.");
+    }
+
+    function updateFinalMergeToolUIV17() {
+        const text = document.getElementById("finalSelectionText");
+        const button = document.getElementById("finalMergeSelectedRegions");
+        const count = (state.finalPreview.selectedIds || []).length;
+
+        if (text) {
+            text.textContent = count > 0
+                ? `선택 구역: ${count}개 / 전체 ${state.finalPreview.componentCount || 0}개`
+                : `선택 구역: 없음 / 전체 ${state.finalPreview.componentCount || 0}개`;
+        }
+
+        if (button) {
+            button.disabled = count < 2;
+        }
+    }
+
+    function findFinalRegionAtPointV17(point) {
+        const x = clamp(Math.round(point.x), 0, canvas.width - 1);
+        const y = clamp(Math.round(point.y), 0, canvas.height - 1);
+        const index = y * canvas.width + x;
+
+        for (let i = (state.finalPreview.regions || []).length - 1; i >= 0; i -= 1) {
+            const region = state.finalPreview.regions[i];
+
+            if (region.pixelSet && region.pixelSet.has(index)) {
+                return region;
+            }
+
+            if (point.x >= region.bounds.x && point.x <= region.bounds.x + region.bounds.w
+                && point.y >= region.bounds.y && point.y <= region.bounds.y + region.bounds.h
+                && isNearFinalRegionPixelV17(region, point, 6)) {
+                return region;
+            }
+        }
+
+        return null;
+    }
+
+    function isNearFinalRegionPixelV17(region, point, radius) {
+        const x = Math.round(point.x);
+        const y = Math.round(point.y);
+        const r = Math.max(1, radius || 4);
+        const pixelSet = region.pixelSet || new Set(region.pixels || []);
+
+        for (let yy = y - r; yy <= y + r; yy += 1) {
+            for (let xx = x - r; xx <= x + r; xx += 1) {
+                if (xx < 0 || yy < 0 || xx >= canvas.width || yy >= canvas.height) {
+                    continue;
+                }
+
+                if (pixelSet.has(yy * canvas.width + xx)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    function extractAnySeatComponentsV17(roleMap, width, height) {
+        const visited = new Uint8Array(width * height);
+        const components = [];
+        const queue = [];
+
+        for (let i = 0; i < width * height; i += 1) {
+            if (visited[i] || !isSeatRole(roleMap[i])) {
+                continue;
+            }
+
+            const component = {
+                role: roleMap[i],
+                pixels: [],
+                area: 0,
+                minX: Infinity,
+                minY: Infinity,
+                maxX: -Infinity,
+                maxY: -Infinity
+            };
+
+            queue.length = 0;
+            queue.push(i);
+            visited[i] = 1;
+
+            while (queue.length > 0) {
+                const current = queue.pop();
+                const x = current % width;
+                const y = Math.floor(current / width);
+
+                component.pixels.push(current);
+                component.area += 1;
+                component.minX = Math.min(component.minX, x);
+                component.minY = Math.min(component.minY, y);
+                component.maxX = Math.max(component.maxX, x);
+                component.maxY = Math.max(component.maxY, y);
+
+                pushAnySeatNeighborV17(queue, visited, roleMap, width, height, x + 1, y);
+                pushAnySeatNeighborV17(queue, visited, roleMap, width, height, x - 1, y);
+                pushAnySeatNeighborV17(queue, visited, roleMap, width, height, x, y + 1);
+                pushAnySeatNeighborV17(queue, visited, roleMap, width, height, x, y - 1);
+                pushAnySeatNeighborV17(queue, visited, roleMap, width, height, x + 1, y + 1);
+                pushAnySeatNeighborV17(queue, visited, roleMap, width, height, x - 1, y - 1);
+                pushAnySeatNeighborV17(queue, visited, roleMap, width, height, x + 1, y - 1);
+                pushAnySeatNeighborV17(queue, visited, roleMap, width, height, x - 1, y + 1);
+            }
+
+            components.push(component);
+        }
+
+        return components;
+    }
+
+    function pushAnySeatNeighborV17(queue, visited, roleMap, width, height, x, y) {
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            return;
+        }
+
+        const index = y * width + x;
+
+        if (visited[index] || !isSeatRole(roleMap[index])) {
+            return;
+        }
+
+        visited[index] = 1;
+        queue.push(index);
+    }
+
+    function getDominantFinalRoleFromPixelsV17(roleMap, pixels) {
+        const counts = new Map();
+
+        for (const index of pixels || []) {
+            const role = roleMap[index];
+
+            if (!isSeatRole(role)) {
+                continue;
+            }
+
+            counts.set(role, (counts.get(role) || 0) + 1);
+        }
+
+        let bestRole = ROLE.SEAT_PINK;
+        let bestCount = -1;
+        counts.forEach((count, role) => {
+            if (count > bestCount) {
+                bestRole = role;
+                bestCount = count;
+            }
+        });
+
+        return bestRole;
+    }
+
+    function buildMergedRegionHullV17(regions) {
+        const points = [];
+
+        for (const region of regions) {
+            const boundary = getFinalRegionBoundaryPointsV17(region);
+            const step = Math.max(1, Math.floor(boundary.length / 1200));
+
+            for (let i = 0; i < boundary.length; i += step) {
+                points.push(boundary[i]);
+            }
+
+            points.push(
+                { x: region.bounds.x, y: region.bounds.y },
+                { x: region.bounds.x + region.bounds.w, y: region.bounds.y },
+                { x: region.bounds.x + region.bounds.w, y: region.bounds.y + region.bounds.h },
+                { x: region.bounds.x, y: region.bounds.y + region.bounds.h }
+            );
+        }
+
+        return convexHullV17(points).map((point) => ({ x: round(point.x), y: round(point.y) }));
+    }
+
+    function getFinalRegionBoundaryPointsV17(region) {
+        const width = canvas.width;
+        const height = canvas.height;
+        const pixelSet = region.pixelSet || new Set(region.pixels || []);
+        const points = [];
+
+        for (const index of region.pixels || []) {
+            const x = index % width;
+            const y = Math.floor(index / width);
+
+            if (x <= 0 || x >= width - 1 || y <= 0 || y >= height - 1
+                || !pixelSet.has(index - 1)
+                || !pixelSet.has(index + 1)
+                || !pixelSet.has(index - width)
+                || !pixelSet.has(index + width)) {
+                points.push({ x, y });
+            }
+        }
+
+        return points;
+    }
+
+    function convexHullV17(points) {
+        const unique = [];
+        const seen = new Set();
+
+        for (const point of points || []) {
+            const x = Math.round(point.x);
+            const y = Math.round(point.y);
+            const key = `${x},${y}`;
+
+            if (seen.has(key)) {
+                continue;
+            }
+
+            seen.add(key);
+            unique.push({ x, y });
+        }
+
+        if (unique.length <= 3) {
+            return unique;
+        }
+
+        unique.sort((a, b) => a.x === b.x ? a.y - b.y : a.x - b.x);
+
+        const lower = [];
+        for (const point of unique) {
+            while (lower.length >= 2 && crossV17(lower[lower.length - 2], lower[lower.length - 1], point) <= 0) {
+                lower.pop();
+            }
+            lower.push(point);
+        }
+
+        const upper = [];
+        for (let i = unique.length - 1; i >= 0; i -= 1) {
+            const point = unique[i];
+            while (upper.length >= 2 && crossV17(upper[upper.length - 2], upper[upper.length - 1], point) <= 0) {
+                upper.pop();
+            }
+            upper.push(point);
+        }
+
+        lower.pop();
+        upper.pop();
+        return lower.concat(upper);
+    }
+
+    function crossV17(o, a, b) {
+        return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+    }
+
+    function normalizeCanvasRectV17(a, b) {
+        const x1 = Math.min(a.x, b.x);
+        const y1 = Math.min(a.y, b.y);
+        const x2 = Math.max(a.x, b.x);
+        const y2 = Math.max(a.y, b.y);
+        return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
+    }
+
+    function rectOverlapV17(a, b) {
+        if (!a || !b) {
+            return false;
+        }
+
+        return a.x <= b.x + b.w
+            && a.x + a.w >= b.x
+            && a.y <= b.y + b.h
+            && a.y + a.h >= b.y;
+    }
+
+
+
+    // ============================================================================
+    // v18 patch: 최종 확정 흐름
+    // 1. 단색화 및 내부 글자 제거
+    // 2. 구역 미리보기 / 누락 보정 / 단색화 취소
+    // 3. 수정 반영 단색화
+    // 4. 구역 병합
+    // 5. 최종 결과 확인 / 저장
+    // ============================================================================
+
+    function bindEvents() {
+        bindClick("generateButtonImage", () => runAutoConversion(false, { nextStep: 2 }));
+        bindClick("applyToConcert", () => runAutoConversion(true));
+        bindClick("saveButtonImage", saveButtonImageLocal);
+        bindClick("restoreSource", restoreSourceImage);
+        bindClick("restoreResultBase", restoreResultBase);
+        bindClick("clearAllSamples", resetAutoState);
+        bindClick("clearSelectedSamples", resetAutoState);
+        bindClick("cleanupPieces", () => runAutoConversion(false));
+
+        // 파트 이동은 기존 결과를 되감지 않는다.
+        bindClick("go2", () => setStep(2));
+        bindClick("go3", () => setStep(3));
+        bindClick("go4", () => setStep(4));
+        bindClick("go5", () => {
+            finalizeFinalImagePreviewV18();
+            setStep(5);
+        });
+
+        bindClick("tab1", () => setStep(1));
+        bindClick("tab2", () => setStep(2));
+        bindClick("tab3", () => setStep(3));
+        bindClick("tab4", () => setStep(4));
+        bindClick("tab5", () => setStep(5));
+
+        bindClick("backToBrush", () => setStep(2));
+        bindClick("backToMerge", () => setStep(4));
+        bindClick("previewSaveRegions", showFinalSavePreview);
+        bindClick("pickColorFromCanvas", toggleColorPickerMode);
+        bindClick("cancelSolidSelectedRegion", cancelSelectedSolidRegionsV18);
+        bindClick("solidifyPickedColor", solidifyPickedColorAndRemoveTextV20);
+        bindClick("extractPickedColorRegions", extractPickedColorRegionsV21);
+        bindClick("rerunSingleColorFromCurrent", () => rerunSingleColorFromCurrentV18({ nextStep: 4 }));
+        bindClick("rerunSingleColorOnly", () => rerunSingleColorFromCurrentV18());
+
+        bindCanvasWheelZoom();
+        showUndoRedoButtonsV21();
+        bindClick("undoAction", undo);
+        bindClick("redoAction", redo);
+        bindZoomButton("zoomIn", 1);
+        bindZoomButton("zoomOut", -1);
+        bindClick("zoomReset", () => setZoom(1));
+        bindClick("serverSaveButtonImage", saveButtonImageToServer);
+        bindClick("saveAndExitButton", saveAndExit);
+
+        bindClick("regionSelectStart", toggleRegionSelectTool);
+        bindClick("regionClear", clearSelectedRegions);
+        bindClick("regionRemoveText", removeTextInsideSelectedRegions);
+        bindClick("regionDominantFill", fillSelectedRegionsWithDominantColor);
+        bindClick("regionApplyColor", applySelectedRegionColor);
+        bindClick("regionCleanFill", cleanAndFillSelectedRegions);
+        bindClick("regionCleanAll", cleanAllCurrentSeatRegions);
+        bindInput("regionColorInput", updateRegionColorFromInput);
+        bindInput("regionGradeInput", updateRegionGradeFromInput);
+
+        bindClick("straightenAllRegions", () => straightenSeatRegions(false));
+        bindClick("straightenSelectedRegions", () => straightenSeatRegions(true));
+        bindInput("straightenStrength", updateStraightenStrength);
+        bindClick("brushTool", () => setBrushMode(state.brush.mode === "paint" ? "none" : "paint"));
+        bindClick("eraseTool", () => setBrushMode(state.brush.mode === "erase" ? "none" : "erase"));
+        bindInput("brushSize", updateBrushSize);
+
+        document.querySelectorAll("[data-region-palette]").forEach((button) => {
+            button.addEventListener("click", () => handlePaletteButtonClick(button));
+        });
+
+        if (overlay) {
+            overlay.addEventListener("mousedown", onCanvasDown);
+            overlay.addEventListener("mousemove", onCanvasMove);
+            overlay.addEventListener("mouseup", onCanvasUp);
+            overlay.addEventListener("click", onCanvasClick);
+            overlay.addEventListener("mouseleave", onCanvasLeave);
+        }
+    }
+
+    function setStep(step) {
+        const nextStep = Number(step) || 1;
+        state.currentStep = nextStep;
+
+        if (nextStep > 1 && !state.hasResult) {
+            state.currentStep = 1;
+            toast("먼저 파트 1에서 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        if (nextStep !== 4) {
+            state.finalPreview.enabled = false;
+            state.finalPreview.dragging = false;
+            state.finalPreview.dragRect = null;
+        }
+
+        document.querySelectorAll(".button-image-step").forEach((section) => {
+            const itemStep = Number(section.dataset.step);
+            const header = section.querySelector(".button-image-step__header");
+            const status = section.querySelector(".button-image-step__status");
+
+            section.classList.toggle("is-active", itemStep === nextStep);
+            section.classList.toggle("is-done", itemStep < nextStep);
+
+            if (header) {
+                header.classList.toggle("active", itemStep === nextStep);
+            }
+
+            if (status) {
+                if (itemStep < nextStep) {
+                    status.textContent = "완료";
+                } else if (itemStep === nextStep) {
+                    status.textContent = nextStep === 1
+                        ? "진행중"
+                        : nextStep === 2
+                            ? "보정중"
+                            : nextStep === 3
+                                ? "단색화"
+                                : nextStep === 4
+                                    ? "병합중"
+                                    : "확인";
+                } else {
+                    status.textContent = "대기";
+                }
+            }
+        });
+
+        if (nextStep === 1) {
+            enableRegionSelectTool(false);
+            setBrushMode("none", { silent: true });
+            setColorPickerMode(false, { silent: true });
+            clearOverlay();
+            updateRegionSelectionText();
+            return;
+        }
+
+        if (nextStep === 2) {
+            // 파트2 진입점은 항상 "실선 구역 미리보기" 상태다.
+            // 관리자가 먼저 잘못 단색화된 구역을 취소하거나, 지정 색상을 단색화할 수 있어야 하므로
+            // 브러쉬를 자동으로 쥐어주지 않는다. 브러쉬는 사용자가 버튼을 눌렀을 때만 켠다.
+            enableRegionSelectTool(true);
+            updateBrushSize();
+            setColorPickerMode(false, { silent: true });
+            setBrushMode("none", { silent: true });
+            drawLiveRegionPreviewV18();
+            updateRegionSelectionText();
+            return;
+        }
+
+        if (nextStep === 3) {
+            enableRegionSelectTool(false);
+            setBrushMode("none", { silent: true });
+            setColorPickerMode(false, { silent: true });
+            clearOverlay();
+            return;
+        }
+
+        if (nextStep === 4) {
+            enableRegionSelectTool(false);
+            setBrushMode("none", { silent: true });
+            setColorPickerMode(false, { silent: true });
+            showFinalSavePreview();
+            return;
+        }
+
+        if (nextStep === 5) {
+            enableRegionSelectTool(false);
+            setBrushMode("none", { silent: true });
+            setColorPickerMode(false, { silent: true });
+            state.finalPreview.enabled = false;
+            clearOverlay();
+        }
+    }
+
+    function drawLiveRegionPreviewV18() {
+        drawLiveRegionPreviewV17();
+    }
+
+    function finishBrushStroke() {
+        if (!state.brush.down) {
+            return;
+        }
+
+        state.brush.down = false;
+
+        if (!state.brush.changed) {
+            return;
+        }
+
+        syncResultFromVisible();
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+        pushHistory(state.brush.mode === "erase" ? "지우개 보정" : "브러쉬 보정");
+        updateStats();
+
+        if (document.querySelector("#part2.button-image-step.is-active")) {
+            drawLiveRegionPreviewV18();
+        }
+
+        toast(state.brush.mode === "erase" ? "지우개 보정을 적용했습니다." : "브러쉬 보정을 적용했습니다.");
+    }
+
+    function cancelSelectedSolidRegionsV18() {
+        if (!state.hasResult || !canvas.width || !canvas.height) {
+            toast("먼저 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        if (!state.region.selected || state.region.selected.length <= 0) {
+            toast("단색화 취소할 구역을 먼저 클릭하세요.");
+            return;
+        }
+
+        const width = canvas.width;
+        const height = canvas.height;
+        const current = ctx.getImageData(0, 0, width, height);
+        const original = sourceCtx.getImageData(0, 0, width, height);
+        const currentData = current.data;
+        const originalData = original.data;
+        const visited = new Set();
+        let changed = 0;
+
+        for (const region of state.region.selected) {
+            for (const index of region.pixels || []) {
+                if (visited.has(index)) {
+                    continue;
+                }
+                visited.add(index);
+                const offset = index * 4;
+                currentData[offset] = originalData[offset];
+                currentData[offset + 1] = originalData[offset + 1];
+                currentData[offset + 2] = originalData[offset + 2];
+                currentData[offset + 3] = originalData[offset + 3];
+                changed += 1;
+            }
+        }
+
+        ctx.putImageData(current, 0, 0);
+        syncResultFromVisible();
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+        state.saved = false;
+        pushHistory("선택 구역 단색화 취소");
+        state.region.selected = [];
+        clearOverlay();
+        drawLiveRegionPreviewV18();
+        updateRegionSelectionText();
+        updateStats();
+        toast(`선택 구역 단색화를 취소했습니다. ${changed}픽셀 원본 복원`);
+    }
+
+    function rerunSingleColorFromCurrentV18(options = {}) {
+        if (!state.hasResult || !canvas.width || !canvas.height) {
+            toast("먼저 파트 1에서 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        const width = canvas.width;
+        const height = canvas.height;
+        const sourceImage = ctx.getImageData(0, 0, width, height);
+        toast("수정 내용을 기준으로 다시 단색화 중...");
+
+        setTimeout(() => {
+            try {
+                const inference = runScanInference(sourceImage, width, height);
+
+                resultCanvas.width = width;
+                resultCanvas.height = height;
+                resultCtx.putImageData(inference.image, 0, 0);
+
+                ctx.clearRect(0, 0, width, height);
+                ctx.drawImage(resultCanvas, 0, 0);
+
+                state.hasResult = true;
+                state.saved = false;
+                state.resultBaseDataUrl = canvas.toDataURL("image/png");
+                state.lastStats = inference.stats;
+                state.region.selected = [];
+                state.finalPreview.enabled = false;
+                state.finalPreview.regions = [];
+                state.finalPreview.selectedIds = [];
+
+                syncResultFromVisible();
+                pushHistory("수정 반영 단색화");
+                renderLegend(inference.stats);
+                updateStats();
+                clearOverlay();
+                toast(createResultMessage(inference.stats));
+
+                if (options.nextStep) {
+                    setStep(options.nextStep);
+                }
+            } catch (error) {
+                console.error(error);
+                toast("수정 반영 단색화 실패: 현재 이미지를 유지했습니다.");
+            }
+        }, 20);
+    }
+
+    function finalizeFinalImagePreviewV18() {
+        if (!state.hasResult) {
+            toast("먼저 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        // 파트 5는 실선/오버레이 없이 최종 저장 이미지만 보여준다.
+        state.finalPreview.enabled = false;
+        state.finalPreview.dragging = false;
+        state.finalPreview.dragRect = null;
+        clearOverlay();
+        syncResultFromVisible();
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+        state.saved = false;
+        updateStats();
+        toast("실선이 제거된 최종 저장 미리보기입니다.");
+    }
+
+
+    // ============================================================================
+    // v19 patch: 파트2 지정 색상 단색화 + 병합 선택 방식 보정
+    // ============================================================================
+
+    function solidifyPickedColorV19() {
+        if (!state.hasResult || !canvas.width || !canvas.height) {
+            toast("먼저 파트 1에서 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        // 선택 구역이 있으면 해당 구역만 지정 색상으로 단색화한다.
+        if (state.region.selected && state.region.selected.length > 0) {
+            applySelectedRegionColor();
+            if (document.querySelector("#part2.button-image-step.is-active")) {
+                drawLiveRegionPreviewV18();
+            }
+            return;
+        }
+
+        const target = hexToRgb(state.region.color || "#ef5e94");
+
+        if (!isSeatLikeColorV19(target)) {
+            toast("흰색/회색/검정이 아닌 좌석 색상을 먼저 찍으세요.");
+            return;
+        }
+
+        const width = canvas.width;
+        const height = canvas.height;
+        const image = ctx.getImageData(0, 0, width, height);
+        const data = image.data;
+        const visited = new Uint8Array(width * height);
+        const queue = [];
+        const components = [];
+        const tolerance = 62;
+        const minArea = 10;
+
+        function matches(index) {
+            const offset = index * 4;
+            if (data[offset + 3] < 10) {
+                return false;
+            }
+
+            const pixel = { r: data[offset], g: data[offset + 1], b: data[offset + 2] };
+            return colorDistance(pixel, target) <= tolerance;
+        }
+
+        for (let start = 0; start < width * height; start += 1) {
+            if (visited[start] || !matches(start)) {
+                continue;
+            }
+
+            const component = [];
+            queue.length = 0;
+            queue.push(start);
+            visited[start] = 1;
+
+            while (queue.length > 0) {
+                const current = queue.pop();
+                component.push(current);
+                const x = current % width;
+                const y = Math.floor(current / width);
+
+                pushColorNeighborV19(queue, visited, matches, width, height, x + 1, y);
+                pushColorNeighborV19(queue, visited, matches, width, height, x - 1, y);
+                pushColorNeighborV19(queue, visited, matches, width, height, x, y + 1);
+                pushColorNeighborV19(queue, visited, matches, width, height, x, y - 1);
+                pushColorNeighborV19(queue, visited, matches, width, height, x + 1, y + 1);
+                pushColorNeighborV19(queue, visited, matches, width, height, x - 1, y - 1);
+                pushColorNeighborV19(queue, visited, matches, width, height, x + 1, y - 1);
+                pushColorNeighborV19(queue, visited, matches, width, height, x - 1, y + 1);
+            }
+
+            if (component.length >= minArea) {
+                components.push(component);
+            }
+        }
+
+        if (components.length <= 0) {
+            toast("해당 색상으로 단색화할 구역을 찾지 못했습니다. 도면에서 색상을 다시 찍어보세요.");
+            return;
+        }
+
+        let changed = 0;
+        for (const component of components) {
+            for (const index of component) {
+                const offset = index * 4;
+                data[offset] = target.r;
+                data[offset + 1] = target.g;
+                data[offset + 2] = target.b;
+                data[offset + 3] = 255;
+                changed += 1;
+            }
+        }
+
+        ctx.putImageData(image, 0, 0);
+        syncResultFromVisible();
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+        state.region.selected = [];
+        pushHistory("지정 색상 단색화");
+        updateStats();
+        drawLiveRegionPreviewV18();
+        updateRegionSelectionText();
+        toast(`지정 색상 단색화 완료: ${components.length}개 구역 / ${changed}픽셀`);
+    }
+
+    function pushColorNeighborV19(queue, visited, matches, width, height, x, y) {
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            return;
+        }
+
+        const index = y * width + x;
+        if (visited[index] || !matches(index)) {
+            return;
+        }
+
+        visited[index] = 1;
+        queue.push(index);
+    }
+
+    function isSeatLikeColorV19(rgb) {
+        const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+        return hsl.s >= 0.20 && hsl.l >= 0.18 && hsl.l <= 0.92;
+    }
+
+
+    // ============================================================================
+    // v20 patch: 파트2 상단 "지정 색상 단색화 + 내부 글자 제거" + 히스토리 버튼 숨김
+    // ============================================================================
+
+    function hideUndoRedoButtonsV20() {
+        showUndoRedoButtonsV21();
+    }
+
+    function showUndoRedoButtonsV21() {
+        ["undoAction", "redoAction"].forEach((id) => {
+            const button = $(id);
+            if (!button) {
+                return;
+            }
+
+            button.style.display = "";
+            button.style.pointerEvents = "";
+            button.removeAttribute("aria-hidden");
+        });
+        updateHistoryButtons();
+    }
+
+    function solidifyPickedColorAndRemoveTextV20() {
+        if (!state.hasResult || !canvas.width || !canvas.height) {
+            toast("먼저 파트 1에서 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        const target = hexToRgb(state.region.color || "#ef5e94");
+
+        if (!isSeatLikeColorV19(target)) {
+            toast("흰색/회색/검정이 아닌 좌석 색상을 먼저 찍으세요.");
+            return;
+        }
+
+        if (state.region.selected && state.region.selected.length > 0) {
+            const result = solidifySelectedRegionsAndRemoveTextV20(target);
+            drawLiveRegionPreviewV18();
+            updateRegionSelectionText();
+            toast(`선택 구역 단색화 + 내부 글자 제거 완료: 단색화 ${result.painted}픽셀 / 글자 ${result.removed}픽셀`);
+            return;
+        }
+
+        const result = solidifyPickedColorComponentsAndRemoveTextV20(target);
+
+        if (result.components <= 0) {
+            toast("해당 색상으로 단색화할 구역을 찾지 못했습니다. 도면에서 색상을 다시 찍어보세요.");
+            return;
+        }
+
+        drawLiveRegionPreviewV18();
+        updateRegionSelectionText();
+        toast(`지정 색상 단색화 + 내부 글자 제거 완료: ${result.components}개 구역 / 단색화 ${result.painted}픽셀 / 글자 ${result.removed}픽셀`);
+    }
+
+    function solidifySelectedRegionsAndRemoveTextV20(target) {
+        const width = canvas.width;
+        const height = canvas.height;
+        const image = ctx.getImageData(0, 0, width, height);
+        const roleMap = buildCurrentCanvasRoleMap(image, width, height);
+        const data = image.data;
+        let painted = 0;
+        let removed = 0;
+
+        for (const region of state.region.selected) {
+            for (const index of region.pixels || []) {
+                const offset = index * 4;
+                if (data[offset] !== target.r || data[offset + 1] !== target.g || data[offset + 2] !== target.b || data[offset + 3] !== 255) {
+                    data[offset] = target.r;
+                    data[offset + 1] = target.g;
+                    data[offset + 2] = target.b;
+                    data[offset + 3] = 255;
+                    painted += 1;
+                }
+            }
+
+            const selectedMask = buildMaskFromPixels(region.pixels || [], width, height);
+            const components = extractCandidateTextComponentsNearRegion(roleMap, selectedMask, region, width, height);
+
+            for (const component of components) {
+                const score = scoreCandidateComponentForRegion(component, selectedMask, width, height);
+
+                if (score < 58) {
+                    continue;
+                }
+
+                for (const index of component.pixels || []) {
+                    const offset = index * 4;
+                    data[offset] = target.r;
+                    data[offset + 1] = target.g;
+                    data[offset + 2] = target.b;
+                    data[offset + 3] = 255;
+                    removed += 1;
+                }
+            }
+
+            region.color = target;
+            region.colorHex = rgbToHex(target.r, target.g, target.b);
+            region.gradeName = state.region.gradeName;
+        }
+
+        ctx.putImageData(image, 0, 0);
+        syncResultFromVisible();
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+        pushHistory("지정 색상 단색화 + 내부 글자 제거");
+        updateStats();
+
+        return { painted, removed };
+    }
+
+    function solidifyPickedColorComponentsAndRemoveTextV20(target) {
+        const width = canvas.width;
+        const height = canvas.height;
+        const image = ctx.getImageData(0, 0, width, height);
+        const data = image.data;
+        const visited = new Uint8Array(width * height);
+        const queue = [];
+        const components = [];
+        const tolerance = 66;
+        const minArea = 8;
+
+        function matches(index) {
+            const offset = index * 4;
+            if (data[offset + 3] < 10) {
+                return false;
+            }
+
+            const pixel = { r: data[offset], g: data[offset + 1], b: data[offset + 2] };
+            return colorDistance(pixel, target) <= tolerance;
+        }
+
+        for (let start = 0; start < width * height; start += 1) {
+            if (visited[start] || !matches(start)) {
+                continue;
+            }
+
+            const component = {
+                id: 0,
+                role: ROLE.SEAT_RED,
+                pixels: [],
+                bounds: {
+                    minX: Infinity,
+                    minY: Infinity,
+                    maxX: -Infinity,
+                    maxY: -Infinity
+                }
+            };
+
+            queue.length = 0;
+            queue.push(start);
+            visited[start] = 1;
+
+            while (queue.length > 0) {
+                const current = queue.pop();
+                const x = current % width;
+                const y = Math.floor(current / width);
+
+                component.pixels.push(current);
+                component.bounds.minX = Math.min(component.bounds.minX, x);
+                component.bounds.minY = Math.min(component.bounds.minY, y);
+                component.bounds.maxX = Math.max(component.bounds.maxX, x);
+                component.bounds.maxY = Math.max(component.bounds.maxY, y);
+
+                pushColorNeighborV19(queue, visited, matches, width, height, x + 1, y);
+                pushColorNeighborV19(queue, visited, matches, width, height, x - 1, y);
+                pushColorNeighborV19(queue, visited, matches, width, height, x, y + 1);
+                pushColorNeighborV19(queue, visited, matches, width, height, x, y - 1);
+                pushColorNeighborV19(queue, visited, matches, width, height, x + 1, y + 1);
+                pushColorNeighborV19(queue, visited, matches, width, height, x - 1, y - 1);
+                pushColorNeighborV19(queue, visited, matches, width, height, x + 1, y - 1);
+                pushColorNeighborV19(queue, visited, matches, width, height, x - 1, y + 1);
+            }
+
+            if (component.pixels.length >= minArea) {
+                component.bounds.width = component.bounds.maxX - component.bounds.minX + 1;
+                component.bounds.height = component.bounds.maxY - component.bounds.minY + 1;
+                components.push(component);
+            }
+        }
+
+        if (components.length <= 0) {
+            return { components: 0, painted: 0, removed: 0 };
+        }
+
+        const roleMap = buildCurrentCanvasRoleMap(image, width, height);
+        let painted = 0;
+        let removed = 0;
+
+        for (const component of components) {
+            for (const index of component.pixels) {
+                const offset = index * 4;
+                data[offset] = target.r;
+                data[offset + 1] = target.g;
+                data[offset + 2] = target.b;
+                data[offset + 3] = 255;
+                painted += 1;
+            }
+
+            const selectedMask = buildMaskFromPixels(component.pixels, width, height);
+            const textComponents = extractCandidateTextComponentsNearRegion(roleMap, selectedMask, component, width, height);
+
+            for (const textComponent of textComponents) {
+                const score = scoreCandidateComponentForRegion(textComponent, selectedMask, width, height);
+
+                if (score < 58) {
+                    continue;
+                }
+
+                for (const index of textComponent.pixels || []) {
+                    const offset = index * 4;
+                    data[offset] = target.r;
+                    data[offset + 1] = target.g;
+                    data[offset + 2] = target.b;
+                    data[offset + 3] = 255;
+                    removed += 1;
+                }
+            }
+        }
+
+        ctx.putImageData(image, 0, 0);
+        syncResultFromVisible();
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+        state.region.selected = [];
+        pushHistory("지정 색상 단색화 + 내부 글자 제거");
+        updateStats();
+
+        return { components: components.length, painted, removed };
+    }
+
+
+    // ============================================================================
+    // v21 patch: 파트2 선택 색상 추출 + 파트 경계 히스토리 제한
+    // ============================================================================
+
+    function extractPickedColorRegionsV21() {
+        if (!state.hasResult || !canvas.width || !canvas.height) {
+            toast("먼저 파트 1에서 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        const target = hexToRgb(state.region.color || $("regionColorInput")?.value || "#ef5e94");
+
+        if (!isSeatLikeColorV19(target)) {
+            toast("좌석 구역 색상을 먼저 선택하세요. 흰색/회색/검정은 제외됩니다.");
+            return;
+        }
+
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const components = extractRegionsByPickedColorV21(image, canvas.width, canvas.height, target);
+
+        if (components.length <= 0) {
+            state.region.selected = [];
+            drawLiveRegionPreviewV18();
+            updateRegionSelectionText();
+            toast("선택 색상으로 추출된 구역이 없습니다.");
+            return;
+        }
+
+        state.region.selected = components.map((component) => {
+            const color = getDominantColorFromPixels(image, component.pixels);
+            return {
+                id: state.region.nextId++,
+                role: component.role,
+                pixels: component.pixels,
+                bounds: component.bounds,
+                color,
+                colorHex: rgbToHex(color.r, color.g, color.b),
+                gradeName: state.region.gradeName || getDefaultGradeName(component.role),
+                pixelSet: new Set(component.pixels)
+            };
+        });
+
+        enableRegionSelectTool(true);
+        drawSelectedRegionsOverlay();
+        updateRegionSelectionText();
+        toast(`선택 색상 추출 완료: ${state.region.selected.length}개 구역`);
+    }
+
+    function extractRegionsByPickedColorV21(image, width, height, target) {
+        const data = image.data;
+        const visited = new Uint8Array(width * height);
+        const queue = [];
+        const components = [];
+        const tolerance = 58;
+        const minArea = 16;
+
+        function matches(index) {
+            const offset = index * 4;
+
+            if (data[offset + 3] < 10) {
+                return false;
+            }
+
+            const pixel = { r: data[offset], g: data[offset + 1], b: data[offset + 2] };
+
+            if (colorDistance(pixel, target) > tolerance) {
+                return false;
+            }
+
+            return isSeatLikeColorV19(pixel);
+        }
+
+        for (let start = 0; start < width * height; start += 1) {
+            if (visited[start] || !matches(start)) {
+                continue;
+            }
+
+            const component = {
+                role: classifyColorRole(target.r, target.g, target.b, 255, getScanVariant("relaxed")),
+                pixels: [],
+                bounds: {
+                    minX: Infinity,
+                    minY: Infinity,
+                    maxX: -Infinity,
+                    maxY: -Infinity
+                }
+            };
+
+            queue.length = 0;
+            queue.push(start);
+            visited[start] = 1;
+
+            while (queue.length > 0) {
+                const current = queue.pop();
+                const x = current % width;
+                const y = Math.floor(current / width);
+
+                component.pixels.push(current);
+                component.bounds.minX = Math.min(component.bounds.minX, x);
+                component.bounds.minY = Math.min(component.bounds.minY, y);
+                component.bounds.maxX = Math.max(component.bounds.maxX, x);
+                component.bounds.maxY = Math.max(component.bounds.maxY, y);
+
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x + 1, y);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x - 1, y);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x, y + 1);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x, y - 1);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x + 1, y + 1);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x - 1, y - 1);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x + 1, y - 1);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x - 1, y + 1);
+            }
+
+            if (component.pixels.length >= minArea) {
+                component.bounds.width = component.bounds.maxX - component.bounds.minX + 1;
+                component.bounds.height = component.bounds.maxY - component.bounds.minY + 1;
+                components.push(component);
+            }
+        }
+
+        components.sort((a, b) => b.pixels.length - a.pixels.length);
+        return components.slice(0, 240);
+    }
+
+    function pushColorExtractNeighborV21(queue, visited, matches, width, height, x, y) {
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            return;
+        }
+
+        const index = y * width + x;
+
+        if (visited[index] || !matches(index)) {
+            return;
+        }
+
+        visited[index] = 1;
+        queue.push(index);
+    }
+
+    function saveAndExit() {
+        finalizeFinalImagePreviewV18();
+        saveButtonImageToServer();
+    }
+
+
+    // ============================================================================
+    // v22 patch: 최종 확정 플로우 재정리
+    // 1. 파트1 = 기존 자동 단색화 유지
+    // 2. 파트2 = 브러쉬/스포트라이트로 파트1 누락 구역만 색칠
+    // 3. 파트3 = 찍은 색상 추출 + 파트1식 단색화/내부 글자 제거
+    // 4. 파트4 = 실선 항상 표시 + 구역 병합
+    // 5. 파트5 = 최종 미리보기 + 유사 색상 번호 병합
+    // ============================================================================
+
+    function bindEvents() {
+        bindClick("generateButtonImage", () => runAutoConversion(false, { nextStep: 2 }));
+        bindClick("applyToConcert", () => runAutoConversion(true));
+        bindClick("saveButtonImage", saveButtonImageLocal);
+        bindClick("restoreSource", restoreSourceImage);
+        bindClick("restoreResultBase", restoreResultBase);
+        bindClick("clearAllSamples", resetAutoState);
+        bindClick("clearSelectedSamples", resetAutoState);
+        bindClick("cleanupPieces", () => runAutoConversion(false));
+
+        bindClick("go2", () => setStep(2));
+        bindClick("go3", () => setStep(3));
+        bindClick("go4", () => setStep(4));
+        bindClick("go5", () => {
+            finalizeFinalImagePreviewV18();
+            setStep(5);
+        });
+
+        bindClick("tab1", () => setStep(1));
+        bindClick("tab2", () => setStep(2));
+        bindClick("tab3", () => setStep(3));
+        bindClick("tab4", () => setStep(4));
+        bindClick("tab5", () => setStep(5));
+
+        bindClick("backToBrush", () => setStep(2));
+        bindClick("backToMerge", () => setStep(4));
+        bindClick("previewSaveRegions", showFinalSavePreview);
+
+        bindClick("pickColorFromCanvas", () => {
+            state.__colorPickTarget = "regionColorInput";
+            toggleColorPickerMode();
+        });
+        bindClick("pickStep3ColorFromCanvas", () => {
+            state.__colorPickTarget = "step3ColorInput";
+            toggleColorPickerMode();
+        });
+
+        bindClick("cancelSolidSelectedRegion", cancelSelectedSolidRegionsV18);
+        bindClick("solidifyPickedColor", solidifyPickedColorAndRemoveTextV20);
+        bindClick("extractPickedColorRegions", extractPickedColorRegionsV21);
+        bindClick("extractAndSolidifyColor", extractAndSolidifyPickedColorV22);
+        bindClick("rerunSingleColorFromCurrent", () => rerunSingleColorFromCurrentV18());
+        bindClick("rerunSingleColorOnly", () => rerunSingleColorFromCurrentV18());
+
+        bindClick("finalMergeSelectedRegions", mergeSelectedFinalRegionsV17);
+        bindClick("finalClearSelection", clearFinalRegionSelectionV17);
+        bindClick("mergeFinalColors", mergeFinalColorGroupsV22);
+        bindClick("refreshFinalColors", renderFinalColorListV22);
+
+        bindCanvasWheelZoom();
+        showUndoRedoButtonsV21();
+        bindClick("undoAction", undo);
+        bindClick("redoAction", redo);
+        bindZoomButton("zoomIn", 1);
+        bindZoomButton("zoomOut", -1);
+        bindClick("zoomReset", () => setZoom(1));
+        bindClick("serverSaveButtonImage", saveButtonImageToServer);
+        bindClick("saveAndExitButton", saveAndExit);
+
+        bindClick("regionSelectStart", toggleRegionSelectTool);
+        bindClick("regionClear", clearSelectedRegions);
+        bindClick("regionRemoveText", removeTextInsideSelectedRegions);
+        bindClick("regionDominantFill", fillSelectedRegionsWithDominantColor);
+        bindClick("regionApplyColor", applySelectedRegionColor);
+        bindClick("regionCleanFill", cleanAndFillSelectedRegions);
+        bindClick("regionCleanAll", cleanAllCurrentSeatRegions);
+        bindInput("regionColorInput", updateRegionColorFromInput);
+        bindInput("step3ColorInput", updateStep3ColorFromInputV22);
+        bindInput("regionGradeInput", updateRegionGradeFromInput);
+
+        bindClick("straightenAllRegions", () => straightenSeatRegions(false));
+        bindClick("straightenSelectedRegions", () => straightenSeatRegions(true));
+        bindInput("straightenStrength", updateStraightenStrength);
+        bindClick("brushTool", () => setBrushMode(state.brush.mode === "paint" ? "none" : "paint"));
+        bindClick("eraseTool", () => setBrushMode(state.brush.mode === "erase" ? "none" : "erase"));
+        bindInput("brushSize", updateBrushSize);
+
+        document.querySelectorAll("[data-region-palette]").forEach((button) => {
+            button.addEventListener("click", () => handlePaletteButtonClick(button));
+        });
+
+        if (overlay) {
+            overlay.addEventListener("mousedown", onCanvasDown);
+            overlay.addEventListener("mousemove", onCanvasMove);
+            overlay.addEventListener("mouseup", onCanvasUp);
+            overlay.addEventListener("click", onCanvasClick);
+            overlay.addEventListener("mouseleave", onCanvasLeave);
+        }
+    }
+
+    function setStep(step) {
+        const nextStep = Number(step) || 1;
+        state.currentStep = nextStep;
+
+        if (nextStep > 1 && !state.hasResult) {
+            state.currentStep = 1;
+            toast("먼저 파트 1에서 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        if (nextStep !== 4) {
+            state.finalPreview.enabled = false;
+            state.finalPreview.dragging = false;
+            state.finalPreview.dragRect = null;
+        }
+
+        document.querySelectorAll(".button-image-step").forEach((section) => {
+            const itemStep = Number(section.dataset.step);
+            const header = section.querySelector(".button-image-step__header");
+            const status = section.querySelector(".button-image-step__status");
+
+            section.classList.toggle("is-active", itemStep === nextStep);
+            section.classList.toggle("is-done", itemStep < nextStep);
+
+            if (header) {
+                header.classList.toggle("active", itemStep === nextStep);
+            }
+
+            if (status) {
+                if (itemStep < nextStep) {
+                    status.textContent = "완료";
+                } else if (itemStep === nextStep) {
+                    status.textContent = nextStep === 1
+                        ? "진행중"
+                        : nextStep === 2
+                            ? "보정중"
+                            : nextStep === 3
+                                ? "추출중"
+                                : nextStep === 4
+                                    ? "병합중"
+                                    : "확인";
+                } else {
+                    status.textContent = "대기";
+                }
+            }
+        });
+
+        if (nextStep === 1) {
+            enableRegionSelectTool(false);
+            setBrushMode("none", { silent: true });
+            setColorPickerMode(false, { silent: true });
+            clearOverlay();
+            updateRegionSelectionText();
+            return;
+        }
+
+        if (nextStep === 2) {
+            enableRegionSelectTool(false);
+            updateBrushSize();
+            setColorPickerMode(false, { silent: true });
+            setBrushMode("none", { silent: true });
+            drawLiveRegionPreviewV18();
+            updateRegionSelectionText();
+            return;
+        }
+
+        if (nextStep === 3) {
+            enableRegionSelectTool(false);
+            setBrushMode("none", { silent: true });
+            setColorPickerMode(false, { silent: true });
+            drawLiveRegionPreviewV18();
+            syncStep3ColorFromRegionColorV22();
+            return;
+        }
+
+        if (nextStep === 4) {
+            enableRegionSelectTool(false);
+            setBrushMode("none", { silent: true });
+            setColorPickerMode(false, { silent: true });
+            showFinalSavePreview();
+            updateFinalMergeToolUIV17();
+            return;
+        }
+
+        if (nextStep === 5) {
+            enableRegionSelectTool(false);
+            setBrushMode("none", { silent: true });
+            setColorPickerMode(false, { silent: true });
+            state.finalPreview.enabled = false;
+            finalizeFinalImagePreviewV18();
+            clearOverlay();
+            renderFinalColorListV22();
+        }
+    }
+
+    function finishBrushStroke() {
+        if (!state.brush.down) {
+            return;
+        }
+
+        state.brush.down = false;
+
+        if (!state.brush.changed) {
+            return;
+        }
+
+        syncResultFromVisible();
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+        pushHistory(state.brush.mode === "erase" ? "지우개 보정" : "브러쉬 보정");
+        updateStats();
+
+        if (document.querySelector("#part2.button-image-step.is-active") || document.querySelector("#part3.button-image-step.is-active")) {
+            drawLiveRegionPreviewV18();
+        }
+
+        toast(state.brush.mode === "erase" ? "지우개 보정을 적용했습니다." : "브러쉬 보정을 적용했습니다.");
+    }
+
+    function sampleBrushColorAt(point) {
+        const x = clamp(Math.round(point.x), 0, canvas.width - 1);
+        const y = clamp(Math.round(point.y), 0, canvas.height - 1);
+        const data = ctx.getImageData(x, y, 1, 1).data;
+        const hex = rgbToHex(data[0], data[1], data[2]);
+
+        state.brush.color = hex;
+        state.region.color = hex;
+
+        const targetId = state.__colorPickTarget || "regionColorInput";
+        const targetInput = $(targetId) || $("regionColorInput");
+
+        if (targetInput) {
+            targetInput.value = hex;
+        }
+
+        if (targetId === "step3ColorInput" && $("regionColorInput")) {
+            $("regionColorInput").value = hex;
+        }
+
+        setColorPickerMode(false, { silent: true });
+        state.__colorPickTarget = null;
+        updateBrushCursor(point);
+        toast(`색상 선택: ${hex.toUpperCase()}`);
+    }
+
+    function updateStep3ColorFromInputV22() {
+        const input = $("step3ColorInput");
+        if (!input) {
+            return;
+        }
+
+        state.region.color = input.value;
+        state.brush.color = input.value;
+
+        const part2Input = $("regionColorInput");
+        if (part2Input) {
+            part2Input.value = input.value;
+        }
+    }
+
+    function syncStep3ColorFromRegionColorV22() {
+        const color = $("regionColorInput")?.value || state.region.color || "#ef5e94";
+        const input = $("step3ColorInput");
+
+        if (input && /^#[0-9a-fA-F]{6}$/.test(color)) {
+            input.value = color;
+        }
+
+        state.region.color = color;
+        state.brush.color = color;
+    }
+
+    function extractAndSolidifyPickedColorV22() {
+        if (!state.hasResult || !canvas.width || !canvas.height) {
+            toast("먼저 파트 1에서 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        syncStep3ColorFromRegionColorV22();
+        const target = hexToRgb($("step3ColorInput")?.value || state.region.color || "#ef5e94");
+
+        if (!isSeatLikeColorV19(target)) {
+            toast("좌석 구역 색상을 먼저 찍으세요. 흰색/회색/검정은 제외됩니다.");
+            return;
+        }
+
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const components = extractRegionsByPickedColorV21(image, canvas.width, canvas.height, target);
+
+        if (components.length <= 0) {
+            state.region.selected = [];
+            drawLiveRegionPreviewV18();
+            updateRegionSelectionText();
+            toast("선택 색상으로 추출된 구역이 없습니다.");
+            return;
+        }
+
+        state.region.selected = components.map((component) => {
+            const color = getDominantColorFromPixels(image, component.pixels);
+            return {
+                id: state.region.nextId++,
+                role: component.role,
+                pixels: component.pixels,
+                bounds: component.bounds,
+                color,
+                colorHex: rgbToHex(color.r, color.g, color.b),
+                gradeName: state.region.gradeName || getDefaultGradeName(component.role),
+                pixelSet: new Set(component.pixels)
+            };
+        });
+
+        const result = solidifySelectedRegionsAndRemoveTextV20(target);
+        state.region.selected = [];
+        syncResultFromVisible();
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+        drawLiveRegionPreviewV18();
+        updateRegionSelectionText();
+        toast(`색상 추출 + 단색화 완료: ${components.length}개 구역 / 단색화 ${result.painted}픽셀 / 글자 ${result.removed}픽셀`);
+    }
+
+    function renderFinalColorListV22() {
+        const container = $("finalColorList");
+        if (!container || !canvas.width || !canvas.height) {
+            return;
+        }
+
+        const groups = collectFinalColorGroupsV22();
+        state.finalColorGroupsV22 = groups;
+
+        if (groups.length <= 0) {
+            container.innerHTML = `<div class="button-image-empty">정리할 좌석 색상이 없습니다.</div>`;
+            return;
+        }
+
+        container.innerHTML = groups.map((group, index) => `
+            <div class="button-image-color-merge-item" data-color-index="${index + 1}">
+                <span class="button-image-color-merge-no">${index + 1}</span>
+                <i style="background:${escapeHtml(group.hex)}"></i>
+                <b>${escapeHtml(group.hex.toUpperCase())}</b>
+                <small>${group.count.toLocaleString()}px</small>
+            </div>
+        `).join("");
+    }
+
+    function collectFinalColorGroupsV22() {
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = image.data;
+        const groups = [];
+        const minCount = 12;
+
+        for (let i = 0; i < canvas.width * canvas.height; i += 1) {
+            const offset = i * 4;
+            if (data[offset + 3] < 10) {
+                continue;
+            }
+
+            const pixel = {
+                r: data[offset],
+                g: data[offset + 1],
+                b: data[offset + 2]
+            };
+
+            if (!isSeatLikeColorV19(pixel)) {
+                continue;
+            }
+
+            let group = groups.find((item) => colorDistance(item.avg, pixel) <= 30);
+
+            if (!group) {
+                group = {
+                    r: 0,
+                    g: 0,
+                    b: 0,
+                    count: 0,
+                    pixels: []
+                };
+                groups.push(group);
+            }
+
+            group.r += pixel.r;
+            group.g += pixel.g;
+            group.b += pixel.b;
+            group.count += 1;
+            group.pixels.push(i);
+            group.avg = {
+                r: group.r / group.count,
+                g: group.g / group.count,
+                b: group.b / group.count
+            };
+        }
+
+        return groups
+            .filter((group) => group.count >= minCount)
+            .sort((a, b) => b.count - a.count)
+            .map((group) => ({
+                ...group,
+                avg: {
+                    r: Math.round(group.r / group.count),
+                    g: Math.round(group.g / group.count),
+                    b: Math.round(group.b / group.count)
+                },
+                hex: rgbToHex(group.r / group.count, group.g / group.count, group.b / group.count)
+            }));
+    }
+
+    function mergeFinalColorGroupsV22() {
+        const groups = state.finalColorGroupsV22 || collectFinalColorGroupsV22();
+        const fromIndex = Math.max(1, parseInt($("colorMergeFrom")?.value || "0", 10)) - 1;
+        const toIndex = Math.max(1, parseInt($("colorMergeTo")?.value || "0", 10)) - 1;
+
+        if (fromIndex === toIndex || !groups[fromIndex] || !groups[toIndex]) {
+            toast("병합할 색상 번호를 올바르게 입력하세요.");
+            return;
+        }
+
+        const source = groups[fromIndex];
+        const target = groups[toIndex];
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = image.data;
+        let changed = 0;
+
+        for (const index of source.pixels || []) {
+            const offset = index * 4;
+            data[offset] = target.avg.r;
+            data[offset + 1] = target.avg.g;
+            data[offset + 2] = target.avg.b;
+            data[offset + 3] = 255;
+            changed += 1;
+        }
+
+        ctx.putImageData(image, 0, 0);
+        syncResultFromVisible();
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+        pushHistory(`색상 ${fromIndex + 1} → ${toIndex + 1} 병합`);
+        updateStats();
+        renderFinalColorListV22();
+        toast(`${fromIndex + 1}번 색상을 ${toIndex + 1}번 색상으로 병합했습니다. ${changed}픽셀 변경`);
+    }
+
+    function finalizeFinalImagePreviewV18() {
+        if (!state.hasResult || !canvas.width || !canvas.height) {
+            return;
+        }
+
+        state.finalPreview.enabled = false;
+        state.finalPreview.dragging = false;
+        state.finalPreview.dragRect = null;
+        clearOverlay();
+        syncResultFromVisible();
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+    }
+
+    function saveAndExit() {
+        finalizeFinalImagePreviewV18();
+        renderFinalColorListV22();
+        saveButtonImageToServer();
+    }
+
+
+    // ============================================================================
+    // v27 minimal patch
+    // 기존 버튼/파트 기능은 유지하고, 아래 4개만 수술한다.
+    // 1) 파트3: 클릭 색상 + 허용범위 추출에서 색상 제외 규칙 제거
+    // 2) 파트3: 추출 후 실선 표시
+    // 3) 파트4: 색상 컴포넌트 기반 병합 + 떨어진 구역 사이도 채움
+    // 4) 파트5: 색상 번호 오버레이 + 저장 후 메인 이동
+    // ============================================================================
+
+    function getStep3ToleranceV27() {
+        return Math.max(1, parseInt($("step3Tolerance")?.value || "48", 10));
+    }
+
+    function updateStep3ToleranceTextV27() {
+        const input = $("step3Tolerance");
+        const output = $("step3ToleranceText");
+
+        if (input && output) {
+            output.textContent = input.value;
+        }
+    }
+
+    function onCanvasClick(event) {
+        const point = getCanvasPoint(event);
+
+        if (state.brush.pickColor) {
+            event.preventDefault();
+            if (point) {
+                sampleBrushColorAt(point);
+            }
+            return;
+        }
+
+        // 파트3은 브러쉬/선택모드가 아니라 마술봉식 클릭 추출 단계다.
+        if (state.currentStep === 3 && point && state.brush.mode === "none") {
+            event.preventDefault();
+            extractMagicColorAtPointV27(point);
+            return;
+        }
+
+        if (state.brush.mode !== "none") {
+            event.preventDefault();
+            return;
+        }
+
+        if (state.finalPreview.enabled) {
+            event.preventDefault();
+
+            if (state.finalPreview.suppressClick) {
+                state.finalPreview.suppressClick = false;
+                return;
+            }
+
+            if (point) {
+                selectFinalRegionByClickV17(point, event.shiftKey || event.ctrlKey || event.metaKey);
+            }
+            return;
+        }
+
+        if (!state.region.enabled || !point) {
+            return;
+        }
+
+        event.preventDefault();
+        selectRegionByClick(point, event.shiftKey, event.ctrlKey || event.metaKey);
+    }
+
+    function extractMagicColorAtPointV27(point) {
+        if (!state.hasResult || !canvas.width || !canvas.height) {
+            toast("먼저 파트 1에서 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        const x = clamp(Math.round(point.x), 0, canvas.width - 1);
+        const y = clamp(Math.round(point.y), 0, canvas.height - 1);
+        const sampled = ctx.getImageData(x, y, 1, 1).data;
+        const target = {
+            r: sampled[0],
+            g: sampled[1],
+            b: sampled[2]
+        };
+        const hex = rgbToHex(target.r, target.g, target.b);
+
+        state.region.color = hex;
+        state.brush.color = hex;
+
+        const regionColorInput = $("regionColorInput");
+        const step3ColorInput = $("step3ColorInput");
+
+        if (regionColorInput) {
+            regionColorInput.value = hex;
+        }
+
+        if (step3ColorInput) {
+            step3ColorInput.value = hex;
+        }
+
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const components = extractRegionsByPickedColorV21(image, canvas.width, canvas.height, target);
+
+        if (!components.length) {
+            drawExtractedRegionOutlineV27([]);
+            toast("허용범위 안에서 추출된 구역이 없습니다.");
+            return;
+        }
+
+        state.region.selected = components.map((component) => {
+            const color = getDominantColorFromPixels(image, component.pixels);
+
+            return {
+                id: state.region.nextId++,
+                role: component.role,
+                pixels: component.pixels,
+                bounds: component.bounds,
+                color,
+                colorHex: rgbToHex(color.r, color.g, color.b),
+                gradeName: state.region.gradeName || getDefaultGradeName(component.role),
+                pixelSet: new Set(component.pixels)
+            };
+        });
+
+        const result = solidifySelectedRegionsAndRemoveTextV20(target);
+        const preview = state.region.selected.map((region, index) => ({
+            id: `extract-${index + 1}`,
+            pixels: region.pixels || [],
+            pixelSet: new Set(region.pixels || []),
+            bounds: normalizeBoundsV27(region.bounds),
+            color: target,
+            colorHex: hex
+        }));
+
+        state.region.selected = [];
+        state.__lastExtractedRegionsV27 = preview;
+        syncResultFromVisible();
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+
+        pushHistory("허용범위 색상 추출 + 재단색화");
+        drawExtractedRegionOutlineV27(preview);
+        updateRegionSelectionText();
+        updateStats();
+
+        toast(`${hex.toUpperCase()} 추출 완료: ${components.length}개 구역 / 단색화 ${result.painted}픽셀 / 글자 ${result.removed}픽셀`);
+    }
+
+    function extractRegionsByPickedColorV21(image, width, height, target) {
+        const data = image.data;
+        const visited = new Uint8Array(width * height);
+        const queue = [];
+        const components = [];
+        const tolerance = getStep3ToleranceV27();
+        const minArea = 10;
+
+        function matches(index) {
+            const offset = index * 4;
+
+            if (data[offset + 3] < 10) {
+                return false;
+            }
+
+            const pixel = {
+                r: data[offset],
+                g: data[offset + 1],
+                b: data[offset + 2]
+            };
+
+            // 색상 제외 규칙 없음.
+            // 흰색/검정/회색 포함, 클릭한 색상과 허용범위 안이면 전부 추출한다.
+            return colorDistance(pixel, target) <= tolerance;
+        }
+
+        for (let start = 0; start < width * height; start += 1) {
+            if (visited[start] || !matches(start)) {
+                continue;
+            }
+
+            const component = {
+                role: classifyColorRole(target.r, target.g, target.b, 255, getScanVariant("relaxed")),
+                pixels: [],
+                bounds: {
+                    minX: Infinity,
+                    minY: Infinity,
+                    maxX: -Infinity,
+                    maxY: -Infinity
+                }
+            };
+
+            queue.length = 0;
+            queue.push(start);
+            visited[start] = 1;
+
+            while (queue.length > 0) {
+                const current = queue.pop();
+                const x = current % width;
+                const y = Math.floor(current / width);
+
+                component.pixels.push(current);
+                component.bounds.minX = Math.min(component.bounds.minX, x);
+                component.bounds.minY = Math.min(component.bounds.minY, y);
+                component.bounds.maxX = Math.max(component.bounds.maxX, x);
+                component.bounds.maxY = Math.max(component.bounds.maxY, y);
+
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x + 1, y);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x - 1, y);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x, y + 1);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x, y - 1);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x + 1, y + 1);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x - 1, y - 1);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x + 1, y - 1);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x - 1, y + 1);
+            }
+
+            if (component.pixels.length >= minArea) {
+                component.bounds.width = component.bounds.maxX - component.bounds.minX + 1;
+                component.bounds.height = component.bounds.maxY - component.bounds.minY + 1;
+                components.push(component);
+            }
+        }
+
+        components.sort((a, b) => b.pixels.length - a.pixels.length);
+        return components.slice(0, 500);
+    }
+
+    function drawExtractedRegionOutlineV27(regions) {
+        clearOverlay();
+
+        if (!overlayCtx || !Array.isArray(regions) || !regions.length) {
+            return;
+        }
+
+        overlayCtx.save();
+        overlayCtx.strokeStyle = "rgba(124, 58, 237, 0.98)";
+        overlayCtx.fillStyle = "rgba(124, 58, 237, 0.08)";
+        overlayCtx.lineWidth = Math.max(1.5, 2.2 / Math.max(1, state.zoom));
+        overlayCtx.setLineDash([7, 4]);
+
+        for (const region of regions) {
+            const b = region.bounds || {};
+            overlayCtx.strokeRect(b.x, b.y, b.w, b.h);
+            overlayCtx.fillRect(b.x, b.y, b.w, b.h);
+        }
+
+        overlayCtx.restore();
+    }
+
+    function normalizeBoundsV27(bounds) {
+        if (!bounds) {
+            return { x: 0, y: 0, w: 0, h: 0 };
+        }
+
+        if (Number.isFinite(bounds.x)) {
+            return {
+                x: bounds.x,
+                y: bounds.y,
+                w: bounds.w || bounds.width || 0,
+                h: bounds.h || bounds.height || 0
+            };
+        }
+
+        return {
+            x: bounds.minX,
+            y: bounds.minY,
+            w: bounds.maxX - bounds.minX + 1,
+            h: bounds.maxY - bounds.minY + 1
+        };
+    }
+
+    function extractVisualComponentsV27(options = {}) {
+        if (!canvas.width || !canvas.height) {
+            return [];
+        }
+
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = image.data;
+        const width = canvas.width;
+        const height = canvas.height;
+        const visited = new Uint8Array(width * height);
+        const queue = [];
+        const result = [];
+        const tolerance = options.tolerance ?? 20;
+        const minArea = options.minArea ?? 18;
+        const maxArea = options.maxArea ?? Math.floor(width * height * 0.42);
+
+        for (let start = 0; start < width * height; start += 1) {
+            if (visited[start]) {
+                continue;
+            }
+
+            const startOffset = start * 4;
+
+            if (data[startOffset + 3] < 10) {
+                visited[start] = 1;
+                continue;
+            }
+
+            const base = {
+                r: data[startOffset],
+                g: data[startOffset + 1],
+                b: data[startOffset + 2]
+            };
+
+            const component = {
+                pixels: [],
+                bounds: {
+                    x: Infinity,
+                    y: Infinity,
+                    minX: Infinity,
+                    minY: Infinity,
+                    maxX: -Infinity,
+                    maxY: -Infinity,
+                    w: 0,
+                    h: 0
+                },
+                color: base
+            };
+
+            queue.length = 0;
+            queue.push(start);
+            visited[start] = 1;
+
+            while (queue.length > 0) {
+                const current = queue.pop();
+                const x = current % width;
+                const y = Math.floor(current / width);
+
+                component.pixels.push(current);
+                component.bounds.minX = Math.min(component.bounds.minX, x);
+                component.bounds.minY = Math.min(component.bounds.minY, y);
+                component.bounds.maxX = Math.max(component.bounds.maxX, x);
+                component.bounds.maxY = Math.max(component.bounds.maxY, y);
+
+                pushVisualNeighborV27(queue, visited, data, width, height, x + 1, y, base, tolerance);
+                pushVisualNeighborV27(queue, visited, data, width, height, x - 1, y, base, tolerance);
+                pushVisualNeighborV27(queue, visited, data, width, height, x, y + 1, base, tolerance);
+                pushVisualNeighborV27(queue, visited, data, width, height, x, y - 1, base, tolerance);
+                pushVisualNeighborV27(queue, visited, data, width, height, x + 1, y + 1, base, tolerance);
+                pushVisualNeighborV27(queue, visited, data, width, height, x - 1, y - 1, base, tolerance);
+                pushVisualNeighborV27(queue, visited, data, width, height, x + 1, y - 1, base, tolerance);
+                pushVisualNeighborV27(queue, visited, data, width, height, x - 1, y + 1, base, tolerance);
+            }
+
+            component.bounds.x = component.bounds.minX;
+            component.bounds.y = component.bounds.minY;
+            component.bounds.w = component.bounds.maxX - component.bounds.minX + 1;
+            component.bounds.h = component.bounds.maxY - component.bounds.minY + 1;
+            component.area = component.pixels.length;
+            component.fillRatio = component.area / Math.max(1, component.bounds.w * component.bounds.h);
+
+            // 색상으로 제외하지 않는다. 화면을 거의 덮는 배경 덩어리만 제외한다.
+            if (component.area >= minArea && component.area <= maxArea && component.fillRatio >= 0.06) {
+                const dominant = getDominantColorFromPixels(image, component.pixels);
+                result.push({
+                    id: `final-${result.length + 1}`,
+                    pixels: component.pixels,
+                    pixelSet: new Set(component.pixels),
+                    bounds: component.bounds,
+                    area: component.area,
+                    color: dominant,
+                    colorHex: rgbToHex(dominant.r, dominant.g, dominant.b)
+                });
+            }
+        }
+
+        result.sort((a, b) => Math.abs(a.bounds.y - b.bounds.y) > 10 ? a.bounds.y - b.bounds.y : a.bounds.x - b.bounds.x);
+        result.forEach((region, index) => {
+            region.id = `final-${index + 1}`;
+        });
+
+        return result;
+    }
+
+    function pushVisualNeighborV27(queue, visited, data, width, height, x, y, base, tolerance) {
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            return;
+        }
+
+        const index = y * width + x;
+
+        if (visited[index]) {
+            return;
+        }
+
+        const offset = index * 4;
+
+        if (data[offset + 3] < 10) {
+            visited[index] = 1;
+            return;
+        }
+
+        const pixel = {
+            r: data[offset],
+            g: data[offset + 1],
+            b: data[offset + 2]
+        };
+
+        if (colorDistance(pixel, base) > tolerance) {
+            return;
+        }
+
+        visited[index] = 1;
+        queue.push(index);
+    }
+
+    function rebuildFinalPreviewRegionsV17() {
+        const regions = extractVisualComponentsV27({ minArea: 18, tolerance: 22 });
+        state.finalPreview.regions = regions;
+        state.finalPreview.componentCount = regions.length;
+    }
+
+    function showFinalSavePreview() {
+        if (!state.hasResult) {
+            toast("먼저 단색화 결과를 생성하세요.");
+            return;
+        }
+
+        state.finalPreview.enabled = true;
+        state.finalPreview.dragging = false;
+        state.finalPreview.dragRect = null;
+        state.finalPreview.selectedIds = state.finalPreview.selectedIds || [];
+
+        setBrushMode("none", { silent: true });
+        setColorPickerMode(false, { silent: true });
+
+        rebuildFinalPreviewRegionsV17();
+        drawFinalPreviewOverlayV17();
+        updateFinalMergeToolUIV17();
+    }
+
+    function mergeSelectedFinalRegionsV17() {
+        mergeFinalRegionsByIdsV17(state.finalPreview.selectedIds || [], "선택 구역 병합");
+    }
+
+    function mergeFinalRegionsByIdsV17(ids, label = "선택 구역 병합") {
+        const uniqueIds = [...new Set(ids || [])];
+
+        if (uniqueIds.length < 2) {
+            toast("합칠 구역을 2개 이상 선택하세요.");
+            return;
+        }
+
+        const targets = (state.finalPreview.regions || []).filter((region) => uniqueIds.includes(region.id));
+
+        if (targets.length < 2) {
+            toast("합칠 구역을 2개 이상 선택하세요.");
+            return;
+        }
+
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const pixels = targets.flatMap((region) => region.pixels || []);
+        const color = getDominantColorFromPixels(image, pixels);
+        const hull = buildConvexHullForRegionsV27(targets);
+
+        if (!hull || hull.length < 3) {
+            toast("병합할 외곽을 계산하지 못했습니다.");
+            return;
+        }
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(hull[0].x, hull[0].y);
+
+        for (let i = 1; i < hull.length; i += 1) {
+            ctx.lineTo(hull[i].x, hull[i].y);
+        }
+
+        ctx.closePath();
+        ctx.fillStyle = rgbToHex(color.r, color.g, color.b);
+        ctx.fill();
+        ctx.restore();
+
+        syncResultFromVisible();
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+        state.finalPreview.selectedIds = [];
+
+        pushHistory(label);
+        rebuildFinalPreviewRegionsV17();
+        drawFinalPreviewOverlayV17();
+        updateFinalMergeToolUIV17();
+        updateStats();
+
+        toast(`${targets.length}개 구역을 병합했습니다.`);
+    }
+
+    function buildConvexHullForRegionsV27(regions) {
+        const points = [];
+
+        for (const region of regions || []) {
+            const b = region.bounds || {};
+
+            points.push(
+                { x: b.x, y: b.y },
+                { x: b.x + b.w, y: b.y },
+                { x: b.x + b.w, y: b.y + b.h },
+                { x: b.x, y: b.y + b.h }
+            );
+
+            const pixels = region.pixels || [];
+            const stride = Math.max(1, Math.floor(pixels.length / 160));
+
+            for (let i = 0; i < pixels.length; i += stride) {
+                const index = pixels[i];
+                points.push({
+                    x: index % canvas.width,
+                    y: Math.floor(index / canvas.width)
+                });
+            }
+        }
+
+        return convexHullV27(points);
+    }
+
+    function convexHullV27(points) {
+        const unique = [...new Map((points || [])
+            .filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y))
+            .map((point) => [`${Math.round(point.x)},${Math.round(point.y)}`, {
+                x: Math.round(point.x),
+                y: Math.round(point.y)
+            }])).values()];
+
+        if (unique.length < 3) {
+            return unique;
+        }
+
+        unique.sort((a, b) => a.x === b.x ? a.y - b.y : a.x - b.x);
+
+        const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+        const lower = [];
+
+        for (const point of unique) {
+            while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], point) <= 0) {
+                lower.pop();
+            }
+
+            lower.push(point);
+        }
+
+        const upper = [];
+
+        for (let i = unique.length - 1; i >= 0; i -= 1) {
+            const point = unique[i];
+
+            while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], point) <= 0) {
+                upper.pop();
+            }
+
+            upper.push(point);
+        }
+
+        upper.pop();
+        lower.pop();
+
+        return lower.concat(upper);
+    }
+
+    function collectFinalColorGroupsV22() {
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const regions = extractVisualComponentsV27({ minArea: 18, tolerance: 22 });
+        const groups = [];
+
+        for (const region of regions) {
+            const color = region.color || getDominantColorFromPixels(image, region.pixels || []);
+            let group = groups.find((item) => colorDistance(item.avg, color) <= 24);
+
+            if (!group) {
+                group = {
+                    r: 0,
+                    g: 0,
+                    b: 0,
+                    count: 0,
+                    pixels: [],
+                    components: [],
+                    avg: color
+                };
+                groups.push(group);
+            }
+
+            const pixels = region.pixels || [];
+            group.r += color.r * pixels.length;
+            group.g += color.g * pixels.length;
+            group.b += color.b * pixels.length;
+            group.count += pixels.length;
+            group.pixels.push(...pixels);
+            group.components.push(region);
+            group.avg = {
+                r: group.r / Math.max(1, group.count),
+                g: group.g / Math.max(1, group.count),
+                b: group.b / Math.max(1, group.count)
+            };
+        }
+
+        return groups
+            .filter((group) => group.count >= 12)
+            .sort((a, b) => b.count - a.count)
+            .map((group) => ({
+                ...group,
+                avg: {
+                    r: Math.round(group.r / group.count),
+                    g: Math.round(group.g / group.count),
+                    b: Math.round(group.b / group.count)
+                },
+                hex: rgbToHex(group.r / group.count, group.g / group.count, group.b / group.count)
+            }));
+    }
+
+    function renderFinalColorListV22() {
+        const container = $("finalColorList");
+
+        if (!container || !canvas.width || !canvas.height) {
+            return;
+        }
+
+        const groups = collectFinalColorGroupsV22();
+        state.finalColorGroupsV22 = groups;
+
+        if (groups.length <= 0) {
+            container.innerHTML = `<div class="button-image-empty">정리할 색상이 없습니다.</div>`;
+            clearOverlay();
+            return;
+        }
+
+        container.innerHTML = groups.map((group, index) => `
+            <div class="button-image-color-merge-item" data-color-index="${index + 1}">
+                <span class="button-image-color-merge-no">${index + 1}</span>
+                <i style="background:${escapeHtml(group.hex)}"></i>
+                <b>${escapeHtml(group.hex.toUpperCase())}</b>
+                <small>${group.count.toLocaleString()}px</small>
+            </div>
+        `).join("");
+
+        drawFinalColorNumbersV27(groups);
+    }
+
+    function drawFinalColorNumbersV27(groups) {
+        clearOverlay();
+
+        if (!overlayCtx || !Array.isArray(groups)) {
+            return;
+        }
+
+        overlayCtx.save();
+        overlayCtx.textAlign = "center";
+        overlayCtx.textBaseline = "middle";
+        overlayCtx.font = "bold 13px sans-serif";
+
+        groups.forEach((group, groupIndex) => {
+            const number = String(groupIndex + 1);
+
+            for (const component of (group.components || []).slice(0, 160)) {
+                const b = component.bounds || {};
+                const x = Math.round(b.x + b.w / 2);
+                const y = Math.round(b.y + b.h / 2);
+
+                overlayCtx.fillStyle = "rgba(255,255,255,0.96)";
+                overlayCtx.strokeStyle = "rgba(15,23,42,0.82)";
+                overlayCtx.lineWidth = 2;
+                overlayCtx.beginPath();
+                overlayCtx.arc(x, y, 9, 0, Math.PI * 2);
+                overlayCtx.fill();
+                overlayCtx.stroke();
+
+                overlayCtx.fillStyle = "#111827";
+                overlayCtx.fillText(number, x, y + 0.5);
+            }
+        });
+
+        overlayCtx.restore();
+    }
+
+    function mergeFinalColorGroupsV22() {
+        const groups = state.finalColorGroupsV22 || collectFinalColorGroupsV22();
+        const fromIndex = Math.max(1, parseInt($("colorMergeFrom")?.value || "0", 10)) - 1;
+        const toIndex = Math.max(1, parseInt($("colorMergeTo")?.value || "0", 10)) - 1;
+
+        if (fromIndex === toIndex || !groups[fromIndex] || !groups[toIndex]) {
+            toast("병합할 색상 번호를 올바르게 입력하세요.");
+            return;
+        }
+
+        const source = groups[fromIndex];
+        const target = groups[toIndex];
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = image.data;
+
+        for (const index of source.pixels || []) {
+            const offset = index * 4;
+            data[offset] = target.avg.r;
+            data[offset + 1] = target.avg.g;
+            data[offset + 2] = target.avg.b;
+            data[offset + 3] = 255;
+        }
+
+        ctx.putImageData(image, 0, 0);
+        syncResultFromVisible();
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+
+        pushHistory(`색상 ${fromIndex + 1} → ${toIndex + 1} 병합`);
+        updateStats();
+        renderFinalColorListV22();
+
+        toast(`${fromIndex + 1}번 색상을 ${toIndex + 1}번 색상으로 병합했습니다.`);
+    }
+
+    function setStep(step) {
+        const nextStep = Number(step) || 1;
+        state.currentStep = nextStep;
+
+        if (nextStep > 1 && !state.hasResult) {
+            state.currentStep = 1;
+            toast("먼저 파트 1에서 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        if (nextStep !== 4) {
+            state.finalPreview.enabled = false;
+            state.finalPreview.dragging = false;
+            state.finalPreview.dragRect = null;
+        }
+
+        document.querySelectorAll(".button-image-step").forEach((section) => {
+            const itemStep = Number(section.dataset.step);
+            const header = section.querySelector(".button-image-step__header");
+            const status = section.querySelector(".button-image-step__status");
+
+            section.classList.toggle("is-active", itemStep === nextStep);
+            section.classList.toggle("is-done", itemStep < nextStep);
+
+            if (header) {
+                header.classList.toggle("active", itemStep === nextStep);
+            }
+
+            if (status) {
+                if (itemStep < nextStep) {
+                    status.textContent = "완료";
+                } else if (itemStep === nextStep) {
+                    status.textContent = nextStep === 1
+                        ? "진행중"
+                        : nextStep === 2
+                            ? "보정중"
+                            : nextStep === 3
+                                ? "추출중"
+                                : nextStep === 4
+                                    ? "병합중"
+                                    : "확인";
+                } else {
+                    status.textContent = "대기";
+                }
+            }
+        });
+
+        enableRegionSelectTool(false);
+        setColorPickerMode(false, { silent: true });
+        setBrushMode("none", { silent: true });
+
+        if (nextStep === 1) {
+            clearOverlay();
+            updateRegionSelectionText();
+            return;
+        }
+
+        if (nextStep === 2) {
+            updateBrushSize();
+            drawLiveRegionPreviewV18();
+            updateRegionSelectionText();
+            return;
+        }
+
+        if (nextStep === 3) {
+            updateStep3ToleranceTextV27();
+
+            // 파트2 기준 구역 실선 + 파트3에서 추가 추출한 실선을 함께 유지한다.
+            drawAllStep3OutlinesV33();
+            updateRegionSelectionText();
+            return;
+        }
+
+        if (nextStep === 4) {
+            showFinalSavePreview();
+            return;
+        }
+
+        if (nextStep === 5) {
+            state.finalPreview.enabled = false;
+            finalizeFinalImagePreviewV18();
+            renderFinalColorListV22();
+        }
+    }
+
+    function saveAndExit() {
+        finalizeFinalImagePreviewV18();
+
+        Promise.resolve(saveButtonImageToServer()).then((ok) => {
+            if (ok === false) {
+                toast("저장 실패: 저장 API를 확인하세요.");
+                return;
+            }
+
+            toast("저장 완료. 메인으로 이동합니다.");
+
+            setTimeout(() => {
+                window.location.href = app?.dataset.mainUrl || "/admin/seatmap/main";
+            }, 180);
+        }).catch((error) => {
+            console.error(error);
+            toast("저장 및 나가기 실패");
+        });
+    }
+
+    function applyV27Patch() {
+        updateStep3ToleranceTextV27();
+        bindInput("step3Tolerance", updateStep3ToleranceTextV27);
+    }
+
+    setTimeout(applyV27Patch, 0);
+
+
+    // ============================================================================
+    // v29 patch: 파트3 회색/흰색/검정도 실제 구역처럼 보이게 재단색화 + 실선 표시
+    // - 색상 제외 없음
+    // - 화면 전체 배경처럼 너무 큰 덩어리만 크기/테두리 기준으로 제외
+    // - 추출 후 bbox가 아니라 픽셀 외곽선을 실선처럼 표시
+    // ============================================================================
+
+    function extractMagicColorAtPointV27(point) {
+        if (!state.hasResult || !canvas.width || !canvas.height) {
+            toast("먼저 파트 1에서 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        const x = clamp(Math.round(point.x), 0, canvas.width - 1);
+        const y = clamp(Math.round(point.y), 0, canvas.height - 1);
+        const sampled = ctx.getImageData(x, y, 1, 1).data;
+        const target = {
+            r: sampled[0],
+            g: sampled[1],
+            b: sampled[2]
+        };
+        const hex = rgbToHex(target.r, target.g, target.b);
+
+        state.region.color = hex;
+        state.brush.color = hex;
+
+        const regionColorInput = $("regionColorInput");
+        const step3ColorInput = $("step3ColorInput");
+
+        if (regionColorInput) {
+            regionColorInput.value = hex;
+        }
+
+        if (step3ColorInput) {
+            step3ColorInput.value = hex;
+        }
+
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const clickedIndex = y * canvas.width + x;
+        const components = extractRegionsByPickedColorV29(image, canvas.width, canvas.height, target, clickedIndex);
+
+        if (!components.length) {
+            drawExtractedRegionOutlineV29([]);
+            toast("허용범위 안에서 추출된 구역이 없습니다.");
+            return;
+        }
+
+        state.region.selected = components.map((component) => {
+            const color = getDominantColorFromPixels(image, component.pixels);
+
+            return {
+                id: state.region.nextId++,
+                role: component.role,
+                pixels: component.pixels,
+                bounds: component.bounds,
+                color,
+                colorHex: rgbToHex(color.r, color.g, color.b),
+                gradeName: state.region.gradeName || getDefaultGradeName(component.role),
+                pixelSet: new Set(component.pixels)
+            };
+        });
+
+        const result = solidifySelectedRegionsAndRemoveTextV20(target);
+        const preview = state.region.selected.map((region, index) => ({
+            id: `extract-${index + 1}`,
+            pixels: region.pixels || [],
+            pixelSet: new Set(region.pixels || []),
+            bounds: normalizeBoundsV27(region.bounds),
+            color: target,
+            colorHex: hex
+        }));
+
+        state.region.selected = [];
+        state.__lastExtractedRegionsV29 = preview;
+        syncResultFromVisible();
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+
+        pushHistory("허용범위 색상 추출 + 재단색화");
+        drawExtractedRegionOutlineV29(preview);
+        updateRegionSelectionText();
+        updateStats();
+
+        toast(`${hex.toUpperCase()} 추출 완료: ${components.length}개 구역 / 단색화 ${result.painted}픽셀 / 글자 ${result.removed}픽셀`);
+    }
+
+    function extractRegionsByPickedColorV29(image, width, height, target, clickedIndex) {
+        const data = image.data;
+        const visited = new Uint8Array(width * height);
+        const queue = [];
+        const components = [];
+        const tolerance = getStep3ToleranceV27();
+        const minArea = 10;
+        const maxArea = Math.floor(width * height * 0.38);
+
+        function matches(index) {
+            const offset = index * 4;
+
+            if (data[offset + 3] < 10) {
+                return false;
+            }
+
+            const pixel = {
+                r: data[offset],
+                g: data[offset + 1],
+                b: data[offset + 2]
+            };
+
+            // 색상 제외 규칙 없음.
+            // 흰색/검정/회색 포함, 클릭 색상과 허용범위 안이면 후보다.
+            return colorDistance(pixel, target) <= tolerance;
+        }
+
+        for (let start = 0; start < width * height; start += 1) {
+            if (visited[start] || !matches(start)) {
+                continue;
+            }
+
+            const component = {
+                role: classifyColorRole(target.r, target.g, target.b, 255, getScanVariant("relaxed")),
+                pixels: [],
+                bounds: {
+                    minX: Infinity,
+                    minY: Infinity,
+                    maxX: -Infinity,
+                    maxY: -Infinity
+                },
+                containsClicked: false
+            };
+
+            queue.length = 0;
+            queue.push(start);
+            visited[start] = 1;
+
+            while (queue.length > 0) {
+                const current = queue.pop();
+                const x = current % width;
+                const y = Math.floor(current / width);
+
+                if (current === clickedIndex) {
+                    component.containsClicked = true;
+                }
+
+                component.pixels.push(current);
+                component.bounds.minX = Math.min(component.bounds.minX, x);
+                component.bounds.minY = Math.min(component.bounds.minY, y);
+                component.bounds.maxX = Math.max(component.bounds.maxX, x);
+                component.bounds.maxY = Math.max(component.bounds.maxY, y);
+
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x + 1, y);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x - 1, y);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x, y + 1);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x, y - 1);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x + 1, y + 1);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x - 1, y - 1);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x + 1, y - 1);
+                pushColorExtractNeighborV21(queue, visited, matches, width, height, x - 1, y + 1);
+            }
+
+            component.bounds.width = component.bounds.maxX - component.bounds.minX + 1;
+            component.bounds.height = component.bounds.maxY - component.bounds.minY + 1;
+            component.area = component.pixels.length;
+
+            const touches = [
+                component.bounds.minX <= 1,
+                component.bounds.minY <= 1,
+                component.bounds.maxX >= width - 2,
+                component.bounds.maxY >= height - 2
+            ].filter(Boolean).length;
+
+            const almostFullWidth = component.bounds.width >= width * 0.92;
+            const almostFullHeight = component.bounds.height >= height * 0.92;
+            const looksLikeWholeBackground = !component.containsClicked
+                && (
+                    component.area > maxArea ||
+                    touches >= 3 ||
+                    (almostFullWidth && almostFullHeight)
+                );
+
+            if (component.pixels.length >= minArea && !looksLikeWholeBackground) {
+                components.push(component);
+            }
+        }
+
+        // 클릭한 구역을 제일 먼저 보여주고, 나머지는 면적순.
+        components.sort((a, b) => {
+            if (a.containsClicked !== b.containsClicked) {
+                return a.containsClicked ? -1 : 1;
+            }
+
+            return b.pixels.length - a.pixels.length;
+        });
+
+        return components.slice(0, 500);
+    }
+
+    function drawExtractedRegionOutlineV29(regions) {
+        clearOverlay();
+
+        if (!overlayCtx || !Array.isArray(regions) || !regions.length) {
+            return;
+        }
+
+        overlayCtx.save();
+        overlayCtx.strokeStyle = "rgba(124, 58, 237, 0.98)";
+        overlayCtx.fillStyle = "rgba(124, 58, 237, 0.10)";
+        overlayCtx.lineWidth = Math.max(1.3, 1.8 / Math.max(1, state.zoom));
+        overlayCtx.setLineDash([]);
+
+        for (const region of regions) {
+            drawPixelRegionEdgesV29(region, "rgba(124, 58, 237, 0.98)");
+            const b = region.bounds || {};
+            overlayCtx.strokeStyle = "rgba(124, 58, 237, 0.45)";
+            overlayCtx.strokeRect(b.x, b.y, b.w, b.h);
+        }
+
+        overlayCtx.restore();
+    }
+
+    function drawPixelRegionEdgesV29(region, color) {
+        if (!region || !region.pixelSet || !region.pixels) {
+            return;
+        }
+
+        const width = canvas.width;
+        const height = canvas.height;
+        const set = region.pixelSet;
+        const step = Math.max(1, Math.floor(region.pixels.length / 50000));
+
+        overlayCtx.fillStyle = color;
+
+        for (let i = 0; i < region.pixels.length; i += step) {
+            const index = region.pixels[i];
+            const x = index % width;
+            const y = Math.floor(index / width);
+
+            const edge =
+                x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
+                !set.has(index - 1) ||
+                !set.has(index + 1) ||
+                !set.has(index - width) ||
+                !set.has(index + width);
+
+            if (edge) {
+                overlayCtx.fillRect(x, y, 1.2, 1.2);
+            }
+        }
+    }
+
+
+    // ============================================================================
+    // v30 patch: 허용범위 1에서도 클릭 지점 색상 덩어리가 무조건 잡히게 수정
+    // 원인: 기존 추출이 전체 색상 검색/분류 흐름을 타면서 회색 배경/구조물과 충돌했다.
+    // 수정: 파트3은 클릭 지점을 seed로 하는 flood-fill을 먼저 수행한다.
+    // ============================================================================
+
+    function rgbDistanceV30(a, b) {
+        const dr = Number(a.r || 0) - Number(b.r || 0);
+        const dg = Number(a.g || 0) - Number(b.g || 0);
+        const db = Number(a.b || 0) - Number(b.b || 0);
+
+        return Math.sqrt((dr * dr) + (dg * dg) + (db * db));
+    }
+
+    function extractMagicColorAtPointV27(point) {
+        if (!state.hasResult || !canvas.width || !canvas.height) {
+            toast("먼저 파트 1에서 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        const x = clamp(Math.round(point.x), 0, canvas.width - 1);
+        const y = clamp(Math.round(point.y), 0, canvas.height - 1);
+        const sampled = ctx.getImageData(x, y, 1, 1).data;
+        const target = {
+            r: sampled[0],
+            g: sampled[1],
+            b: sampled[2]
+        };
+        const hex = rgbToHex(target.r, target.g, target.b);
+
+        state.region.color = hex;
+        state.brush.color = hex;
+
+        const regionColorInput = $("regionColorInput");
+        const step3ColorInput = $("step3ColorInput");
+
+        if (regionColorInput) {
+            regionColorInput.value = hex;
+        }
+
+        if (step3ColorInput) {
+            step3ColorInput.value = hex;
+        }
+
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const clickedIndex = y * canvas.width + x;
+        const component = floodFillFromClickedPixelV30(image, canvas.width, canvas.height, target, clickedIndex);
+
+        if (!component || component.pixels.length <= 0) {
+            drawExtractedRegionOutlineV29([]);
+            toast(`${hex.toUpperCase()} 주변에서 추출된 구역이 없습니다.`);
+            return;
+        }
+
+        state.region.selected = [{
+            id: state.region.nextId++,
+            role: classifyColorRole(target.r, target.g, target.b, 255, getScanVariant("relaxed")),
+            pixels: component.pixels,
+            bounds: component.bounds,
+            color: target,
+            colorHex: hex,
+            gradeName: state.region.gradeName || "TEMP",
+            pixelSet: new Set(component.pixels)
+        }];
+
+        const result = solidifySelectedRegionsAndRemoveTextV20(target);
+        const preview = state.region.selected.map((region, index) => ({
+            id: `extract-${index + 1}`,
+            pixels: region.pixels || [],
+            pixelSet: new Set(region.pixels || []),
+            bounds: normalizeBoundsV27(region.bounds),
+            color: target,
+            colorHex: hex
+        }));
+
+        state.region.selected = [];
+        state.__lastExtractedRegionsV30 = preview;
+        syncResultFromVisible();
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+
+        pushHistory("클릭 지점 색상 추출 + 재단색화");
+        drawExtractedRegionOutlineV29(preview);
+        updateRegionSelectionText();
+        updateStats();
+
+        toast(`${hex.toUpperCase()} 추출 완료: ${component.pixels.length.toLocaleString()}픽셀 / 글자 ${result.removed}픽셀`);
+    }
+
+    function floodFillFromClickedPixelV30(image, width, height, target, clickedIndex) {
+        const data = image.data;
+        const tolerance = Math.max(0, getStep3ToleranceV27());
+        const visited = new Uint8Array(width * height);
+        const queue = [clickedIndex];
+        const pixels = [];
+        const bounds = {
+            minX: Infinity,
+            minY: Infinity,
+            maxX: -Infinity,
+            maxY: -Infinity
+        };
+
+        visited[clickedIndex] = 1;
+
+        while (queue.length > 0) {
+            const current = queue.pop();
+            const offset = current * 4;
+
+            if (data[offset + 3] < 10) {
+                continue;
+            }
+
+            const pixel = {
+                r: data[offset],
+                g: data[offset + 1],
+                b: data[offset + 2]
+            };
+
+            if (rgbDistanceV30(pixel, target) > tolerance) {
+                continue;
+            }
+
+            const x = current % width;
+            const y = Math.floor(current / width);
+
+            pixels.push(current);
+            bounds.minX = Math.min(bounds.minX, x);
+            bounds.minY = Math.min(bounds.minY, y);
+            bounds.maxX = Math.max(bounds.maxX, x);
+            bounds.maxY = Math.max(bounds.maxY, y);
+
+            pushSeedNeighborV30(queue, visited, width, height, x + 1, y);
+            pushSeedNeighborV30(queue, visited, width, height, x - 1, y);
+            pushSeedNeighborV30(queue, visited, width, height, x, y + 1);
+            pushSeedNeighborV30(queue, visited, width, height, x, y - 1);
+            pushSeedNeighborV30(queue, visited, width, height, x + 1, y + 1);
+            pushSeedNeighborV30(queue, visited, width, height, x - 1, y - 1);
+            pushSeedNeighborV30(queue, visited, width, height, x + 1, y - 1);
+            pushSeedNeighborV30(queue, visited, width, height, x - 1, y + 1);
+        }
+
+        if (pixels.length <= 0) {
+            return null;
+        }
+
+        bounds.width = bounds.maxX - bounds.minX + 1;
+        bounds.height = bounds.maxY - bounds.minY + 1;
+
+        return {
+            pixels,
+            pixelSet: new Set(pixels),
+            bounds,
+            area: pixels.length
+        };
+    }
+
+    function pushSeedNeighborV30(queue, visited, width, height, x, y) {
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            return;
+        }
+
+        const index = y * width + x;
+
+        if (visited[index]) {
+            return;
+        }
+
+        visited[index] = 1;
+        queue.push(index);
+    }
+
+
+    // ============================================================================
+    // v31 patch: 파트3 추출 실선은 "교체"가 아니라 "추가"로 그린다.
+    // 기존 파트2 기준 구역 실선을 먼저 다시 그리고, 그 위에 새 추출 구역 실선을 추가한다.
+    // ============================================================================
+
+    function drawExtractedRegionOutlineV29(regions) {
+        // 기존 파트2 기준 구역 실선 유지
+        drawLiveRegionPreviewV18();
+
+        if (!overlayCtx || !Array.isArray(regions) || !regions.length) {
+            return;
+        }
+
+        overlayCtx.save();
+        overlayCtx.strokeStyle = "rgba(124, 58, 237, 0.98)";
+        overlayCtx.fillStyle = "rgba(124, 58, 237, 0.10)";
+        overlayCtx.lineWidth = Math.max(1.4, 2 / Math.max(1, state.zoom));
+        overlayCtx.setLineDash([]);
+
+        for (const region of regions) {
+            drawPixelRegionEdgesV29(region, "rgba(124, 58, 237, 0.98)");
+
+            const b = region.bounds || {};
+            overlayCtx.strokeStyle = "rgba(124, 58, 237, 0.65)";
+            overlayCtx.strokeRect(b.x, b.y, b.w, b.h);
+        }
+
+        overlayCtx.restore();
+    }
+
+
+    // ============================================================================
+    // v32 patch: 단계 되돌아가기 버튼
+    // 파트 이동 시 작업 자체를 undo 하지 않고, 화면 단계만 이전 파트로 이동한다.
+    // ============================================================================
+
+    function applyV32BackButtons() {
+        const backToStep2 = $("backToStep2FromStep3");
+        if (backToStep2 && !backToStep2.dataset.boundV32) {
+            backToStep2.dataset.boundV32 = "true";
+            backToStep2.addEventListener("click", (event) => {
+                event.preventDefault();
+                setStep(2);
+            });
+        }
+
+        const backToStep3 = $("backToStep3FromStep4");
+        if (backToStep3 && !backToStep3.dataset.boundV32) {
+            backToStep3.dataset.boundV32 = "true";
+            backToStep3.addEventListener("click", (event) => {
+                event.preventDefault();
+                setStep(3);
+            });
+        }
+    }
+
+    setTimeout(applyV32BackButtons, 0);
+
+
+    // ============================================================================
+    // v33 patch: 파트3 실선 누적 + 이전 작업 되돌리기
+    // - 새 색상 추출 시 기존 실선을 지우지 않고 누적 표시
+    // - 잘못 추출했을 때 "이전 작업 되돌리기"로 직전 추출만 되돌림
+    // ============================================================================
+
+    function ensureStep3OutlineStoreV33() {
+        if (!Array.isArray(state.__step3ExtractedOutlinesV33)) {
+            state.__step3ExtractedOutlinesV33 = [];
+        }
+
+        return state.__step3ExtractedOutlinesV33;
+    }
+
+    function drawAllStep3OutlinesV33() {
+        // 기준 구역 실선 먼저 그림
+        drawLiveRegionPreviewV18();
+
+        const groups = ensureStep3OutlineStoreV33();
+
+        if (!overlayCtx || groups.length <= 0) {
+            return;
+        }
+
+        overlayCtx.save();
+
+        for (const group of groups) {
+            drawStep3OutlineGroupV33(group);
+        }
+
+        overlayCtx.restore();
+    }
+
+    function drawStep3OutlineGroupV33(group) {
+        if (!Array.isArray(group)) {
+            return;
+        }
+
+        overlayCtx.strokeStyle = "rgba(124, 58, 237, 0.98)";
+        overlayCtx.fillStyle = "rgba(124, 58, 237, 0.10)";
+        overlayCtx.lineWidth = Math.max(1.4, 2 / Math.max(1, state.zoom));
+        overlayCtx.setLineDash([]);
+
+        for (const region of group) {
+            drawPixelRegionEdgesV29(region, "rgba(124, 58, 237, 0.98)");
+
+            const b = region.bounds || {};
+            overlayCtx.strokeStyle = "rgba(124, 58, 237, 0.70)";
+            overlayCtx.strokeRect(b.x, b.y, b.w, b.h);
+        }
+    }
+
+    function drawExtractedRegionOutlineV29(regions) {
+        const store = ensureStep3OutlineStoreV33();
+
+        if (Array.isArray(regions) && regions.length > 0) {
+            store.push(regions);
+        }
+
+        drawAllStep3OutlinesV33();
+    }
+
+    function extractMagicColorAtPointV27(point) {
+        if (!state.hasResult || !canvas.width || !canvas.height) {
+            toast("먼저 파트 1에서 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        const x = clamp(Math.round(point.x), 0, canvas.width - 1);
+        const y = clamp(Math.round(point.y), 0, canvas.height - 1);
+        const sampled = ctx.getImageData(x, y, 1, 1).data;
+        const target = {
+            r: sampled[0],
+            g: sampled[1],
+            b: sampled[2]
+        };
+        const hex = rgbToHex(target.r, target.g, target.b);
+
+        state.region.color = hex;
+        state.brush.color = hex;
+
+        const regionColorInput = $("regionColorInput");
+        const step3ColorInput = $("step3ColorInput");
+
+        if (regionColorInput) {
+            regionColorInput.value = hex;
+        }
+
+        if (step3ColorInput) {
+            step3ColorInput.value = hex;
+        }
+
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const clickedIndex = y * canvas.width + x;
+        const component = floodFillFromClickedPixelV30(image, canvas.width, canvas.height, target, clickedIndex);
+
+        if (!component || component.pixels.length <= 0) {
+            toast(`${hex.toUpperCase()} 주변에서 추출된 구역이 없습니다.`);
+            return;
+        }
+
+        // 첫 추출도 되돌릴 수 있게 수정 직전 상태를 같은 파트 history에 저장
+        pushHistory("색상 추출 전");
+
+        state.region.selected = [{
+            id: state.region.nextId++,
+            role: classifyColorRole(target.r, target.g, target.b, 255, getScanVariant("relaxed")),
+            pixels: component.pixels,
+            bounds: component.bounds,
+            color: target,
+            colorHex: hex,
+            gradeName: state.region.gradeName || "TEMP",
+            pixelSet: new Set(component.pixels)
+        }];
+
+        const result = solidifySelectedRegionsAndRemoveTextV20(target);
+        const preview = state.region.selected.map((region, index) => ({
+            id: `extract-${index + 1}`,
+            pixels: region.pixels || [],
+            pixelSet: new Set(region.pixels || []),
+            bounds: normalizeBoundsV27(region.bounds),
+            color: target,
+            colorHex: hex
+        }));
+
+        state.region.selected = [];
+        state.__lastExtractedRegionsV33 = preview;
+        syncResultFromVisible();
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+
+        pushHistory("클릭 지점 색상 추출 + 재단색화");
+        drawExtractedRegionOutlineV29(preview);
+        updateRegionSelectionText();
+        updateStats();
+
+        toast(`${hex.toUpperCase()} 추출 완료: ${component.pixels.length.toLocaleString()}픽셀 / 글자 ${result.removed}픽셀`);
+    }
+
+    function undoStep3LastActionV33() {
+        if (state.currentStep !== 3) {
+            return;
+        }
+
+        const store = ensureStep3OutlineStoreV33();
+
+        if (store.length > 0) {
+            store.pop();
+        }
+
+        undo();
+
+        // undo는 이미지 복원이 비동기라서 복원 후 실선 다시 그림
+        setTimeout(() => {
+            syncResultFromVisible();
+            drawAllStep3OutlinesV33();
+            updateStats();
+        }, 80);
+    }
+
+    function applyV33Step3Undo() {
+        const undoButton = $("undoStep3Action");
+
+        if (undoButton && !undoButton.dataset.boundV33) {
+            undoButton.dataset.boundV33 = "true";
+            undoButton.addEventListener("click", (event) => {
+                event.preventDefault();
+                undoStep3LastActionV33();
+            });
+        }
+    }
+
+    setTimeout(applyV33Step3Undo, 0);
+
+
+    // ============================================================================
+    // v34 patch: 상단 command-bar 이전 버튼 + 저장 groups R1~ 동적 생성
+    // ============================================================================
+
+    function undo() {
+        const targetIndex = findHistoryIndexInCurrentStep(-1);
+
+        if (targetIndex < 0) {
+            updateHistoryButtons();
+            return;
+        }
+
+        // 파트3에서 추가 추출한 보라 실선도 직전 작업과 같이 하나 제거한다.
+        if (state.currentStep === 3 && Array.isArray(state.__step3ExtractedOutlinesV33) && state.__step3ExtractedOutlinesV33.length > 0) {
+            state.__step3ExtractedOutlinesV33.pop();
+        }
+
+        state.historyIndex = targetIndex;
+        restoreHistory(state.history[state.historyIndex]);
+
+        setTimeout(() => {
+            if (state.currentStep === 3 && typeof drawAllStep3OutlinesV33 === "function") {
+                drawAllStep3OutlinesV33();
+            } else if (state.currentStep === 4 && state.finalPreview?.enabled) {
+                drawFinalPreviewOverlayV17();
+            }
+            updateHistoryButtons();
+        }, 80);
+    }
+
+    function buildGeneratedRegionGroupsForSave() {
+        const items = collectRegionColorGroupsForSaveV34();
+
+        if (!items.length) {
+            return [];
+        }
+
+        return items.map((item, index) => {
+            const code = `R${index + 1}`;
+
+            return {
+                id: code,
+                name: `구역 ${code}`,
+                gradeName: code,
+                color: item.hex,
+                pixelCount: item.count,
+                bounds: item.bounds
+            };
+        });
+    }
+
+    function collectRegionColorGroupsForSaveV34() {
+        if (!canvas || !canvas.width || !canvas.height) {
+            return [];
+        }
+
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = image.data;
+        const width = canvas.width;
+        const height = canvas.height;
+        const buckets = new Map();
+
+        for (let i = 0; i < width * height; i += 1) {
+            const offset = i * 4;
+
+            if (data[offset + 3] < 10) {
+                continue;
+            }
+
+            const r = data[offset];
+            const g = data[offset + 1];
+            const b = data[offset + 2];
+            const key = rgbToHex(r, g, b).toUpperCase();
+
+            let bucket = buckets.get(key);
+
+            if (!bucket) {
+                bucket = {
+                    hex: key,
+                    count: 0,
+                    minX: Infinity,
+                    minY: Infinity,
+                    maxX: -Infinity,
+                    maxY: -Infinity
+                };
+                buckets.set(key, bucket);
+            }
+
+            const x = i % width;
+            const y = Math.floor(i / width);
+
+            bucket.count += 1;
+            bucket.minX = Math.min(bucket.minX, x);
+            bucket.minY = Math.min(bucket.minY, y);
+            bucket.maxX = Math.max(bucket.maxX, x);
+            bucket.maxY = Math.max(bucket.maxY, y);
+        }
+
+        return [...buckets.values()]
+            .filter((bucket) => bucket.count >= 30)
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 100)
+            .map((bucket) => ({
+                hex: bucket.hex,
+                count: bucket.count,
+                bounds: {
+                    x: bucket.minX,
+                    y: bucket.minY,
+                    w: bucket.maxX - bucket.minX + 1,
+                    h: bucket.maxY - bucket.minY + 1
+                }
+            }));
+    }
+
+
+    // ============================================================================
+    // v35 patch: 파트3에서 추가 추출한 구역을 파트4 병합 목록에 합류
+    // - 파트2 기준 실선: 계속 표시
+    // - 파트3 추가 실선: 계속 표시
+    // - 파트4: 기준 구역 + 추가 구역 전부 selectable/merge 대상
+    // ============================================================================
+
+    function flattenStep3ExtractedRegionsV35() {
+        const groups = Array.isArray(state.__step3ExtractedOutlinesV33)
+            ? state.__step3ExtractedOutlinesV33
+            : [];
+
+        const result = [];
+
+        groups.forEach((group, groupIndex) => {
+            if (!Array.isArray(group)) {
+                return;
+            }
+
+            group.forEach((region, regionIndex) => {
+                const pixels = Array.isArray(region.pixels) ? region.pixels : [];
+                const bounds = normalizeBoundsV27(region.bounds);
+
+                if (pixels.length <= 0) {
+                    return;
+                }
+
+                result.push({
+                    id: `step3-${groupIndex + 1}-${regionIndex + 1}`,
+                    pixels,
+                    pixelSet: new Set(pixels),
+                    bounds,
+                    area: pixels.length,
+                    color: region.color || hexToRgb(region.colorHex || state.region.color || "#7c3aed"),
+                    colorHex: region.colorHex || state.region.color || "#7c3aed",
+                    fromStep3: true
+                });
+            });
+        });
+
+        return result;
+    }
+
+    function appendStep3RegionsToFinalPreviewV35() {
+        const baseRegions = Array.isArray(state.finalPreview.regions)
+            ? state.finalPreview.regions
+            : [];
+        const step3Regions = flattenStep3ExtractedRegionsV35();
+
+        if (step3Regions.length <= 0) {
+            state.finalPreview.regions = baseRegions;
+            state.finalPreview.componentCount = baseRegions.length;
+            return;
+        }
+
+        const existingKeys = new Set(baseRegions.map((region) => {
+            const b = region.bounds || {};
+            return `${Math.round(b.x)}:${Math.round(b.y)}:${Math.round(b.w)}:${Math.round(b.h)}`;
+        }));
+
+        const merged = [...baseRegions];
+
+        for (const region of step3Regions) {
+            const b = region.bounds || {};
+            const key = `${Math.round(b.x)}:${Math.round(b.y)}:${Math.round(b.w)}:${Math.round(b.h)}`;
+
+            if (!existingKeys.has(key)) {
+                merged.push(region);
+                existingKeys.add(key);
+            }
+        }
+
+        state.finalPreview.regions = merged;
+        state.finalPreview.componentCount = merged.length;
+    }
+
+    function showFinalSavePreview() {
+        if (!state.hasResult) {
+            toast("먼저 단색화 결과를 생성하세요.");
+            return;
+        }
+
+        state.finalPreview.enabled = true;
+        state.finalPreview.dragging = false;
+        state.finalPreview.dragRect = null;
+        state.finalPreview.selectedIds = state.finalPreview.selectedIds || [];
+
+        setBrushMode("none", { silent: true });
+        setColorPickerMode(false, { silent: true });
+
+        rebuildFinalPreviewRegionsV17();
+        appendStep3RegionsToFinalPreviewV35();
+        drawFinalPreviewOverlayV17();
+        updateFinalMergeToolUIV17();
+    }
+
+    function drawFinalPreviewOverlayV17() {
+        clearOverlay();
+
+        if (!overlayCtx || !overlay) {
+            return;
+        }
+
+        const selected = new Set(state.finalPreview.selectedIds || []);
+        overlayCtx.save();
+
+        for (const region of state.finalPreview.regions || []) {
+            const isSelected = selected.has(region.id);
+            const isStep3 = Boolean(region.fromStep3);
+
+            drawFinalRegionBoundaryV17(
+                region,
+                isSelected
+                    ? "rgba(124, 58, 237, 0.98)"
+                    : isStep3
+                        ? "rgba(124, 58, 237, 0.86)"
+                        : "rgba(15, 23, 42, 0.88)",
+                isSelected ? 2.8 : isStep3 ? 1.8 : 1.4
+            );
+
+            if (isSelected) {
+                overlayCtx.fillStyle = "rgba(124, 58, 237, 0.10)";
+                overlayCtx.fillRect(region.bounds.x, region.bounds.y, region.bounds.w, region.bounds.h);
+            }
+        }
+
+        if (state.finalPreview.dragRect) {
+            const rect = state.finalPreview.dragRect;
+            overlayCtx.save();
+            overlayCtx.strokeStyle = "rgba(37, 99, 235, 0.95)";
+            overlayCtx.fillStyle = "rgba(37, 99, 235, 0.08)";
+            overlayCtx.lineWidth = 2;
+            overlayCtx.setLineDash([7, 5]);
+            overlayCtx.fillRect(rect.x, rect.y, rect.w, rect.h);
+            overlayCtx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+            overlayCtx.restore();
+        }
+
+        overlayCtx.restore();
+    }
+
+    function setStep(step) {
+        const nextStep = Number(step) || 1;
+        state.currentStep = nextStep;
+
+        if (nextStep > 1 && !state.hasResult) {
+            state.currentStep = 1;
+            toast("먼저 파트 1에서 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        if (nextStep !== 4) {
+            state.finalPreview.enabled = false;
+            state.finalPreview.dragging = false;
+            state.finalPreview.dragRect = null;
+        }
+
+        document.querySelectorAll(".button-image-step").forEach((section) => {
+            const itemStep = Number(section.dataset.step);
+            const header = section.querySelector(".button-image-step__header");
+            const status = section.querySelector(".button-image-step__status");
+
+            section.classList.toggle("is-active", itemStep === nextStep);
+            section.classList.toggle("is-done", itemStep < nextStep);
+
+            if (header) {
+                header.classList.toggle("active", itemStep === nextStep);
+            }
+
+            if (status) {
+                if (itemStep < nextStep) {
+                    status.textContent = "완료";
+                } else if (itemStep === nextStep) {
+                    status.textContent = nextStep === 1
+                        ? "진행중"
+                        : nextStep === 2
+                            ? "보정중"
+                            : nextStep === 3
+                                ? "추출중"
+                                : nextStep === 4
+                                    ? "병합중"
+                                    : "확인";
+                } else {
+                    status.textContent = "대기";
+                }
+            }
+        });
+
+        enableRegionSelectTool(false);
+        setColorPickerMode(false, { silent: true });
+        setBrushMode("none", { silent: true });
+
+        if (nextStep === 1) {
+            clearOverlay();
+            updateRegionSelectionText();
+            return;
+        }
+
+        if (nextStep === 2) {
+            updateBrushSize();
+            drawLiveRegionPreviewV18();
+            updateRegionSelectionText();
+            return;
+        }
+
+        if (nextStep === 3) {
+            updateStep3ToleranceTextV27();
+            drawAllStep3OutlinesV33();
+            updateRegionSelectionText();
+            return;
+        }
+
+        if (nextStep === 4) {
+            showFinalSavePreview();
+            return;
+        }
+
+        if (nextStep === 5) {
+            state.finalPreview.enabled = false;
+            finalizeFinalImagePreviewV18();
+
+            // 최종 색상 정리 단계에서도 구역 확인선을 먼저 계산한 뒤 색상 번호를 올린다.
+            renderFinalColorListV22();
+        }
+    }
+
+
+    // ============================================================================
+    // v36 patch
+    // 1. 파트4에서는 파트3 보라색 임시 실선/박스를 제거하고 일반 구역 실선만 표시
+    // 2. 파트5 색상 목록/번호/병합/저장을 실제 동작하도록 재구성
+    // 3. 상단 이전은 캔버스 + 파트3 실선 개수를 함께 되돌림
+    // ============================================================================
+
+    function cloneStep3OutlineCountV36() {
+        return Array.isArray(state.__step3ExtractedOutlinesV33)
+            ? state.__step3ExtractedOutlinesV33.length
+            : 0;
+    }
+
+    function pushHistory(label) {
+        if (!canvas.width || !canvas.height) {
+            return;
+        }
+
+        const snapshot = {
+            label,
+            visible: canvas.toDataURL("image/png"),
+            hasResult: state.hasResult,
+            saved: state.saved,
+            resultBaseDataUrl: state.resultBaseDataUrl,
+            stats: state.lastStats ? clone(state.lastStats) : null,
+            step: state.currentStep || 1,
+            step3OutlineCount: cloneStep3OutlineCountV36()
+        };
+
+        state.history = state.history.slice(0, state.historyIndex + 1);
+        state.history.push(snapshot);
+
+        if (state.history.length > 30) {
+            state.history.shift();
+        }
+
+        state.historyIndex = state.history.length - 1;
+        updateHistoryButtons();
+    }
+
+    function restoreHistory(snapshot) {
+        drawDataUrlToCanvas(snapshot.visible, canvas, ctx).then(() => {
+            if (overlay) {
+                overlay.width = canvas.width;
+                overlay.height = canvas.height;
+            }
+
+            state.hasResult = snapshot.hasResult;
+            state.saved = snapshot.saved;
+            state.resultBaseDataUrl = snapshot.resultBaseDataUrl;
+            state.lastStats = snapshot.stats;
+
+            if (Array.isArray(state.__step3ExtractedOutlinesV33) && Number.isFinite(snapshot.step3OutlineCount)) {
+                state.__step3ExtractedOutlinesV33 = state.__step3ExtractedOutlinesV33.slice(0, snapshot.step3OutlineCount);
+            }
+
+            syncCanvasDisplay();
+            syncResultFromVisible();
+            updateStats();
+            renderLegend(state.lastStats);
+
+            if (state.currentStep === 3 && typeof drawAllStep3OutlinesV33 === "function") {
+                drawAllStep3OutlinesV33();
+            } else if (state.currentStep === 4 && state.finalPreview?.enabled) {
+                showFinalSavePreview();
+            } else if (state.currentStep === 5) {
+                renderFinalColorListV22();
+            } else {
+                clearOverlay();
+            }
+
+            updateHistoryButtons();
+        });
+    }
+
+    function undo() {
+        const targetIndex = findHistoryIndexInCurrentStep(-1);
+
+        if (targetIndex < 0) {
+            updateHistoryButtons();
+            return;
+        }
+
+        state.historyIndex = targetIndex;
+        restoreHistory(state.history[state.historyIndex]);
+    }
+
+    function showFinalSavePreview() {
+        if (!state.hasResult) {
+            toast("먼저 단색화 결과를 생성하세요.");
+            return;
+        }
+
+        state.finalPreview.enabled = true;
+        state.finalPreview.dragging = false;
+        state.finalPreview.dragRect = null;
+        state.finalPreview.selectedIds = state.finalPreview.selectedIds || [];
+
+        setBrushMode("none", { silent: true });
+        setColorPickerMode(false, { silent: true });
+
+        // 핵심: 파트4는 파트3 보라색 임시 박스를 가져오지 않는다.
+        // 현재 캔버스에 실제로 칠해진 구역만 다시 계산해서 일반 실선으로 표시한다.
+        rebuildFinalPreviewRegionsV17();
+        drawFinalPreviewOverlayV17();
+        updateFinalMergeToolUIV17();
+    }
+
+    function drawFinalPreviewOverlayV17() {
+        clearOverlay();
+
+        if (!overlayCtx || !overlay) {
+            return;
+        }
+
+        const selected = new Set(state.finalPreview.selectedIds || []);
+
+        overlayCtx.save();
+
+        for (const region of state.finalPreview.regions || []) {
+            const isSelected = selected.has(region.id);
+
+            drawFinalRegionBoundaryV17(
+                region,
+                isSelected ? "rgba(124, 58, 237, 0.98)" : "rgba(15, 23, 42, 0.86)",
+                isSelected ? 2.8 : 1.45
+            );
+
+            if (isSelected) {
+                overlayCtx.fillStyle = "rgba(124, 58, 237, 0.10)";
+                overlayCtx.fillRect(region.bounds.x, region.bounds.y, region.bounds.w, region.bounds.h);
+            }
+        }
+
+        if (state.finalPreview.dragRect) {
+            const rect = state.finalPreview.dragRect;
+            overlayCtx.save();
+            overlayCtx.strokeStyle = "rgba(37, 99, 235, 0.95)";
+            overlayCtx.fillStyle = "rgba(37, 99, 235, 0.08)";
+            overlayCtx.lineWidth = 2;
+            overlayCtx.setLineDash([7, 5]);
+            overlayCtx.fillRect(rect.x, rect.y, rect.w, rect.h);
+            overlayCtx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+            overlayCtx.restore();
+        }
+
+        overlayCtx.restore();
+    }
+
+    function ensureFinalRegionsForColorsV36() {
+        if (!Array.isArray(state.finalPreview.regions) || state.finalPreview.regions.length <= 0) {
+            rebuildFinalPreviewRegionsV17();
+        }
+
+        return Array.isArray(state.finalPreview.regions)
+            ? state.finalPreview.regions
+            : [];
+    }
+
+    function collectFinalColorGroupsV22() {
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const regions = ensureFinalRegionsForColorsV36();
+        const groups = [];
+
+        for (const region of regions) {
+            const pixels = Array.isArray(region.pixels) ? region.pixels : [];
+
+            if (pixels.length <= 0) {
+                continue;
+            }
+
+            const color = getDominantColorFromPixels(image, pixels);
+            let group = groups.find((item) => colorDistance(item.avg, color) <= 24);
+
+            if (!group) {
+                group = {
+                    r: 0,
+                    g: 0,
+                    b: 0,
+                    count: 0,
+                    pixels: [],
+                    components: [],
+                    avg: color
+                };
+                groups.push(group);
+            }
+
+            group.r += color.r * pixels.length;
+            group.g += color.g * pixels.length;
+            group.b += color.b * pixels.length;
+            group.count += pixels.length;
+            group.pixels.push(...pixels);
+            group.components.push({
+                ...region,
+                color,
+                colorHex: rgbToHex(color.r, color.g, color.b)
+            });
+            group.avg = {
+                r: group.r / Math.max(1, group.count),
+                g: group.g / Math.max(1, group.count),
+                b: group.b / Math.max(1, group.count)
+            };
+        }
+
+        return groups
+            .filter((group) => group.count >= 8)
+            .sort((a, b) => b.count - a.count)
+            .map((group) => ({
+                ...group,
+                avg: {
+                    r: Math.round(group.r / group.count),
+                    g: Math.round(group.g / group.count),
+                    b: Math.round(group.b / group.count)
+                },
+                hex: rgbToHex(group.r / group.count, group.g / group.count, group.b / group.count)
+            }));
+    }
+
+    function renderFinalColorListV22() {
+        const container = $("finalColorList");
+
+        if (!container) {
+            return;
+        }
+
+        if (!canvas.width || !canvas.height) {
+            container.innerHTML = `<div class="button-image-empty">캔버스가 없습니다.</div>`;
+            return;
+        }
+
+        const groups = collectFinalColorGroupsV22();
+        state.finalColorGroupsV22 = groups;
+
+        if (groups.length <= 0) {
+            container.innerHTML = `<div class="button-image-empty">정리할 색상이 없습니다. 구역 병합 단계로 돌아가 구역 실선을 먼저 확인하세요.</div>`;
+            clearOverlay();
+            return;
+        }
+
+        container.innerHTML = groups.map((group, index) => `
+            <div class="button-image-color-merge-item" data-color-index="${index + 1}">
+                <span class="button-image-color-merge-no">${index + 1}</span>
+                <i style="background:${escapeHtml(group.hex)}"></i>
+                <b>${escapeHtml(group.hex.toUpperCase())}</b>
+                <small>${group.components.length.toLocaleString()}구역 / ${group.count.toLocaleString()}px</small>
+            </div>
+        `).join("");
+
+        drawFinalColorNumbersV36(groups);
+    }
+
+    function drawFinalColorNumbersV36(groups) {
+        clearOverlay();
+
+        if (!overlayCtx || !Array.isArray(groups)) {
+            return;
+        }
+
+        overlayCtx.save();
+        overlayCtx.textAlign = "center";
+        overlayCtx.textBaseline = "middle";
+        overlayCtx.font = "bold 13px sans-serif";
+
+        groups.forEach((group, groupIndex) => {
+            const number = String(groupIndex + 1);
+
+            for (const component of (group.components || []).slice(0, 180)) {
+                const b = component.bounds || {};
+                const x = Math.round(b.x + b.w / 2);
+                const y = Math.round(b.y + b.h / 2);
+
+                overlayCtx.fillStyle = "rgba(255,255,255,0.96)";
+                overlayCtx.strokeStyle = "rgba(15,23,42,0.82)";
+                overlayCtx.lineWidth = 2;
+                overlayCtx.beginPath();
+                overlayCtx.arc(x, y, 9, 0, Math.PI * 2);
+                overlayCtx.fill();
+                overlayCtx.stroke();
+
+                overlayCtx.fillStyle = "#111827";
+                overlayCtx.fillText(number, x, y + 0.5);
+            }
+        });
+
+        overlayCtx.restore();
+    }
+
+    function mergeFinalColorGroupsV22() {
+        const groups = state.finalColorGroupsV22 || collectFinalColorGroupsV22();
+        const fromIndex = Math.max(1, parseInt($("colorMergeFrom")?.value || "0", 10)) - 1;
+        const toIndex = Math.max(1, parseInt($("colorMergeTo")?.value || "0", 10)) - 1;
+
+        if (fromIndex === toIndex || !groups[fromIndex] || !groups[toIndex]) {
+            toast("병합할 색상 번호를 올바르게 입력하세요.");
+            return;
+        }
+
+        pushHistory(`색상 ${fromIndex + 1} 병합 전`);
+
+        const source = groups[fromIndex];
+        const target = groups[toIndex];
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = image.data;
+
+        for (const index of source.pixels || []) {
+            const offset = index * 4;
+            data[offset] = target.avg.r;
+            data[offset + 1] = target.avg.g;
+            data[offset + 2] = target.avg.b;
+            data[offset + 3] = 255;
+        }
+
+        ctx.putImageData(image, 0, 0);
+        syncResultFromVisible();
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+
+        rebuildFinalPreviewRegionsV17();
+        updateStats();
+        renderFinalColorListV22();
+        pushHistory(`색상 ${fromIndex + 1} → ${toIndex + 1} 병합`);
+
+        toast(`${fromIndex + 1}번 색상을 ${toIndex + 1}번 색상으로 병합했습니다.`);
+    }
+
+    function setStep(step) {
+        const nextStep = Number(step) || 1;
+        state.currentStep = nextStep;
+
+        if (nextStep > 1 && !state.hasResult) {
+            state.currentStep = 1;
+            toast("먼저 파트 1에서 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        if (nextStep !== 4) {
+            state.finalPreview.enabled = false;
+            state.finalPreview.dragging = false;
+            state.finalPreview.dragRect = null;
+        }
+
+        document.querySelectorAll(".button-image-step").forEach((section) => {
+            const itemStep = Number(section.dataset.step);
+            const header = section.querySelector(".button-image-step__header");
+            const status = section.querySelector(".button-image-step__status");
+
+            section.classList.toggle("is-active", itemStep === nextStep);
+            section.classList.toggle("is-done", itemStep < nextStep);
+
+            if (header) {
+                header.classList.toggle("active", itemStep === nextStep);
+            }
+
+            if (status) {
+                if (itemStep < nextStep) {
+                    status.textContent = "완료";
+                } else if (itemStep === nextStep) {
+                    status.textContent = nextStep === 1
+                        ? "진행중"
+                        : nextStep === 2
+                            ? "보정중"
+                            : nextStep === 3
+                                ? "추출중"
+                                : nextStep === 4
+                                    ? "병합중"
+                                    : "확인";
+                } else {
+                    status.textContent = "대기";
+                }
+            }
+        });
+
+        enableRegionSelectTool(false);
+        setColorPickerMode(false, { silent: true });
+        setBrushMode("none", { silent: true });
+
+        if (nextStep === 1) {
+            clearOverlay();
+            updateRegionSelectionText();
+            return;
+        }
+
+        if (nextStep === 2) {
+            updateBrushSize();
+            drawLiveRegionPreviewV18();
+            updateRegionSelectionText();
+            return;
+        }
+
+        if (nextStep === 3) {
+            updateStep3ToleranceTextV27();
+            drawAllStep3OutlinesV33();
+            updateRegionSelectionText();
+            return;
+        }
+
+        if (nextStep === 4) {
+            showFinalSavePreview();
+            return;
+        }
+
+        if (nextStep === 5) {
+            state.finalPreview.enabled = false;
+            rebuildFinalPreviewRegionsV17();
+            renderFinalColorListV22();
+        }
+    }
+
+    function applyV36FinalBindings() {
+        const merge = $("mergeFinalColors");
+        if (merge && !merge.dataset.boundV36) {
+            merge.dataset.boundV36 = "true";
+            merge.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                mergeFinalColorGroupsV22();
+            }, true);
+        }
+
+        const refresh = $("refreshFinalColors");
+        if (refresh && !refresh.dataset.boundV36) {
+            refresh.dataset.boundV36 = "true";
+            refresh.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                renderFinalColorListV22();
+            }, true);
+        }
+
+        const save = $("saveAndExitButton");
+        if (save && !save.dataset.boundV36) {
+            save.dataset.boundV36 = "true";
+            save.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                saveAndExit();
+            }, true);
+        }
+    }
+
+    setTimeout(applyV36FinalBindings, 0);
+
+
+    // ============================================================================
+    // v37 patch: 파트1 배경/글자 색상 지정 + 공통 돋보기 강화
+    // ============================================================================
+
+    function colorDistance(a, b) {
+        const dr = Number(a.r || 0) - Number(b.r || 0);
+        const dg = Number(a.g || 0) - Number(b.g || 0);
+        const db = Number(a.b || 0) - Number(b.b || 0);
+        return Math.sqrt((dr * dr) + (dg * dg) + (db * db));
+    }
+
+    function ensureManualHintsV37() {
+        if (!state.manualHintsV37) {
+            state.manualHintsV37 = {
+                backgroundEnabled: false,
+                textEnabled: false,
+                pickTarget: "",
+                background: "#000000",
+                text: "#111111",
+                tolerance: 28
+            };
+        }
+
+        return state.manualHintsV37;
+    }
+
+    function syncManualHintsFromInputsV37() {
+        const hints = ensureManualHintsV37();
+        const bg = $("part1BackgroundColor");
+        const text = $("part1TextColor");
+        const tol = $("part1HintTolerance");
+
+        if (bg) {
+            hints.background = bg.value || hints.background;
+        }
+
+        if (text) {
+            hints.text = text.value || hints.text;
+        }
+
+        if (tol) {
+            hints.tolerance = Math.max(0, parseInt(tol.value || "28", 10));
+        }
+
+        const tolText = $("part1HintToleranceText");
+        if (tolText) {
+            tolText.textContent = String(hints.tolerance);
+        }
+
+        updateManualHintStatusV37();
+        return hints;
+    }
+
+    function updateManualHintStatusV37() {
+        const hints = ensureManualHintsV37();
+        const status = $("part1HintStatus");
+
+        if (!status) {
+            return;
+        }
+
+        const used = [];
+
+        if (hints.backgroundEnabled) {
+            used.push(`배경 ${hints.background.toUpperCase()}`);
+        }
+
+        if (hints.textEnabled) {
+            used.push(`글자 ${hints.text.toUpperCase()}`);
+        }
+
+        status.textContent = used.length > 0
+            ? `적용 중: ${used.join(" / ")} / 허용범위 ${hints.tolerance}`
+            : "배경/글자 색상을 지정하면 단색화할 때 그 기준을 우선 적용합니다.";
+    }
+
+    function setPart1PickTargetV37(target) {
+        const hints = ensureManualHintsV37();
+        hints.pickTarget = target;
+
+        if (box) {
+            box.classList.toggle("is-picking-part1", Boolean(target));
+        }
+
+        if (target === "background") {
+            toast("도면에서 배경 색상을 클릭하세요.");
+        } else if (target === "text") {
+            toast("도면에서 도형 내부 숫자/글자 색상을 클릭하세요.");
+        }
+    }
+
+    function samplePart1HintAtPointV37(point) {
+        const hints = ensureManualHintsV37();
+
+        if (!hints.pickTarget || !point) {
+            return false;
+        }
+
+        const x = clamp(Math.round(point.x), 0, canvas.width - 1);
+        const y = clamp(Math.round(point.y), 0, canvas.height - 1);
+        const data = ctx.getImageData(x, y, 1, 1).data;
+        const hex = rgbToHex(data[0], data[1], data[2]);
+
+        if (hints.pickTarget === "background") {
+            hints.background = hex;
+            hints.backgroundEnabled = true;
+            const input = $("part1BackgroundColor");
+            if (input) {
+                input.value = hex;
+            }
+            toast(`배경 색상 지정: ${hex}`);
+        }
+
+        if (hints.pickTarget === "text") {
+            hints.text = hex;
+            hints.textEnabled = true;
+            const input = $("part1TextColor");
+            if (input) {
+                input.value = hex;
+            }
+            toast(`도형 내부 글자 색상 지정: ${hex}`);
+        }
+
+        hints.pickTarget = "";
+
+        if (box) {
+            box.classList.remove("is-picking-part1");
+        }
+
+        updateManualHintStatusV37();
+        return true;
+    }
+
+    function applyManualColorHintsToRoleMapV37(sourceImage, roleMap, width, height, stats) {
+        const hints = syncManualHintsFromInputsV37();
+
+        if (!hints.backgroundEnabled && !hints.textEnabled) {
+            return;
+        }
+
+        const data = sourceImage.data;
+        const tolerance = hints.tolerance;
+        const bg = hexToRgb(hints.background);
+        const text = hexToRgb(hints.text);
+        let textPixels = 0;
+        let bgPixels = 0;
+
+        if (hints.textEnabled) {
+            for (let i = 0; i < width * height; i += 1) {
+                const offset = i * 4;
+
+                if (data[offset + 3] < 10) {
+                    continue;
+                }
+
+                const pixel = {
+                    r: data[offset],
+                    g: data[offset + 1],
+                    b: data[offset + 2]
+                };
+
+                if (colorDistance(pixel, text) <= tolerance) {
+                    // 내부 숫자/문자를 기존 문자 제거 로직이 처리할 수 있게 WHITE 후보로 둔다.
+                    roleMap[i] = ROLE.WHITE;
+                    textPixels += 1;
+                }
+            }
+        }
+
+        if (hints.backgroundEnabled) {
+            bgPixels = markManualBackgroundComponentsV37(sourceImage, roleMap, width, height, bg, tolerance);
+        }
+
+        if (stats && stats.debug) {
+            if (hints.backgroundEnabled) {
+                stats.debug.push(`수동 배경색 제외: ${hints.background.toUpperCase()} / ${bgPixels}px`);
+            }
+
+            if (hints.textEnabled) {
+                stats.debug.push(`수동 글자색 제거 후보: ${hints.text.toUpperCase()} / ${textPixels}px`);
+            }
+        }
+    }
+
+    function markManualBackgroundComponentsV37(sourceImage, roleMap, width, height, target, tolerance) {
+        const data = sourceImage.data;
+        const visited = new Uint8Array(width * height);
+        const queue = [];
+        let changed = 0;
+        const maxArea = width * height;
+        const largeArea = Math.max(500, Math.floor(maxArea * 0.015));
+
+        function matches(index) {
+            const offset = index * 4;
+
+            if (data[offset + 3] < 10) {
+                return false;
+            }
+
+            const pixel = {
+                r: data[offset],
+                g: data[offset + 1],
+                b: data[offset + 2]
+            };
+
+            return colorDistance(pixel, target) <= tolerance;
+        }
+
+        for (let start = 0; start < width * height; start += 1) {
+            if (visited[start] || !matches(start)) {
+                continue;
+            }
+
+            const pixels = [];
+            let touchesBorder = false;
+            let minX = Infinity;
+            let minY = Infinity;
+            let maxX = -Infinity;
+            let maxY = -Infinity;
+
+            queue.length = 0;
+            queue.push(start);
+            visited[start] = 1;
+
+            while (queue.length > 0) {
+                const current = queue.pop();
+                const x = current % width;
+                const y = Math.floor(current / width);
+
+                pixels.push(current);
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
+
+                if (x <= 1 || y <= 1 || x >= width - 2 || y >= height - 2) {
+                    touchesBorder = true;
+                }
+
+                pushManualBgNeighborV37(queue, visited, matches, width, height, x + 1, y);
+                pushManualBgNeighborV37(queue, visited, matches, width, height, x - 1, y);
+                pushManualBgNeighborV37(queue, visited, matches, width, height, x, y + 1);
+                pushManualBgNeighborV37(queue, visited, matches, width, height, x, y - 1);
+            }
+
+            const area = pixels.length;
+            const boxW = maxX - minX + 1;
+            const boxH = maxY - minY + 1;
+            const isLargeBackground = area >= largeArea || boxW >= width * 0.42 || boxH >= height * 0.42;
+
+            // 배경색과 글자색이 같아도 내부 숫자는 살려야 하므로,
+            // 화면 가장자리와 연결되거나 큰 덩어리인 배경만 제외한다.
+            if (touchesBorder || isLargeBackground) {
+                for (const index of pixels) {
+                    roleMap[index] = ROLE.OUTER_WHITE;
+                }
+                changed += pixels.length;
+            }
+        }
+
+        return changed;
+    }
+
+    function pushManualBgNeighborV37(queue, visited, matches, width, height, x, y) {
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            return;
+        }
+
+        const index = y * width + x;
+
+        if (visited[index] || !matches(index)) {
+            return;
+        }
+
+        visited[index] = 1;
+        queue.push(index);
+    }
+
+    function runScanInference(sourceImage, width, height) {
+        const maps = [
+            scanBaseRoles(sourceImage, width, height, "normal"),
+            scanBaseRoles(sourceImage, width, height, "strict"),
+            scanBaseRoles(sourceImage, width, height, "relaxed"),
+            scanBaseRoles(sourceImage, width, height, "contrast")
+        ];
+
+        const merged = mergeRoleMaps(maps, width, height);
+        const stats = createEmptyStats(width, height);
+
+        applyManualColorHintsToRoleMapV37(sourceImage, merged, width, height, stats);
+
+        markOuterWhite(merged, width, height);
+
+        const firstText = removeInnerTextHoles(merged, width, height, stats, "1차");
+        const firstHoles = fillTinyNonSeatHoles(merged, width, height, stats, "1차");
+        const firstIslands = absorbSmallSeatIslands(merged, width, height, stats, "1차");
+        const firstMajority = majoritySeatCleanup(merged, width, height, stats, "1차");
+
+        applyManualColorHintsToRoleMapV37(sourceImage, merged, width, height, stats);
+        markOuterWhite(merged, width, height);
+
+        const secondText = removeInnerTextHoles(merged, width, height, stats, "2차");
+        const secondHoles = fillTinyNonSeatHoles(merged, width, height, stats, "2차");
+        const secondIslands = absorbSmallSeatIslands(merged, width, height, stats, "2차");
+        const secondMajority = majoritySeatCleanup(merged, width, height, stats, "2차");
+
+        const finalImage = buildOutputImage(sourceImage, merged, width, height, stats);
+
+        stats.textHoleRemoved += firstText + secondText;
+        stats.tinyHolesFilled += firstHoles + secondHoles;
+        stats.smallIslandsAbsorbed += firstIslands + secondIslands;
+        stats.majorityChanges += firstMajority + secondMajority;
+
+        return {
+            image: finalImage,
+            roleMap: merged,
+            stats
+        };
+    }
+
+    function onCanvasClick(event) {
+        const point = getCanvasPoint(event);
+
+        if (state.currentStep === 1 && point && samplePart1HintAtPointV37(point)) {
+            event.preventDefault();
+            return;
+        }
+
+        if (state.brush.pickColor) {
+            event.preventDefault();
+            if (point) {
+                sampleBrushColorAt(point);
+            }
+            return;
+        }
+
+        if (state.currentStep === 3 && point && state.brush.mode === "none") {
+            event.preventDefault();
+            extractMagicColorAtPointV27(point);
+            return;
+        }
+
+        if (state.brush.mode !== "none") {
+            event.preventDefault();
+            return;
+        }
+
+        if (state.finalPreview.enabled) {
+            event.preventDefault();
+
+            if (state.finalPreview.suppressClick) {
+                state.finalPreview.suppressClick = false;
+                return;
+            }
+
+            if (point) {
+                selectFinalRegionByClickV17(point, event.shiftKey || event.ctrlKey || event.metaKey);
+            }
+            return;
+        }
+
+        if (!state.region.enabled || !point) {
+            return;
+        }
+
+        event.preventDefault();
+        selectRegionByClick(point, event.shiftKey, event.ctrlKey || event.metaKey);
+    }
+
+    function shouldShowLoupeV37(event) {
+        if (!state.imageReady || !canvas.width || !canvas.height) {
+            return false;
+        }
+
+        if (event?.shiftKey) {
+            return true;
+        }
+
+        if (state.currentStep === 1) {
+            const hints = ensureManualHintsV37();
+            return Boolean(hints.pickTarget);
+        }
+
+        if (state.currentStep === 2) {
+            return state.brush.pickColor || state.brush.mode !== "none" || state.region.enabled;
+        }
+
+        if (state.currentStep === 3) {
+            return true;
+        }
+
+        if (state.currentStep === 4) {
+            return Boolean(state.finalPreview?.enabled);
+        }
+
+        return Boolean(event?.shiftKey);
+    }
+
+    function onCanvasMove(event) {
+        if (!state.imageReady || !sourceCanvas.width || !sourceCanvas.height) {
+            return;
+        }
+
+        const point = getCanvasPoint(event);
+        if (!point) {
+            hideLoupe();
+            return;
+        }
+
+        if (state.finalPreview.dragging && state.finalPreview.dragStart) {
+            event.preventDefault();
+            state.finalPreview.dragRect = normalizeCanvasRectV17(state.finalPreview.dragStart, point);
+            drawFinalPreviewOverlayV17();
+            updateLoupeV37(point, event, true);
+            return;
+        }
+
+        if (state.brush.pickColor) {
+            updateLoupeV37(point, event, true);
+            updateBrushCursor(point);
+            return;
+        }
+
+        updateBrushCursor(point);
+
+        if (state.brush.down && state.brush.mode !== "none") {
+            event.preventDefault();
+            paintBrushAt(point);
+            updateLoupeV37(point, event, true);
+            return;
+        }
+
+        if (shouldShowLoupeV37(event)) {
+            updateLoupeV37(point, event, true);
+        } else {
+            hideLoupe();
+        }
+    }
+
+    function updateLoupe(point, event) {
+        updateLoupeV37(point, event, shouldShowLoupeV37(event));
+    }
+
+    function updateLoupeV37(point, event, forceShow = false) {
+        const loupe = $("colorLoupe");
+
+        if (!loupe || !forceShow) {
+            hideLoupe();
+            return;
+        }
+
+        const x = clamp(Math.round(point.x), 0, canvas.width - 1);
+        const y = clamp(Math.round(point.y), 0, canvas.height - 1);
+        const data = ctx.getImageData(x, y, 1, 1).data;
+        const hex = rgbToHex(data[0], data[1], data[2]);
+
+        const chip = $("loupeChip");
+        if (chip) {
+            chip.style.background = hex;
+        }
+
+        setText("loupeHex", hex);
+        setText("loupePoint", `X ${x}, Y ${y}`);
+
+        drawLoupeCanvasV37(x, y);
+
+        loupe.classList.add("is-show");
+
+        const rect = box ? box.getBoundingClientRect() : canvas.getBoundingClientRect();
+        let left = event.clientX - rect.left + 18;
+        let top = event.clientY - rect.top + 18;
+
+        const loupeWidth = 205;
+        const loupeHeight = 112;
+        const maxLeft = Math.max(0, rect.width - loupeWidth - 8);
+        const maxTop = Math.max(0, rect.height - loupeHeight - 8);
+
+        if (left > maxLeft) {
+            left = event.clientX - rect.left - loupeWidth - 18;
+        }
+
+        if (top > maxTop) {
+            top = event.clientY - rect.top - loupeHeight - 18;
+        }
+
+        loupe.style.transform = `translate(${Math.max(4, left)}px, ${Math.max(4, top)}px)`;
+    }
+
+    function drawLoupeCanvasV37(centerX, centerY) {
+        const loupeCanvas = $("loupeCanvas");
+
+        if (!loupeCanvas) {
+            return;
+        }
+
+        const lctx = loupeCanvas.getContext("2d");
+        const sample = 15;
+        const scale = Math.floor(loupeCanvas.width / sample);
+        const half = Math.floor(sample / 2);
+
+        lctx.clearRect(0, 0, loupeCanvas.width, loupeCanvas.height);
+        lctx.imageSmoothingEnabled = false;
+
+        for (let yy = 0; yy < sample; yy += 1) {
+            for (let xx = 0; xx < sample; xx += 1) {
+                const sx = clamp(centerX + xx - half, 0, canvas.width - 1);
+                const sy = clamp(centerY + yy - half, 0, canvas.height - 1);
+                const data = ctx.getImageData(sx, sy, 1, 1).data;
+
+                lctx.fillStyle = rgbToHex(data[0], data[1], data[2]);
+                lctx.fillRect(xx * scale, yy * scale, scale, scale);
+            }
+        }
+
+        lctx.strokeStyle = "rgba(15,23,42,0.30)";
+        lctx.lineWidth = 1;
+
+        for (let i = 0; i <= sample; i += 1) {
+            const p = i * scale;
+            lctx.beginPath();
+            lctx.moveTo(p, 0);
+            lctx.lineTo(p, sample * scale);
+            lctx.stroke();
+
+            lctx.beginPath();
+            lctx.moveTo(0, p);
+            lctx.lineTo(sample * scale, p);
+            lctx.stroke();
+        }
+
+        const cx = half * scale;
+        const cy = half * scale;
+        lctx.strokeStyle = "#111827";
+        lctx.lineWidth = 2;
+        lctx.strokeRect(cx, cy, scale, scale);
+    }
+
+    function applyV37ManualControls() {
+        ensureManualHintsV37();
+
+        const bgInput = $("part1BackgroundColor");
+        const textInput = $("part1TextColor");
+        const tolerance = $("part1HintTolerance");
+
+        if (bgInput && !bgInput.dataset.boundV37) {
+            bgInput.dataset.boundV37 = "true";
+            bgInput.addEventListener("input", () => {
+                const hints = ensureManualHintsV37();
+                hints.backgroundEnabled = true;
+                syncManualHintsFromInputsV37();
+            });
+        }
+
+        if (textInput && !textInput.dataset.boundV37) {
+            textInput.dataset.boundV37 = "true";
+            textInput.addEventListener("input", () => {
+                const hints = ensureManualHintsV37();
+                hints.textEnabled = true;
+                syncManualHintsFromInputsV37();
+            });
+        }
+
+        if (tolerance && !tolerance.dataset.boundV37) {
+            tolerance.dataset.boundV37 = "true";
+            tolerance.addEventListener("input", syncManualHintsFromInputsV37);
+        }
+
+        const bgButton = $("pickPart1BackgroundColor");
+        if (bgButton && !bgButton.dataset.boundV37) {
+            bgButton.dataset.boundV37 = "true";
+            bgButton.addEventListener("click", (event) => {
+                event.preventDefault();
+                setPart1PickTargetV37("background");
+            });
+        }
+
+        const textButton = $("pickPart1TextColor");
+        if (textButton && !textButton.dataset.boundV37) {
+            textButton.dataset.boundV37 = "true";
+            textButton.addEventListener("click", (event) => {
+                event.preventDefault();
+                setPart1PickTargetV37("text");
+            });
+        }
+
+        syncManualHintsFromInputsV37();
+    }
+
+    setTimeout(applyV37ManualControls, 0);
+
+
+    // ============================================================================
+    // v38 patch: 파트5 색상 번호/HEX 깨짐 수정
+    // 원인: rgbToHex에 소수점 RGB가 들어가면서 #FE.5B... 형태의 깨진 문자열 생성
+    // 수정:
+    // - rgbToHex는 항상 정수 0~255로 반올림 후 변환
+    // - 파트5 색상 목록은 "1번 / #RRGGBB" 형태로 짧게 표시
+    // - 도면 위 번호는 색상마다 대표 구역 몇 개만 표시해서 글자 난잡함 제거
+    // ============================================================================
+
+    function rgbToHex(r, g, b) {
+        return `#${toHexV38(r)}${toHexV38(g)}${toHexV38(b)}`.toUpperCase();
+    }
+
+    function toHexV38(value) {
+        const number = Math.round(Number(value || 0));
+        return clamp(number, 0, 255).toString(16).padStart(2, "0");
+    }
+
+    function collectFinalColorGroupsV22() {
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const regions = ensureFinalRegionsForColorsV36();
+        const groups = [];
+
+        for (const region of regions) {
+            const pixels = Array.isArray(region.pixels) ? region.pixels : [];
+
+            if (pixels.length <= 0) {
+                continue;
+            }
+
+            const color = getDominantColorFromPixels(image, pixels);
+            let group = groups.find((item) => colorDistance(item.avg, color) <= 24);
+
+            if (!group) {
+                group = {
+                    r: 0,
+                    g: 0,
+                    b: 0,
+                    count: 0,
+                    pixels: [],
+                    components: [],
+                    avg: color
+                };
+                groups.push(group);
+            }
+
+            group.r += color.r * pixels.length;
+            group.g += color.g * pixels.length;
+            group.b += color.b * pixels.length;
+            group.count += pixels.length;
+            group.pixels.push(...pixels);
+            group.components.push({
+                ...region,
+                color,
+                colorHex: rgbToHex(color.r, color.g, color.b)
+            });
+            group.avg = {
+                r: group.r / Math.max(1, group.count),
+                g: group.g / Math.max(1, group.count),
+                b: group.b / Math.max(1, group.count)
+            };
+        }
+
+        return groups
+            .filter((group) => group.count >= 8)
+            .sort((a, b) => b.count - a.count)
+            .map((group) => {
+                const avg = {
+                    r: Math.round(group.r / group.count),
+                    g: Math.round(group.g / group.count),
+                    b: Math.round(group.b / group.count)
+                };
+
+                return {
+                    ...group,
+                    avg,
+                    hex: rgbToHex(avg.r, avg.g, avg.b)
+                };
+            });
+    }
+
+    function renderFinalColorListV22() {
+        const container = $("finalColorList");
+
+        if (!container) {
+            return;
+        }
+
+        if (!canvas.width || !canvas.height) {
+            container.innerHTML = `<div class="button-image-empty">캔버스가 없습니다.</div>`;
+            return;
+        }
+
+        const groups = collectFinalColorGroupsV22();
+        state.finalColorGroupsV22 = groups;
+
+        if (groups.length <= 0) {
+            container.innerHTML = `<div class="button-image-empty">정리할 색상이 없습니다. 구역 병합 단계로 돌아가 구역 실선을 먼저 확인하세요.</div>`;
+            clearOverlay();
+            return;
+        }
+
+        container.innerHTML = groups.map((group, index) => `
+            <div class="button-image-color-merge-item button-image-color-merge-item--v38" data-color-index="${index + 1}">
+                <span class="button-image-color-merge-no">${index + 1}</span>
+                <i style="background:${escapeHtml(group.hex)}"></i>
+                <div class="button-image-color-merge-main">
+                    <b>${index + 1}번</b>
+                    <small>${escapeHtml(group.hex)}</small>
+                </div>
+                <em>${group.components.length.toLocaleString()}구역</em>
+            </div>
+        `).join("");
+
+        drawFinalColorNumbersV36(groups);
+    }
+
+    function drawFinalColorNumbersV36(groups) {
+        clearOverlay();
+
+        if (!overlayCtx || !Array.isArray(groups)) {
+            return;
+        }
+
+        overlayCtx.save();
+        overlayCtx.textAlign = "center";
+        overlayCtx.textBaseline = "middle";
+        overlayCtx.font = "bold 12px sans-serif";
+
+        groups.forEach((group, groupIndex) => {
+            const number = String(groupIndex + 1);
+            const components = [...(group.components || [])]
+                .filter((component) => component.bounds && component.bounds.w >= 8 && component.bounds.h >= 8)
+                .sort((a, b) => (b.area || b.pixels?.length || 0) - (a.area || a.pixels?.length || 0))
+                .slice(0, 16);
+
+            for (const component of components) {
+                const b = component.bounds || {};
+                const x = Math.round(b.x + b.w / 2);
+                const y = Math.round(b.y + b.h / 2);
+
+                overlayCtx.fillStyle = "rgba(255,255,255,0.92)";
+                overlayCtx.strokeStyle = "rgba(15,23,42,0.68)";
+                overlayCtx.lineWidth = 1.6;
+                overlayCtx.beginPath();
+                overlayCtx.arc(x, y, 8, 0, Math.PI * 2);
+                overlayCtx.fill();
+                overlayCtx.stroke();
+
+                overlayCtx.fillStyle = "#111827";
+                overlayCtx.fillText(number, x, y + 0.3);
+            }
+        });
+
+        overlayCtx.restore();
+    }
+
+    function buildGeneratedRegionGroupsForSave() {
+        const items = collectRegionColorGroupsForSaveV34();
+
+        if (!items.length) {
+            return [];
+        }
+
+        return items.map((item, index) => {
+            const code = `R${index + 1}`;
+
+            return {
+                id: code,
+                name: `구역 ${code}`,
+                gradeName: code,
+                color: item.hex,
+                pixelCount: item.count,
+                bounds: item.bounds
+            };
+        });
+    }
+
+    function collectRegionColorGroupsForSaveV34() {
+        if (!canvas || !canvas.width || !canvas.height) {
+            return [];
+        }
+
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = image.data;
+        const width = canvas.width;
+        const height = canvas.height;
+        const buckets = new Map();
+
+        for (let i = 0; i < width * height; i += 1) {
+            const offset = i * 4;
+
+            if (data[offset + 3] < 10) {
+                continue;
+            }
+
+            const r = Math.round(data[offset]);
+            const g = Math.round(data[offset + 1]);
+            const b = Math.round(data[offset + 2]);
+            const key = rgbToHex(r, g, b);
+
+            let bucket = buckets.get(key);
+
+            if (!bucket) {
+                bucket = {
+                    hex: key,
+                    count: 0,
+                    minX: Infinity,
+                    minY: Infinity,
+                    maxX: -Infinity,
+                    maxY: -Infinity
+                };
+                buckets.set(key, bucket);
+            }
+
+            const x = i % width;
+            const y = Math.floor(i / width);
+
+            bucket.count += 1;
+            bucket.minX = Math.min(bucket.minX, x);
+            bucket.minY = Math.min(bucket.minY, y);
+            bucket.maxX = Math.max(bucket.maxX, x);
+            bucket.maxY = Math.max(bucket.maxY, y);
+        }
+
+        return [...buckets.values()]
+            .filter((bucket) => bucket.count >= 30)
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 100)
+            .map((bucket) => ({
+                hex: bucket.hex,
+                count: bucket.count,
+                bounds: {
+                    x: bucket.minX,
+                    y: bucket.minY,
+                    w: bucket.maxX - bucket.minX + 1,
+                    h: bucket.maxY - bucket.minY + 1
+                }
+            }));
+    }
+
+
+    // ============================================================================
+    // v39 patch: 파트1 허용범위 실시간 미리보기
+    // - 배경/글자 색상을 지정한 뒤 슬라이더를 움직이면 overlay 실선 범위 즉시 갱신
+    // - 단색화 실행 전에도 현재 허용범위가 어디까지 잡히는지 확인 가능
+    // ============================================================================
+
+    function schedulePart1HintPreviewV39() {
+        if (state.currentStep !== 1) {
+            return;
+        }
+
+        cancelAnimationFrame(state.__part1PreviewRafV39 || 0);
+        state.__part1PreviewRafV39 = requestAnimationFrame(() => {
+            drawPart1HintPreviewV39();
+        });
+    }
+
+    function syncManualHintsFromInputsV37() {
+        const hints = ensureManualHintsV37();
+        const bg = $("part1BackgroundColor");
+        const text = $("part1TextColor");
+        const tol = $("part1HintTolerance");
+
+        if (bg) {
+            hints.background = bg.value || hints.background;
+        }
+
+        if (text) {
+            hints.text = text.value || hints.text;
+        }
+
+        if (tol) {
+            hints.tolerance = Math.max(0, parseInt(tol.value || "28", 10));
+        }
+
+        const tolText = $("part1HintToleranceText");
+        if (tolText) {
+            tolText.textContent = String(hints.tolerance);
+        }
+
+        updateManualHintStatusV37();
+        schedulePart1HintPreviewV39();
+        return hints;
+    }
+
+    function updateManualHintStatusV37() {
+        const hints = ensureManualHintsV37();
+        const status = $("part1HintStatus");
+
+        if (!status) {
+            return;
+        }
+
+        const used = [];
+
+        if (hints.backgroundEnabled) {
+            used.push(`배경 ${hints.background.toUpperCase()}`);
+        }
+
+        if (hints.textEnabled) {
+            used.push(`글자 ${hints.text.toUpperCase()}`);
+        }
+
+        const previewCount = Number(state.__part1PreviewCountV39 || 0);
+
+        status.textContent = used.length > 0
+            ? `미리보기 적용 중: ${used.join(" / ")} / 허용범위 ${hints.tolerance} / ${previewCount}구역`
+            : "배경/글자 색상을 지정하면 슬라이더 변경 시 도면 위 실선 범위가 즉시 바뀝니다.";
+    }
+
+    function samplePart1HintAtPointV37(point) {
+        const hints = ensureManualHintsV37();
+
+        if (!hints.pickTarget || !point) {
+            return false;
+        }
+
+        const x = clamp(Math.round(point.x), 0, canvas.width - 1);
+        const y = clamp(Math.round(point.y), 0, canvas.height - 1);
+        const data = ctx.getImageData(x, y, 1, 1).data;
+        const hex = rgbToHex(data[0], data[1], data[2]);
+
+        if (hints.pickTarget === "background") {
+            hints.background = hex;
+            hints.backgroundEnabled = true;
+            const input = $("part1BackgroundColor");
+            if (input) {
+                input.value = hex;
+            }
+            toast(`배경 색상 지정: ${hex}`);
+        }
+
+        if (hints.pickTarget === "text") {
+            hints.text = hex;
+            hints.textEnabled = true;
+            const input = $("part1TextColor");
+            if (input) {
+                input.value = hex;
+            }
+            toast(`도형 내부 글자 색상 지정: ${hex}`);
+        }
+
+        hints.pickTarget = "";
+
+        if (box) {
+            box.classList.remove("is-picking-part1");
+        }
+
+        updateManualHintStatusV37();
+        drawPart1HintPreviewV39();
+        return true;
+    }
+
+    function drawPart1HintPreviewV39() {
+        if (state.currentStep !== 1 || !canvas.width || !canvas.height || !overlayCtx) {
+            return;
+        }
+
+        const hints = ensureManualHintsV37();
+
+        clearOverlay();
+
+        if (!hints.backgroundEnabled && !hints.textEnabled) {
+            state.__part1PreviewCountV39 = 0;
+            updateManualHintStatusV37();
+            return;
+        }
+
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const groups = [];
+
+        if (hints.backgroundEnabled) {
+            groups.push({
+                label: "배경",
+                color: hints.background,
+                stroke: "rgba(37, 99, 235, 0.95)",
+                fill: "rgba(37, 99, 235, 0.08)",
+                components: extractColorPreviewComponentsV39(
+                    image,
+                    canvas.width,
+                    canvas.height,
+                    hexToRgb(hints.background),
+                    hints.tolerance,
+                    "background"
+                )
+            });
+        }
+
+        if (hints.textEnabled) {
+            groups.push({
+                label: "글자",
+                color: hints.text,
+                stroke: "rgba(124, 58, 237, 0.98)",
+                fill: "rgba(124, 58, 237, 0.10)",
+                components: extractColorPreviewComponentsV39(
+                    image,
+                    canvas.width,
+                    canvas.height,
+                    hexToRgb(hints.text),
+                    hints.tolerance,
+                    "text"
+                )
+            });
+        }
+
+        let total = 0;
+
+        overlayCtx.save();
+
+        for (const group of groups) {
+            total += group.components.length;
+
+            overlayCtx.strokeStyle = group.stroke;
+            overlayCtx.fillStyle = group.fill;
+            overlayCtx.lineWidth = Math.max(1.4, 2 / Math.max(1, state.zoom));
+            overlayCtx.setLineDash([]);
+
+            for (const component of group.components) {
+                drawPreviewComponentOutlineV39(component, group.stroke);
+
+                const b = component.bounds;
+                overlayCtx.strokeStyle = group.stroke;
+                overlayCtx.strokeRect(b.x, b.y, b.w, b.h);
+            }
+        }
+
+        overlayCtx.restore();
+
+        state.__part1PreviewCountV39 = total;
+        updateManualHintStatusV37();
+    }
+
+    function extractColorPreviewComponentsV39(image, width, height, target, tolerance, type) {
+        const data = image.data;
+        const visited = new Uint8Array(width * height);
+        const queue = [];
+        const components = [];
+        const minArea = type === "text" ? 2 : 8;
+        const maxComponents = type === "text" ? 350 : 160;
+
+        function matches(index) {
+            const offset = index * 4;
+
+            if (data[offset + 3] < 10) {
+                return false;
+            }
+
+            const pixel = {
+                r: data[offset],
+                g: data[offset + 1],
+                b: data[offset + 2]
+            };
+
+            return colorDistance(pixel, target) <= tolerance;
+        }
+
+        for (let start = 0; start < width * height; start += 1) {
+            if (visited[start] || !matches(start)) {
+                continue;
+            }
+
+            const pixels = [];
+            const bounds = {
+                minX: Infinity,
+                minY: Infinity,
+                maxX: -Infinity,
+                maxY: -Infinity
+            };
+
+            let touchesBorder = false;
+
+            queue.length = 0;
+            queue.push(start);
+            visited[start] = 1;
+
+            while (queue.length > 0) {
+                const current = queue.pop();
+                const x = current % width;
+                const y = Math.floor(current / width);
+
+                pixels.push(current);
+                bounds.minX = Math.min(bounds.minX, x);
+                bounds.minY = Math.min(bounds.minY, y);
+                bounds.maxX = Math.max(bounds.maxX, x);
+                bounds.maxY = Math.max(bounds.maxY, y);
+
+                if (x <= 1 || y <= 1 || x >= width - 2 || y >= height - 2) {
+                    touchesBorder = true;
+                }
+
+                pushPreviewNeighborV39(queue, visited, matches, width, height, x + 1, y);
+                pushPreviewNeighborV39(queue, visited, matches, width, height, x - 1, y);
+                pushPreviewNeighborV39(queue, visited, matches, width, height, x, y + 1);
+                pushPreviewNeighborV39(queue, visited, matches, width, height, x, y - 1);
+                pushPreviewNeighborV39(queue, visited, matches, width, height, x + 1, y + 1);
+                pushPreviewNeighborV39(queue, visited, matches, width, height, x - 1, y - 1);
+                pushPreviewNeighborV39(queue, visited, matches, width, height, x + 1, y - 1);
+                pushPreviewNeighborV39(queue, visited, matches, width, height, x - 1, y + 1);
+            }
+
+            if (pixels.length < minArea) {
+                continue;
+            }
+
+            const w = bounds.maxX - bounds.minX + 1;
+            const h = bounds.maxY - bounds.minY + 1;
+            const area = pixels.length;
+            const fillRatio = area / Math.max(1, w * h);
+
+            // 배경은 가장자리 연결/큰 덩어리 위주로 보여주되,
+            // 관리자가 색 범위 확인할 수 있게 작은 내부 후보도 일부 남긴다.
+            const keep =
+                type === "text"
+                    ? area <= Math.max(900, width * height * 0.006)
+                    : touchesBorder ||
+                      area >= Math.max(100, width * height * 0.0012) ||
+                      (w >= 14 && h >= 14 && fillRatio >= 0.12);
+
+            if (!keep) {
+                continue;
+            }
+
+            components.push({
+                pixels,
+                pixelSet: new Set(pixels),
+                area,
+                touchesBorder,
+                bounds: {
+                    x: bounds.minX,
+                    y: bounds.minY,
+                    w,
+                    h
+                }
+            });
+        }
+
+        components.sort((a, b) => {
+            if (a.touchesBorder !== b.touchesBorder) {
+                return a.touchesBorder ? -1 : 1;
+            }
+
+            return b.area - a.area;
+        });
+
+        return components.slice(0, maxComponents);
+    }
+
+    function pushPreviewNeighborV39(queue, visited, matches, width, height, x, y) {
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            return;
+        }
+
+        const index = y * width + x;
+
+        if (visited[index] || !matches(index)) {
+            return;
+        }
+
+        visited[index] = 1;
+        queue.push(index);
+    }
+
+    function drawPreviewComponentOutlineV39(component, color) {
+        if (!component || !component.pixelSet || !component.pixels) {
+            return;
+        }
+
+        const width = canvas.width;
+        const height = canvas.height;
+        const set = component.pixelSet;
+        const stride = Math.max(1, Math.floor(component.pixels.length / 50000));
+
+        overlayCtx.fillStyle = color;
+
+        for (let i = 0; i < component.pixels.length; i += stride) {
+            const index = component.pixels[i];
+            const x = index % width;
+            const y = Math.floor(index / width);
+
+            const edge =
+                x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1 ||
+                !set.has(index - 1) ||
+                !set.has(index + 1) ||
+                !set.has(index - width) ||
+                !set.has(index + width);
+
+            if (edge) {
+                overlayCtx.fillRect(x, y, 1.2, 1.2);
+            }
+        }
+    }
+
+    function setStep(step) {
+        const nextStep = Number(step) || 1;
+        state.currentStep = nextStep;
+
+        if (nextStep > 1 && !state.hasResult) {
+            state.currentStep = 1;
+            toast("먼저 파트 1에서 단색화 이미지를 생성하세요.");
+            return;
+        }
+
+        if (nextStep !== 4) {
+            state.finalPreview.enabled = false;
+            state.finalPreview.dragging = false;
+            state.finalPreview.dragRect = null;
+        }
+
+        document.querySelectorAll(".button-image-step").forEach((section) => {
+            const itemStep = Number(section.dataset.step);
+            const header = section.querySelector(".button-image-step__header");
+            const status = section.querySelector(".button-image-step__status");
+
+            section.classList.toggle("is-active", itemStep === nextStep);
+            section.classList.toggle("is-done", itemStep < nextStep);
+
+            if (header) {
+                header.classList.toggle("active", itemStep === nextStep);
+            }
+
+            if (status) {
+                if (itemStep < nextStep) {
+                    status.textContent = "완료";
+                } else if (itemStep === nextStep) {
+                    status.textContent = nextStep === 1
+                        ? "진행중"
+                        : nextStep === 2
+                            ? "보정중"
+                            : nextStep === 3
+                                ? "추출중"
+                                : nextStep === 4
+                                    ? "병합중"
+                                    : "확인";
+                } else {
+                    status.textContent = "대기";
+                }
+            }
+        });
+
+        enableRegionSelectTool(false);
+        setColorPickerMode(false, { silent: true });
+        setBrushMode("none", { silent: true });
+
+        if (nextStep === 1) {
+            drawPart1HintPreviewV39();
+            updateRegionSelectionText();
+            return;
+        }
+
+        if (nextStep === 2) {
+            updateBrushSize();
+            drawLiveRegionPreviewV18();
+            updateRegionSelectionText();
+            return;
+        }
+
+        if (nextStep === 3) {
+            updateStep3ToleranceTextV27();
+            drawAllStep3OutlinesV33();
+            updateRegionSelectionText();
+            return;
+        }
+
+        if (nextStep === 4) {
+            showFinalSavePreview();
+            return;
+        }
+
+        if (nextStep === 5) {
+            state.finalPreview.enabled = false;
+            rebuildFinalPreviewRegionsV17();
+            renderFinalColorListV22();
+        }
+    }
+
+    function applyV39Part1PreviewBindings() {
+        const ids = [
+            "part1BackgroundColor",
+            "part1TextColor",
+            "part1HintTolerance"
+        ];
+
+        ids.forEach((id) => {
+            const element = $(id);
+
+            if (!element || element.dataset.boundV39) {
+                return;
+            }
+
+            element.dataset.boundV39 = "true";
+            element.addEventListener("input", () => {
+                const hints = ensureManualHintsV37();
+
+                if (id === "part1BackgroundColor") {
+                    hints.backgroundEnabled = true;
+                }
+
+                if (id === "part1TextColor") {
+                    hints.textEnabled = true;
+                }
+
+                syncManualHintsFromInputsV37();
+            });
+        });
+
+        syncManualHintsFromInputsV37();
+    }
+
+    setTimeout(applyV39Part1PreviewBindings, 0);
+
+
+    function bindV40PreprocessContinue() {
+        const btn = $("preprocessContinue");
+
+        if (!btn || btn.dataset.boundV40) {
+            return;
+        }
+
+        btn.dataset.boundV40 = "true";
+        btn.addEventListener("click", () => {
+            const target = $("part1");
+            const header = $("tab1");
+
+            if (header && typeof header.click === "function") {
+                header.click();
+            }
+
+            if (target && typeof target.scrollIntoView === "function") {
+                target.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        });
+    }
+
+    setTimeout(bindV40PreprocessContinue, 0);
+
 })();

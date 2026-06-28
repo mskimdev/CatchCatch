@@ -1578,96 +1578,108 @@
     }
 
     function buildTempSeatJson() {
-        const result = [];
+    const result = [];
+    const visualGroups = state.visualGroups && state.visualGroups.length > 0
+        ? state.visualGroups
+        : buildVisualGroups();
+    const visualGroupBySourceId = buildVisualGroupIdMap(visualGroups);
 
-        Object.entries(state.seatsBySection || {}).forEach(([sectionId, seats]) => {
-            const section = state.seatSections.find((item) => item.id === sectionId) || {};
-            const region = state.colorRegions.find((item) => item.id === sectionId) || section;
-            const floor = safeSeatPart(region.floor || section.floor || "1");
-            const sectionName = safeSeatPart(region.label || region.name || section.label || section.name || sectionId);
-            const grade = safeSeatPart(region.grade || section.grade || "A");
+    Object.entries(state.seatsBySection || {}).forEach(([sourceSectionId, seats]) => {
+        const section = state.seatSections.find((item) => item.id === sourceSectionId) || {};
+        const region = state.colorRegions.find((item) => item.id === sourceSectionId) || section;
+        const finalSectionId = visualGroupBySourceId.get(String(sourceSectionId)) || String(sourceSectionId);
+        const floor = safeSeatPart(region.floor || section.floor || "1");
+        const sectionName = safeSeatPart(region.label || region.name || section.label || section.name || sourceSectionId);
+        const grade = safeSeatPart(region.grade || section.grade || "UNASSIGNED");
 
-            (seats || []).forEach((seat) => {
-                const row = safeSeatPart(seat.row || 1);
-                const col = safeSeatPart(seat.col || 1);
-                const status = safeSeatPart(seat.status || "AVAILABLE");
-                const x = round(seat.x || 0);
-                const y = round(seat.y || 0);
-                const size = round(seat.size || section.seatSize || 10);
-                const angle = round(seat.angle || section.gridAngle || section.angle || 0);
-                const id = `${floor}-${sectionName}-${row}-${col}-${grade}-${status}-${x}-${y}-${size}-${angle}`;
+        (seats || []).forEach((seat) => {
+            if (String(seat.status || "").toUpperCase() === "REMOVED") {
+                return;
+            }
 
-                result.push({
-                    id,
-                    floor,
-                    section: sectionName,
-                    row,
-                    col,
-                    grade,
-                    status,
-                    x,
-                    y,
-                    size,
-                    angle,
-                    sectionId
-                });
+            const row = safeSeatPart(seat.row || 1);
+            const col = safeSeatPart(seat.col || 1);
+            const status = safeSeatPart(seat.status || "AVAILABLE");
+            const x = round(seat.x || 0);
+            const y = round(seat.y || 0);
+            const size = round(seat.size || section.seatSize || Math.min(seat.w || 0, seat.h || 0) || 10);
+            const angle = round(seat.angle ?? section.angle ?? section.gridAngle ?? 0);
+            const id = `${floor}-${sectionName}-${row}-${col}-${grade}-${status}-${x}-${y}-${size}-${angle}`;
+
+            result.push({
+                id,
+                sectionId: finalSectionId,
+                sourceSectionId: String(sourceSectionId),
+                floor,
+                section: sectionName,
+                row,
+                col,
+                grade,
+                status,
+                x,
+                y,
+                size,
+                angle,
+                w: round(seat.w || seat.width || size),
+                h: round(seat.h || seat.height || size)
             });
         });
+    });
 
-        return result;
-    }
+    return result;
+}
 
     function buildTempSectionJson() {
-        const sourceGroups = state.visualGroups && state.visualGroups.length > 0
-            ? state.visualGroups
-            : buildVisualGroups();
+    const sourceGroups = state.visualGroups && state.visualGroups.length > 0
+        ? state.visualGroups
+        : buildVisualGroups();
 
-        return sourceGroups.map((group, index) => {
-            const bbox = group.bbox || getBbox((group.polygons || []).flat());
-            const label = group.label || `도형 ${index + 1}`;
-            const polygon = getRepresentativeGroupPolygon(group);
-            const seatCount = (group.seatIds || []).length;
-
-            return {
-                id: group.id || `vg-${index + 1}`,
-                name: label,
-                label,
-                floor: "1",
-                grade: "A",
-                color: group.color || "#d9d9d9",
-                sectionIds: group.sectionIds || [],
-                seatIds: group.seatIds || [],
-                seatCount,
-                polygon,
-                polygons: group.polygons || [],
-                bbox,
-                button: {
-                    x: round(bbox.x + bbox.w / 2),
-                    y: round(bbox.y + bbox.h / 2),
-                    w: round(bbox.w),
-                    h: round(bbox.h),
-                    xPercent: round(((bbox.x + bbox.w / 2) / Math.max(1, state.width)) * 100),
-                    yPercent: round(((bbox.y + bbox.h / 2) / Math.max(1, state.height)) * 100),
-                    wPercent: round((bbox.w / Math.max(1, state.width)) * 100),
-                    hPercent: round((bbox.h / Math.max(1, state.height)) * 100),
-                    angle: 0,
-                    label,
-                    color: group.color || "#d9d9d9"
-                }
-            };
-        });
-    }
-
-    function getRepresentativeGroupPolygon(group) {
-        const polygons = group.polygons || [];
-
-        if (polygons.length === 1) {
-            return clonePoints(polygons[0]);
-        }
-
+    return sourceGroups.map((group, index) => {
+        const polygons = normalizeGroupPolygons(group);
         const points = polygons.flat();
         const bbox = group.bbox || getBbox(points);
+        const label = group.label || `도형 ${index + 1}`;
+        const sectionIds = (group.sectionIds || group.sourceRegionIds || []).map((id) => String(id));
+        const seatCount = sectionIds.reduce((sum, sectionId) => {
+            return sum + ((state.seatsBySection && state.seatsBySection[sectionId]) || []).length;
+        }, 0);
+        const polygon = getRepresentativeGroupPolygon({ ...group, polygons, bbox });
 
+        return {
+            id: group.id || `vg-${index + 1}`,
+            name: label,
+            label,
+            floor: "1",
+            grade: group.grade || "TEMP",
+            color: group.color || "#d9d9d9",
+            sectionIds,
+            sourceRegionIds: sectionIds,
+            seatCount,
+            polygon,
+            polygons,
+            bbox,
+            button: {
+                x: round(bbox.x + bbox.w / 2),
+                y: round(bbox.y + bbox.h / 2),
+                w: round(bbox.w),
+                h: round(bbox.h),
+                xPercent: round(((bbox.x + bbox.w / 2) / Math.max(1, state.width)) * 100),
+                yPercent: round(((bbox.y + bbox.h / 2) / Math.max(1, state.height)) * 100),
+                wPercent: round((bbox.w / Math.max(1, state.width)) * 100),
+                hPercent: round((bbox.h / Math.max(1, state.height)) * 100),
+                angle: round(group.angle || 0),
+                label,
+                color: group.color || "#d9d9d9"
+            }
+        };
+    });
+}
+
+    function getRepresentativeGroupPolygon(group) {
+    const polygons = normalizeGroupPolygons(group);
+
+    if (polygons.length <= 0) {
+        const bbox = group.bbox || { x: 0, y: 0, w: 0, h: 0 };
         return [
             { x: round(bbox.x), y: round(bbox.y) },
             { x: round(bbox.x + bbox.w), y: round(bbox.y) },
@@ -1675,6 +1687,190 @@
             { x: round(bbox.x), y: round(bbox.y + bbox.h) }
         ];
     }
+
+    // polygon은 대표 1개만 넣는다. 여러 조각은 polygons에 따로 보관한다.
+    // bbox 사각형으로 만들면 예매 화면에서 괴랄한 직사각형이 나오므로 금지.
+    return clonePoints(polygons.slice().sort((a, b) => polygonAreaAbs(b) - polygonAreaAbs(a))[0]);
+}
+
+function buildVisualGroupIdMap(visualGroups) {
+    const map = new Map();
+
+    (visualGroups || []).forEach((group, index) => {
+        const groupId = String(group.id || `vg-${index + 1}`);
+        const ids = group.sectionIds || group.sourceRegionIds || group.regionIds || [];
+
+        ids.forEach((id) => {
+            map.set(String(id), groupId);
+        });
+
+        map.set(groupId, groupId);
+    });
+
+    return map;
+}
+
+function normalizeGroupPolygons(group) {
+    if (!group) {
+        return [];
+    }
+
+    if (Array.isArray(group.polygons) && group.polygons.length > 0) {
+        return group.polygons
+            .filter((polygon) => Array.isArray(polygon) && polygon.length >= 3)
+            .map((polygon) => polygon.map((point) => ({ x: round(point.x), y: round(point.y) })));
+    }
+
+    if (Array.isArray(group.polygon) && group.polygon.length >= 3) {
+        return [clonePoints(group.polygon)];
+    }
+
+    return [];
+}
+
+function polygonAreaAbs(points) {
+    if (!Array.isArray(points) || points.length < 3) {
+        return 0;
+    }
+
+    let sum = 0;
+
+    for (let i = 0; i < points.length; i += 1) {
+        const a = points[i];
+        const b = points[(i + 1) % points.length];
+        sum += (a.x * b.y) - (b.x * a.y);
+    }
+
+    return Math.abs(sum / 2);
+}
+
+function buildComponentContourPolygon(component, fallbackBbox) {
+    const pixels = component.pixels || [];
+
+    if (pixels.length < 12) {
+        return bboxToPolygon(fallbackBbox);
+    }
+
+    const pixelSet = new Set(pixels);
+    const boundary = [];
+
+    pixels.forEach((index) => {
+        const x = index % state.width;
+        const y = Math.floor(index / state.width);
+        const left = x <= 0 || !pixelSet.has(index - 1);
+        const right = x >= state.width - 1 || !pixelSet.has(index + 1);
+        const top = y <= 0 || !pixelSet.has(index - state.width);
+        const bottom = y >= state.height - 1 || !pixelSet.has(index + state.width);
+
+        if (!(left || right || top || bottom)) {
+            return;
+        }
+
+        if (left || top) boundary.push({ x, y });
+        if (right || top) boundary.push({ x: x + 1, y });
+        if (right || bottom) boundary.push({ x: x + 1, y: y + 1 });
+        if (left || bottom) boundary.push({ x, y: y + 1 });
+    });
+
+    if (boundary.length < 3) {
+        return bboxToPolygon(fallbackBbox);
+    }
+
+    const hull = buildConvexHull(boundary);
+    const tolerance = Math.max(1.2, Math.min(4, Math.max(fallbackBbox.w, fallbackBbox.h) / 80));
+    const simplified = simplifyClosedPolygon(hull, tolerance);
+    const polygon = simplified.length >= 3 ? simplified : hull;
+    const area = polygonAreaAbs(polygon);
+    const bboxArea = Math.max(1, fallbackBbox.w * fallbackBbox.h);
+
+    if (area <= 1 || area > bboxArea * 1.35) {
+        return buildComponentOrientedPolygon(component, fallbackBbox);
+    }
+
+    return polygon.map((point) => ({ x: round(point.x), y: round(point.y) }));
+}
+
+function buildConvexHull(points) {
+    const unique = Array.from(new Map(points.map((point) => [`${round(point.x)}:${round(point.y)}`, { x: round(point.x), y: round(point.y) }])).values())
+        .sort((a, b) => a.x === b.x ? a.y - b.y : a.x - b.x);
+
+    if (unique.length <= 3) {
+        return unique;
+    }
+
+    const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+    const lower = [];
+    const upper = [];
+
+    unique.forEach((point) => {
+        while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], point) <= 0) {
+            lower.pop();
+        }
+        lower.push(point);
+    });
+
+    for (let i = unique.length - 1; i >= 0; i -= 1) {
+        const point = unique[i];
+        while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], point) <= 0) {
+            upper.pop();
+        }
+        upper.push(point);
+    }
+
+    lower.pop();
+    upper.pop();
+
+    return lower.concat(upper);
+}
+
+function simplifyClosedPolygon(points, tolerance) {
+    if (!Array.isArray(points) || points.length <= 8) {
+        return points || [];
+    }
+
+    const closed = points.concat([points[0]]);
+    const simplified = simplifyRdp(closed, tolerance).slice(0, -1);
+    return simplified.length >= 3 ? simplified : points;
+}
+
+function simplifyRdp(points, epsilon) {
+    if (points.length <= 2) {
+        return points;
+    }
+
+    let maxDistance = 0;
+    let index = 0;
+    const first = points[0];
+    const last = points[points.length - 1];
+
+    for (let i = 1; i < points.length - 1; i += 1) {
+        const distance = pointLineDistance(points[i], first, last);
+
+        if (distance > maxDistance) {
+            index = i;
+            maxDistance = distance;
+        }
+    }
+
+    if (maxDistance > epsilon) {
+        const left = simplifyRdp(points.slice(0, index + 1), epsilon);
+        const right = simplifyRdp(points.slice(index), epsilon);
+        return left.slice(0, -1).concat(right);
+    }
+
+    return [first, last];
+}
+
+function pointLineDistance(point, start, end) {
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+
+    if (dx === 0 && dy === 0) {
+        return Math.hypot(point.x - start.x, point.y - start.y);
+    }
+
+    return Math.abs(dy * point.x - dx * point.y + end.x * start.y - end.y * start.x) / Math.hypot(dx, dy);
+}
 
     async function saveTempSeatmapToServer(seats, sections, imageDataUrl) {
         try {
@@ -2104,27 +2300,32 @@
     }
 
     function createRegionFromComponent(component) {
-        const color = averageComponentColor(component);
-        const bbox = {
-            x: component.minX,
-            y: component.minY,
-            w: component.width,
-            h: component.height
-        };
+    const color = averageComponentColor(component);
+    const bbox = {
+        x: component.minX,
+        y: component.minY,
+        w: component.width,
+        h: component.height
+    };
+    const maskSpans = buildComponentSpans(component);
 
-        return {
-            id: "",
-            name: "",
-            label: "",
-            floor: "1",
-            grade: getDefaultGrade(component.role),
-            color,
-            role: component.role,
-            roleName: ROLE_NAME[component.role] || "좌석",
-            bbox,
-            polygon: buildComponentOrientedPolygon(component, bbox)
-        };
-    }
+    return {
+        id: "",
+        name: "",
+        label: "",
+        floor: "1",
+        grade: getDefaultGrade(component.role),
+        color,
+        role: component.role,
+        roleName: ROLE_NAME[component.role] || "좌석",
+        bbox,
+        rawBbox: { ...bbox },
+        // 실제 색상 마스크 외곽을 단순화한 polygon이다.
+        // bbox 4각형으로 저장하면 예매 화면에서 사각형 덩어리가 되므로 여기서 막는다.
+        polygon: buildComponentContourPolygon(component, bbox),
+        maskSpans
+    };
+}
 
     function buildComponentOrientedPolygon(component, fallbackBbox) {
         const pixels = component.pixels || [];
@@ -2828,30 +3029,32 @@
     // ============================================================================
 
     function createRegionFromComponent(component) {
-        const color = averageComponentColor(component);
-        const bbox = {
-            x: component.minX,
-            y: component.minY,
-            w: component.width,
-            h: component.height
-        };
+    const color = averageComponentColor(component);
+    const bbox = {
+        x: component.minX,
+        y: component.minY,
+        w: component.width,
+        h: component.height
+    };
+    const maskSpans = buildComponentSpans(component);
 
-        return {
-            id: "",
-            name: "",
-            label: "",
-            floor: "1",
-            grade: getDefaultGrade(component.role),
-            color,
-            role: component.role,
-            roleName: ROLE_NAME[component.role] || "좌석",
-            bbox,
-            // angle 계산용 외곽은 유지하되, 좌석 생성/깔끔화 판정은 maskSpans를 우선 사용한다.
-            polygon: buildComponentOrientedPolygon(component, bbox),
-            rawBbox: { ...bbox },
-            maskSpans: buildComponentSpans(component)
-        };
-    }
+    return {
+        id: "",
+        name: "",
+        label: "",
+        floor: "1",
+        grade: getDefaultGrade(component.role),
+        color,
+        role: component.role,
+        roleName: ROLE_NAME[component.role] || "좌석",
+        bbox,
+        rawBbox: { ...bbox },
+        // 실제 색상 마스크 외곽을 단순화한 polygon이다.
+        // bbox 4각형으로 저장하면 예매 화면에서 사각형 덩어리가 되므로 여기서 막는다.
+        polygon: buildComponentContourPolygon(component, bbox),
+        maskSpans
+    };
+}
 
     function buildComponentSpans(component) {
         const byRow = new Map();
@@ -3151,39 +3354,46 @@
     }
 
     function drawRegionMaskSolid(region, color) {
-        solidCtx.save();
-        solidCtx.fillStyle = color || region.color || "#d9d9d9";
+    solidCtx.save();
+    solidCtx.fillStyle = color || region.color || "#d9d9d9";
 
-        if (Array.isArray(region?.maskSpans) && region.maskSpans.length > 0) {
-            region.maskSpans.forEach((row) => {
-                const y = Number(row.y);
-                (row.ranges || []).forEach((range) => {
-                    const x1 = Number(range[0]);
-                    const x2 = Number(range[1]);
-                    solidCtx.fillRect(x1, y, Math.max(1, x2 - x1 + 1), 1);
-                });
-            });
+    const polygons = normalizeGroupPolygons(region).length > 0
+        ? normalizeGroupPolygons(region)
+        : [region.polygon || []];
 
-            solidCtx.restore();
+    let drawn = false;
+
+    polygons.forEach((polygon) => {
+        if (!polygon || polygon.length < 3) {
             return;
         }
 
-        const polygon = region.polygon || [];
+        solidCtx.beginPath();
+        solidCtx.moveTo(polygon[0].x, polygon[0].y);
 
-        if (polygon.length >= 3) {
-            solidCtx.beginPath();
-            solidCtx.moveTo(polygon[0].x, polygon[0].y);
-
-            for (let i = 1; i < polygon.length; i += 1) {
-                solidCtx.lineTo(polygon[i].x, polygon[i].y);
-            }
-
-            solidCtx.closePath();
-            solidCtx.fill();
+        for (let i = 1; i < polygon.length; i += 1) {
+            solidCtx.lineTo(polygon[i].x, polygon[i].y);
         }
 
-        solidCtx.restore();
+        solidCtx.closePath();
+        solidCtx.fill();
+        drawn = true;
+    });
+
+    // polygon 생성 실패 시에만 원본 maskSpans를 fallback으로 사용한다.
+    if (!drawn && Array.isArray(region?.maskSpans) && region.maskSpans.length > 0) {
+        region.maskSpans.forEach((row) => {
+            const y = Number(row.y);
+            (row.ranges || []).forEach((range) => {
+                const x1 = Number(range[0]);
+                const x2 = Number(range[1]);
+                solidCtx.fillRect(x1, y, Math.max(1, x2 - x1 + 1), 1);
+            });
+        });
     }
+
+    solidCtx.restore();
+}
 
     // =====================================================================
     // v11 override: 같은 구역 내부 좌석 간격 0px / 개인 점유칸 기준 배치

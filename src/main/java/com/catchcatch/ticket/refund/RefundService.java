@@ -1,6 +1,6 @@
 package com.catchcatch.ticket.refund;
 
-import com.catchcatch.ticket.booking.BookingService;
+import com.catchcatch.ticket.booking.service.BookingService;
 import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.notification.service.NotificationDispatcher;
 import com.catchcatch.ticket.payment.*;
@@ -20,7 +20,7 @@ public class RefundService {
     private final RefundRepository refundRepository;
     private final PaymentRepository paymentRepository;
     private final PaymentService paymentService;
-    private final BookingService bookingService;
+    private final com.catchcatch.ticket.booking.service.BookingService bookingService;
     private final com.catchcatch.ticket.point.PointHistoryRepository pointHistoryRepository;
     private final PortOneService portOneService;
     private final NotificationDispatcher notificationDispatcher;

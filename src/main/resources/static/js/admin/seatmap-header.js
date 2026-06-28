@@ -130,17 +130,20 @@
             sectionMap.set(String(section.id || section.name || section.label || ""), section);
         });
 
+        const visualGroups = source.visualGroups || [];
         const result = [];
 
-        Object.entries(source.seatsBySection).forEach(([sectionId, seats]) => {
-            const section = sectionMap.get(String(sectionId)) || { id: sectionId, name: sectionId, label: sectionId };
+        Object.entries(source.seatsBySection).forEach(([sourceSectionId, seats]) => {
+            const visualGroup = findVisualGroupBySourceSectionId(visualGroups, sourceSectionId);
+            const finalSectionId = visualGroup?.id || sourceSectionId;
+            const section = sectionMap.get(String(sourceSectionId)) || visualGroup || { id: sourceSectionId, name: sourceSectionId, label: sourceSectionId };
 
             normalizeArray(seats).forEach((seat) => {
                 if (String(seat.status || "").toUpperCase() === "REMOVED") {
                     return;
                 }
 
-                const normalized = normalizeSeatForSave(seat, section, sectionId);
+                const normalized = normalizeSeatForSave(seat, section, finalSectionId, sourceSectionId);
                 result.push(normalized);
             });
         });
@@ -148,12 +151,12 @@
         return result;
     }
 
-    function normalizeSeatForSave(seat, section, sectionId) {
+    function normalizeSeatForSave(seat, section, finalSectionId, sourceSectionId) {
         const floor = cleanIdPart(seat.floor || section.floor || "1");
-        const sectionName = cleanIdPart(seat.section || seat.sectionName || section.label || section.name || sectionId || "A");
+        const sectionName = cleanIdPart(seat.section || seat.sectionName || section.label || section.name || sourceSectionId || finalSectionId || "A");
         const row = cleanIdPart(seat.row || seat.seatRow || 1);
         const col = cleanIdPart(seat.col || seat.no || seat.seatCol || 1);
-        const grade = cleanIdPart(seat.grade || section.grade || "TEMP");
+        const grade = cleanIdPart(seat.grade || section.grade || "UNASSIGNED");
         const status = cleanIdPart(seat.status || "AVAILABLE");
         const x = roundNumber(seat.x);
         const y = roundNumber(seat.y);
@@ -163,6 +166,8 @@
 
         return {
             id,
+            sectionId: String(finalSectionId),
+            sourceSectionId: String(sourceSectionId || finalSectionId),
             floor,
             section: sectionName,
             row: Number(row) || row,
@@ -172,7 +177,9 @@
             x,
             y,
             size,
-            angle
+            angle,
+            w: roundNumber(seat.w || seat.width || seat.size || size),
+            h: roundNumber(seat.h || seat.height || seat.size || size)
         };
     }
 
@@ -182,13 +189,14 @@
             : source.sections;
 
         return visualGroups.map((item, index) => {
-            const polygon = getSectionPolygon(item);
-            const bbox = getPolygonBbox(polygon);
+            const polygons = getSectionPolygons(item);
+            const polygon = polygons[0] || getSectionPolygon(item);
+            const bbox = getPolygonBbox(polygons.flat().length ? polygons.flat() : polygon);
             const layout = source.layoutsBySection[item.id] || item.layout || {};
-            const seatIds = getSeatIdsForSectionLike(item, source.seatsBySection);
             const label = item.label || item.name || (item.id ? String(item.id) : `구역 ${index + 1}`);
             const color = item.color || item.renderColor || "#d9d9d9";
             const angle = roundNumber(item.angle ?? layout.angle ?? 0);
+            const sectionIds = normalizeArray(item.sectionIds || item.sourceRegionIds || item.sections || item.regionIds || item.id);
 
             return {
                 id: item.id || `vg-${index + 1}`,
@@ -197,7 +205,10 @@
                 floor: item.floor || "1",
                 grade: item.grade || "TEMP",
                 color,
+                sectionIds,
+                sourceRegionIds: sectionIds,
                 polygon,
+                polygons,
                 bbox,
                 button: {
                     x: roundNumber(bbox.x + bbox.w / 2),
@@ -211,31 +222,32 @@
                     angle,
                     label,
                     color
-                },
-                sectionIds: normalizeArray(item.sectionIds || item.sections || item.regionIds || item.id),
-                seatIds
+                }
             };
         });
     }
 
-    function getSeatIdsForSectionLike(item, seatsBySection) {
-        if (Array.isArray(item.seatIds)) {
-            return item.seatIds;
+    function findVisualGroupBySourceSectionId(visualGroups, sectionId) {
+        const key = String(sectionId || "");
+
+        return normalizeArray(visualGroups).find((group) => {
+            const ids = normalizeArray(group.sectionIds || group.sourceRegionIds || group.regionIds || []);
+            return ids.map((value) => String(value)).includes(key) || String(group.id || "") === key;
+        }) || null;
+    }
+
+    function getSectionPolygons(section) {
+        if (Array.isArray(section.polygons) && section.polygons.length > 0) {
+            return section.polygons
+                .filter((polygon) => Array.isArray(polygon) && polygon.length >= 3)
+                .map((polygon) => polygon.map((point) => ({
+                    x: roundNumber(point.x),
+                    y: roundNumber(point.y)
+                })));
         }
 
-        const sectionIds = normalizeArray(item.sectionIds || item.sections || item.regionIds || item.id)
-            .map((value) => String(value));
-        const result = [];
-
-        sectionIds.forEach((sectionId) => {
-            normalizeArray(seatsBySection[sectionId]).forEach((seat) => {
-                if (seat.id) {
-                    result.push(seat.id);
-                }
-            });
-        });
-
-        return result;
+        const polygon = getSectionPolygon(section);
+        return polygon.length >= 3 ? [polygon] : [];
     }
 
     async function getCurrentImageDataUrl() {

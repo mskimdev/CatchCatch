@@ -11,7 +11,6 @@
 <link rel="stylesheet" href="/css/admin/seatmap-header.css">
 <script defer src="/js/admin/seatmap-header.js"></script>
 
-<link rel="stylesheet" href="/css/admin/seatmap-header.css">
 <link href="/css/admin/seatmap-workspace.css" rel="stylesheet">
 <link href="/css/admin/seatmap-button-image.css" rel="stylesheet">
 
@@ -24,16 +23,70 @@
     <aside class="seatmap-side seatmap-side--left">
         <div class="button-image-title">
             <strong>좌석 이미지 버튼 이미지화</strong>
-            <span>원본 도면을 자동으로 단색 구역 이미지로 변환합니다.</span>
+            <span>원본 도면을 단색 구역 이미지로 변환하고, 누락 구역을 보정합니다.</span>
         </div>
 
         <div class="button-image-step-list">
+            <section id="prepart1" class="button-image-step is-active button-image-step--pre">
+                <button type="button" class="button-image-step__header active" id="tabPre1">
+                    <span class="button-image-step__check" data-step="1"></span>
+                    <span class="button-image-step__text">
+                        <b>배경 / 내부 글자 전처리</b>
+                        <small>배경색 + 글자색 지정</small>
+                    </span>
+                    <span class="button-image-step__status">설정</span>
+                    <span class="button-image-step__arrow">⌄</span>
+                </button>
+
+                <div class="button-image-step__body">
+                    <div class="button-image-box">
+                        <div class="button-image-guide">
+                            검은 배경/특수 배경처럼 자동 분류가 꼬이는 도면은 먼저 배경 색상과 도형 내부 숫자/글자 색상을 지정하세요. 다음 단계의 단색화는 여기서 지정한 값을 기준으로 처리됩니다.
+                        </div>
+
+                        <div class="button-image-manual-hints">
+                            <label class="button-image-input-label">배경 색상</label>
+                            <div class="button-image-color-row">
+                                <input type="color" id="part1BackgroundColor" value="#000000" title="배경 색상">
+                                <button type="button" class="btn btn--tool" id="pickPart1BackgroundColor">
+                                    도면에서 배경 찍기
+                                </button>
+                            </div>
+
+                            <label class="button-image-input-label">도형 내부 글자 색상</label>
+                            <div class="button-image-color-row">
+                                <input type="color" id="part1TextColor" value="#111111" title="도형 내부 글자 색상">
+                                <button type="button" class="btn btn--tool" id="pickPart1TextColor">
+                                    도면에서 글자 찍기
+                                </button>
+                            </div>
+
+                            <label class="button-image-input-label" for="part1HintTolerance">색상 허용범위</label>
+                            <input type="range" id="part1HintTolerance" min="0" max="90" value="28">
+                            <div class="button-image-range-value">
+                                <span>정확</span>
+                                <b id="part1HintToleranceText">28</b>
+                                <span>넓게</span>
+                            </div>
+
+                            <div class="button-image-guide button-image-guide--compact" id="part1HintStatus">
+                                배경/글자 색상을 지정하면 슬라이더 변경 시 도면 위 실선 범위가 즉시 바뀝니다.
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn--primary" id="preprocessContinue">
+                            다음: 단색화 및 내부 글자 제거
+                        </button>
+                    </div>
+                </div>
+            </section>
+
             <section id="part1" class="button-image-step is-active" data-step="1">
                 <button type="button" class="button-image-step__header active" id="tab1">
-                    <span class="button-image-step__check" data-step="1">1</span>
+                    <span class="button-image-step__check" data-step="2"></span>
                     <span class="button-image-step__text">
-                        <b>자동 변환</b>
-                        <small>스캔 + 구역 단색화</small>
+                        <b>단색화 및 내부 글자 제거</b>
+                        <small>전처리 결과 단색화</small>
                     </span>
                     <span class="button-image-step__status">진행중</span>
                     <span class="button-image-step__arrow">⌄</span>
@@ -42,11 +95,11 @@
                 <div class="button-image-step__body">
                     <div class="button-image-box">
                         <div class="button-image-guide">
-                            미리보기를 생성하면 좌석 안의 숫자/글자를 제거하고 구역 보정 단계로 이동합니다.
+                            파트 1에서 지정한 배경/글자 색상을 기준으로 좌석 안의 숫자/글자를 제거하고 구역을 단색화합니다.
                         </div>
 
                         <button type="button" class="btn btn--primary" id="generateButtonImage">
-                            미리보기 생성
+                            단색화 이미지 생성
                         </button>
                         <button type="button" class="btn" id="restoreSource">
                             원본 다시 표시
@@ -57,10 +110,10 @@
 
             <section id="part2" class="button-image-step" data-step="2">
                 <button type="button" class="button-image-step__header" id="tab2">
-                    <span class="button-image-step__check" data-step="2">2</span>
+                    <span class="button-image-step__check" data-step="3"></span>
                     <span class="button-image-step__text">
-                        <b>구역 보정</b>
-                        <small>클릭 선택 + 내부 문자 정리</small>
+                        <b>누락 색칠 보정</b>
+                        <small>브러쉬 + 색상 찍기</small>
                     </span>
                     <span class="button-image-step__status">대기</span>
                     <span class="button-image-step__arrow">⌄</span>
@@ -69,66 +122,24 @@
                 <div class="button-image-step__body">
                     <div class="button-image-box">
                         <div class="button-image-guide">
-                            이 단계를 선택하면 구역 선택이 바로 시작됩니다. 숫자/글자가 남은 구역을 클릭하세요.
+                            파트 2 결과에서 숫자/글자가 너무 커서 단색화가 안 된 부분만 보정합니다. 먼저 색을 찍고, 브러쉬로 누락 부분을 칠하세요.
                         </div>
 
-                        <div class="button-image-selected">
-                            <label>선택 구역</label>
-                            <strong id="regionSelectionText">없음</strong>
-                        </div>
-
-                        <div class="button-image-row">
-                            <button type="button" class="btn btn--primary" id="regionCleanAll">
-                                전체 정리
-                            </button>
-                            <button type="button" class="btn" id="regionClear">
-                                선택 구역 취소하기
+                        <label class="button-image-input-label" for="regionColorInput">칠할 색상</label>
+                        <div class="button-image-color-row">
+                            <input type="color" id="regionColorInput" value="#ef5e94" title="직접 색상 선택">
+                            <button type="button" class="btn btn--tool" id="pickColorFromCanvas">
+                                도면에서 색상 찍기
                             </button>
                         </div>
 
-                        <button type="button" class="btn btn--primary" id="go3">
-                            다음: 브러쉬 최종 보정
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <section id="part3" class="button-image-step" data-step="3">
-                <button type="button" class="button-image-step__header" id="tab3">
-                    <span class="button-image-step__check" data-step="3">3</span>
-                    <span class="button-image-step__text">
-                        <b>브러쉬 보정</b>
-                        <small>찌꺼기 제거 + 색상 선택</small>
-                    </span>
-                    <span class="button-image-step__status">대기</span>
-                    <span class="button-image-step__arrow">⌄</span>
-                </button>
-
-                <div class="button-image-step__body">
-                    <div class="button-image-box">
-                        <div class="button-image-guide">
-                            자동 변환 후 남은 글자, 선, 작은 찌꺼기를 브러쉬로 정리하세요. 도면 색상을 직접 찍어 칠할 색상으로 사용할 수 있습니다.
-                        </div>
-
-                        <div class="button-image-tool-block">
-                            <strong>브러쉬 도구</strong>
-                            <small>브러쉬는 선택 색상으로 칠하고, 지우개는 배경색으로 지웁니다. 버튼을 꾹 누르면 확대/축소도 계속 진행됩니다.</small>
+                        <div class="button-image-tool-block button-image-tool-block--first">
+                            <strong>브러쉬 보정</strong>
+                            <small>단색화가 안 된 내부 숫자/글자/누락 부분을 선택 색상으로 칠하거나 지우개로 제거합니다.</small>
 
                             <div class="button-image-row">
-                                <button type="button" class="btn btn--tool" id="brushTool">
-                                    브러쉬
-                                </button>
-                                <button type="button" class="btn btn--tool" id="eraseTool">
-                                    지우개
-                                </button>
-                            </div>
-
-                            <label class="button-image-input-label" for="regionColorInput">칠할 색상</label>
-                            <div class="button-image-color-row">
-                                <input type="color" id="regionColorInput" value="#ef5e94" title="직접 색상 선택">
-                                <button type="button" class="btn btn--tool" id="pickColorFromCanvas">
-                                    도면에서 색상 찍기
-                                </button>
+                                <button type="button" class="btn btn--tool" id="brushTool">브러쉬</button>
+                                <button type="button" class="btn btn--tool" id="eraseTool">지우개</button>
                             </div>
 
                             <label class="button-image-input-label" for="brushSize">브러쉬 크기</label>
@@ -142,22 +153,22 @@
 
                         <div class="button-image-row">
                             <button type="button" class="btn" id="restoreResultBase">
-                                브러쉬 전으로
+                                보정 전으로
                             </button>
-                            <button type="button" class="btn btn--primary" id="go4">
-                                다음: 최종 구역 확인
+                            <button type="button" class="btn btn--primary" id="go3">
+                                다음: 색상 추출 / 재단색화
                             </button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section id="part4" class="button-image-step" data-step="4">
-                <button type="button" class="button-image-step__header" id="tab4">
-                    <span class="button-image-step__check" data-step="4">4</span>
+            <section id="part3" class="button-image-step" data-step="3">
+                <button type="button" class="button-image-step__header" id="tab3">
+                    <span class="button-image-step__check" data-step="4"></span>
                     <span class="button-image-step__text">
-                        <b>최종 구역 확인 / 저장</b>
-                        <small>저장될 구역 실선 표시</small>
+                        <b>색상 추출 / 재단색화</b>
+                        <small>허용범위 클릭 추출</small>
                     </span>
                     <span class="button-image-step__status">대기</span>
                     <span class="button-image-step__arrow">⌄</span>
@@ -166,15 +177,107 @@
                 <div class="button-image-step__body">
                     <div class="button-image-box">
                         <div class="button-image-guide">
-                            최종 저장될 좌석 구역만 실선으로 표시합니다. 텍스트는 표시하지 않고, 실선 내부의 단색 도형과 이미지가 저장됩니다.
+                            도면을 클릭하면 클릭 지점에서 이어진 같은 계열 색상 덩어리를 허용범위 기준으로 추출합니다. 기존 기준 구역 실선은 유지되고, 새 추출 구역 실선이 추가됩니다.
                         </div>
 
-                        <button type="button" class="btn btn--primary" id="previewSaveRegions">
-                            저장 구역 실선 표시
+                        <label class="button-image-input-label" for="step3Tolerance">허용범위</label>
+                        <input type="range" id="step3Tolerance" min="1" max="140" value="48">
+                        <div class="button-image-range-value">
+                            <span>좁게</span>
+                            <b id="step3ToleranceText">48</b>
+                            <span>넓게</span>
+                        </div>
+
+                        <div class="button-image-guide button-image-guide--compact">
+                            파트 3의 기준 구역 실선은 유지됩니다. 도면을 클릭하면 새 추출 구역 실선이 추가됩니다. 잘못 추출했다면 상단의 이전 버튼을 누르세요.
+                        </div>
+
+                        <button type="button" class="btn btn--primary" id="go4">
+                            다음: 구역 병합
                         </button>
 
-                        <button type="button" class="btn" id="backToBrush">
-                            브러쉬로 돌아가기
+                        <input type="color" id="step3ColorInput" value="#ef5e94" style="display:none">
+                        <button type="button" id="pickStep3ColorFromCanvas" style="display:none"></button>
+                        <button type="button" id="extractAndSolidifyColor" style="display:none"></button>
+                        <button type="button" id="rerunSingleColorFromCurrent" style="display:none"></button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="part4" class="button-image-step" data-step="4">
+                <button type="button" class="button-image-step__header" id="tab4">
+                    <span class="button-image-step__check" data-step="5"></span>
+                    <span class="button-image-step__text">
+                        <b>구역 병합</b>
+                        <small>드래그 선택 + Shift/Ctrl 클릭</small>
+                    </span>
+                    <span class="button-image-step__status">대기</span>
+                    <span class="button-image-step__arrow">⌄</span>
+                </button>
+
+                <div class="button-image-step__body">
+                    <div class="button-image-box">
+                        <div class="button-image-guide">
+                            파트 3과 파트 4에서 확정된 모든 구역을 일반 실선으로 표시합니다. Shift 또는 Ctrl로 여러 구역을 선택한 뒤 병합하세요.
+                        </div>
+
+                        <button type="button" class="btn btn--primary" id="finalMergeSelectedRegions">
+                            선택 구역 병합
+                        </button>
+                        <button type="button" class="btn" id="finalClearSelection">
+                            선택 해제
+                        </button>
+                        <div class="button-image-selected" id="finalSelectionText">
+                            선택 구역: 없음
+                        </div>
+
+                        <button type="button" class="btn btn--primary" id="go5">
+                            다음: 최종 색상 정리
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="part5" class="button-image-step" data-step="5">
+                <button type="button" class="button-image-step__header" id="tab5">
+                    <span class="button-image-step__check" data-step="6"></span>
+                    <span class="button-image-step__text">
+                        <b>최종 색상 정리 / 저장</b>
+                        <small>비슷한 색상 일치화</small>
+                    </span>
+                    <span class="button-image-step__status">대기</span>
+                    <span class="button-image-step__arrow">⌄</span>
+                </button>
+
+                <div class="button-image-step__body">
+                    <div class="button-image-box">
+                        <div class="button-image-guide">
+                            비슷한 색상이 다른 색상으로 잡히지 않도록 색상 번호를 합칩니다. 예: 1번 + 2번 병합.
+                        </div>
+
+                        <div class="button-image-color-merge-list" id="finalColorList">
+
+                        </div>
+
+                        <div class="button-image-row button-image-row--merge">
+                            <label class="button-image-mini-label">
+                                흡수될 색상 번호
+                                <input type="number" id="colorMergeFrom" min="1" value="1">
+                            </label>
+                            <label class="button-image-mini-label">
+                                기준 색상 번호
+                                <input type="number" id="colorMergeTo" min="1" value="2">
+                            </label>
+                        </div>
+
+                        <button type="button" class="btn btn--primary" id="mergeFinalColors">
+                            색상 번호 병합
+                        </button>
+                        <button type="button" class="btn" id="refreshFinalColors">
+                            색상 목록 새로고침
+                        </button>
+                        <button type="button" class="btn" id="backToMerge">
+                            구역 병합으로 돌아가기
                         </button>
 
                         <button type="button" class="btn btn--green" id="saveAndExitButton">
@@ -183,38 +286,39 @@
                     </div>
                 </div>
             </section>
-        </div>
-        <div class="button-image-side-guide" id="buttonImageGuide">
-            자동 변환 후 브러쉬로 찌꺼기를 제거하고 최종 구역을 확인한 뒤 저장합니다.
-        </div>
+            <div class="button-image-side-guide" id="buttonImageGuide">
+                단색화 → 브러쉬 보정 → 색상 추출 → 구역 병합 → 색상 정리/저장 순서로 진행합니다.
+            </div>
 
-        <div class="button-image-hidden-compat" style="display:none">
-            <button type="button" id="applyToConcert"></button>
-            <button type="button" id="saveButtonImage"></button>
-            <button type="button" id="serverSaveButtonImage"></button>
-            <button type="button" id="go2"></button>
-            <button type="button" id="regionSelectStart"></button>
-            <button type="button" id="regionRemoveText"></button>
-            <button type="button" id="regionDominantFill"></button>
-            <button type="button" id="regionApplyColor"></button>
-            <button type="button" id="regionCleanFill"></button>
-            <div id="buttonImageGroups"></div>
-            <strong id="selectedGroupName"></strong>
-            <input type="color" id="groupOutputColor" value="#f7f7f7">
-            <input type="range" id="sampleTol" min="5" max="160" value="52">
-            <b id="sampleTolValue">52</b>
-            <div id="buttonImageSamples"></div>
-            <button type="button" id="clearSelectedSamples"></button>
-            <button type="button" id="clearAllSamples"></button>
-            <input type="number" id="cleanupArea" value="30" min="1">
-            <button type="button" id="cleanupPieces"></button>
-        </div>
+            <div class="button-image-hidden-compat" style="display:none">
+                <button type="button" id="applyToConcert"></button>
+                <button type="button" id="saveButtonImage"></button>
+                <button type="button" id="serverSaveButtonImage"></button>
+                <button type="button" id="go2"></button>
+                <button type="button" id="regionSelectStart"></button>
+                <button type="button" id="regionRemoveText"></button>
+                <button type="button" id="regionDominantFill"></button>
+                <button type="button" id="regionApplyColor"></button>
+                <button type="button" id="regionCleanFill"></button>
+                <div id="buttonImageGroups"></div>
+                <strong id="selectedGroupName"></strong>
+                <input type="color" id="groupOutputColor" value="#f7f7f7">
+                <input type="range" id="sampleTol" min="5" max="160" value="52">
+                <b id="sampleTolValue">52</b>
+                <div id="buttonImageSamples"></div>
+                <button type="button" id="clearSelectedSamples"></button>
+                <button type="button" id="clearAllSamples"></button>
+                <input type="number" id="cleanupArea" value="30" min="1">
+                <button type="button" id="cleanupPieces"></button>
+                <button type="button" id="straightenAllRegions"></button>
+                <button type="button" id="straightenSelectedRegions"></button>
+                <input type="range" id="straightenStrength" min="0" max="100" value="50">
+            </div>
     </aside>
 
     <main class="seatmap-main">
         <div class="button-image-command-bar">
             <button type="button" class="button-image-command-btn" id="undoAction">↶ 이전</button>
-            <button type="button" class="button-image-command-btn" id="redoAction">↷ 다음</button>
             <button type="button" class="button-image-command-btn" id="zoomOut">− 축소</button>
             <button type="button" class="button-image-command-btn" id="zoomIn">＋ 확대</button>
             <button type="button" class="button-image-command-btn" id="zoomReset">100%</button>
@@ -228,6 +332,7 @@
                 <div class="button-image-brush-cursor" id="brushCursor"></div>
 
                 <div class="button-image-loupe" id="colorLoupe">
+                    <canvas class="button-image-loupe__canvas" id="loupeCanvas" width="90" height="90"></canvas>
                     <span class="button-image-loupe__chip" id="loupeChip"></span>
                     <strong id="loupeHex">#------</strong>
                     <small id="loupePoint">X -, Y -</small>

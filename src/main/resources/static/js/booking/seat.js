@@ -1,7 +1,7 @@
 const TEMP_SEATMAP = {
     seatsUrl: "/temp/seatmap/concert-session/seatmap-seats.json",
     sectionsUrl: "/temp/seatmap/concert-session/seatmap-sections.json",
-//    imageUrl: "/temp/seatmap/concert-session/seatmap-image.png"
+    //imageUrl: "/temp/seatmap/concert-session/seatmap-image.png"
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -896,7 +896,7 @@ async function initCatchCatchBookingSeat() {
 async function loadBookingSeatApp() {
     const baseApp = window.CATCHCATCH_BOOKING || {};
 
-    console.log("[CatchCatch] booking-seat temp v3 loaded");
+    console.log("[CatchCatch] booking-seat temp v5 flat split sectionId/polygons loaded");
 
     // 핵심: 서버/머스태치 샘플 데이터보다 temp 저장 결과를 먼저 사용한다.
     // temp가 없으면 기본 샘플을 띄우지 않고 빈 좌석 상태로 둔다.
@@ -966,7 +966,6 @@ async function loadBookingSeatApp() {
 
 function convertTempSeatmapToBookingData(tempSeats, tempSections, imageSize = { width: 0, height: 0 }) {
     const sourceSeats = convertTempSeatsToBookingSeats(tempSeats);
-    const sourceSeatMap = new Map(sourceSeats.map((seat) => [String(seat.id), seat]));
     const sections = normalizeArray(tempSections);
     const hasSections = sections.length > 0;
     const hasSeats = sourceSeats.length > 0;
@@ -1002,17 +1001,15 @@ function convertTempSeatmapToBookingData(tempSeats, tempSections, imageSize = { 
         const floor = section.floor || "1";
         const grade = section.grade || "TEMP";
         const price = toNumber(section.price || section.seatPrice, 0);
-        const seatIds = normalizeArray(section.seatIds || section.seats || []);
+        const matchedSeats = getSeatsForTempSection(section, index, sourceSeats);
 
-        seatIds.forEach((seatRef) => {
-            const seatId = typeof seatRef === "string" ? seatRef : String(seatRef?.id || seatRef?.seatId || "");
-            const source = sourceSeatMap.get(seatId);
-            if (!source) return;
-
-            usedIds.add(seatId);
+        matchedSeats.forEach((source) => {
+            usedIds.add(String(source.id));
             groupedSeats.push({
                 ...source,
                 section: groupSection,
+                sectionId: groupSection,
+                sourceSectionId: source.sourceSectionId || source.sectionId || source.section,
                 sectionName: groupSection,
                 sectionLabel: groupLabel,
                 floor: source.floor || floor,
@@ -1023,7 +1020,8 @@ function convertTempSeatmapToBookingData(tempSeats, tempSections, imageSize = { 
         });
     });
 
-    // seatIds가 없는 section JSON이 들어온 경우를 대비해 원본 좌석은 버리지 않는다.
+    // sections에는 seatIds를 넣지 않는다. sectionId/sourceSectionId로 매칭한다.
+    // 그래도 매칭이 전혀 안 된 오래된 JSON은 좌석을 버리지 않고 그대로 표시한다.
     if (groupedSeats.length === 0 && sourceSeats.length > 0) {
         groupedSeats.push(...sourceSeats);
     }
@@ -1037,6 +1035,29 @@ function convertTempSeatmapToBookingData(tempSeats, tempSections, imageSize = { 
     };
 }
 
+function getSeatsForTempSection(section, index, sourceSeats) {
+    const sectionKey = getTempSectionKey(section, index);
+    const sourceIds = normalizeArray(section.sectionIds || section.sourceRegionIds || section.regionIds || section.sections)
+        .map((value) => String(value));
+
+    if (!sourceIds.includes(sectionKey)) {
+        sourceIds.push(sectionKey);
+    }
+
+    return sourceSeats.filter((seat) => {
+        const keys = [
+            seat.sectionId,
+            seat.sourceSectionId,
+            seat.section,
+            seat.sectionName,
+            seat.zone,
+            seat.zoneName
+        ].filter((value) => value != null).map((value) => String(value));
+
+        return keys.some((key) => sourceIds.includes(key));
+    });
+}
+
 function getTempSectionKey(section, index) {
     return String(section.id || section.section || section.name || section.label || `vg-${index + 1}`);
 }
@@ -1046,8 +1067,10 @@ function convertTempSeatsToBookingSeats(items) {
         if (item && typeof item === "object" && item.id && (item.x !== undefined || item.seatId !== undefined)) {
             return {
                 id: item.id || item.seatId,
+                sectionId: item.sectionId || item.section || item.sectionName || item.zone || item.zoneName || "",
+                sourceSectionId: item.sourceSectionId || item.originalSectionId || item.regionId || "",
                 floor: item.floor || "1",
-                section: item.section || item.sectionName || item.zone || item.zoneName || "A",
+                section: item.section || item.sectionName || item.zone || item.zoneName || item.sectionId || "A",
                 row: item.row || item.rowName || "1",
                 col: item.col || item.no || item.seatNo || "1",
                 no: item.col || item.no || item.seatNo || "1",
@@ -1067,6 +1090,8 @@ function convertTempSeatsToBookingSeats(items) {
 
         return {
             id,
+            sectionId: parts[1] || "A",
+            sourceSectionId: "",
             floor: parts[0] || "1",
             section: parts[1] || "A",
             row: parts[2] || "1",
@@ -1088,37 +1113,59 @@ function convertTempSectionsToBookingZones(sections, imageSize) {
     const fallbackSize = inferSeatmapSize(list);
     const width = imageSize.width || fallbackSize.width || 1;
     const height = imageSize.height || fallbackSize.height || 1;
+    const result = [];
 
-    return list.map((section, index) => {
-        const polygon = normalizePolygon(section.polygon || section.points || section.seatShape || []);
-        const bbox = normalizeBbox(section.bbox || getPolygonBbox(polygon));
+    list.forEach((section, index) => {
+        const sectionPolygons = getSectionPolygons(section);
+        const wholeBbox = normalizeBbox(section.bbox || getPolygonBbox(sectionPolygons.flat()));
         const button = section.button || {};
         const name = getTempSectionKey(section, index);
         const label = section.label || section.name || name;
         const floor = section.floor || "1";
         const grade = section.grade || "TEMP";
-        const zoneX = bbox.w > 0 ? bbox.x : toNumber(button.x, 20);
-        const zoneY = bbox.h > 0 ? bbox.y : toNumber(button.y, 40);
-        const zoneW = bbox.w > 0 ? bbox.w : toNumber(button.w || button.width, 12);
-        const zoneH = bbox.h > 0 ? bbox.h : toNumber(button.h || button.height, 10);
+        const color = section.color || section.renderColor || section.fillColor || button.color || "";
+        const polygons = sectionPolygons.length > 0 ? sectionPolygons : [normalizePolygon(section.polygon || section.points || section.seatShape || [])];
 
-        return {
-            section: name,
-            label,
-            floor,
-            grade,
-            color: section.color || section.renderColor || section.fillColor || button.color || "",
-            x: toPercent(zoneX, width),
-            y: toPercent(zoneY, height),
-            w: Math.max(1, toPercent(zoneW, width)),
-            h: Math.max(1, toPercent(zoneH, height)),
-            angle: toNumber(button.angle || section.angle || section.gridAngle, 0),
-            clip: polygon.length >= 3 && bbox.w > 0 && bbox.h > 0 ? polygonToClipPath(polygon, bbox) : "",
-            radius: section.radius || "2px",
-            fontSize: toNumber(section.fontSize, 24),
-            order: toNumber(section.order, index + 1)
-        };
+        polygons.forEach((polygon, polygonIndex) => {
+            const bbox = normalizeBbox(getPolygonBbox(polygon));
+            const zoneX = bbox.w > 0 ? bbox.x : toNumber(button.x, 20);
+            const zoneY = bbox.h > 0 ? bbox.y : toNumber(button.y, 40);
+            const zoneW = bbox.w > 0 ? bbox.w : toNumber(button.w || button.width, 12);
+            const zoneH = bbox.h > 0 ? bbox.h : toNumber(button.h || button.height, 10);
+
+            result.push({
+                section: name,
+                label: polygonIndex === 0 ? label : "",
+                floor,
+                grade,
+                color,
+                x: toPercent(zoneX, width),
+                y: toPercent(zoneY, height),
+                w: Math.max(1, toPercent(zoneW, width)),
+                h: Math.max(1, toPercent(zoneH, height)),
+                angle: toNumber(button.angle || section.angle || section.gridAngle, 0),
+                clip: polygon.length >= 3 && bbox.w > 0 && bbox.h > 0 ? polygonToClipPath(polygon, bbox) : "",
+                radius: section.radius || "2px",
+                fontSize: toNumber(section.fontSize, 24),
+                order: toNumber(section.order, index + 1) + polygonIndex / 100,
+                wholeBbox
+            });
+        });
     });
+
+    return result;
+}
+
+function getSectionPolygons(section) {
+    if (Array.isArray(section.polygons) && section.polygons.length > 0) {
+        return section.polygons
+            .filter((polygon) => Array.isArray(polygon) && polygon.length >= 3)
+            .map((polygon) => normalizePolygon(polygon))
+            .filter((polygon) => polygon.length >= 3);
+    }
+
+    const polygon = normalizePolygon(section.polygon || section.points || section.seatShape || []);
+    return polygon.length >= 3 ? [polygon] : [];
 }
 
 function normalizeArray(value) {
@@ -1152,7 +1199,8 @@ function inferSeatmapSize(sections) {
     let height = 0;
 
     sections.forEach((section) => {
-        const polygon = normalizePolygon(section.polygon || section.points || section.seatShape || []);
+        const polygons = getSectionPolygons(section);
+        const polygon = polygons.flat();
         const bbox = normalizeBbox(section.bbox || getPolygonBbox(polygon));
         width = Math.max(width, bbox.x + bbox.w, toNumber(section.button?.x, 0) + toNumber(section.button?.w, 0));
         height = Math.max(height, bbox.y + bbox.h, toNumber(section.button?.y, 0) + toNumber(section.button?.h, 0));
