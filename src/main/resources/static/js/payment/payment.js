@@ -311,10 +311,6 @@ document.addEventListener("DOMContentLoaded", function () {
             return "EASY_PAY";
         }
 
-        if (method === "vbank") {
-            return "VIRTUAL_ACCOUNT";
-        }
-
         return "CARD";
     }
 
