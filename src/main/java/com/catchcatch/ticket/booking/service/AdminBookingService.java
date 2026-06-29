@@ -1,7 +1,7 @@
 package com.catchcatch.ticket.booking.service;
 
+import com.catchcatch.ticket.booking.BookingRepository;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
-import com.catchcatch.ticket.booking.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

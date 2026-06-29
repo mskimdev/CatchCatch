@@ -1,4 +1,4 @@
-package com.catchcatch.ticket.booking.enums;
+package com.catchcatch.ticket.booking;
 
 public enum Status {
     PENDING("결제대기"),

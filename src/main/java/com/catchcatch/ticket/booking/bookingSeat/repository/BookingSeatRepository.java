@@ -1,7 +1,7 @@
 package com.catchcatch.ticket.booking.bookingSeat.repository;
 
 import com.catchcatch.ticket.booking.bookingSeat.BookingSeat;
-import com.catchcatch.ticket.booking.enums.Status;
+import com.catchcatch.ticket.booking.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

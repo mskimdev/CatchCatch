@@ -6,7 +6,7 @@ import com.catchcatch.ticket.booking.bookingSeat.BookingSeat;
 import com.catchcatch.ticket.booking.bookingSeat.repository.BookingSeatRepository;
 import com.catchcatch.ticket.booking.dto.BookingRequest;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
-import com.catchcatch.ticket.booking.enums.Status;
+import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.core.exception.NotFoundException;

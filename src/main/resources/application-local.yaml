@@ -48,13 +48,8 @@ spring:
           timeout: 5000
           writetimeout: 5000
 
-
-  #데이터베이스 연결 설정 (MySQL)
+  # 데이터베이스 연결 설정 (H2 로컬)
   datasource:
-    #    driver-class-name: com.mysql.cj.jdbc.Driver
-    #    url: jdbc:mysql://localhost:3306/myblog?serverTimezone=Asia/Seoul
-    #    username:
-    #    password:
     driver-class-name: org.h2.Driver
     url: jdbc:h2:mem:test
     username: sa
@@ -64,13 +59,14 @@ spring:
       maximum-pool-size: 100
       minimum-idle: 20
       connection-timeout: 10000
+
   h2:
     console:
       enabled: true
 
   sql:
     init:
-      mode: always  # 외부 DB(MySQL)에서도 실행되도록 설정
+      mode: always
       data-locations:
         - classpath:db/data.sql
 
@@ -95,3 +91,10 @@ spring:
     redis:
       host: localhost
       port: 6379
+
+# 카카오맵 JavaScript 키
+# 실제 값은 로컬 환경변수 KAKAO_MAP_JS_KEY에 넣는 것을 권장합니다.
+# 로컬 전용 파일이고 Git에 올라가지 않는 것이 확실하면 아래 기본값 자리에 직접 넣어도 됩니다.
+kakao:
+  map:
+    js-key: ${KAKAO_MAP_JS_KEY:}

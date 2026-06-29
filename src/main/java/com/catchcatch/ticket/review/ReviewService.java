@@ -2,7 +2,7 @@ package com.catchcatch.ticket.review;
 
 import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.booking.BookingRepository;
-import com.catchcatch.ticket.booking.enums.Status;
+import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.core.exception.BadRequestException;
