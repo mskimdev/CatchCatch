@@ -3,10 +3,9 @@ package com.catchcatch.ticket.inquiry.controller;
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.inquiry.dto.InquiryRequest;
 import com.catchcatch.ticket.inquiry.dto.InquiryResponse;
-import com.catchcatch.ticket.inquiry.service.InquiryService;
 import com.catchcatch.ticket.inquiry.enums.InquiryStatus;
+import com.catchcatch.ticket.inquiry.service.InquiryService;
 import com.catchcatch.ticket.user.dto.SessionUser;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -20,21 +19,17 @@ public class InquiryController {
 
     private final InquiryService inquiryService;
 
-    @GetMapping("/save")
+    @GetMapping("/new")
     public String inquiryForm(@SessionAttribute(Define.SESSION_USER) SessionUser sessionUser, Model model) {
-        model.addAttribute("hasPhone", sessionUser != null &&
-                sessionUser.getPhone() != null &&
-                !sessionUser.getPhone().isBlank());
+        model.addAttribute("navInquirySave", true);
+        addHasPhone(model, sessionUser);
         return "support/inquiry-save";
     }
 
-    @PostMapping("/save")
+    @PostMapping
     public String inquiryProc(@Valid InquiryRequest.SaveDTO req,
-                              HttpSession session) {
-        // 유효성 검사 (일단 패스)
-        SessionUser sessionUser = (SessionUser) session.getAttribute(Define.SESSION_USER);
+                              @SessionAttribute(Define.SESSION_USER) SessionUser sessionUser) {
         inquiryService.save(req, sessionUser.getId());
-
         return "redirect:/support/inquiries";
     }
 
@@ -49,7 +44,8 @@ public class InquiryController {
         boolean asc = "asc".equals(sort);
 
 
-        model.addAttribute("inquiries", inquiryService.findAllByFilter(status, publicOnly, asc, myOnly, sessionUser.getId()));
+        model.addAttribute("navInquiry", true);
+        model.addAttribute("inquiries", inquiryService.getList(status, publicOnly, asc, myOnly, sessionUser.getId()));
 
         model.addAttribute("filterAll", status == null && !myOnly);
         model.addAttribute("filterResolved", InquiryStatus.RESOLVED.equals(status));
@@ -65,10 +61,9 @@ public class InquiryController {
     @GetMapping("/{id}")
     public String inquiryDetail(@PathVariable Integer id, Model model, @SessionAttribute(Define.SESSION_USER) SessionUser sessionUser) {
 
-        InquiryResponse.DetailDTO inquiry = inquiryService.findById(id, sessionUser.getId());
+        InquiryResponse.DetailDTO inquiry = inquiryService.getDetail(id, sessionUser.getId());
 
-
-
+        model.addAttribute("navInquiry", true);
         model.addAttribute("inquiry", inquiry);
         return "support/inquiry-detail";
     }
@@ -79,12 +74,14 @@ public class InquiryController {
             Model model,
             @SessionAttribute(Define.SESSION_USER) SessionUser sessionUser){
 
-        InquiryResponse.DetailDTO inquiry = inquiryService.findById(id, sessionUser.getId());
+        InquiryResponse.DetailDTO inquiry = inquiryService.getDetail(id, sessionUser.getId());
+        model.addAttribute("navInquirySave", true);
         model.addAttribute("inquiry", inquiry);
-        model.addAttribute("hasPhone", sessionUser.getPhone() != null && !sessionUser.getPhone().isBlank());
-
+        addHasPhone(model, sessionUser);
         return "support/inquiry-edit";
-
     }
 
+    private void addHasPhone(Model model, SessionUser sessionUser) {
+        model.addAttribute("hasPhone", sessionUser.getPhone() != null && !sessionUser.getPhone().isBlank());
+    }
 }

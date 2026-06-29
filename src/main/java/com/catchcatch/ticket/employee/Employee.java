@@ -1,10 +1,13 @@
 package com.catchcatch.ticket.employee;
 
+import com.catchcatch.ticket.employee.enums.EmployeeStatus;
+import com.catchcatch.ticket.user.User; // User 엔티티 임포트
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp; // updatedAt에 더 적합
 
 import java.sql.Timestamp;
 
@@ -24,38 +27,30 @@ public class Employee {
     @Column(nullable = false, length = 20)
     private String name;
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String accountId;
-
-    @Column(nullable = false)
-    private String password;
-
     @Column(nullable = false)
     private String department;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private EmployeeRole role;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private EmployeeStatus status;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", unique = true)
+    private User user;
 
     @CreationTimestamp
     private Timestamp createdAt;
 
-    @CreationTimestamp
+    @UpdateTimestamp
     private Timestamp updatedAt;
 
     @Builder
-    public Employee(String employeeNumber, String accountId, String password, String name, String department, EmployeeRole role) {
+    public Employee(String employeeNumber, String name, String department, User user) {
         this.employeeNumber = employeeNumber;
-        this.accountId = accountId;
-        this.password = password;
         this.name = name;
         this.department = department;
-        this.role = role;
-        this.status = EmployeeStatus.ACTIVE; // 생성 시 기본값은 활성 상태
+        this.user = user;
+        this.status = EmployeeStatus.ACTIVE;
     }
 
     // 상태 변경 메서드 (계정 정지 등)
@@ -64,8 +59,8 @@ public class Employee {
     }
 
     // 정보 수정 메서드
-    public void updateInfo(String department, EmployeeRole role) {
+    public void update(String name, String department) {
+        this.name = name;
         this.department = department;
-        this.role = role;
     }
 }

@@ -66,14 +66,13 @@ public class AdminConcertRequest {
             LocalDate endDate,
 
             String organizer,
+            String detailBannerUrl,
             String detailTitle,
             String detailDescription1,
             String detailDescription2,
-            String category,
             String ageLimit,
             String contact,
             String runtime,
-            String detailBannerUrl,
             MultipartFile posterImage,
 
             List<SessionCreateRequest> sessions
@@ -130,7 +129,7 @@ public class AdminConcertRequest {
                     .artist(concert.getArtist())
                     .concertStatus(concert.getConcertStatus() != null ? concert.getConcertStatus().name() : "COMING_SOON")
                     .venueName(concert.getVenue() != null ? concert.getVenue().getName() : "공연장 미지정")
-                    .genre(concert.getGenre())
+                    .genre(concert.getGenreCode())
                     .ageLimit(concert.getAgeLimit())
                     .runtime(concert.getRuntime())
                     .priceVip(concert.getPriceVip())
@@ -171,9 +170,6 @@ public class AdminConcertRequest {
             @NotBlank(message = "장르 정보가 필요합니다.")
             String genre,
 
-            @NotBlank(message = "카테고리 정보가 필요합니다.")
-            String category,
-
             @Min(value = 0, message = "VIP석 가격은 0원 이상이어야 합니다.")
             Integer priceVip,
 
@@ -212,16 +208,16 @@ public class AdminConcertRequest {
 
             String description,
 
-            @NotBlank(message = "상세 설명1을 입력해주세요.")
+            String detailBannerUrl,
+
             String detailDescription1,
 
-            @NotBlank(message = "상세 설명2를 입력해주세요.")
             String detailDescription2,
 
             String posterUrl,
 
             String concertStatus,
-            String posterImageBase64        // 기존 파일 경로 유지/변경용
+            String posterImageBase64     // 기존 파일 경로 유지/변경용
     ) {
     }
 
@@ -236,11 +232,16 @@ public class AdminConcertRequest {
             String concertStatus,
             LocalDateTime ticketOpenDate,
             String genre,
+            String genreLabel,
             String ageLimit,        // 예: 만 15세 이상
             String runtime,
+            String organizer,
+            String contact,
             String detailTitle,
+            String detailBannerUrl,
             String detailDescription1,
             String detailDescription2,
+            String posterUrl,
             LocalDate startDate,
             LocalDate endDate,
             Integer priceVip,
@@ -278,10 +279,15 @@ public class AdminConcertRequest {
                     .venueName(concert.getVenue() != null ? concert.getVenue().getName() : "공연장 미지정")
                     .concertStatus(concert.getConcertStatus() != null ? concert.getConcertStatus().name() : "COMING_SOON")
                     .ticketOpenDate(concert.getTicketOpenDate())
-                    .genre(concert.getGenre())
+                    .genre(concert.getGenreCode())
+                    .genreLabel(concert.getGenreLabel())
                     .ageLimit(concert.getAgeLimit())
                     .runtime(concert.getRuntime())
+                    .organizer(concert.getOrganizer())
+                    .contact(concert.getContact())
+                    .posterUrl(concert.getPosterUrl())
                     .detailTitle(concert.getDetailTitle())
+                    .detailBannerUrl(concert.getDetailBannerUrl())
                     .detailDescription1(concert.getDetailDescription1())
                     .detailDescription2(concert.getDetailDescription2())
                     .startDate(concert.getStartDate())

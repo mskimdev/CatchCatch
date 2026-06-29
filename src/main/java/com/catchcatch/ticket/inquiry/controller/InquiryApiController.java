@@ -13,8 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/support/inquiries")
 @RequiredArgsConstructor
+@RequestMapping("/api/inquiries")
 public class InquiryApiController {
 
     private final InquiryService inquiryService;
@@ -25,11 +25,11 @@ public class InquiryApiController {
             @RequestBody @Valid InquiryRequest.EditDTO reqDTO,
             @SessionAttribute(Define.SESSION_USER) SessionUser sessionUser
     ) {
-        InquiryResponse.DetailDTO inquiry = inquiryService.findById(id, sessionUser.getId());
+        InquiryResponse.DetailDTO inquiry = inquiryService.getDetail(id, sessionUser.getId());
         if (!inquiry.isOwner()) {
             throw new ForbiddenException("수정 권한이 없습니다.");
         }
-        inquiryService.edit(id, reqDTO);
+        inquiryService.update(id, reqDTO);
         return Resp.ok(reqDTO);
     }
 }

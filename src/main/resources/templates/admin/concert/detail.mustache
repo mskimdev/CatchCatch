@@ -32,15 +32,14 @@
                                 <p class="text-muted">{{concert.description}}</p>
                                 <ul class="list-unstyled mt-4">
                                     <li class="mb-2"><strong>아티스트:</strong> {{concert.artist}}</li>
-                                    <li class="mb-2"><strong>장르:</strong> {{concert.genre}}</li>
+                                    <li class="mb-2"><strong>장르:</strong> {{concert.genreLabel}} <small class="text-muted">({{concert.genre}})</small></li>
                                     <li class="mb-2"><strong>장소:</strong> {{concert.venueName}}</li>
 
-                                    <!-- 💡 4개 등급 가격 표시 (배지 활용) -->
                                     <li class="mb-3 mt-3 p-3 bg-light rounded">
                                         <strong class="d-block mb-2"><i class="fas fa-ticket-alt"></i> 티켓 가격표</strong>
-                                        <span class="badge badge-danger p-2 mr-2">VIP</span> {{concert.priceVip}}원 &nbsp;
-                                        <span class="badge badge-primary p-2 mr-2">R</span> {{concert.priceR}}원 &nbsp;
-                                        <span class="badge badge-success p-2 mr-2">S</span> {{concert.priceS}}원 &nbsp;
+                                        <span class="badge badge-danger p-2 mr-2">VIP</span> {{concert.priceVip}}원&nbsp;
+                                        <span class="badge badge-primary p-2 mr-2">R</span> {{concert.priceR}}원&nbsp;
+                                        <span class="badge badge-success p-2 mr-2">S</span> {{concert.priceS}}원&nbsp;
                                         <span class="badge badge-secondary p-2 mr-2">A</span> {{concert.priceA}}원
                                     </li>
 
@@ -52,13 +51,45 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">사용자용 상세 페이지 소개 설정</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-12 form-group mb-4">
+                                    <label class="font-weight-bold text-danger">상세페이지 내용</label>
+                                    {{#concert.detailDescription1}}
+                                        <div class="p-3 border rounded bg-light text-dark" style="min-height: 100px;">{{{concert.detailDescription1}}}</div>
+                                    {{/concert.detailDescription1}}
+                                    {{^concert.detailDescription1}}
+                                        <div class="p-3 border rounded bg-light text-muted italic" style="min-height: 100px;">설정된 내용이 없습니다. (사용자 화면에서 숨겨짐)</div>
+                                    {{/concert.detailDescription1}}
+                                </div>
+
+                                <div class="col-md-12 form-group mb-4">
+                                    <label class="font-weight-bold text-info">추가 공연정보 / 유의사항 및 안내</label>
+                                    {{#concert.detailDescription2}}
+                                        <div class="p-3 border rounded bg-light text-dark" style="min-height: 100px;">{{{concert.detailDescription2}}}</div>
+                                    {{/concert.detailDescription2}}
+                                    {{^concert.detailDescription2}}
+                                        <div class="p-3 border rounded bg-light text-muted italic" style="min-height: 100px;">설정된 내용이 없습니다. (사용자 화면에서 숨겨짐)</div>
+                                    {{/concert.detailDescription2}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- 회차(Session) 관리 섹션 -->
                 <div class="card shadow mb-4">
                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                        <h6 class="m-0 font-weight-bold text-primary">회차(Session) 관리</h6>
-                        <!-- 모달 열기 버튼 -->
+                        <div>
+                            <h6 class="m-0 font-weight-bold text-primary">회차(Session) 관리</h6>
+                            <small class="text-danger mt-1 d-block">
+                                공연 등록 후 회차를 반드시 추가해주세요.
+                            </small>
+                        </div>
                         <button class="btn btn-sm btn-success shadow-sm" data-toggle="modal" data-target="#addSessionModal">
                             <i class="fas fa-plus fa-sm"></i> 회차 추가
                         </button>
@@ -83,7 +114,6 @@
                                         <td class="align-middle text-center">{{sessionDate}}</td>
                                         <td class="align-middle text-center">{{sessionTime}}</td>
                                         <td class="align-middle text-center">
-                                            <!-- 수정/삭제 버튼 -->
                                             <button class="btn btn-sm btn-outline-primary"
                                                     onclick="openEditModal({{id}}, {{round}}, '{{sessionDate}}', '{{sessionTime}}')">수정</button>
                                             <button class="btn btn-sm btn-outline-danger"
@@ -102,7 +132,6 @@
                     </div>
                 </div>
 
-                <!-- 1) 회차 추가 모달 -->
                 <div class="modal fade" id="addSessionModal" tabindex="-1" role="dialog" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
@@ -110,7 +139,7 @@
                                 <div class="modal-header">
                                     <h5 class="modal-title">새 회차 추가</h5>
                                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">×</span>
+                                        <span aria-hidden="true">&times;</span>
                                     </button>
                                 </div>
                                 <div class="modal-body">
@@ -124,7 +153,6 @@
                                     </div>
                                     <div class="form-group">
                                         <label>공연 시간</label>
-                                        <!-- time input (예: 18:00) -->
                                         <input type="time" name="sessionTime" class="form-control" required>
                                     </div>
                                 </div>
@@ -137,17 +165,15 @@
                     </div>
                 </div>
 
-                <!-- 2) 회차 수정 모달 -->
                 <div class="modal fade" id="editSessionModal" tabindex="-1" role="dialog" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <form id="editSessionForm">
-                                <!-- 수정할 회차의 ID를 숨겨서 보관 -->
                                 <input type="hidden" id="editSessionId">
                                 <div class="modal-header">
                                     <h5 class="modal-title">회차 수정</h5>
                                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">×</span>
+                                        <span aria-hidden="true">&times;</span>
                                     </button>
                                 </div>
                                 <div class="modal-body">
@@ -190,18 +216,18 @@
                             let { res, data } = await apiPost(`/api/concert/${concertId}/sessions`, reqDTO);
 
                             if (res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
-                                alert('회차가 성공적으로 추가되었습니다.');
-                                window.location.reload();
+                                CcUI.toast('회차가 성공적으로 추가되었습니다.', 'success');
+                                setTimeout(() => window.location.reload(), 1000); // 1초 후 새로고침
                             } else {
-                                alert('회차 추가에 실패했습니다: ' + (data && data.msg ? data.msg : '알 수 없는 오류'));
+                                CcUI.alert('회차 추가에 실패했습니다: ' + (data && data.msg ? data.msg : '알 수 없는 오류'));
                             }
                         } catch (error) {
                             console.error('회차 추가 통신 에러:', error);
-                            alert('서버와 통신에 실패했습니다.');
+                            CcUI.alert('서버와 통신에 실패했습니다.');
                         }
                     });
 
-                    // 2) 수정 모달 띄우기 함수 (기존 데이터 세팅)
+                    // 2) 수정 모달 띄우기 함수
                     function openEditModal(sessionId, round, sessionDate, sessionTime) {
                         document.getElementById('editSessionId').value = sessionId;
                         document.getElementById('editRound').value = round;
@@ -224,37 +250,39 @@
                             let { res, data } = await apiPut(`/api/concert/${concertId}/sessions/${sessionId}`, reqDTO);
 
                             if (res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
-                                alert('성공적으로 수정되었습니다.');
-                                window.location.reload();
+                                CcUI.toast('성공적으로 수정되었습니다.', 'success');
+                                setTimeout(() => window.location.reload(), 1000); // 1초 후 새로고침
                             } else {
-                                alert('회차 수정에 실패했습니다: ' + (data && data.msg ? data.msg : '알 수 없는 오류'));
+                                CcUI.alert('회차 수정에 실패했습니다: ' + (data && data.msg ? data.msg : '알 수 없는 오류'));
                             }
                         } catch (error) {
                             console.error('회차 수정 통신 에러:', error);
-                            alert('서버와 통신에 실패했습니다.');
+                            CcUI.alert('서버와 통신에 실패했습니다.');
                         }
                     });
 
                     // 4) 회차 논리 삭제 처리 (DELETE)
-                    async function deleteSession(sessionId) {
-                        if (!confirm('이 회차를 정말 삭제하시겠습니까? (소프트딜리트)')) {
-                            return;
-                        }
+                    function deleteSession(sessionId) {
+                    CcUI.confirm({
+                        text: '이 회차를 정말 삭제하시겠습니까?',
+                        danger: true,
+                        onConfirm: async () => {
+                            try {
+                                let { res, data } = await apiDelete(`/api/concert/${concertId}/sessions/${sessionId}`);
 
-                        try {
-                            let { res, data } = await apiDelete(`/api/concert/${concertId}/sessions/${sessionId}`);
-
-                            if (res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
-                                alert('성공적으로 삭제되었습니다.');
-                                window.location.reload();
-                            } else {
-                                alert('삭제에 실패했습니다: ' + (data && data.msg ? data.msg : '알 수 없는 오류'));
+                                if (res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
+                                    CcUI.toast('성공적으로 삭제되었습니다.', 'success');
+                                    setTimeout(() => window.location.reload(), 1000);
+                                } else {
+                                    CcUI.alert('삭제에 실패했습니다.');
+                                }
+                            } catch (error) {
+                                console.error('회차 삭제 통신 에러:', error);
+                                CcUI.alert('서버와 통신에 실패했습니다.');
                             }
-                        } catch (error) {
-                            console.error('회차 삭제 통신 에러:', error);
-                            alert('서버와 통신에 실패했습니다.');
                         }
-                    }
+                    });
+                }
                 </script>
             </div>
         </div>

@@ -1,65 +1,46 @@
 {{> layout/header}}
-<link rel="stylesheet" href="/css/concert-detail.css">
+<link rel="stylesheet" href="/css/concert-detail.css?v=detail-responsive-1">
 
 <main class="cc-main cc-detail-main">
-    <div class="cc-container cc-detail-page">
+    <div class="cc-detail-page">
         {{#concert}}
-            <div class="cc-detail-content">
+
+            <div class="cc-left-wrapper">
+
                 <section class="cc-detail-hero">
                     <div class="cc-poster-large">
                         <img src="{{posterUrl}}" alt="{{title}} 포스터">
                     </div>
 
                     <article class="cc-detail-info">
-                        <div class="cc-detail-category">{{category}}</div>
+                        <div class="cc-detail-category">{{genreLabel}}</div>
 
                         <div class="cc-detail-title-row">
                             <h1 class="cc-detail-title">{{title}}</h1>
-                            <div class="cc-detail-actions">
-                                <button type="button" class="cc-icon-btn" aria-label="관심 등록">♡</button>
-                                <button type="button" class="cc-icon-btn" aria-label="공유">⇧</button>
-                            </div>
+                            <button type="button" class="cc-btn-heart d-none d-lg-flex {{#isLiked}}active{{/isLiked}}" aria-label="관심 등록" data-concert-id="{{id}}">
+                                {{#isLiked}}♥{{/isLiked}}
+                                {{^isLiked}}♡{{/isLiked}}
+                            </button>
                         </div>
 
                         <div class="cc-detail-tags">
-                            <span class="cc-badge cc-badge--fill">{{category}}</span>
-                            <span class="cc-badge cc-badge--gray">{{genre}}</span>
+                            <span class="cc-badge cc-badge--fill">{{genreLabel}}</span>
                         </div>
 
                         <div class="cc-info-list">
-                            <div class="cc-info-row">
-                                <span class="cc-info-row__label">📅 공연기간</span>
-                                <span>{{dateRange}}</span>
-                            </div>
-                            <div class="cc-info-row">
-                                <span class="cc-info-row__label">📍 공연장</span>
-                                <span>{{venueName}}</span>
-                            </div>
-                            <div class="cc-info-row">
-                                <span class="cc-info-row__label">⏱ 관람연령</span>
-                                <span>{{ageLimit}}</span>
-                            </div>
-                            <div class="cc-info-row">
-                                <span class="cc-info-row__label">🕒 관람시간</span>
-                                <span>{{runtime}}</span>
-                            </div>
-                            <div class="cc-info-row">
-                                <span class="cc-info-row__label">🏷 주최/주관</span>
-                                <span>{{organizer}}</span>
-                            </div>
-                            <div class="cc-info-row">
-                                <span class="cc-info-row__label">☎ 문의</span>
-                                <span>{{contact}}</span>
-                            </div>
+                            <div class="cc-info-row"><span class="cc-info-row__label">공연기간</span><span>{{dateRange}}</span></div>
+                            <div class="cc-info-row"><span class="cc-info-row__label">공연장</span><span>{{venueName}}</span></div>
+                            <div class="cc-info-row"><span class="cc-info-row__label">관람연령</span><span>{{ageLimit}}</span></div>
+                            <div class="cc-info-row"><span class="cc-info-row__label">관람시간</span><span>{{runtime}}</span></div>
+                            <div class="cc-info-row"><span class="cc-info-row__label">주최/주관</span><span>{{organizer}}</span></div>
+                            <div class="cc-info-row"><span class="cc-info-row__label">문의</span><span>{{contact}}</span></div>
                         </div>
 
                         <div class="cc-price-list">
                             <h3>가격정보</h3>
                             {{#prices}}
                                 <div class="cc-price-row">
-                                    <span>
-                                        <i class="cc-dot cc-dot--{{gradeClass}}"></i>{{gradeName}}
-                                    </span>
+                                    <span>{{gradeName}}</span>
                                     <strong>{{priceText}}</strong>
                                 </div>
                             {{/prices}}
@@ -69,163 +50,830 @@
 
                 <nav class="cc-tabs" aria-label="공연 상세 탭">
                     <a class="cc-tab is-active" href="#detail">상세정보</a>
-                    <a class="cc-tab" href="#venue">공연장 안내</a>
+                    <a class="cc-tab" href="#venue">공연장안내</a>
                     <a class="cc-tab" href="#refund">취소/환불</a>
                     <a class="cc-tab" href="#review">후기 {{reviewCount}}</a>
                 </nav>
 
-                <section id="detail" class="cc-detail-banner" style="--detail-img: url('{{detailBannerUrl}}')">
-                    <div class="cc-detail-banner__content">
-                        <h2>{{detailTitle}}</h2>
-                        <p>{{detailDescription1}}</p>
-                        <p>{{detailDescription2}}</p>
+                <section id="detail" class="cc-detail-content-body">
+                    <div class="cc-detail-content__inner">
+                        {{#detailBannerUrl}}
+                            <div class="cc-detail-banner">
+                                <img src="{{detailBannerUrl}}" alt="{{title}} 상세 이미지" style="width:100%;display:block;">
+                            </div>
+                        {{/detailBannerUrl}}
+
+                        {{#detailDescription1}}
+                            <div class="cc-detail-auxiliary-desc side-box">
+                                <h4 class="desc-title" style="color: #cc0000;">상세페이지 내용</h4>
+                                <div class="desc-text">{{{detailDescription1}}}</div>
+                            </div>
+                        {{/detailDescription1}}
+
+                        {{#detailDescription2}}
+                            <div class="cc-detail-auxiliary-desc info-box">
+                                <h4 class="desc-title" style="color: #007bff;">추가 공연정보 / 유의사항 및 안내</h4>
+                                <div class="desc-text">{{{detailDescription2}}}</div>
+                            </div>
+                        {{/detailDescription2}}
                     </div>
                 </section>
-            </div>
 
-            <aside class="cc-detail-sidebar">
-                <div class="cc-card cc-quick-booking">
-                    <h3>빠른 예매</h3>
+                <section id="venue" class="cc-venue-section" style="display: none;">
+                    <div class="cc-card cc-venue-card">
+                        <h3>공연장 안내</h3>
 
-                    <form class="bookingStartForm"
-                          action="/booking/start"
-                          method="post">
-
-                        <input type="hidden" name="concertId" value="{{id}}">
-
-                        {{#_csrf}}
-                            <input type="hidden" name="{{parameterName}}" value="{{token}}">
-                        {{/_csrf}}
-
-                        <div class="cc-booking-panel">
-                            <section class="cc-booking-section" data-booking-section>
-                                <button class="cc-booking-section__head" type="button" data-section-toggle>
-                                    <span class="cc-section-title">관람일</span>
-                                    <span class="cc-selected-summary" data-selected-date-summary></span>
-                                    <span class="cc-toggle-icon" aria-hidden="true"></span>
-                                </button>
-
-                                <div class="cc-booking-section__body">
-                                    <select class="cc-select bookingDateSelect" id="sessionDate" name="sessionDate" hidden>
-                                        <option value="">날짜를 선택해주세요</option>
-                                        {{#dates}}
-                                            <option value="{{value}}">{{label}}</option>
-                                        {{/dates}}
-                                    </select>
-
-                                    <div class="cc-calendar-picker" data-calendar-for="sessionDate">
-                                        <div class="cc-calendar-nav">
-                                            <button type="button" class="cc-calendar-arrow" data-calendar-prev aria-label="이전 달">‹</button>
-                                            <strong class="cc-calendar-title">날짜 선택</strong>
-                                            <button type="button" class="cc-calendar-arrow" data-calendar-next aria-label="다음 달">›</button>
-                                        </div>
-
-                                        <div class="cc-calendar-week">
-                                            <span>일</span>
-                                            <span>월</span>
-                                            <span>화</span>
-                                            <span>수</span>
-                                            <span>목</span>
-                                            <span>금</span>
-                                            <span>토</span>
-                                        </div>
-
-                                        <div class="cc-calendar-grid"></div>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <section class="cc-booking-section cc-booking-section--session" data-booking-section>
-                                <button class="cc-booking-section__head" type="button" data-section-toggle>
-                                    <span class="cc-section-title">회차</span>
-                                    <span class="cc-selected-summary" data-selected-session-summary></span>
-                                    <span class="cc-toggle-icon" aria-hidden="true"></span>
-                                </button>
-
-                                <div class="cc-booking-section__body">
-                                    <select class="cc-select bookingSessionSelect" id="sessionId" name="sessionId" hidden>
-                                        <option value="">회차를 선택해주세요</option>
-                                        {{#sessions}}
-                                            <option value="{{id}}">{{label}}</option>
-                                        {{/sessions}}
-                                    </select>
-
-                                    <div class="cc-session-card-list" data-session-picker-for="sessionId">
-                                        {{#sessions}}
-                                            <button type="button"
-                                                    class="cc-session-card"
-                                                    data-session-value="{{id}}">
-                                                <strong>{{label}}</strong>
-                                            </button>
-                                        {{/sessions}}
-                                    </div>
-
-                                    <div class="cc-seat-remain">
-                                        VIP석 <b>108</b> / R석 <b>137</b> / S석 <b class="is-zero">0석</b> / A석 <b>19</b> / B석 <b>56</b>
-                                    </div>
-                                </div>
-                            </section>
+                        <div class="cc-venue-info">
+                            <strong>{{venueName}}</strong>
+                            <p>{{venueAddress}}</p>
                         </div>
 
-                        <button class="cc-btn cc-btn--primary cc-btn--full cc-booking-submit" type="submit">
-                            예매하기
-                        </button>
-
-                        <div class="cc-price-box">
-                            <strong>가격 요약</strong>
-                            <div class="cc-price-box__row">
-                                <span>선택한 좌석 등급</span>
-                                <b>-</b>
-                            </div>
-                            <div class="cc-price-box__row">
-                                <span>티켓 금액</span>
-                                <b>0원</b>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </aside>
-        {{/concert}}
-
-        {{^concert}}
-            <div class="cc-detail-content">
-                <section class="cc-detail-hero">
-                    <article class="cc-detail-info">
-                        <div class="cc-detail-category">공연 정보</div>
-
-                        <div class="cc-detail-title-row">
-                            <h1 class="cc-detail-title">공연 정보를 찾을 수 없습니다.</h1>
+                        <div id="concertVenueMap"
+                             class="cc-concert-map"
+                             data-address="{{venueAddress}}"
+                             data-venue-name="{{venueName}}">
                         </div>
 
-                        <div class="cc-info-list">
-                            <div class="cc-info-row">
-                                <span class="cc-info-row__label">안내</span>
-                                <span>요청한 공연이 존재하지 않거나 삭제된 공연입니다.</span>
-                            </div>
+                        <div class="cc-venue-address-row">
+                            <span>📍 {{venueAddress}}</span>
+                            <button type="button"
+                                    class="cc-address-copy-btn"
+                                    data-copy-address="{{venueAddress}}">
+                                주소복사
+                            </button>
                         </div>
-                    </article>
+                    </div>
                 </section>
+
+                <section id="refund" class="cc-refund-section" style="display: none;">
+                    <div class="cc-card cc-refund-card">
+                        <h3 class="cc-refund-title">취소 및 환불 규정</h3>
+
+                        <div class="cc-refund-block">
+                            <p>· ① 예매 취소 조건보다 ② 취소 수수료 규정이 우선 적용됩니다.</p>
+                            <p>· 예매 당일 자정(밤 12시) 이전 취소 시 티켓 취소수수료가 없으며, 예매 수수료도 환불됩니다.(취소기한 내 한함)</p>
+                        </div>
+
+                        <div class="cc-refund-block">
+                            <h4>① 취소수수료 규정</h4>
+                            <p>· 관람일 기준 아래와 같이 취소 수수료가 적용됩니다.</p>
+
+                            <div class="cc-refund-fee-box">
+                                <p>· 관람일 10일전까지: <strong>장당 4,000원(티켓 금액의 10% 이내)</strong></p>
+                                <p>· 관람일 9일전~7일전까지: <strong>티켓금액의 10%</strong></p>
+                                <p>· 관람일 6일전~3일전까지: <strong>티켓금액의 20%</strong></p>
+                                <p>· 관람일 2일전 ~ 취소기한까지: <strong>티켓금액의 30%</strong></p>
+                            </div>
+                        </div>
+
+                        <div class="cc-refund-block">
+                            <h4>② 예매 취소 조건</h4>
+                            <p>· 예매 후 7일 이내 취소 시 티켓 금액 전액이 환불됩니다.(예매 수수료 제외)</p>
+                            <p>· 단, 관람일이 가까운 경우 취소수수료 규정이 우선 적용될 수 있습니다.</p>
+                            <p>· 공연 당일 또는 취소 가능 시간이 지난 경우 예매 취소가 제한될 수 있습니다.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="review-container" class="cc-review-section mt-5" style="display: none; width: 100%;"></section>
+
             </div>
+
+            <aside class="cc-detail-sidebar" id="bookingSidebar">
+                <div class="cc-mobile-sidebar-header">
+                    <h4>관람일 및 회차 선택</h4>
+                    <button type="button" class="cc-mobile-sidebar-close" id="closeBookingBtn">×</button>
+                </div>
+
+            <div class="cc-quick-booking">
+                <h3>빠른 예매</h3>
+                <form class="bookingStartForm" action="/booking/start" method="post">
+                    <input type="hidden" name="concertId" id="hiddenConcertId" value="{{id}}">
+                    {{#_csrf}}<input type="hidden" name="{{parameterName}}" value="{{token}}">{{/_csrf}}
+
+                    <div class="cc-booking-panel">
+                        <section class="cc-booking-section" data-booking-section>
+                            <button class="cc-booking-section__head" type="button" data-section-toggle>
+                                <span class="cc-section-title">관람일</span>
+                                <span class="cc-selected-summary" data-selected-date-summary></span>
+                                <span class="cc-toggle-icon" aria-hidden="true"></span>
+                            </button>
+                            <div class="cc-booking-section__body">
+                                <select class="cc-select bookingDateSelect" id="sessionDate" name="sessionDate" hidden>
+                                    <option value="">날짜를 선택해주세요</option>
+                                    {{#dates}}<option value="{{value}}">{{label}}</option>{{/dates}}
+                                </select>
+                                <div class="cc-calendar-picker" data-calendar-for="sessionDate">
+                                    <div class="cc-calendar-nav">
+                                        <button type="button" class="cc-calendar-arrow" data-calendar-prev>◀</button>
+                                        <strong class="cc-calendar-title">날짜 선택</strong>
+                                        <button type="button" class="cc-calendar-arrow" data-calendar-next>▶</button>
+                                    </div>
+                                    <div class="cc-calendar-week">
+                                        <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+                                    </div>
+                                    <div class="cc-calendar-grid"></div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="cc-booking-section cc-booking-section--session" data-booking-section>
+                            <button class="cc-booking-section__head" type="button" data-section-toggle>
+                                <span class="cc-section-title">회차</span>
+                                <span class="cc-selected-summary" data-selected-session-summary></span>
+                                <span class="cc-toggle-icon" aria-hidden="true"></span>
+                            </button>
+                            <div class="cc-booking-section__body">
+                                <select class="cc-select bookingSessionSelect" id="sessionId" name="sessionId" hidden>
+                                    <option value="">회차를 선택해주세요</option>
+                                    {{#sessions}}<option value="{{id}}">{{label}}</option>{{/sessions}}
+                                </select>
+                                <div class="cc-session-card-list" data-session-picker-for="sessionId">
+                                    {{#sessions}}
+                                        <button type="button" class="cc-session-card" data-session-value="{{id}}">
+                                            <strong>{{label}}</strong>
+                                        </button>
+                                    {{/sessions}}
+                                </div>
+                                <div class="cc-seat-remain">VIP석 <b>108</b> / R석 <b>137</b> / S석 <b class="is-zero">0석</b></div>
+                            </div>
+                        </section>
+                    </div>
+
+                    {{#comingSoon}}
+                        <div class="cc-open-countdown mt-4" data-open-iso="{{ticketOpenIso}}">
+                            <p class="cc-open-countdown__label">예매 오픈까지</p>
+                            <div class="cc-open-countdown__blocks">
+                                <div class="cc-open-countdown__unit"><span id="cdDays">--</span><small>일</small></div>
+                                <div class="cc-open-countdown__sep">:</div>
+                                <div class="cc-open-countdown__unit"><span id="cdHours">--</span><small>시간</small></div>
+                                <div class="cc-open-countdown__sep">:</div>
+                                <div class="cc-open-countdown__unit"><span id="cdMinutes">--</span><small>분</small></div>
+                                <div class="cc-open-countdown__sep">:</div>
+                                <div class="cc-open-countdown__unit"><span id="cdSeconds">--</span><small>초</small></div>
+                            </div>
+                            <p class="cc-open-countdown__date">{{ticketOpenLabel}} 오픈</p>
+                        </div>
+                    {{/comingSoon}}
+
+                    <button class="cc-btn cc-btn--primary cc-booking-submit" type="submit" {{#comingSoon}}disabled{{/comingSoon}}>
+                        {{#comingSoon}}예매 오픈 대기중{{/comingSoon}}{{^comingSoon}}좌석 선택하기{{/comingSoon}}
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+            <div class="cc-mobile-fixed-footer">
+                <button type="button"
+                        class="cc-btn-heart {{#isLiked}}active{{/isLiked}}"
+                        aria-label="관심 등록"
+                        data-concert-id="{{id}}"
+                        style="width: 56px; height: 56px;">
+                    {{#isLiked}}♥{{/isLiked}}{{^isLiked}}♡{{/isLiked}}
+                </button>
+                <button type="button" class="cc-btn cc-btn--primary cc-btn--full" id="openBookingBtn" {{#comingSoon}}disabled{{/comingSoon}}>
+                    {{#comingSoon}}예매 오픈 예정{{/comingSoon}}{{^comingSoon}}예매하기 (일정 선택){{/comingSoon}}
+                </button>
+            </div>
+
         {{/concert}}
     </div>
 </main>
 
+<div class="cc-review-modal" id="reviewModal" role="dialog" aria-modal="true" aria-labelledby="reviewModalLabel" hidden>
+    <div class="cc-review-modal__backdrop" data-review-modal-close></div>
+    <div class="cc-review-modal__dialog" role="document">
+        <div class="cc-review-modal__content">
+            <div class="cc-review-modal__header">
+                <h5 id="reviewModalLabel">관람 후기 작성</h5>
+                <button type="button" class="cc-review-modal__close" data-review-modal-close aria-label="닫기">×</button>
+            </div>
+            <div class="cc-review-modal__body">
+                <form id="reviewForm">
+                    <div class="cc-review-field">
+                        <label for="reviewRating">평점</label>
+                        <div class="cc-star-rating" id="reviewStarRating" role="group" aria-label="평점 선택">
+                            <button type="button" class="cc-star-rating__button" data-star-index="1" aria-label="1점"></button>
+                            <button type="button" class="cc-star-rating__button" data-star-index="2" aria-label="2점"></button>
+                            <button type="button" class="cc-star-rating__button" data-star-index="3" aria-label="3점"></button>
+                            <button type="button" class="cc-star-rating__button" data-star-index="4" aria-label="4점"></button>
+                            <button type="button" class="cc-star-rating__button" data-star-index="5" aria-label="5점"></button>
+                        </div>
+                        <input type="hidden" id="reviewRating" value="5.0" required>
+                        <small id="reviewRatingText">5.0점</small>
+                    </div>
+                    <div class="cc-review-field">
+                        <label for="reviewContent">후기 내용</label>
+                        <textarea class="cc-review-textarea" id="reviewContent" rows="5" required placeholder="공연 관람 후기를 자유롭게 남겨주세요. (최대 1000자)"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="cc-review-modal__footer">
+                <button type="button" class="cc-btn cc-btn--outline" data-review-modal-close>취소</button>
+                <button type="button" class="cc-btn cc-btn--primary" id="btn-submit-review">등록하기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{kakaoMapJsKey}}&autoload=false&libraries=services"></script>
 <script>
+    let lastReviewFocusTrigger = null;
+    let editingReviewId = null;
+    const reviewContentCache = new Map();
+    let reviewWriteEnabled = {{#concert.reviewEnabled}}true{{/concert.reviewEnabled}}{{^concert.reviewEnabled}}false{{/concert.reviewEnabled}};
+    let concertVenueMapLoaded = false;
+
     document.addEventListener("DOMContentLoaded", function () {
+        initTabsAndReviews();
+        initAddressCopy();
+        initReviewSubmit();
+        initReviewModal();
+        initReviewRating();
         initCalendarPicker();
         initSessionPicker();
         initBookingSectionToggle();
         initBookingStartSubmit();
+        initCountdown();
+        initMobileBookingTrigger();
+        initHeartToggle();
     });
 
-    function initBookingSectionToggle() {
-        document.querySelectorAll("[data-section-toggle]").forEach(function (toggleButton) {
-            toggleButton.addEventListener("click", function () {
-                const section = toggleButton.closest("[data-booking-section]");
-                if (!section) return;
+    function initMobileBookingTrigger() {
+        const sidebar = document.getElementById('bookingSidebar');
+        const openBtn = document.getElementById('openBookingBtn');
+        const closeBtn = document.getElementById('closeBookingBtn');
+        if (openBtn && sidebar) {
+            openBtn.addEventListener('click', () => sidebar.classList.add('is-open'));
+        }
+        if (closeBtn && sidebar) {
+            closeBtn.addEventListener('click', () => sidebar.classList.remove('is-open'));
+        }
+    }
 
-                section.classList.toggle("is-collapsed");
+    function initCountdown() {
+        const container = document.querySelector('[data-open-iso]');
+        if (!container) return;
+
+        const openTime = new Date(container.dataset.openIso).getTime();
+        const elDays    = document.getElementById('cdDays');
+        const elHours   = document.getElementById('cdHours');
+        const elMinutes = document.getElementById('cdMinutes');
+        const elSeconds = document.getElementById('cdSeconds');
+
+        function pad(n) { return String(n).padStart(2, '0'); }
+
+        function tick() {
+            const diff = openTime - Date.now();
+            if (diff <= 0) { location.reload(); return; }
+            elDays.textContent    = Math.floor(diff / 86400000);
+            elHours.textContent   = pad(Math.floor((diff % 86400000) / 3600000));
+            elMinutes.textContent = pad(Math.floor((diff % 3600000) / 60000));
+            elSeconds.textContent = pad(Math.floor((diff % 60000) / 1000));
+        }
+
+        tick();
+        setInterval(tick, 1000);
+    }
+
+    function initTabsAndReviews() {
+        const tabs = document.querySelectorAll('.cc-tab');
+        const concertId = document.getElementById('hiddenConcertId')?.value;
+        const hasReviewsParam = window.location.search.includes('reviews');
+
+        const sections = {
+            detail: document.getElementById('detail'),
+            venue: document.getElementById('venue'),
+            refund: document.getElementById('refund'),
+            review: document.getElementById('review-container')
+        };
+
+        function hideAllSections() {
+            Object.values(sections).forEach(section => {
+                if (section) section.style.display = 'none';
             });
+        }
+
+        function activateTab(tabType) {
+            tabs.forEach(t => t.classList.remove('is-active'));
+
+            const activeHref = tabType === 'review' ? '#review' : `#${tabType}`;
+            const activeTab = Array.from(tabs).find(t => t.getAttribute('href') === activeHref);
+
+            if (activeTab) {
+                activeTab.classList.add('is-active');
+            }
+
+            hideAllSections();
+
+            if (tabType === 'review') {
+                if (sections.review) {
+                    sections.review.style.display = 'block';
+
+                    if (sections.review.dataset.loaded !== 'true') {
+                        renderReviewLoading();
+                        fetchConcertReviews(concertId, 0);
+                    }
+                }
+                return;
+            }
+
+            if (sections[tabType]) {
+                sections[tabType].style.display = 'block';
+            }
+
+            if (tabType === 'venue') {
+                initConcertVenueMap();
+            }
+        }
+
+        if (hasReviewsParam) {
+            activateTab('review');
+        } else {
+            activateTab('detail');
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const targetHref = this.getAttribute('href');
+                const tabType = targetHref.replace('#', '');
+
+                if (tabType === 'review') {
+                    history.pushState(null, '', window.location.pathname + '?reviews');
+                    activateTab('review');
+                    return;
+                }
+
+                if (tabType === 'detail') {
+                    history.pushState(null, '', window.location.pathname);
+                    activateTab('detail');
+                    return;
+                }
+
+                history.pushState(null, '', window.location.pathname + targetHref);
+                activateTab(tabType);
+            });
+        });
+
+        document.addEventListener('click', function(e) {
+            const writeButton = e.target?.closest?.('#btn-write-review');
+            if (writeButton) {
+                if (!reviewWriteEnabled) {
+                    CcUI.alert('현재 이 콘서트는 후기 작성이 제한되어 있습니다.', 'warning');
+                    return;
+                }
+
+                lastReviewFocusTrigger = writeButton;
+                resetReviewModalMode();
+                document.getElementById('reviewForm')?.reset();
+                setReviewRating(5, true);
+                showReviewModal();
+                return;
+            }
+
+            const editButton = e.target?.closest?.('[data-review-edit]');
+            if (editButton) {
+                const reviewId = editButton.dataset.reviewId;
+                lastReviewFocusTrigger = editButton;
+                openReviewEditModal(
+                    reviewId,
+                    editButton.dataset.reviewRating,
+                    reviewContentCache.get(String(reviewId)) ?? ''
+                );
+                return;
+            }
+
+            const deleteButton = e.target?.closest?.('[data-review-delete]');
+            if (deleteButton) {
+                deleteReview(deleteButton.dataset.reviewId);
+            }
+        });
+    }
+
+function initConcertVenueMap() {
+    if (concertVenueMapLoaded) return;
+
+    const mapContainer = document.getElementById('concertVenueMap');
+    if (!mapContainer) return;
+
+    const address = mapContainer.dataset.address;
+    const venueName = mapContainer.dataset.venueName;
+
+    if (!address) {
+        mapContainer.innerHTML = '<div class="cc-map-empty">공연장 주소를 찾을 수 없습니다.</div>';
+        return;
+    }
+
+    if (!window.kakao || !kakao.maps) {
+        mapContainer.innerHTML = '<div class="cc-map-empty">지도를 불러올 수 없습니다.</div>';
+        return;
+    }
+
+    kakao.maps.load(() => {
+        const geocoder = new kakao.maps.services.Geocoder();
+
+        geocoder.addressSearch(address, (result, status) => {
+            if (status !== kakao.maps.services.Status.OK || !result[0]) {
+                mapContainer.innerHTML = '<div class="cc-map-empty">주소 검색 결과가 없습니다.</div>';
+                return;
+            }
+
+            const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+            const map = new kakao.maps.Map(mapContainer, {
+                center: coords,
+                level: 4
+            });
+
+            const marker = new kakao.maps.Marker({
+                map: map,
+                position: coords
+            });
+
+            const infoWindow = new kakao.maps.InfoWindow({
+                content: `
+                    <div style="padding:8px 12px;font-size:13px;font-weight:700;white-space:nowrap;">
+                        ${venueName || '공연장'}
+                    </div>
+                `
+            });
+
+            infoWindow.open(map, marker);
+
+            setTimeout(() => {
+                map.relayout();
+                map.setCenter(coords);
+            }, 0);
+
+            concertVenueMapLoaded = true;
+        });
+    });
+}
+
+function initAddressCopy() {
+    document.addEventListener('click', async function(e) {
+        const copyButton = e.target?.closest?.('.cc-address-copy-btn');
+        if (!copyButton) return;
+
+        const address = copyButton.dataset.copyAddress;
+
+        if (!address) {
+            alert('복사할 주소가 없습니다.');
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(address);
+            alert('주소가 복사되었습니다.');
+        } catch (error) {
+            console.error('주소 복사 실패:', error);
+            alert('주소 복사에 실패했습니다.');
+        }
+    });
+}
+
+
+
+    function initReviewModal() {
+        const reviewModalEl = document.getElementById('reviewModal');
+        if (!reviewModalEl) return;
+
+        reviewModalEl.querySelectorAll('[data-review-modal-close]').forEach(button => {
+            button.addEventListener('click', closeReviewModal);
+        });
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && !reviewModalEl.hidden) {
+                closeReviewModal();
+            }
+        });
+    }
+
+    function showReviewModal() {
+        const reviewModalEl = document.getElementById('reviewModal');
+        if (!reviewModalEl) return;
+
+        reviewModalEl.hidden = false;
+        document.body.classList.add('cc-review-modal-open');
+        requestAnimationFrame(() => document.getElementById('reviewContent')?.focus());
+    }
+
+    function closeReviewModal() {
+        const reviewModalEl = document.getElementById('reviewModal');
+        if (!reviewModalEl) return;
+
+        moveFocusOutOfReviewModal(reviewModalEl);
+        reviewModalEl.hidden = true;
+        document.body.classList.remove('cc-review-modal-open');
+        if (lastReviewFocusTrigger?.isConnected) {
+            lastReviewFocusTrigger.focus();
+        }
+        lastReviewFocusTrigger = null;
+    }
+
+    function moveFocusOutOfReviewModal(reviewModalEl) {
+        const activeElement = document.activeElement;
+        if (activeElement && reviewModalEl.contains(activeElement)) {
+            activeElement.blur();
+        }
+    }
+
+    function openReviewEditModal(reviewId, rating, content) {
+        editingReviewId = reviewId;
+        document.getElementById('reviewModalLabel').textContent = '관람 후기 수정';
+        document.getElementById('btn-submit-review').textContent = '수정하기';
+        setReviewRating(Number(rating) || 5, true);
+        document.getElementById('reviewContent').value = content ?? '';
+        showReviewModal();
+    }
+
+    function resetReviewModalMode() {
+        editingReviewId = null;
+        const title = document.getElementById('reviewModalLabel');
+        const submitButton = document.getElementById('btn-submit-review');
+        if (title) title.textContent = '관람 후기 작성';
+        if (submitButton) submitButton.textContent = '등록하기';
+        setReviewRating(5, true);
+    }
+
+    function initReviewRating() {
+        const ratingWidget = document.getElementById('reviewStarRating');
+        if (!ratingWidget) return;
+
+        ratingWidget.querySelectorAll('[data-star-index]').forEach(button => {
+            button.addEventListener('mousemove', event => {
+                renderStarInputRating(getPointerRating(event));
+            });
+
+            button.addEventListener('click', event => {
+                setReviewRating(getPointerRating(event), true);
+            });
+
+            button.addEventListener('keydown', event => {
+                const currentRating = Number(document.getElementById('reviewRating')?.value) || 5;
+                if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    setReviewRating(currentRating + 0.5, true);
+                }
+                if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
+                    event.preventDefault();
+                    setReviewRating(currentRating - 0.5, true);
+                }
+            });
+        });
+
+        ratingWidget.addEventListener('mouseleave', () => {
+            renderStarInputRating(Number(document.getElementById('reviewRating')?.value) || 5);
+        });
+
+        setReviewRating(Number(document.getElementById('reviewRating')?.value) || 5, true);
+    }
+
+    function getPointerRating(event) {
+        const starButton = event.currentTarget;
+        const starIndex = Number(starButton.dataset.starIndex);
+        const rect = starButton.getBoundingClientRect();
+        const isLeftHalf = event.clientX - rect.left <= rect.width / 2;
+        return starIndex - (isLeftHalf ? 0.5 : 0);
+    }
+
+    function setReviewRating(rating, persist) {
+        const normalizedRating = Math.min(5, Math.max(0.5, Math.round((Number(rating) || 5) * 2) / 2));
+        if (persist) {
+            const ratingInput = document.getElementById('reviewRating');
+            if (ratingInput) ratingInput.value = normalizedRating.toFixed(1);
+        }
+        renderStarInputRating(normalizedRating);
+    }
+
+    function renderStarInputRating(rating) {
+        const normalizedRating = Math.min(5, Math.max(0.5, Math.round((Number(rating) || 5) * 2) / 2));
+        document.querySelectorAll('#reviewStarRating [data-star-index]').forEach(button => {
+            const starIndex = Number(button.dataset.starIndex);
+            const fillRatio = Math.min(1, Math.max(0, normalizedRating - (starIndex - 1)));
+            button.style.setProperty('--fill', `${fillRatio * 100}%`);
+        });
+
+        const ratingText = document.getElementById('reviewRatingText');
+        if (ratingText) ratingText.textContent = `${normalizedRating.toFixed(1)}점`;
+    }
+
+    function renderReviewLoading() {
+        const reviewContainer = document.getElementById('review-container');
+        if (!reviewContainer) return;
+
+        reviewContainer.innerHTML = `
+            <div class="cc-card cc-review-empty">
+                <div class="cc-review-empty__icon" aria-hidden="true">...</div>
+                <h5>후기를 불러오는 중입니다.</h5>
+                <p>잠시만 기다려주세요.</p>
+            </div>`;
+    }
+
+    async function fetchConcertReviews(concertId, page = 0) {
+        if (!concertId) {
+            renderReviewError();
+            return;
+        }
+        try {
+            const { res, data } = await apiGet(`/api/concert/${concertId}/reviews?page=${page}&size=5`);
+            if (res?.ok && data?.body) {
+                renderReviews(data.body);
+            } else {
+                throw new Error(getApiErrorMessage(data, '후기 응답 형식이 올바르지 않습니다.'));
+            }
+        } catch (error) {
+            console.error("리뷰 로드 실패:", error);
+            const reviewContainer = document.getElementById('review-container');
+            if (reviewContainer) reviewContainer.dataset.loaded = 'false';
+            renderReviewError();
+            if(window.CcUI) CcUI.toast('후기를 불러오는 중 오류가 발생했습니다.', 'error');
+        }
+    }
+
+    function renderReviewError() {
+        const reviewContainer = document.getElementById('review-container');
+        if (!reviewContainer) return;
+
+        reviewContainer.innerHTML = `
+            <div class="cc-card cc-review-empty">
+                <div class="cc-review-empty__icon" aria-hidden="true">!</div>
+                <h5>후기를 불러오지 못했습니다.</h5>
+                <p>잠시 후 다시 시도해주세요.</p>
+            </div>`;
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    function getApiErrorMessage(data, fallbackMessage) {
+        return data?.msg || data?.message || fallbackMessage;
+    }
+
+    function renderRatingStars(rating) {
+        const numericRating = Number(rating) || 0;
+        return Array.from({ length: 5 }, (_, index) => {
+            const fillRatio = Math.min(1, Math.max(0, numericRating - index));
+            return `<span class="cc-review-star" style="--fill:${fillRatio * 100}%">★</span>`;
+        }).join('');
+    }
+
+    function renderReviews(data) {
+        const reviewContainer = document.getElementById('review-container');
+        if (!reviewContainer) return;
+
+        reviewContainer.dataset.loaded = 'true';
+        reviewContentCache.clear();
+
+        const reviewTab = document.querySelector('.cc-tab[href="#review"]');
+        if (reviewTab) reviewTab.textContent = `후기 ${data.totalReviewCount || 0}`;
+
+        if (!data.reviews || data.reviews.length === 0) {
+            reviewContainer.innerHTML = `
+                <div class="cc-review-toolbar">
+                    <button type="button" class="cc-btn cc-btn--outline cc-review-write-btn" id="btn-write-review">첫 후기 작성</button>
+                </div>
+                <div class="cc-card cc-review-empty">
+                    <div class="cc-review-empty__icon" aria-hidden="true">📭</div>
+                    <h5>아직 등록된 후기가 없습니다.</h5>
+                    <p>공연을 관람한 뒤 첫 번째 후기를 남겨주세요!</p>
+                </div>`;
+            return;
+        }
+
+        let html = `
+            <div class="cc-card cc-review-card">
+                <div class="cc-review-head">
+                    <div>
+                        <h4>관람 후기</h4>
+                        <div class="cc-review-summary" aria-label="평균 평점 ${(data.averageRating || 0).toFixed(1)}점">
+                            <span class="cc-review-summary__star" aria-hidden="true">★</span>
+                            <strong style="font-size:25px;">${(data.averageRating || 0).toFixed(1)}</strong>
+                            <span>${data.totalReviewCount}개의 후기</span>
+                        </div>
+                    </div>
+                    <button type="button" class="cc-btn cc-btn--outline cc-review-write-btn" id="btn-write-review">후기 작성</button>
+                </div>
+                <div class="cc-review-list">
+        `;
+
+        data.reviews.forEach(review => {
+            const rating = Number(review.rating) || 0;
+            reviewContentCache.set(String(review.reviewId), review.content ?? '');
+
+            const reviewActions = review.mine ? `
+                        <div class="cc-review-actions">
+                            <button type="button"
+                                    class="cc-btn cc-btn--outline cc-review-action-btn"
+                                    data-review-edit
+                                    data-review-id="${review.reviewId}"
+                                    data-review-rating="${rating}">
+                                수정
+                            </button>
+                            <button type="button"
+                                    class="cc-btn cc-btn--outline cc-review-action-btn cc-review-action-btn--danger"
+                                    data-review-delete
+                                    data-review-id="${review.reviewId}">
+                                삭제
+                            </button>
+                        </div>
+            ` : '';
+
+            html += `
+                    <article class="cc-review-item">
+                        <div class="cc-review-item__meta">
+                            <div class="cc-review-author">
+                                <strong>${escapeHtml(review.maskedUsername)}</strong>
+                                <span class="cc-badge cc-review-badge">실관람객</span>
+                            </div>
+                            <time>${escapeHtml(review.createdAt)}</time>
+                        </div>
+                        <div class="cc-review-rating">
+                            <span class="cc-review-stars" aria-hidden="true">${renderRatingStars(rating)}</span>
+                            <strong>${rating.toFixed(1)}</strong>
+                        </div>
+                        <p>${escapeHtml(review.content)}</p>
+                        ${reviewActions}
+                    </article>
+            `;
+        });
+
+        html += `</div></div>`;
+        reviewContainer.innerHTML = html;
+    }
+
+    function initReviewSubmit() {
+        const btnSubmit = document.getElementById('btn-submit-review');
+
+        btnSubmit?.addEventListener('click', async function() {
+            const concertId = document.getElementById('hiddenConcertId')?.value;
+            const rating = document.getElementById('reviewRating').value;
+            const content = document.getElementById('reviewContent').value;
+
+            if(!rating || !content.trim()) {
+                CcUI.alert('평점과 후기 내용을 입력해주세요.', 'warning');
+                return;
+            }
+
+            const reqDTO = {
+                rating: parseFloat(rating),
+                content: content
+            };
+
+            try {
+                const isEditing = editingReviewId !== null;
+                const { res, data } = isEditing
+                    ? await apiPut(`/api/concert/${concertId}/reviews/${editingReviewId}`, reqDTO)
+                    : await apiPost(`/api/concert/${concertId}/reviews`, reqDTO);
+
+                if (res?.ok && data?.status === 200) {
+                    CcUI.toast(isEditing ? '후기가 수정되었습니다.' : '후기가 등록되었습니다.');
+                    closeReviewModal();
+                    document.getElementById('reviewForm').reset();
+                    resetReviewModalMode();
+                    fetchConcertReviews(concertId, 0);
+                } else {
+                    CcUI.alert(getApiErrorMessage(data, '후기 처리에 실패했습니다.'), 'error');
+                }
+            } catch (error) {
+                console.error('리뷰 처리 에러:', error);
+                CcUI.alert('후기 처리 중 오류가 발생했습니다.', 'error');
+            }
+        });
+    }
+
+    function deleteReview(reviewId) {
+        const concertId = document.getElementById('hiddenConcertId')?.value;
+        if (!concertId || !reviewId) return;
+
+        CcUI.confirm({
+            title: '후기를 삭제할까요?',
+            text: '삭제한 후기는 복구할 수 없습니다.',
+            confirmText: '삭제',
+            danger: true,
+            onConfirm: async () => {
+                try {
+                    const { res, data } = await apiDelete(`/api/concert/${concertId}/reviews/${reviewId}`);
+
+                    if (res?.ok && data?.status === 200) {
+                        CcUI.toast('후기가 삭제되었습니다.');
+                        fetchConcertReviews(concertId, 0);
+                    } else {
+                        CcUI.alert(getApiErrorMessage(data, '후기 삭제에 실패했습니다.'), 'error');
+                    }
+                } catch (error) {
+                    console.error('리뷰 삭제 에러:', error);
+                    CcUI.alert('후기 삭제 중 오류가 발생했습니다.', 'error');
+                }
+            }
         });
     }
 
@@ -243,66 +891,28 @@
             if (!dateSelect || !title || !grid) return;
 
             const availableDates = Array.from(dateSelect.options)
-                .filter(function (option) {
-                    return option.value;
-                })
-                .map(function (option) {
-                    return {
-                        value: option.value,
-                        label: option.textContent.trim()
-                    };
-                });
+                .filter(option => option.value)
+                .map(option => ({ value: option.value, label: option.textContent.trim() }));
 
             if (availableDates.length === 0) return;
 
             const availableMap = {};
-            availableDates.forEach(function (date) {
-                availableMap[date.value] = date.label;
-            });
+            availableDates.forEach(date => availableMap[date.value] = date.label);
 
-            const minDate = new Date(availableDates[0].value + "T00:00:00");
-            const maxDate = new Date(availableDates[availableDates.length - 1].value + "T00:00:00");
-
-            if (!dateSelect.value) {
-                dateSelect.value = availableDates[0].value;
-            }
-
+            if (!dateSelect.value) dateSelect.value = availableDates[0].value;
             let viewDate = new Date(dateSelect.value + "T00:00:00");
 
-            function isSameMonth(dateA, dateB) {
-                return dateA.getFullYear() === dateB.getFullYear()
-                    && dateA.getMonth() === dateB.getMonth();
-            }
-
             function updateDateSummary() {
-                if (!dateSummary) return;
-
-                const selectedLabel = availableMap[dateSelect.value] || "";
-                dateSummary.textContent = selectedLabel;
-            }
-
-            function updateArrowState() {
-                const prevButton = picker.querySelector("[data-calendar-prev]");
-                const nextButton = picker.querySelector("[data-calendar-next]");
-
-                if (prevButton) {
-                    prevButton.disabled = isSameMonth(viewDate, minDate);
-                }
-
-                if (nextButton) {
-                    nextButton.disabled = isSameMonth(viewDate, maxDate);
-                }
+                if (dateSummary) dateSummary.textContent = availableMap[dateSelect.value] || "";
             }
 
             function renderCalendar() {
                 const year = viewDate.getFullYear();
                 const month = viewDate.getMonth();
-
                 title.textContent = year + ". " + String(month + 1).padStart(2, "0");
 
                 const firstDay = new Date(year, month, 1).getDay();
                 const lastDate = new Date(year, month + 1, 0).getDate();
-
                 grid.innerHTML = "";
 
                 for (let i = 0; i < firstDay; i++) {
@@ -314,70 +924,54 @@
                 }
 
                 for (let day = 1; day <= lastDate; day++) {
-                    const value = year + "-"
-                        + String(month + 1).padStart(2, "0") + "-"
-                        + String(day).padStart(2, "0");
-
+                    const value = year + "-" + String(month + 1).padStart(2, "0") + "-" + String(day).padStart(2, "0");
                     const button = document.createElement("button");
-
                     button.type = "button";
                     button.className = "cc-calendar-day";
                     button.textContent = day;
 
-                    if (new Date(year, month, day).getDay() === 0) {
-                        button.classList.add("is-sunday");
-                    }
+                    if (new Date(year, month, day).getDay() === 0) button.classList.add("is-sunday");
 
                     if (availableMap[value]) {
                         button.classList.add("is-available");
-
                         button.addEventListener("click", function () {
                             dateSelect.value = value;
                             viewDate = new Date(value + "T00:00:00");
-
                             renderCalendar();
                             updateDateSummary();
                             filterSessionsByDate(form, value);
-
                             dateSelect.dispatchEvent(new Event("change", { bubbles: true }));
                         });
                     }
 
-                    if (dateSelect.value === value) {
-                        button.classList.add("is-selected");
-                    }
-
+                    if (dateSelect.value === value) button.classList.add("is-selected");
                     grid.appendChild(button);
                 }
-
-                updateArrowState();
                 updateDateSummary();
             }
 
-            const prevButton = picker.querySelector("[data-calendar-prev]");
-            const nextButton = picker.querySelector("[data-calendar-next]");
+            picker.querySelector("[data-calendar-prev]")?.addEventListener("click", function () {
+                viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
+                renderCalendar();
+            });
 
-            if (prevButton) {
-                prevButton.addEventListener("click", function () {
-                    if (prevButton.disabled) return;
-
-                    viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
-                    renderCalendar();
-                });
-            }
-
-            if (nextButton) {
-                nextButton.addEventListener("click", function () {
-                    if (nextButton.disabled) return;
-
-                    viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
-                    renderCalendar();
-                });
-            }
+            picker.querySelector("[data-calendar-next]")?.addEventListener("click", function () {
+                viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
+                renderCalendar();
+            });
 
             renderCalendar();
             filterSessionsByDate(form, dateSelect.value);
         });
+    }
+
+    function extractDateFromText(text) {
+        if (!text) return "";
+        const dotMatch = text.match(/(\d{4})\.(\d{2})\.(\d{2})/);
+        if (dotMatch) return `${dotMatch[1]}-${dotMatch[2]}-${dotMatch[3]}`;
+        const dashMatch = text.match(/(\d{4})-(\d{2})-(\d{2})/);
+        if (dashMatch) return `${dashMatch[1]}-${dashMatch[2]}-${dashMatch[3]}`;
+        return "";
     }
 
     function initSessionPicker() {
@@ -390,57 +984,32 @@
             const sessionSummary = form ? form.querySelector("[data-selected-session-summary]") : null;
 
             if (!sessionSelect) return;
-
             const buttons = list.querySelectorAll(".cc-session-card");
 
             buttons.forEach(function (button) {
-                const option = Array.from(sessionSelect.options).find(function (item) {
-                    return item.value === button.dataset.sessionValue;
-                });
+                const option = Array.from(sessionSelect.options).find(item => item.value === button.dataset.sessionValue);
 
                 if (option && !button.dataset.sessionDate) {
                     const foundDate = extractDateFromText(option.textContent);
-                    if (foundDate) {
-                        button.dataset.sessionDate = foundDate;
-                    }
+                    if (foundDate) button.dataset.sessionDate = foundDate;
                 }
 
                 button.addEventListener("click", function () {
-                    const selectedValue = button.dataset.sessionValue;
-
-                    sessionSelect.value = selectedValue;
-
-                    buttons.forEach(function (item) {
-                        item.classList.remove("is-selected");
-                    });
-
+                    sessionSelect.value = button.dataset.sessionValue;
+                    buttons.forEach(item => item.classList.remove("is-selected"));
                     button.classList.add("is-selected");
                     updateSessionSummary(sessionSelect, sessionSummary);
-
                     sessionSelect.dispatchEvent(new Event("change", { bubbles: true }));
                 });
             });
 
-            const firstVisibleButton = Array.from(buttons).find(function (button) {
-                return !button.hidden;
-            }) || buttons[0];
-
+            const firstVisibleButton = Array.from(buttons).find(button => !button.hidden) || buttons[0];
             if (!sessionSelect.value && firstVisibleButton) {
                 firstVisibleButton.click();
             } else {
                 updateSessionSummary(sessionSelect, sessionSummary);
             }
         });
-    }
-
-    function updateSessionSummary(sessionSelect, sessionSummary) {
-        if (!sessionSelect || !sessionSummary) return;
-
-        const selectedOption = Array.from(sessionSelect.options).find(function (option) {
-            return option.value === sessionSelect.value;
-        });
-
-        sessionSummary.textContent = selectedOption ? selectedOption.textContent.trim() : "";
     }
 
     function filterSessionsByDate(form, selectedDate) {
@@ -456,67 +1025,38 @@
         let firstVisibleButton = null;
 
         buttons.forEach(function (button) {
-            if (!button.dataset.sessionDate) {
-                const option = Array.from(sessionSelect.options).find(function (item) {
-                    return item.value === button.dataset.sessionValue;
-                });
-
-                if (option) {
-                    const foundDate = extractDateFromText(option.textContent);
-                    if (foundDate) {
-                        button.dataset.sessionDate = foundDate;
-                    }
-                }
-            }
-
             const shouldShow = !button.dataset.sessionDate || button.dataset.sessionDate === selectedDate;
-
             button.hidden = !shouldShow;
-
-            if (shouldShow && !firstVisibleButton) {
-                firstVisibleButton = button;
-            }
+            if (shouldShow && !firstVisibleButton) firstVisibleButton = button;
         });
 
-        const currentButton = buttons.find(function (button) {
-            return button.dataset.sessionValue === sessionSelect.value && !button.hidden;
-        });
+        const currentButton = buttons.find(button => button.dataset.sessionValue === sessionSelect.value && !button.hidden);
 
         if (currentButton) {
-            buttons.forEach(function (button) {
-                button.classList.remove("is-selected");
-            });
-
+            buttons.forEach(button => button.classList.remove("is-selected"));
             currentButton.classList.add("is-selected");
             updateSessionSummary(sessionSelect, sessionSummary);
-            return;
-        }
-
-        if (firstVisibleButton) {
+        } else if (firstVisibleButton) {
             firstVisibleButton.click();
         } else {
             sessionSelect.value = "";
-
-            if (sessionSummary) {
-                sessionSummary.textContent = "";
-            }
+            if (sessionSummary) sessionSummary.textContent = "";
         }
     }
 
-    function extractDateFromText(text) {
-        if (!text) return "";
+    function updateSessionSummary(sessionSelect, sessionSummary) {
+        if (!sessionSelect || !sessionSummary) return;
+        const selectedOption = Array.from(sessionSelect.options).find(opt => opt.value === sessionSelect.value);
+        sessionSummary.textContent = selectedOption ? selectedOption.textContent.trim() : "";
+    }
 
-        const dotMatch = text.match(/(\d{4})\.(\d{2})\.(\d{2})/);
-        if (dotMatch) {
-            return dotMatch[1] + "-" + dotMatch[2] + "-" + dotMatch[3];
-        }
-
-        const dashMatch = text.match(/(\d{4})-(\d{2})-(\d{2})/);
-        if (dashMatch) {
-            return dashMatch[1] + "-" + dashMatch[2] + "-" + dashMatch[3];
-        }
-
-        return "";
+    function initBookingSectionToggle() {
+        document.querySelectorAll("[data-section-toggle]").forEach(function (toggleButton) {
+            toggleButton.addEventListener("click", function () {
+                const section = toggleButton.closest("[data-booking-section]");
+                if (section) section.classList.toggle("is-collapsed");
+            });
+        });
     }
 
     function initBookingStartSubmit() {
@@ -529,18 +1069,75 @@
 
                 if (!dateSelect || !dateSelect.value) {
                     event.preventDefault();
-                    alert("관람일을 선택해주세요.");
+                    if (window.CcUI) CcUI.alert('관람일을 선택해주세요.', 'error');
+                    else alert("관람일을 선택해주세요.");
                     return;
                 }
 
                 if (!sessionSelect || !sessionSelect.value) {
                     event.preventDefault();
-                    alert("회차를 선택해주세요.");
+                    if (window.CcUI) CcUI.alert('회차를 선택해주세요.', 'error');
+                    else alert("회차를 선택해주세요.");
                 }
             });
         });
     }
+
+    function initHeartToggle() {
+        const heartButtons = document.querySelectorAll('.cc-btn-heart[data-concert-id]');
+        if (heartButtons.length === 0) return;
+
+        heartButtons.forEach(button => {
+            button.addEventListener('click', async function () {
+                const concertId = this.dataset.concertId;
+                if (!concertId) return;
+
+                this.disabled = true;
+
+                try {
+                    const result = await apiPost(`/api/concerts/${concertId}/like`);
+                    const contentType = result.res?.headers?.get('content-type') || '';
+
+                    if (!result.res || result.res.status === 401 || contentType.includes('text/html') || !result.data) {
+                        showLoginRequiredMessage();
+                        return;
+                    }
+
+                    if (!result.res.ok || result.data.status !== 200) {
+                        const message = result.data.message || result.data.msg || '관심 공연 처리에 실패했습니다.';
+                        CcUI.alert(message, 'error');
+                        return;
+                    }
+
+                    const isLiked = result.data.body === true || result.data.body === 'true';
+                    syncHeartButtons(concertId, isLiked);
+                    CcUI.toast(isLiked ? '관심 공연으로 등록되었습니다.' : '관심 공연이 취소되었습니다.');
+                } catch (error) {
+                    console.error('관심등록 에러:', error);
+                    CcUI.alert('관심 공연 처리 중 오류가 발생했습니다.', 'error');
+                } finally {
+                    this.disabled = false;
+                }
+            });
+        });
+    }
+
+    function syncHeartButtons(concertId, isLiked) {
+        document.querySelectorAll(`.cc-btn-heart[data-concert-id="${concertId}"]`).forEach(button => {
+            button.classList.toggle('active', isLiked);
+            button.textContent = isLiked ? '♥' : '♡';
+            button.setAttribute('aria-pressed', String(isLiked));
+            button.setAttribute('aria-label', isLiked ? '관심 취소' : '관심 등록');
+        });
+    }
+
+    function showLoginRequiredMessage() {
+        if (window.CcUI) {
+            CcUI.alert('로그인 후 이용 가능합니다.', 'warning');
+        } else {
+            alert('로그인 후 이용 가능합니다.');
+        }
+    }
 </script>
 
 {{> layout/footer}}
-

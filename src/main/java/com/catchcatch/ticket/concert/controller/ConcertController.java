@@ -2,9 +2,13 @@ package com.catchcatch.ticket.concert.controller;
 
 import com.catchcatch.ticket.concert.banner.BannerResponse;
 import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.concert.enums.ConcertGenre;
 import com.catchcatch.ticket.concert.dto.ConcertResponse;
 import com.catchcatch.ticket.concert.service.ConcertService;
+import com.catchcatch.ticket.core.util.Define;
+import com.catchcatch.ticket.user.dto.SessionUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,6 +16,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
 import java.util.List;
 
@@ -22,17 +27,21 @@ public class ConcertController {
 
     private final ConcertService concertService;
 
+    @Value("${kakao.map.js-key}")
+    private String kakaoMapJsKey;
+
     @GetMapping("/")
     public String homePage(Model model) {
         List<BannerResponse.HomeBannerDTO> heroBanners = concertService.getHeroBanners();
         List<ConcertResponse.ListDTO> recommendConcerts = concertService.getHomepageConcerts();
         List<ConcertResponse.ListDTO> popularConcerts = concertService.getPopularConcerts();
-        List<ConcertResponse.ListDTO> comingSoonConcerts = concertService.getComingSoonConcerts();
+        List<ConcertResponse.HomeOpenScheduleDTO> openSchedules = concertService.getHomeOpenSchedules();
 
         model.addAttribute("heroBanners", heroBanners);
         model.addAttribute("recommendConcerts", recommendConcerts);
         model.addAttribute("popularConcerts", popularConcerts);
-        model.addAttribute("comingSoonConcerts", comingSoonConcerts);
+        model.addAttribute("openSchedules", openSchedules);
+        model.addAttribute("openCount", openSchedules.size());
 
         return "home";
     }
@@ -47,14 +56,8 @@ public class ConcertController {
         if (StringUtils.hasText(condition.getKeyword())) {
             searchTitle = "'" + condition.getKeyword() + "'";
         } else if (StringUtils.hasText(condition.getGenre()) && !"all".equals(condition.getGenre())) {
-            searchTitle = switch (condition.getGenre()) {
-                case "concert" -> "콘서트";
-                case "festival" -> "페스티벌";
-                case "musical" -> "뮤지컬";
-                case "classic" -> "클래식";
-                case "fanmeeting" -> "팬미팅";
-                default -> "기타";
-            };
+            ConcertGenre genre = ConcertGenre.fromCodeOrNull(condition.getGenre());
+            searchTitle = genre != null ? genre.getLabel() : "기타";
         } else if (StringUtils.hasText(condition.getRegion()) && !"all".equals(condition.getRegion())) {
             searchTitle = switch (condition.getRegion()) {
                 case "seoul" -> "서울";
@@ -81,11 +84,16 @@ public class ConcertController {
         return "concert/list";
     }
 
-    // 💡 변경됨: 동적 ID를 받아 데이터를 모델에 심어 반환
     @GetMapping("/concerts/{id}")
-    public String detail(@PathVariable Integer id, Model model) {
-        ConcertResponse.DetailDTO responseDTO = concertService.getConcertDetail(id);
+    public String detail(@PathVariable Integer id,
+                         @SessionAttribute(name = Define.SESSION_USER,required = false) SessionUser sessionUser,
+                         Model model) {
+        Integer userId = (sessionUser != null) ? sessionUser.getId() : null;
+        ConcertResponse.DetailDTO responseDTO = concertService.getConcertDetail(id,userId);
+
         model.addAttribute("concert", responseDTO);
+        model.addAttribute("kakaoMapJsKey", kakaoMapJsKey);
+
         return "concert/detail";
     }
 

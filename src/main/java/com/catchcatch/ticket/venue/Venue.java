@@ -3,18 +3,18 @@ package com.catchcatch.ticket.venue;
 import com.catchcatch.ticket.core.util.DateUtil;
 import jakarta.persistence.*;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
 
-
 @Entity
-@Data
+@Getter
 @Table(name = "venue_tb")
 @NoArgsConstructor
 public class Venue {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -31,7 +31,6 @@ public class Venue {
     @CreationTimestamp
     private Timestamp createdAt;
 
-    // JSON 경로 저장
     @Column(name = "seat_map_file_path")
     private String seatMapFilePath;
 
@@ -44,7 +43,6 @@ public class Venue {
     }
 
     public String getFormattedCreatedAt() {
-
         return DateUtil.formatDateTime(createdAt);
     }
 

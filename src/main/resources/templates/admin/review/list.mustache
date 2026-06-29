@@ -1,0 +1,327 @@
+{{> admin/layout/header}}
+
+<style>
+    .review-stat-card {
+        border-left: .25rem solid #4e73df;
+        background: #f7f9ff;
+        border-radius: .35rem;
+        padding: .85rem 1rem;
+    }
+
+    .review-stat-card.review-stat-card--rating {
+        border-color: #f6c23e;
+        background: #fffaf0;
+    }
+
+    .review-stat-card.review-stat-card--status {
+        border-color: #1cc88a;
+        background: #f2fff9;
+    }
+
+    .review-stat-card.review-stat-card--blocked {
+        border-color: #e74a3b;
+        background: #fff5f4;
+    }
+
+    .review-content-cell {
+        max-width: 460px;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .review-action-cell {
+        width: 110px;
+        min-width: 110px;
+        white-space: nowrap;
+    }
+</style>
+
+<body id="page-top">
+<div id="wrapper">
+    {{> admin/layout/sidebar}}
+
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            {{> admin/layout/topbar}}
+
+            <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">후기 관리</h1>
+                </div>
+
+                <div class="card shadow mb-4">
+                    <div class="card-body">
+                        <form method="get" action="/admin/reviews" class="form-row align-items-end">
+                            <div class="form-group col-lg-6 col-xl-5 mb-2">
+                                <label for="concertFilter" class="font-weight-bold">콘서트 선택</label>
+                                <select class="form-control" id="concertFilter" name="concertId">
+                                    <option value="">전체 콘서트</option>
+                                    {{#concerts}}
+                                        <option value="{{id}}" {{#selected}}selected{{/selected}}>{{title}}</option>
+                                    {{/concerts}}
+                                </select>
+                            </div>
+
+                            <div class="form-group col-auto mb-2">
+                                <button type="submit" class="btn btn-dark">
+                                    <i class="fas fa-search"></i> 조회
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-xl-3 col-md-6 mb-3">
+                        <div class="review-stat-card d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">후기 수</div>
+                                <div class="h4 mb-0 font-weight-bold text-gray-800">{{page.reviewCount}}건</div>
+                            </div>
+                            <i class="fas fa-comments fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-3">
+                        <div class="review-stat-card review-stat-card--rating d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">평균 평점</div>
+                                <div class="h4 mb-0 font-weight-bold text-gray-800">{{page.averageRating}}</div>
+                            </div>
+                            <i class="fas fa-star fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-4 col-md-8 mb-3">
+                        <div class="review-stat-card {{#page.reviewEnabled}}review-stat-card--status{{/page.reviewEnabled}}{{^page.reviewEnabled}}review-stat-card--blocked{{/page.reviewEnabled}} d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="text-xs font-weight-bold text-uppercase mb-1 {{#page.reviewEnabled}}text-success{{/page.reviewEnabled}}{{^page.reviewEnabled}}text-danger{{/page.reviewEnabled}}">
+                                    후기 작성 상태
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                    {{#page.hasSelectedConcert}}
+                                        {{#page.reviewEnabled}}작성 허용{{/page.reviewEnabled}}{{^page.reviewEnabled}}작성 차단{{/page.reviewEnabled}}
+                                    {{/page.hasSelectedConcert}}
+                                    {{^page.hasSelectedConcert}}콘서트 선택 필요{{/page.hasSelectedConcert}}
+                                </div>
+                            </div>
+                            {{#page.hasSelectedConcert}}
+                                <button type="button"
+                                        class="btn {{#page.reviewEnabled}}btn-outline-danger{{/page.reviewEnabled}}{{^page.reviewEnabled}}btn-outline-success{{/page.reviewEnabled}} btn-sm"
+                                        id="toggleReviewWriteStatus"
+                                        data-concert-id="{{page.selectedConcertId}}"
+                                        data-review-enabled="{{page.reviewEnabled}}">
+                                    {{#page.reviewEnabled}}작성 차단{{/page.reviewEnabled}}{{^page.reviewEnabled}}작성 허용{{/page.reviewEnabled}}
+                                </button>
+                            {{/page.hasSelectedConcert}}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">{{page.selectedConcertTitle}} 후기 목록</h6>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover" id="reviewTable" width="100%" cellspacing="0">
+                                <thead class="thead-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>콘서트</th>
+                                    <th>예매번호</th>
+                                    <th>회원</th>
+                                    <th>평점</th>
+                                    <th>내용</th>
+                                    <th>등록일</th>
+                                    <th>관리</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#reviews}}
+                                    <tr>
+                                        <td class="align-middle text-center">{{reviewId}}</td>
+                                        <td class="align-middle">{{concertTitle}}</td>
+                                        <td class="align-middle">{{bookingNumber}}</td>
+                                        <td class="align-middle">
+                                            <div class="font-weight-bold">{{username}}</div>
+                                            <small class="text-muted">{{userEmail}}</small>
+                                        </td>
+                                        <td class="align-middle text-center">{{rating}}</td>
+                                        <td class="align-middle review-content-cell">{{content}}</td>
+                                        <td class="align-middle text-center">{{createdAt}}</td>
+                                        <td class="align-middle text-center review-action-cell">
+                                            <textarea id="review-content-{{reviewId}}" class="d-none">{{content}}</textarea>
+<!--                                            <button type="button"-->
+<!--                                                    class="btn btn-warning btn-sm js-review-edit"-->
+<!--                                                    data-review-id="{{reviewId}}"-->
+<!--                                                    data-rating="{{rating}}">-->
+<!--                                                <i class="fas fa-edit"></i> 수정-->
+<!--                                            </button>-->
+                                            <button type="button"
+                                                    class="btn btn-danger btn-sm js-review-delete"
+                                                    data-review-id="{{reviewId}}">
+                                                <i class="fas fa-trash"></i> 삭제
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {{/reviews}}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {{^reviews}}
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-comments fa-2x mb-2 d-block"></i>
+                                등록된 후기가 없습니다.
+                            </div>
+                        {{/reviews}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="editReviewModal" tabindex="-1" role="dialog" aria-labelledby="editReviewModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editReviewModalLabel">후기 수정</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="editReviewId">
+                        <div class="form-group">
+                            <label for="editRating">평점</label>
+                            <input type="number" class="form-control" id="editRating" min="0.5" max="5" step="0.5">
+                        </div>
+                        <div class="form-group mb-0">
+                            <label for="editContent">후기 내용</label>
+                            <textarea class="form-control" id="editContent" rows="6" maxlength="1000"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" id="editReviewSubmit">수정</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{> admin/layout/footer}}
+
+        <script src="/admin/vendor/datatables/jquery.dataTables.min.js"></script>
+        <script src="/admin/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                $('#reviewTable').DataTable({
+                    order: [[0, 'desc']],
+                    columnDefs: [
+                        { orderable: false, targets: [5, 7] }
+                    ],
+                    language: {
+                        url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Korean.json'
+                    }
+                });
+            });
+        </script>
+        <script>
+            function alertApiError(result, fallbackMessage) {
+                const message = result && result.data && result.data.msg ? result.data.msg : fallbackMessage;
+                CcUI.alert(message, 'error');
+            }
+
+            document.getElementById('toggleReviewWriteStatus')?.addEventListener('click', function () {
+                const button = this;
+                const concertId = button.dataset.concertId;
+                const currentEnabled = button.dataset.reviewEnabled === 'true';
+                const nextEnabled = !currentEnabled;
+
+                CcUI.confirm({
+                    title: nextEnabled ? '후기 작성을 허용하시겠습니까?' : '후기 작성을 차단하시겠습니까?',
+                    text: nextEnabled
+                            ? '선택한 콘서트 상세페이지에서 사용자가 새 후기를 작성할 수 있습니다.'
+                            : '선택한 콘서트 상세페이지에서 새 후기 작성 버튼이 숨겨지고 등록 API도 차단됩니다.',
+                    confirmText: nextEnabled ? '허용' : '차단',
+                    cancelText: '취소',
+                    danger: !nextEnabled,
+                    onConfirm: async function () {
+                        const result = await apiPut('/api/admin/reviews/concerts/' + encodeURIComponent(concertId) + '/status', {
+                            reviewEnabled: nextEnabled
+                        });
+
+                        if (!result.res || !result.res.ok) {
+                            alertApiError(result, '후기 작성 상태 변경에 실패했습니다.');
+                            return;
+                        }
+
+                        CcUI.alert(result.data.body || '후기 작성 상태가 변경되었습니다.', 'success', function () {
+                            location.reload();
+                        });
+                    }
+                });
+            });
+
+<!--            document.addEventListener('click', function (event) {-->
+<!--                const editButton = event.target.closest('.js-review-edit');-->
+
+<!--                if (editButton) {-->
+<!--                    const reviewId = editButton.dataset.reviewId;-->
+<!--                    document.getElementById('editReviewId').value = reviewId;-->
+<!--                    document.getElementById('editRating').value = editButton.dataset.rating;-->
+<!--                    document.getElementById('editContent').value = document.getElementById('review-content-' + reviewId).value;-->
+<!--                    $('#editReviewModal').modal('show');-->
+<!--                }-->
+
+                if (deleteButton) {
+                    const reviewId = deleteButton.dataset.reviewId;
+                    CcUI.confirm({
+                        title: '후기를 삭제하시겠습니까?',
+                        text: '삭제된 후기는 목록에서 제외됩니다.',
+                        confirmText: '삭제',
+                        cancelText: '취소',
+                        danger: true,
+                        onConfirm: async function () {
+                            const result = await apiDelete('/api/admin/reviews/' + encodeURIComponent(reviewId));
+
+                            if (!result.res || !result.res.ok) {
+                                alertApiError(result, '후기 삭제에 실패했습니다.');
+                                return;
+                            }
+
+                            CcUI.alert(result.data.body || '후기가 삭제되었습니다.', 'success', function () {
+                                location.reload();
+                            });
+                        }
+                    });
+                }
+            });
+
+            document.getElementById('editReviewSubmit').addEventListener('click', async function () {
+                const reviewId = document.getElementById('editReviewId').value;
+                const rating = Number(document.getElementById('editRating').value);
+                const content = document.getElementById('editContent').value.trim();
+
+                if (!reviewId || !rating || !content) {
+                    CcUI.alert('평점과 후기 내용을 입력해주세요.', 'warning');
+                    return;
+                }
+
+                const result = await apiPut('/api/admin/reviews/' + encodeURIComponent(reviewId), { rating, content });
+
+                if (!result.res || !result.res.ok) {
+                    alertApiError(result, '후기 수정에 실패했습니다.');
+                    return;
+                }
+
+                CcUI.alert(result.data.body || '후기가 수정되었습니다.', 'success', function () {
+                    location.reload();
+                });
+            });
+        </script>
+    </div>
+</div>
+</body>
+</html>

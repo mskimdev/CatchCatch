@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>예매 상세</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="/css/user-mypage.css">
+<link rel="stylesheet" href="/css/user-booking-detail.css">
+</head>
+
+<main class="cc-main">
+    <div class="cc-container cc-mypage-layout">
+
+        <!-- 메인 콘텐츠 -->
+        <section class="cc-mypage-content">
+
+            {{#detail}}
+                <div class="cc-booking-detail">
+
+                    <!-- 예약 정보 -->
+                    <section class="cc-detail-card">
+                        <p class="cc-detail-booking-number">예매번호 {{bookingNumber}}</p>
+                        <h2 class="cc-detail-title">{{concertTitle}}</h2>
+
+                        <div class="cc-detail-line"></div>
+
+                        <div class="cc-detail-row">
+                            <span>일정</span>
+                            <strong>{{sessionText}}</strong>
+                        </div>
+
+                        <div class="cc-detail-row">
+                            <span>내역</span>
+                            <strong>{{seatName}}</strong>
+                        </div>
+                    </section>
+
+                    <!-- 입장 QR -->
+                    <section class="cc-detail-card cc-detail-card--foldable">
+                        <div class="cc-detail-section-title js-detail-toggle">
+                            <h3>입장 QR</h3>
+                            <button type="button" class="cc-detail-arrow-btn">⌃</button>
+                        </div>
+
+                        <div class="cc-detail-section-body">
+                            <div class="cc-ticket-qr-wrap">
+                                <div id="ticket-qr"
+                                     class="cc-ticket-qr"
+                                     data-token="{{ticketToken}}">
+                                </div>
+
+                                <p class="cc-ticket-qr-desc">
+                                    공연 당일 입장 시 직원에게 QR코드를 보여주세요.
+                                </p>
+
+                                <div class="cc-ticket-code-box">
+                                    <button type="button"
+                                            class="cc-ticket-code-toggle js-ticket-code-toggle">
+                                        입장 코드 보기
+                                    </button>
+
+                                    <p class="cc-ticket-code is-hidden js-ticket-code">
+                                        입장 코드
+                                        <strong>{{ticketCode}}</strong>
+                                    </p>
+
+                                    <a href="/staff/tickets/verify-code?code={{ticketCode}}"
+                                    target="_blank"
+                                    class="cc-ticket-test-link">
+                                    수동 검증 테스트
+                                    </a>
+                                </div>
+
+                                <a href="/staff/tickets/verify?token={{ticketToken}}"
+                                target="_blank"
+                                class="cc-ticket-test-link">
+                                입장권 검증 테스트
+                                </a>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 오시는 길 -->
+                    <section class="cc-detail-card cc-detail-card--foldable">
+                        <div class="cc-detail-section-title js-detail-toggle">
+                            <h3>오시는 길</h3>
+                            <button type="button" class="cc-detail-arrow-btn">⌃</button>
+                        </div>
+
+                        <div class="cc-detail-section-body">
+                            <div class="cc-detail-row">
+                                <span>공연장</span>
+                                <strong>{{venueName}}</strong>
+                            </div>
+
+                            <div class="cc-detail-row">
+                                <span>주소</span>
+                                <strong>{{venueAddress}}</strong>
+                            </div>
+
+                            <div id="map"
+                                 class="cc-kakao-map"
+                                 data-address="{{venueAddress}}"
+                                 data-venue-name="{{venueName}}">
+                            </div>
+                        </div>
+                    </section>
+
+
+                    <!-- 결제금액 -->
+                    <section class="cc-detail-card cc-detail-card--foldable">
+                        <div class="cc-detail-section-title js-detail-toggle">
+                            <h3>결제금액</h3>
+                            <button type="button" class="cc-detail-arrow-btn">⌃</button>
+                        </div>
+
+                        <div class="cc-detail-section-body">
+                            <div class="cc-detail-pay-row">
+                                <div>
+                                    <span>기본</span>
+                                    <strong>{{seatName}}</strong>
+                                </div>
+                                <strong>{{totalPriceText}}</strong>
+                            </div>
+
+                            <div class="cc-detail-line"></div>
+
+                            <div class="cc-detail-pay-row cc-detail-pay-total">
+                                <strong>합계</strong>
+                                <strong>{{totalPriceText}}</strong>
+                            </div>
+
+                            {{#hasPayment}}
+                                <div class="cc-detail-action-group">
+                                    <button type="button"
+                                            class="cc-payment-detail-btn js-payment-detail"
+                                            data-payment-url="/users/payments/{{paymentId}}">
+                                        결제 내역 자세히 보기 &gt;
+                                    </button>
+
+                                    <button type="button"
+                                            class="cc-booking-cancel-btn js-booking-cancel"
+                                            data-payment-id="{{portOnePaymentId}}">
+                                        예매 취소
+                                    </button>
+                                </div>
+                            {{/hasPayment}}
+
+                            {{^hasPayment}}
+                                <button type="button" class="cc-payment-detail-btn" disabled>
+                                    결제 내역이 없습니다
+                                </button>
+                            {{/hasPayment}}
+                        </div>
+                    </section>
+                    <!-- 예약자 정보 -->
+                    <section class="cc-detail-card cc-detail-card--foldable">
+                        <div class="cc-detail-section-title js-detail-toggle">
+                            <h3>예약자 정보</h3>
+                            <button type="button" class="cc-detail-arrow-btn">⌃</button>
+                        </div>
+
+                        <div class="cc-detail-section-body">
+                            <div class="cc-detail-row">
+                                <span>예약자</span>
+                                <strong>{{reserverName}}</strong>
+                            </div>
+
+                            <div class="cc-detail-row">
+                                <span>연락처</span>
+                                <strong>{{reserverPhone}}</strong>
+                            </div>
+
+                            <div class="cc-detail-row">
+                                <span>이메일</span>
+                                <strong>{{reserverEmail}}</strong>
+                            </div>
+                        </div>
+                    </section>
+
+
+                </div>
+            {{/detail}}
+
+        </section>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="/js/booking/ticket-qr.js"></script>
+
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{kakaoMapJsKey}}&autoload=false&libraries=services"></script>
+<script src="/js/booking/booking-detail-map.js"></script>
+<script src="/js/booking/booking-detail.js"></script>
+
+</html>

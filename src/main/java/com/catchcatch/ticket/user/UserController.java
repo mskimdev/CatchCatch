@@ -7,11 +7,6 @@ import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.ProfileImageUtil;
 import com.catchcatch.ticket.user.dto.SessionUser;
 import com.catchcatch.ticket.user.dto.UserRequest;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 
-@Tag(name = "User", description = "회원 인증 및 프로필 관련 API")
 @Slf4j
 @RequiredArgsConstructor
 @Controller
@@ -39,18 +33,12 @@ public class UserController {
     @Value("${oauth.google.client-id}")
     private String googleClientId;
 
-    @Operation(summary = "로그인 폼", description = "로그인 페이지를 반환합니다.")
     @GetMapping("/login")
     public String loginForm(Model model) {
         addClientIdAttributes(model);
         return "user/login";
     }
 
-    @Operation(summary = "로그인 처리", description = "이메일과 비밀번호로 로그인하고 세션을 생성합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "302", description = "로그인 성공 - 홈으로 리다이렉트"),
-            @ApiResponse(responseCode = "200", description = "로그인 실패 - 오류 메시지와 함께 로그인 폼 반환")
-    })
     @PostMapping("/login")
     public String login(
             @Valid UserRequest.LoginDTO reqDTO,
@@ -69,15 +57,10 @@ public class UserController {
 
 
 
-    @Operation(summary = "OAuth 콜백 처리", description = "소셜 로그인 인가 코드를 받아 로그인 또는 회원가입으로 분기합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "302", description = "기존 회원 - 홈으로 리다이렉트"),
-            @ApiResponse(responseCode = "302", description = "신규 회원 - 소셜 회원가입 폼으로 리다이렉트")
-    })
     @GetMapping("/{provider}-redirect")
     public String oauthCallback(
-            @Parameter(description = "OAuth 제공자 (kakao / google)") @PathVariable String provider,
-            @Parameter(description = "OAuth 인가 코드") @RequestParam String code,
+            @PathVariable String provider,
+            @RequestParam String code,
             HttpSession session,
             Model model) {
         try {
@@ -97,22 +80,16 @@ public class UserController {
         return "redirect:/";
     }
 
-    @Operation(summary = "소셜 회원가입 폼", description = "소셜 로그인 후 추가 정보 입력 페이지를 반환합니다.")
     @GetMapping("/social-join")
     public String socialJoinForm(Model model, HttpSession session) {
         model.addAttribute("tempUser", session.getAttribute("tempUser"));
         return "user/social-join";
     }
 
-    @Operation(summary = "소셜 회원가입 처리", description = "소셜 로그인 사용자의 추가 정보를 저장하고 가입을 완료합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "302", description = "가입 성공 - 로그인 페이지로 리다이렉트"),
-            @ApiResponse(responseCode = "200", description = "가입 실패 - 오류 메시지와 함께 폼 반환")
-    })
     @PostMapping("/social-join")
     public String socialJoinProc(
             @Valid UserRequest.SocialJoinDTO reqDTO,
-            @Parameter(description = "프로필 이미지 파일") MultipartFile profileImage,
+            MultipartFile profileImage,
             Model model, HttpSession session) {
         String profileImageUrl = null;
         try {
@@ -128,22 +105,16 @@ public class UserController {
         }
     }
 
-    @Operation(summary = "회원가입 폼", description = "일반 회원가입 페이지를 반환합니다.")
     @GetMapping("/join")
     public String joinForm(Model model) {
         model.addAttribute("kakaoClientId", kakaoClientId);
         return "user/join";
     }
 
-    @Operation(summary = "회원가입 처리", description = "이메일 인증이 완료된 사용자를 등록합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "302", description = "가입 성공 - 로그인 페이지로 리다이렉트"),
-            @ApiResponse(responseCode = "200", description = "가입 실패 - 오류 메시지와 함께 폼 반환")
-    })
     @PostMapping("/join")
     public String join(
             @Valid UserRequest.JoinDTO reqDTO,
-            @Parameter(description = "프로필 이미지 파일") MultipartFile profileImage,
+            MultipartFile profileImage,
             Model model) {
         String profileImageUrl = null;
         try {
@@ -158,19 +129,12 @@ public class UserController {
         }
     }
 
-    @Operation(summary = "로그아웃", description = "세션을 초기화하고 홈으로 리다이렉트합니다.")
-    @ApiResponse(responseCode = "302", description = "로그아웃 성공 - 홈으로 리다이렉트")
     @GetMapping("/users/logout")
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/";
     }
 
-    @Operation(summary = "마이페이지 프로필 조회", description = "로그인한 사용자의 프로필 수정 페이지를 반환합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "프로필 페이지 반환"),
-            @ApiResponse(responseCode = "302", description = "미로그인 - 로그인 페이지로 리다이렉트")
-    })
     @GetMapping("/users/mypage")
     public String profile(@SessionAttribute(Define.SESSION_USER) SessionUser sessionUser, Model model) {
         if (sessionUser == null) return "redirect:/login";
@@ -180,11 +144,6 @@ public class UserController {
     }
 
 
-    @Operation(summary = "예매 내역 조회", description = "로그인한 사용자의 예매 내역 페이지를 반환합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "예매 내역 페이지 반환"),
-            @ApiResponse(responseCode = "302", description = "미로그인 - 로그인 페이지로 리다이렉트")
-    })
     @GetMapping("/users/bookings")
     public String bookings(@RequestParam(required = false) Status status,
                            @SessionAttribute SessionUser sessionUser, Model model) {
@@ -196,16 +155,11 @@ public class UserController {
         model.addAttribute("bookings", bookings);
         model.addAttribute("navBookings", true);
         model.addAttribute("statusAll",      status == null);
-        model.addAttribute("statusPaid",     "PAID".equals(status));
-        model.addAttribute("statusCanceled", "CANCELED".equals(status));
+        model.addAttribute("statusPaid", status == Status.PAID);
+        model.addAttribute("statusCanceled", status == Status.CANCELED);
         return "user/bookings";
     }
 
-    @Operation(summary = "관심 공연 조회", description = "로그인한 사용자의 관심 공연 목록 페이지를 반환합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "관심 공연 페이지 반환"),
-            @ApiResponse(responseCode = "302", description = "미로그인 - 로그인 페이지로 리다이렉트")
-    })
     @GetMapping("/users/liked-concerts")
     public String likedConcerts(@SessionAttribute(Define.SESSION_USER) SessionUser sessionUser, Model model) {
         if (sessionUser == null) return "redirect:/login";
@@ -213,6 +167,25 @@ public class UserController {
         model.addAttribute("navLikedConcerts", true);
         model.addAttribute("concerts", userService.findLikedConcertsByUser(sessionUser.getId()));
         return "user/liked-concerts";
+    }
+
+    @GetMapping("/users/bookings/{bookingId}")
+    public String bookingDetail(@PathVariable Integer bookingId,
+                                @SessionAttribute SessionUser sessionUser,
+                                Model model) {
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+
+        addSidebarAttributes(model, sessionUser);
+
+        BookingResponse.DetailDTO detail =
+                userService.findBookingDetail(sessionUser.getId(), bookingId);
+
+        model.addAttribute("detail", detail);
+        model.addAttribute("navBookings", true);
+
+        return "user/booking-detail";
     }
 
 

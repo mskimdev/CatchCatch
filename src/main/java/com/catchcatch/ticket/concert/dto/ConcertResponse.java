@@ -7,9 +7,11 @@ import com.catchcatch.ticket.session.ConcertSession;
 import lombok.Builder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class ConcertResponse {
@@ -20,7 +22,7 @@ public class ConcertResponse {
     public record ListDTO(
             Integer id,
             String posterUrl,
-            String category,
+            String genreLabel,
             String title,
             String dateRange,
             String venueName,
@@ -30,7 +32,7 @@ public class ConcertResponse {
             String badge
     ) {
         public static ListDTO from(Concert concert) {
-            String category = concert.getCategory() != null ? concert.getCategory() : "콘서트";
+            String genreLabel = concert.getGenreLabel();
             String region = "미상";
             if (concert.getVenue().getAddress() != null && concert.getVenue().getAddress().length() >= 2) {
                 region = concert.getVenue().getAddress().substring(0, 2);
@@ -46,7 +48,7 @@ public class ConcertResponse {
             return new ListDTO(
                     concert.getId(),
                     concert.getPosterUrl(),
-                    category,
+                    genreLabel,
                     concert.getTitle(),
                     dataRange,
                     concert.getVenue().getName(),
@@ -60,7 +62,6 @@ public class ConcertResponse {
     } // end of ListDTO
 
 
-
     // ==========================================
     // 2. 상세 페이지(Detail)용 DTO
     // ==========================================
@@ -70,10 +71,11 @@ public class ConcertResponse {
             Integer id,
             String title,
             String posterUrl,
-            String category,
+            String genreLabel,
             String genre,
             String dateRange,
             String venueName,
+            String venueAddress,
             String ageLimit,
             String runtime,
             String organizer,
@@ -83,21 +85,29 @@ public class ConcertResponse {
             String detailDescription1,
             String detailDescription2,
             Integer reviewCount,
+            boolean reviewEnabled,
+            boolean comingSoon,
+            String ticketOpenIso,
+            String ticketOpenLabel,
             List<SessionDTO> sessions,
             List<DateDTO> dates,
-            List<PriceDTO> prices
+            List<PriceDTO> prices,
+            boolean isLiked
     ) {
-        public static DetailDTO of(Concert concert, List<Seat> seats) {
+        public static DetailDTO of(Concert concert, List<Seat> seats, Long reviewCount, boolean isLiked) {
             String safeDateRange = (concert.getStartDate() != null && concert.getEndDate() != null)
                     ? concert.getStartDate() + "~" + concert.getEndDate() : "일정 미정";
             String safeVenueName = (concert.getVenue() != null) ? concert.getVenue().getName() : "공연장 미정";
+
+            String safeVenueAddress = (concert.getVenue() != null && concert.getVenue().getAddress() != null)
+                    ? concert.getVenue().getAddress()
+                    : "주소 미정";
 
             List<SessionDTO> sessionDTOs = new ArrayList<>();
             List<ConcertSession> concertSessions = concert.getSessions();
             for (int i = 0; i < concertSessions.size(); i++) {
                 sessionDTOs.add(SessionDTO.of(concertSessions.get(i), i + 1));
             }
-            // 💡 2. 낱개 좌석(Seat)들에서 등급별 가격 정보만 추출 및 중복 제거
             List<PriceDTO> priceDTOs = seats.stream()
                     .collect(Collectors.toMap(
                             Seat::getGrade,
@@ -107,14 +117,21 @@ public class ConcertResponse {
                     .values().stream()
                     .collect(Collectors.toList());
 
+            boolean comingSoon = concert.getConcertStatus() == com.catchcatch.ticket.concert.core.ConcertStatus.COMING_SOON;
+            LocalDateTime openDt = concert.getTicketOpenDate();
+            String ticketOpenIso = openDt != null ? openDt.toString() : null;
+            String ticketOpenLabel = openDt != null
+                    ? openDt.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH:mm")) : "미정";
+
             return DetailDTO.builder()
                     .id(concert.getId())
                     .title(concert.getTitle())
                     .posterUrl(concert.getPosterUrl())
-                    .category(concert.getCategory())
-                    .genre(concert.getGenre())
+                    .genreLabel(concert.getGenreLabel())
+                    .genre(concert.getGenreCode())
                     .dateRange(safeDateRange)
                     .venueName(safeVenueName)
+                    .venueAddress(safeVenueAddress)
                     .ageLimit(concert.getAgeLimit())
                     .runtime(concert.getRuntime())
                     .organizer(concert.getOrganizer())
@@ -123,7 +140,11 @@ public class ConcertResponse {
                     .detailTitle(concert.getDetailTitle())
                     .detailDescription1(concert.getDetailDescription1())
                     .detailDescription2(concert.getDetailDescription2())
-                    .reviewCount(0)
+                    .reviewCount(Math.toIntExact(reviewCount == null ? 0L : reviewCount))
+                    .reviewEnabled(concert.isReviewEnabled())
+                    .comingSoon(comingSoon)
+                    .ticketOpenIso(ticketOpenIso)
+                    .ticketOpenLabel(ticketOpenLabel)
                     .sessions(sessionDTOs)
                     .dates(concert.getSessions().stream()
                             .map(ConcertSession::getSessionDate)
@@ -132,6 +153,7 @@ public class ConcertResponse {
                             .map(DateDTO::of)
                             .collect(Collectors.toList()))
                     .prices(priceDTOs)
+                    .isLiked(isLiked)
                     .build();
         }
     } // end of DetailDTO
@@ -189,7 +211,6 @@ public class ConcertResponse {
     } // end of PriceDTO
 
 
-
     // ==========================================
     // 3. 콘서트 일정(List)용 DTO
     // ==========================================
@@ -206,6 +227,51 @@ public class ConcertResponse {
     } // end of ConcertListResponseDTO
 
 
+    // ==========================================
+    // 4. 홈 오픈 예정 섹션용 DTO
+    // ==========================================
+    public record HomeOpenScheduleDTO(
+            Integer id,
+            String dayLabel,
+            String openTime,
+            String saleType,
+            String title
+    ) {
+        public static HomeOpenScheduleDTO from(Concert concert) {
+            LocalDateTime openDt = concert.getTicketOpenDate();
+            String dayLabel, openTime;
+
+            if (openDt == null) {
+                dayLabel = "미정";
+                openTime = "";
+            } else {
+                LocalDate today = LocalDate.now();
+                LocalDate openDate = openDt.toLocalDate();
+                String timeStr = openDt.format(DateTimeFormatter.ofPattern("HH:mm"));
+
+                if (openDate.equals(today)) {
+                    dayLabel = "Today";
+                    openTime = "오늘 " + timeStr;
+                } else if (openDate.equals(today.plusDays(1))) {
+                    dayLabel = "Tomorrow";
+                    openTime = "내일 " + timeStr;
+                } else {
+                    dayLabel = openDate.format(DateTimeFormatter.ofPattern("M.dd (E)", Locale.KOREAN));
+                    openTime = timeStr;
+                }
+            }
+
+            return new HomeOpenScheduleDTO(
+                    concert.getId(),
+                    dayLabel,
+                    openTime,
+                    "일반 예매",
+                    concert.getTitle()
+            );
+        }
+    } // end of HomeOpenScheduleDTO
+
+
     @Builder
     public record OpenSoonConcertResponse(
             Integer id,
@@ -214,9 +280,9 @@ public class ConcertResponse {
             String ticketOpenDate,
             String venueName,
             String address,
-            String category
+            String genreLabel
     ) {
-        public static OpenSoonConcertResponse from(Concert concert){
+        public static OpenSoonConcertResponse from(Concert concert) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분");
             String formattedDate = concert.getTicketOpenDate() != null
                     ? concert.getTicketOpenDate().format(formatter) : "미정";
@@ -228,7 +294,7 @@ public class ConcertResponse {
                     .ticketOpenDate(formattedDate)
                     .venueName(concert.getVenue().getName())
                     .address(concert.getVenue().getAddress())
-                    .category(concert.getCategory())
+                    .genreLabel(concert.getGenreLabel())
                     .build();
         }
     } // OpenSoonConcertResponse
@@ -237,7 +303,7 @@ public class ConcertResponse {
     @Builder
     public record OpenSoonPageResponse(
             String currentGenre,
-            List<OpenSoonConcertResponse> openSoonList){
+            List<OpenSoonConcertResponse> openSoonList) {
     } // end of OpenSoonPageResponse
 
 

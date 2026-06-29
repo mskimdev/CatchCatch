@@ -75,6 +75,19 @@ public class NotificationDispatcher {
                 .build());
     }
 
+    public void dispatchBookingConfirmedSms(Booking booking, String phone, String baseUrl) {
+        String ticketUrl = baseUrl + "/ticket?token=" + booking.getTicketToken();
+        String content = String.format(
+                "[CatchCatch] 예매가 확정되었습니다.\n자세한 정보는 아래 링크를 확인해주세요.\n%s",
+                ticketUrl
+        );
+
+        smsSender.send(MessagePayload.builder()
+                .to(phone)
+                .content(content)
+                .build());
+    }
+
     public void dispatchBookingCanceled(Booking booking) {
         String concertTitle = booking.getConcertSession().getConcert().getTitle();
 

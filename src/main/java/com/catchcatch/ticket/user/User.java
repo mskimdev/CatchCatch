@@ -77,8 +77,8 @@ public class User {
     @ColumnDefault("false")
     private boolean isDeleted;
 
-    public boolean isAdmin() {
-        return Role.ADMIN.equals(this.role);
+    public boolean isAdminGroup() {
+        return role.isCategory("ADMIN");
     }
 
     @Builder
@@ -96,6 +96,10 @@ public class User {
     }
 
 
+
+    public void updatePhone(String phone) {
+        this.phone = phone;
+    }
 
     // 포인트 적립
     public void addPoint(Integer amount) {
@@ -125,6 +129,10 @@ public class User {
         }
 
         this.point -= amount;
+    }
+
+    public void changeRole(Role newRole) {
+        this.role = newRole;
     }
 
 

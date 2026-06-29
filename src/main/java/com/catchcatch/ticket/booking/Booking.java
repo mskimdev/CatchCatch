@@ -1,67 +1,88 @@
 package com.catchcatch.ticket.booking;
 
 import com.catchcatch.ticket.booking.bookingSeat.BookingSeat;
-import com.catchcatch.ticket.booking.enums.Status;
-import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.user.User;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.security.SecureRandom;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "booking_tb")
+@ToString
 public class Booking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    // 예매한 사용자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    // 예매한 공연 회차
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "concert_session_id", nullable = false)
     private ConcertSession concertSession;
 
+    // 예매에 포함된 좌석 목록
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookingSeat> bookingSeats = new ArrayList<>();
 
+    // 예매 번호 - 사용자 조회 및 티켓 확인용
     @Column(name = "booking_number", nullable = false, unique = true)
     private String bookingNumber;
 
+    // QR 입장권 검증용 토큰
+    @Column(name = "ticket_token", unique = true, length = 36)
+    private String ticketToken;
+
+    // QR 인식 실패 시 직원이 직접 입력하는 짧은 입장 코드
+    @Column(name = "ticket_code", unique = true, length = 10)
+    private String ticketCode;
+
+    // 입장 처리 시간
+    @Column(name = "checked_in_at")
+    private Timestamp checkedInAt;
+
+    // 예매 상태 - PENDING, PAID, CANCELED, EXPIRED
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private Status status;
 
+    // 총 결제 금액
     @Column(name = "total_amount", nullable = false)
     private Integer totalAmount;
 
+    // 결제 전 좌석 임시 선점 만료 시간
     @Column(name = "expires_at")
     private Timestamp expiresAt;
 
+    // 예매 생성 시간
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Timestamp createdAt;
 
+    // 결제 완료 시간
     @Column(name = "paid_at")
     private Timestamp paidAt;
 
+    // 예매 취소 시간
     @Column(name = "canceled_at")
     private Timestamp canceledAt;
 
     @Builder
-    private Booking(
+    public Booking(
             User user,
             ConcertSession concertSession,
             String bookingNumber,
@@ -77,18 +98,31 @@ public class Booking {
         this.expiresAt = expiresAt;
     }
 
+    /**
+     * 예매에 좌석 추가
+     *
+     * Booking 1개에 BookingSeat 여러 개를 연결한다.
+     */
     public void addBookingSeat(BookingSeat bookingSeat) {
         this.bookingSeats.add(bookingSeat);
-        bookingSeat.assignBooking(this);
+        bookingSeat.setBooking(this);
     }
 
+    /**
+     * 총 금액 변경
+     *
+     * BookingSeat 가격 합계를 계산한 뒤 저장할 때 사용.
+     */
     public void updateTotalAmount(Integer totalAmount) {
         this.totalAmount = totalAmount == null ? 0 : totalAmount;
     }
 
+    /**
+     * 결제 완료 처리
+     */
     public void completePayment() {
         if (this.status != Status.PENDING) {
-            throw new BadRequestException("결제 가능한 예매 상태가 아닙니다.");
+            throw new IllegalStateException("결제 가능한 예매 상태가 아닙니다.");
         }
 
         this.status = Status.PAID;
@@ -96,22 +130,69 @@ public class Booking {
         this.expiresAt = null;
     }
 
+    /**
+     * 예매 취소 처리
+     */
     public void cancel() {
         if (this.status == Status.CANCELED) {
-            throw new BadRequestException("이미 취소된 예매입니다.");
+            throw new IllegalStateException("이미 취소된 예매입니다.");
         }
 
         this.status = Status.CANCELED;
         this.canceledAt = new Timestamp(System.currentTimeMillis());
-        this.expiresAt = null;
     }
 
+    /**
+     * 입장 여부 확인
+     */
+    public boolean isCheckedIn() {
+        return this.checkedInAt != null;
+    }
+
+    /**
+     * 입장 처리
+     */
+    public void checkIn() {
+        if (this.checkedInAt != null) {
+            throw new IllegalStateException("이미 입장 처리된 예매입니다.");
+        }
+
+        this.checkedInAt = new Timestamp(System.currentTimeMillis());
+    }
+
+    /**
+     * 예매 만료 처리
+     */
     public void expire() {
         if (this.status != Status.PENDING) {
             return;
         }
 
         this.status = Status.EXPIRED;
-        this.expiresAt = null;
+    }
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final String TICKET_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+    @PrePersist
+    public void prePersist() {
+        if (this.ticketToken == null) {
+            this.ticketToken = UUID.randomUUID().toString();
+        }
+
+        if (this.ticketCode == null) {
+            this.ticketCode = generateTicketCode();
+        }
+    }
+
+    private String generateTicketCode() {
+        StringBuilder code = new StringBuilder();
+
+        for (int i = 0; i < 6; i++) {
+            int index = SECURE_RANDOM.nextInt(TICKET_CODE_CHARS.length());
+            code.append(TICKET_CODE_CHARS.charAt(index));
+        }
+
+        return code.toString();
     }
 }

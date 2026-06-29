@@ -14,11 +14,13 @@ logging:
   level:
     root: INFO
     com.tenco: DEBUG
+    org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport: ERROR
 
 # mustache 설정
 spring:
   mustache:
     servlet:
+      cache: false
       expose-session-attributes: false
       expose-request-attributes: true
 
@@ -77,3 +79,8 @@ spring:
       enabled: true
       max-file-size: 50MB
       max-request-size: 100MB
+
+  data:
+    redis:
+      host: localhost
+      port: 6379

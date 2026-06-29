@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/admin/boards/inquiry")
+@RequestMapping("/api/admin/inquiries")
 public class AdminInquiryApiController {
 
     private final InquiryService inquiryService;
@@ -27,7 +27,7 @@ public class AdminInquiryApiController {
     @AdminLog(value = "문의 삭제 (id=#{#id})", level = OperationLogLevel.WARN)
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Integer id) {
-        inquiryService.deleteForAdmin(id);
+        inquiryService.delete(id);
         return Resp.ok("문의가 삭제되었습니다.");
     }
 }

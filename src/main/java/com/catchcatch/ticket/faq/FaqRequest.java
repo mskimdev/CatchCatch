@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.faq;
 
+import com.catchcatch.ticket.core.util.HtmlSanitizer;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -21,7 +22,7 @@ public class FaqRequest {
             return Faq.builder()
                     .category(category)
                     .question(question)
-                    .answer(answer)
+                    .answer(HtmlSanitizer.sanitize(answer))
                     .build();
         }
     }
@@ -37,5 +38,8 @@ public class FaqRequest {
             @NotBlank(message = "답변을 입력해주세요")
             String answer
     ) {
+        public String sanitizedAnswer() {
+            return HtmlSanitizer.sanitize(answer);
+        }
     }
 }

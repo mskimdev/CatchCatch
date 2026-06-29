@@ -3,12 +3,12 @@ package com.catchcatch.ticket.concert.service;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.concert.dto.AdminConcertRequest;
+import com.catchcatch.ticket.concert.enums.ConcertGenre;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.concertlike.ConcertLikeRepository;
 import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.core.util.ProfileImageUtil;
 import com.catchcatch.ticket.notification.service.NotificationDispatcher;
-import com.catchcatch.ticket.seat.SeatJdbcRepository;
 import com.catchcatch.ticket.seat.SeatService;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.session.ConcertSessionRepository;
@@ -34,7 +34,6 @@ public class AdminConcertService {
     private final VenueRepository venueRepository;
     private final ConcertSessionRepository concertSessionRepository;
     private final SeatService seatService;
-    private final SeatJdbcRepository seatJdbcRepository;
     private final ConcertLikeRepository concertLikeRepository;
     private final NotificationDispatcher notificationDispatcher;
 
@@ -77,19 +76,21 @@ public class AdminConcertService {
         Venue venue = venueRepository.findById(dto.venueId())
                 .orElseThrow(() -> new NotFoundException("해당 ID의 공연장을 찾을 수 없습니다."));
 
-        String dbFilePath = null;
+//        if (dto.posterImage() != null && !dto.posterImage().isEmpty()) {
+//            posterPath = ProfileImageUtil.save(dto.posterImage()); // saveFromBase64가 아닌 save 사용!
+//        }
 
-
+        // 2. 포스터 이미지 파일 저장 (기존 로직)
+        String posterUrl = "/uploads/default-poster.png"; // 기본값
         if (dto.posterImage() != null && !dto.posterImage().isEmpty()) {
-            dbFilePath = ProfileImageUtil.save(dto.posterImage()); // saveFromBase64가 아닌 save 사용!
+            posterUrl = ProfileImageUtil.save(dto.posterImage()); // 프로젝트 내부의 파일 저장 헬퍼 메서드 활용
         }
 
         // 2. 부모 엔티티(Concert) 조립 및 최초 save
         Concert concert = Concert.builder()
                 .title(dto.title())
                 .artist(dto.artist())
-                .genre(dto.genre())
-                .category(dto.category())
+                .genre(ConcertGenre.fromCode(dto.genre()))
                 .venue(venue)
                 .ticketOpenDate(dto.ticketOpenDate())
                 .startDate(dto.startDate())
@@ -99,16 +100,16 @@ public class AdminConcertService {
                 .organizer(dto.organizer())
                 .contact(dto.contact())
                 .detailTitle(dto.detailTitle())
+                .detailBannerUrl(dto.detailBannerUrl())
                 .description(dto.description())
                 .detailDescription1(dto.detailDescription1())
                 .detailDescription2(dto.detailDescription2())
-                .posterUrl(dbFilePath) // 위에서 받아온 파일 URL(또는 null)을 그대로 주입
+                .posterUrl(posterUrl) // 위에서 받아온 파일 URL(또는 null)을 그대로 주입
                 .concertStatus(ConcertStatus.valueOf(dto.concertStatus()))
                 .priceVip(dto.priceVip())
                 .priceR(dto.priceR())
                 .priceS(dto.priceS())
                 .priceA(dto.priceA())
-                .detailBannerUrl(dto.detailBannerUrl())
                 .build();
 
         Concert savedConcert = concertRepository.save(concert);
@@ -165,7 +166,7 @@ public class AdminConcertService {
         Venue newVenue = venueRepository.findById(dto.venueId())
                 .orElseThrow(() -> new NotFoundException("해당 ID의 공연장을 찾을 수 없습니다."));
 
-        String updatePosterUrl = dto.posterUrl();
+        String updatePosterUrl = dto.posterUrl() != null ? dto.posterUrl() : concert.getPosterUrl();
 
         if (dto.posterImageBase64() != null && !dto.posterImageBase64().isEmpty()) {
             updatePosterUrl = ProfileImageUtil.saveFromBase64(dto.posterImageBase64());

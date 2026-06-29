@@ -22,9 +22,9 @@
 .cc-login-options { display: flex; align-items: center; justify-content: space-between; color: var(--cc-subtext); font-size: 14px; margin: 14px 0 22px; }
 
 .cc-social-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.cc-social { height: 44px; border-radius: 10px; border: 1px solid var(--cc-line); background: #fff; display: inline-flex; align-items: center; justify-content: center; gap: 7px; font-weight: 850; font-size: 13px; }
-.cc-social--kakao { background: #fff8df; border-color: #f3e4b2; }
-.cc-social--naver { background: #ecfff2; border-color: #ccf0d7; }
+.cc-social { display: block; overflow: hidden; transition: opacity .15s; }
+.cc-social:hover { opacity: .82; }
+.cc-social img { width: 100%; height: auto; display: block; }
 
 .cc-login-links { display: flex; justify-content: center; gap: 18px; margin-top: 34px; color: var(--cc-muted); font-weight: 850; }
 .cc-login-links a:first-child { color: var(--cc-primary-dark); }

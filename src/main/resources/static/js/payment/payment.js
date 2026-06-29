@@ -1,9 +1,46 @@
 document.addEventListener("DOMContentLoaded", function () {
     const paymentForm = document.querySelector("#paymentForm");
     const paymentBtn = document.querySelector("#payment-btn");
+    const cancelBtn = document.querySelector("#booking-cancel-btn");
     const agreeAll = document.querySelector("#payAgreeAll");
     const agreeItems = document.querySelectorAll(".pay-agree-item");
     const payMethodLabels = document.querySelectorAll(".cc-pay-method");
+
+    initPaymentCountdown();
+    initSmsToggle();
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener("click", async function () {
+            const bookingId = Number(new FormData(paymentForm).get("bookingId"));
+
+            if (!bookingId) {
+                CcUI.toast("예매 정보를 찾을 수 없습니다.", "error");
+                return;
+            }
+
+            CcUI.confirm({
+                title: "예매를 취소하시겠습니까?",
+                confirmText: "예매취소",
+                danger: true,
+                onConfirm: async () => {
+                    cancelBtn.disabled = true;
+
+                    const { res, data } = await apiPost(`/booking/${bookingId}/cancel`, {});
+
+                    cancelBtn.disabled = false;
+
+                    if (!res || !res.ok) {
+                        CcUI.toast(data?.msg || "예매 취소에 실패했습니다.", "error");
+                        return;
+                    }
+
+                    CcUI.alert("예매가 취소되었습니다.", "success", () => {
+                        location.href = "/users/bookings";
+                    });
+                }
+            });
+        });
+    }
 
     initPointUse();
 
@@ -117,12 +154,15 @@ document.addEventListener("DOMContentLoaded", function () {
              * amount가 0이면 PortOne 결제창을 띄우면 안 됨.
              * 바로 서버에 결제 완료 검증 요청.
              */
+            const smsPayload = getSmsPayload();
+
             if (prepareData.amount === 0) {
                 const completeRes = await fetch("/api/payments/complete", {
                     method: "POST",
                     headers: headers,
                     body: JSON.stringify({
-                        paymentId: prepareData.paymentId
+                        paymentId: prepareData.paymentId,
+                        ...smsPayload
                     })
                 });
 
@@ -188,7 +228,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 method: "POST",
                 headers: headers,
                 body: JSON.stringify({
-                    paymentId: prepareData.paymentId
+                    paymentId: prepareData.paymentId,
+                    ...smsPayload
                 })
             });
 
@@ -217,6 +258,49 @@ document.addEventListener("DOMContentLoaded", function () {
             paymentBtn.disabled = false;
         }
     });
+
+    function initPaymentCountdown() {
+        const expiresAtInput = document.querySelector("#bookingExpiresAt");
+        const countdownEl = document.querySelector("#paymentCountdown");
+
+        if (!expiresAtInput || !countdownEl) return;
+
+        const expiresAtMillis = Number(expiresAtInput.value);
+
+        if (!expiresAtMillis) return;
+
+        let expired = false;
+
+        function tick() {
+            if (expired) return;
+
+            const remainMs = expiresAtMillis - Date.now();
+
+            if (remainMs <= 0) {
+                expired = true;
+                countdownEl.textContent = "00:00";
+
+                if (paymentBtn) paymentBtn.disabled = true;
+                if (cancelBtn) cancelBtn.disabled = true;
+
+                CcUI.alert(
+                    "좌석 점유 시간이 만료되어 좌석이 해제되었습니다.\n처음부터 다시 선택해주세요.",
+                    "warning",
+                    () => { location.href = "/"; }
+                );
+                return;
+            }
+
+            const remainSeconds = Math.floor(remainMs / 1000);
+            const minute = String(Math.floor(remainSeconds / 60)).padStart(2, "0");
+            const second = String(remainSeconds % 60).padStart(2, "0");
+            countdownEl.textContent = `${minute}:${second}`;
+
+            window.setTimeout(tick, 1000);
+        }
+
+        tick();
+    }
 
     function toPortOnePayMethod(method) {
         if (method === "card") {
@@ -310,6 +394,31 @@ function initPointUse() {
     }
 
     updatePointSummary();
+}
+
+function initSmsToggle() {
+    const notifySmsEl = document.querySelector("#notifySms");
+    const smsPhoneWrap = document.querySelector("#smsPhoneWrap");
+
+    if (!notifySmsEl || !smsPhoneWrap) return;
+
+    smsPhoneWrap.classList.add("is-hidden");
+
+    notifySmsEl.addEventListener("change", function () {
+        smsPhoneWrap.classList.toggle("is-hidden", !notifySmsEl.checked);
+    });
+}
+
+function getSmsPayload() {
+    const notifySmsEl = document.querySelector("#notifySms");
+    const smsPhoneEl = document.querySelector("#smsPhone");
+    const updateProfileEl = document.querySelector("#updateProfile");
+
+    const notifySms = notifySmsEl ? notifySmsEl.checked : false;
+    const smsPhone = smsPhoneEl ? smsPhoneEl.value.trim() : null;
+    const updateProfile = updateProfileEl ? updateProfileEl.checked : false;
+
+    return { notifySms, smsPhone, updateProfile };
 }
 
 function getUsedPoint() {

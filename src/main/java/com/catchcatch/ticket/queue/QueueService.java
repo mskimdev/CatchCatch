@@ -3,67 +3,98 @@ package com.catchcatch.ticket.queue;
 import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.core.sse.SseEmitterRepository;
-import com.catchcatch.ticket.user.User;
+import com.catchcatch.ticket.seat.SeatRepository;
+import com.catchcatch.ticket.seat.SeatStatus;
 import com.catchcatch.ticket.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
+import java.time.Duration;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class QueueService {
 
-    private static final int TOKEN_EXPIRE_MINUTES = 10;
-    private static final List<QueueStatus> ACTIVE_STATUSES = List.of(QueueStatus.WAITING, QueueStatus.READY);
-
+    private static final Duration READY_TTL = Duration.ofMinutes(10);
+    // 결제 화면 진입 후 결제를 완료하지 않으면 15분 후 자동 해제
+    private static final Duration ENTERED_TTL = Duration.ofMinutes(15);
     private static final String ADMIN_QUEUE_STATS_KEY = "admin:queue-stats";
 
-    private final QueueRepository queueRepository;
+    // 인프라 상한: 회차 좌석 수와 무관하게 시스템이 동시에 수용할 수 있는 절대 한도
+    @Value("${catchcatch.queue.concurrency-limit}")
+    private int infraConcurrencyLimit;
+
     private final UserRepository userRepository;
     private final SseEmitterRepository sseEmitterRepository;
+    private final QueueRedisRepository queueRedisRepository;
+    private final SeatRepository seatRepository;
 
     /**
-     * 대기열 진입
-     *
-     * 이미 진행 중인 항목(WAITING/READY)이 있으면 그걸 그대로 반환해
-     * 새로고침 등으로 중복 등록되지 않게 한다.
+     * 대기열 진입. 이미 WAITING, READY, ENTERED 상태면 새로 등록 X 현재 그대로 반환
      */
-    @Transactional
     public QueueResponse.StatusDTO enter(Integer concertSessionId, Integer userId) {
-        var existing = queueRepository.findByConcertSessionIdAndUser_IdAndStatusIn(
-                concertSessionId, userId, ACTIVE_STATUSES
-        );
-
+        var existing = currentStatus(concertSessionId, userId);
         if (existing.isPresent()) {
-            return toStatusDTO(existing.get());
+            return existing.get();
         }
 
-        User user = userRepository.findById(userId)
+        userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
 
-        int nextNumber = queueRepository.findMaxQueueNumber(concertSessionId) + 1;
+        long queueNumber = queueRedisRepository.enqueueWaiting(concertSessionId, userId);
+        long waitingAhead = queueRedisRepository.countWaitingAhead(concertSessionId, queueNumber);
+        long waitingBehind = calculateWaitingBehind(concertSessionId, waitingAhead);
 
-        WaitingQueue queue = WaitingQueue.builder()
-                .user(user)
-                .concertSessionId(concertSessionId)
-                .queueNumber(nextNumber)
-                .status(QueueStatus.WAITING)
-                .build();
+        notifyAdminQueueStats(concertSessionId);
 
-        queueRepository.save(queue);
-        sseEmitterRepository.send(ADMIN_QUEUE_STATS_KEY, "queue-stats-updated", "");
+        // 자리가 비어있는데도 아무도 빠져나가지 않아 승격 트리거가 없던 회차(첫 진입자 등)를 위해
+        // 등록 직후 즉시 승격을 시도한다. capacity 검증은 promoteNext 내부에서 처리된다.
+        promoteNext(concertSessionId, 1);
 
-        return toStatusDTO(queue);
+        return new QueueResponse.StatusDTO(concertSessionId, QueueStatus.WAITING, queueNumber, waitingAhead, waitingBehind, null);
     }
 
-    @Transactional(readOnly = true)
-    public QueueResponse.StatusDTO getStatus(Integer queueId) {
-        return toStatusDTO(findQueue(queueId));
+    /**
+     * 현재 상태 조회 (read-only). 대기열에 없으면 등록하지 않고 예외를 던진다.
+     */
+    public QueueResponse.StatusDTO getStatus(Integer concertSessionId, Integer userId) {
+        return currentStatus(concertSessionId, userId)
+                .orElseThrow(() -> new NotFoundException("대기열 정보를 찾을 수 없습니다."));
+    }
+
+    private Optional<QueueResponse.StatusDTO> currentStatus(Integer concertSessionId, Integer userId) {
+        if (queueRedisRepository.isEntered(concertSessionId, userId)) {
+            return Optional.of(new QueueResponse.StatusDTO(concertSessionId, QueueStatus.ENTERED, null, 0, 0, null));
+        }
+
+        if (queueRedisRepository.isReady(concertSessionId, userId)) {
+            String token = queueRedisRepository.getReadyToken(concertSessionId, userId).orElse(null);
+            return Optional.of(new QueueResponse.StatusDTO(concertSessionId, QueueStatus.READY, null, 0, 0, token));
+        }
+
+        if (queueRedisRepository.isWaiting(concertSessionId, userId)) {
+            // 남은 AVAILABLE 좌석이 없으면 매진 — 대기 중인 사용자에게 즉시 알린다
+            long availableSeatCount = seatRepository.countByConcertSession_IdAndStatus(concertSessionId, SeatStatus.AVAILABLE);
+            if (availableSeatCount == 0) {
+                return Optional.of(new QueueResponse.StatusDTO(concertSessionId, QueueStatus.SOLD_OUT, null, 0, 0, null));
+            }
+            long myNumber = queueRedisRepository.getQueueNumber(concertSessionId, userId).orElse(0L);
+            long waitingAhead = queueRedisRepository.countWaitingAhead(concertSessionId, myNumber);
+            long waitingBehind = calculateWaitingBehind(concertSessionId, waitingAhead);
+            return Optional.of(new QueueResponse.StatusDTO(concertSessionId, QueueStatus.WAITING, myNumber, waitingAhead, waitingBehind, null));
+        }
+
+        return Optional.empty();
+    }
+
+    // 전체 WAITING 인원 중 나(waitingAhead명 + 나 자신 1명)를 뺀 나머지가 내 뒤에 있는 인원이다.
+    private long calculateWaitingBehind(Integer concertSessionId, long waitingAhead) {
+        long totalWaiting = queueRedisRepository.countWaitingBySession(concertSessionId);
+        return Math.max(0, totalWaiting - waitingAhead - 1);
     }
 
     /**
@@ -71,11 +102,8 @@ public class QueueService {
      *
      * 이 회차에 대해 ENTERED 상태(대기열을 통과해 입장 처리된) 항목이 있는지 확인한다.
      */
-    @Transactional(readOnly = true)
     public boolean hasEnteredAccess(Integer concertSessionId, Integer userId) {
-        return queueRepository.findByConcertSessionIdAndUser_IdAndStatusIn(
-                concertSessionId, userId, List.of(QueueStatus.ENTERED)
-        ).isPresent();
+        return queueRedisRepository.isEntered(concertSessionId, userId);
     }
 
     /**
@@ -85,11 +113,14 @@ public class QueueService {
      * 호출이 끝나면 ENTERED 상태가 되어 BookingController.seatForm()의
      * hasEnteredAccess() 체크를 통과할 수 있다.
      */
-    @Transactional
-    public void enterBooking(Integer queueId) {
-        WaitingQueue queue = findQueue(queueId);
-        validateReadyAndNotExpired(queue);
-        queue.entered();
+    public void enterBooking(Integer concertSessionId, Integer userId) {
+        if (!queueRedisRepository.isReady(concertSessionId, userId)) {
+            throw new BadRequestException("입장 가능한 상태가 아닙니다.");
+        }
+
+        String token = queueRedisRepository.getReadyToken(concertSessionId, userId).orElse(null);
+        queueRedisRepository.clearReady(concertSessionId, userId, token);
+        queueRedisRepository.markEntered(concertSessionId, userId, ENTERED_TTL);
     }
 
     /**
@@ -97,76 +128,93 @@ public class QueueService {
      *
      * entryToken만으로 입장 처리해야 하는 경우(예: 이메일/푸시로 받은 링크) 사용한다.
      */
-    @Transactional
     public void enterBooking(String entryToken) {
-        WaitingQueue queue = queueRepository.findByEntryToken(entryToken)
+        int[] resolved = queueRedisRepository.resolveToken(entryToken)
                 .orElseThrow(() -> new BadRequestException("유효하지 않은 입장 정보입니다."));
-        validateReadyAndNotExpired(queue);
-        queue.entered();
-        sseEmitterRepository.send(ADMIN_QUEUE_STATS_KEY, "queue-stats-updated", "");
-    }
+        Integer concertSessionId = resolved[0];
+        Integer userId = resolved[1];
 
-    private void validateReadyAndNotExpired(WaitingQueue queue) {
-        if (queue.getStatus() != QueueStatus.READY) {
-            throw new BadRequestException("입장 가능한 상태가 아닙니다.");
-        }
-
-        if (queue.getTokenExpiresAt().before(now())) {
-            queue.expired();
-            throw new BadRequestException("입장 가능 시간이 만료되었습니다. 대기열에 다시 등록해주세요.");
-        }
+        enterBooking(concertSessionId, userId);
+        notifyAdminQueueStats(concertSessionId);
     }
 
     /**
-     * 스케줄러 - 대기 중인 앞쪽 N명을 READY로 전환하고 SSE로 알린다.
+     * 대기 중인 앞쪽 N명을 READY로 전환하고 SSE로 알린다.
+     * (기존에는 5초 주기 스케줄러가 호출했으나, 이제는 자리가 빌 때(결제완료/취소/READY만료) 직접 호출된다.)
+     *
+     * capacity(READY+ENTERED 상한)를 넘는 만큼은 자동으로 잘라낸다 -
+     * 호출하는 쪽이 매번 capacity를 직접 확인하지 않아도 안전하게 만든다.
+     * capacity = min(시스템이 버틸 수 있는 고정 상한, 남은 AVAILABLE 좌석 수) - 현재 활성 인원
      */
-    @Transactional
     public void promoteNext(Integer concertSessionId, int count) {
-        List<WaitingQueue> waitingList = queueRepository
-                .findByConcertSessionIdAndStatusOrderByQueueNumberAsc(concertSessionId, QueueStatus.WAITING)
-                .stream()
-                .limit(count)
-                .toList();
+        long capacity = getCapacity(concertSessionId);
 
-        if (waitingList.isEmpty()) {
+        long activeCount = queueRedisRepository.countActiveBySession(concertSessionId);
+        int availableSlots = (int) Math.max(0, capacity - activeCount);
+        int promoteCount = Math.min(count, availableSlots);
+
+        if (promoteCount <= 0) {
             return;
         }
 
-        for (WaitingQueue queue : waitingList) {
-            String token = UUID.randomUUID().toString();
-            Timestamp expiresAt = Timestamp.valueOf(LocalDateTime.now().plusMinutes(TOKEN_EXPIRE_MINUTES));
-            queue.ready(token, expiresAt);
+        Set<ZSetOperations.TypedTuple<String>> popped =
+                queueRedisRepository.popFrontWaiting(concertSessionId, promoteCount);
+
+        if (popped.isEmpty()) {
+            return;
         }
 
+        for (ZSetOperations.TypedTuple<String> tuple : popped) {
+            Integer userId = Integer.parseInt(tuple.getValue());
+            queueRedisRepository.promoteToReady(concertSessionId, userId, READY_TTL);
+        }
+
+        queueRedisRepository.removeFromActiveSessionsIfEmpty(concertSessionId);
 
         sseEmitterRepository.send("queue:" + concertSessionId, "queue-updated", "");
+        notifyAdminQueueStats(concertSessionId);
+    }
+
+    // 전역 어드민 채널 + 회차별 어드민 채널에 동시에 알린다.
+    // 어드민이 "전체" 화면만 보고 있어도, 특정 회차를 선택해 보고 있어도 둘 다 즉시 반영된다.
+    private void notifyAdminQueueStats(Integer concertSessionId) {
         sseEmitterRepository.send(ADMIN_QUEUE_STATS_KEY, "queue-stats-updated", "");
+        sseEmitterRepository.send(ADMIN_QUEUE_STATS_KEY + ":" + concertSessionId, "queue-stats-updated", "");
     }
 
-    /**
-     * 스케줄러 - READY 상태인데 입장하지 않고 토큰 유효 시간이 지난 항목을 정리한다.
-     */
-    @Transactional
-    public void expireReadyQueues() {
-        queueRepository.findByStatusAndTokenExpiresAtBefore(QueueStatus.READY, now())
-                .forEach(WaitingQueue::expired);
-        sseEmitterRepository.send(ADMIN_QUEUE_STATS_KEY, "queue-stats-updated", "");
+    // capacity = min(인프라 동시 수용 상한, 해당 회차의 AVAILABLE 좌석 수)
+    // 좌석 수가 작은 소규모 공연은 좌석 수가 실질 상한이 되고,
+    // 대규모 공연도 인프라 한도를 넘지 않는다.
+    public long getCapacity(Integer concertSessionId) {
+        long availableSeatCount = seatRepository.countByConcertSession_IdAndStatus(concertSessionId, SeatStatus.AVAILABLE);
+        return Math.min(infraConcurrencyLimit, availableSeatCount);
     }
 
-    private QueueResponse.StatusDTO toStatusDTO(WaitingQueue queue) {
-        long waitingAhead = queue.getStatus() == QueueStatus.WAITING
-                ? queueRepository.countWaitingAhead(queue.getConcertSessionId(), queue.getQueueNumber())
-                : 0;
-
-        return QueueResponse.StatusDTO.of(queue, waitingAhead);
+    public int getInfraConcurrencyLimit() {
+        return infraConcurrencyLimit;
     }
 
-    private WaitingQueue findQueue(Integer queueId) {
-        return queueRepository.findById(queueId)
-                .orElseThrow(() -> new NotFoundException("대기열 정보를 찾을 수 없습니다."));
+    // READY 토큰이 TTL 만료된 직후 호출된다.
+    // readySet에서 만료된 유저를 제거하고, 빈자리만큼 다음 대기자를 즉시 승격시킨다.
+    public void onReadyExpired(Integer concertSessionId, Integer userId) {
+        queueRedisRepository.clearReady(concertSessionId, userId, null);
+        promoteNext(concertSessionId, 1);
     }
 
-    private Timestamp now() {
-        return Timestamp.valueOf(LocalDateTime.now());
+    // ENTERED 키가 TTL 만료된 직후 호출된다 (결제 미완료로 타임아웃).
+    // enteredSet 정리 후 빈자리만큼 다음 대기자를 즉시 승격시킨다.
+    public void onEnteredExpired(Integer concertSessionId, Integer userId) {
+        queueRedisRepository.clearEntered(concertSessionId, userId);
+        promoteNext(concertSessionId, 1);
+        queueRedisRepository.removeFromActiveSessionsIfEmpty(concertSessionId);
+        notifyAdminQueueStats(concertSessionId);
+    }
+
+    // 결제완료/취소/만료로 예매 프로세스를 빠져나갈 때 호출된다.
+    // ENTERED 상태를 해제하고, 빈자리만큼 다음 대기자를 즉시 승격시킨다.
+    public void releaseEnteredSlot(Integer concertSessionId, Integer userId) {
+        queueRedisRepository.clearEntered(concertSessionId, userId);
+        promoteNext(concertSessionId, 1);
+        queueRedisRepository.removeFromActiveSessionsIfEmpty(concertSessionId);
     }
 }

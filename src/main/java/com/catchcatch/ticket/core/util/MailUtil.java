@@ -1,13 +1,12 @@
 package com.catchcatch.ticket.core.util;
 
-import java.util.Random;
+import java.security.SecureRandom;
 
 public class MailUtil {
 
-    // 6자리 랜덤 숫자 생성 (100000 ~ 999999)
+    private static final SecureRandom random = new SecureRandom();
+
     public static String generateRandomCode() {
-        Random random = new Random();
-        int code = 100000  + random.nextInt(900000);
-        return String.valueOf(code);
+        return String.valueOf(100000 + random.nextInt(900000));
     }
 }

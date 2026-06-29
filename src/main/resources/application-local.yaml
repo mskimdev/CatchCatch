@@ -6,17 +6,28 @@ server:
     encoding:
       charset: utf-8
       force: true
+  tomcat:
+    # 부하 테스트 용도
+    threads:
+      max: 400
+      min-spare: 50
+    accept-count: 200
+    max-connections: 10000
 
 # log 설정
 logging:
   level:
     root: INFO
     com.tenco: DEBUG
+    # JPA Repository를 Redis Repository로도 잡을 수 있다는 안내성 경고가
+    # data-redis 의존성 추가로 모든 Repository에 대해 출력되어 로그가 지저분해지는 것을 방지
+    org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport: ERROR
 
 # mustache 설정
 spring:
   mustache:
     servlet:
+      cache: false
       expose-session-attributes: false
       expose-request-attributes: true
 
@@ -48,6 +59,11 @@ spring:
     url: jdbc:h2:mem:test
     username: sa
     password:
+    hikari:
+      # 부하 테스트 용도
+      maximum-pool-size: 100
+      minimum-idle: 20
+      connection-timeout: 10000
   h2:
     console:
       enabled: true
@@ -74,3 +90,8 @@ spring:
       enabled: true
       max-file-size: 50MB
       max-request-size: 100MB
+
+  data:
+    redis:
+      host: localhost
+      port: 6379

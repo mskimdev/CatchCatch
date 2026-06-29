@@ -9,150 +9,249 @@
             {{> admin/layout/topbar}}
 
             <div class="container-fluid">
+
+                <!-- 페이지 헤더 -->
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800">대시보드</h1>
-                    <div class="btn-group" role="group" aria-label="기간 선택">
-                        <a href="/admin?period=TODAY" class="btn btn-sm {{#summary.periodIsToday}}btn-primary{{/summary.periodIsToday}}{{^summary.periodIsToday}}btn-outline-primary{{/summary.periodIsToday}}">오늘</a>
-                        <a href="/admin?period=WEEK" class="btn btn-sm {{#summary.periodIsWeek}}btn-primary{{/summary.periodIsWeek}}{{^summary.periodIsWeek}}btn-outline-primary{{/summary.periodIsWeek}}">최근 7일</a>
-                        <a href="/admin?period=MONTH" class="btn btn-sm {{#summary.periodIsMonth}}btn-primary{{/summary.periodIsMonth}}{{^summary.periodIsMonth}}btn-outline-primary{{/summary.periodIsMonth}}">최근 30일</a>
+                    <div class="btn-group" role="group" id="periodBtnGroup">
+                        <button type="button" data-period="TODAY" class="btn btn-sm {{#summary.periodIsToday}}btn-primary{{/summary.periodIsToday}}{{^summary.periodIsToday}}btn-outline-primary{{/summary.periodIsToday}}">오늘</button>
+                        <button type="button" data-period="WEEK"  class="btn btn-sm {{#summary.periodIsWeek}}btn-primary{{/summary.periodIsWeek}}{{^summary.periodIsWeek}}btn-outline-primary{{/summary.periodIsWeek}}">최근 7일</button>
+                        <button type="button" data-period="MONTH" class="btn btn-sm {{#summary.periodIsMonth}}btn-primary{{/summary.periodIsMonth}}{{^summary.periodIsMonth}}btn-outline-primary{{/summary.periodIsMonth}}">최근 30일</button>
                     </div>
                 </div>
 
+                <!-- KPI 카드 1행: 기간 필터 집계 지표 -->
                 <div class="row">
+                    <!-- 매출 -->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-success shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">매출</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpi-sales">{{summary.totalSalesAmountFormatted}}원</div>
+                                        <div class="mt-1 small {{#summary.salesUp}}text-success{{/summary.salesUp}}{{^summary.salesUp}}text-danger{{/summary.salesUp}}" id="kpi-sales-diff">
+                                            {{summary.diffLabel}} 대비 {{summary.salesAmountDiffFormatted}}원
+                                        </div>
+                                    </div>
+                                    <div class="col-auto"><i class="fas fa-won-sign fa-2x text-gray-300"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 예매 완료 -->
                     <div class="col-xl-3 col-md-6 mb-4">
                         <div class="card border-left-primary shadow h-100 py-2">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">실시간 대기열(명)</div>
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">예매 완료</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpi-booking">{{summary.bookingCount}}건</div>
+                                        <div class="mt-1 small {{#summary.bookingUp}}text-success{{/summary.bookingUp}}{{^summary.bookingUp}}text-danger{{/summary.bookingUp}}" id="kpi-booking-diff">
+                                            {{summary.diffLabel}} 대비 {{summary.bookingCountDiffFormatted}}건
+                                        </div>
+                                    </div>
+                                    <div class="col-auto"><i class="fas fa-ticket-alt fa-2x text-gray-300"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 취소율 -->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-warning shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">취소율</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpi-cancel-rate">{{summary.cancelRate}}%</div>
+                                        <div class="mt-1 small text-gray-500" id="kpi-canceled-count">취소 {{summary.canceledCount}}건</div>
+                                    </div>
+                                    <div class="col-auto"><i class="fas fa-undo-alt fa-2x text-gray-300"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 결제 이탈(PENDING) -->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-secondary shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">결제 이탈 (PENDING)</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpi-pending">{{summary.pendingCount}}건</div>
+                                        <div class="mt-1 small text-gray-500">결제 미완료 건수</div>
+                                    </div>
+                                    <div class="col-auto"><i class="fas fa-hourglass-half fa-2x text-gray-300"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI 카드 2행: 실시간 지표 -->
+                <div class="row">
+                    <!-- 대기열 트래픽 -->
+                    <div class="col-xl-4 col-md-4 mb-4">
+                        <div class="card border-left-info shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">대기열 트래픽</div>
                                         <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalWaitingCount">{{queueStats.totalWaitingCount}}</div>
+                                        <div class="mt-1 small text-gray-500">동접자 <span id="totalEnteredCount">{{queueStats.totalEnteredCount}}</span>명 · 활성 회차 <span id="activeSessionCount">{{queueStats.activeSessionCount}}</span>개</div>
                                     </div>
                                     <div class="col-auto"><i class="fas fa-users fa-2x text-gray-300"></i></div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <a href="/admin/bookings" class="card border-left-success shadow h-100 py-2 text-decoration-none text-reset d-block">
+                    <!-- 현재 접속자 -->
+                    <div class="col-xl-4 col-md-4 mb-4">
+                        <div class="card border-left-success shadow h-100 py-2">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">예매 완료(건) / 매출</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{summary.bookingCount}}건 · {{summary.totalSalesAmountFormatted}}원</div>
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">현재 접속자 (로그인)</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="activeUserCount">{{queueStats.activeUserCount}}</div>
+                                        <div class="mt-1 small text-gray-500">실시간 로그인 세션 수</div>
                                     </div>
-                                    <div class="col-auto"><i class="fas fa-ticket-alt fa-2x text-gray-300"></i></div>
+                                    <div class="col-auto"><i class="fas fa-user-check fa-2x text-gray-300"></i></div>
                                 </div>
                             </div>
-                        </a>
+                        </div>
                     </div>
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <a href="/admin/concerts?status=COMING_SOON" class="card border-left-info shadow h-100 py-2 text-decoration-none text-reset d-block">
+                    <!-- 시스템 에러 -->
+                    <div class="col-xl-4 col-md-4 mb-4">
+                        <div class="card border-left-danger shadow h-100 py-2">
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">오픈 예정 콘서트(개)</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{summary.comingSoonConcertCount}}</div>
-                                    </div>
-                                    <div class="col-auto"><i class="fas fa-calendar-alt fa-2x text-gray-300"></i></div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-warning shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">시스템 에러(최근 1시간)</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{systemErrorStats.recentErrorCount}}</div>
+                                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">시스템 에러 (1시간)</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="kpi-system-error">{{systemErrorStats.recentErrorCount}}건</div>
+                                        <div class="mt-1 small text-gray-500">에러 발생 시 하단 확인</div>
                                     </div>
                                     <div class="col-auto"><i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i></div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-secondary shadow h-100 py-2">
+                </div>
+
+                <!-- 중단: 매출/예매 추이 차트 + 실시간 대기열 -->
+                <div class="row">
+                    <!-- 매출/예매 추이 라인 차트 -->
+                    <div class="col-xl-8 col-lg-7">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">매출 · 예매 추이</h6>
+                            </div>
                             <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">대기열 활성 공연(개)</div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="activeSessionCount">{{queueStats.activeSessionCount}}</div>
-                                    </div>
-                                    <div class="col-auto"><i class="fas fa-stream fa-2x text-gray-300"></i></div>
+                                <div class="chart-area">
+                                    <canvas id="trendChart"></canvas>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-xl-8 col-lg-7">
+                    <!-- 실시간 대기열 -->
+                    <div class="col-xl-4 col-lg-5">
                         <div class="card shadow mb-4">
-                            <div class="card-header py-3 d-flex align-items-center justify-content-between">
-                                <h6 class="m-0 font-weight-bold text-primary">실시간 트래픽 및 대기열 모니터링</h6>
-                                <div class="btn-group" role="group" aria-label="차트 단위 선택">
-                                    <button type="button" class="btn btn-sm btn-primary" data-chart-unit="second">초</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" data-chart-unit="minute">분</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" data-chart-unit="hour">시</button>
-                                </div>
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">회차별 대기 현황</h6>
                             </div>
-                            <div class="card-body">
-                                <div class="chart-area"><canvas id="myAreaChart"></canvas></div>
-                                <hr>
-                                <ul class="list-group" id="sessionQueueList" style="max-height: 150px; overflow-y: auto;">
-                                    {{#queueStats.sessionQueues}}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>{{concertTitle}} {{round}}회차</span>
-                                        <span class="font-weight-bold">{{waitingCount}}명 대기</span>
-                                    </li>
-                                    {{/queueStats.sessionQueues}}
-                                    {{^queueStats.sessionQueues}}
-                                    <li class="list-group-item text-gray-500">현재 대기 중인 공연 회차가 없습니다.</li>
-                                    {{/queueStats.sessionQueues}}
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush" id="sessionQueueList" style="max-height: 320px; overflow-y: auto;">
+                                    <li class="list-group-item text-gray-500 p-3">불러오는 중...</li>
                                 </ul>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-4 col-lg-5">
+                </div>
+
+                <!-- 하단: 공연별 예매율 + 오늘 회차 + 최근 예매 -->
+                <div class="row">
+                    <!-- 공연별 예매율 수평 바 차트 -->
+                    <div class="col-xl-5 col-lg-5">
                         <div class="card shadow mb-4">
                             <a href="/admin/concert-sales-rates" class="card-header py-3 d-block text-decoration-none">
-                                <h6 class="m-0 font-weight-bold text-primary">공연 예매율 현황 <i class="fas fa-chevron-right fa-xs ml-1"></i></h6>
+                                <h6 class="m-0 font-weight-bold text-primary">공연별 예매율 <small class="text-gray-500 font-weight-normal ml-2">누적 기준</small><i class="fas fa-chevron-right fa-xs ml-1"></i></h6>
                             </a>
                             <div class="card-body">
-                                {{#summary.concertSalesRates}}
-                                <a href="/admin/concerts/{{concertId}}" class="text-decoration-none text-reset">
-                                    <h4 class="small font-weight-bold">{{title}} <span class="float-right">{{salesRate}}%</span></h4>
-                                    <div class="progress mb-2"><div class="progress-bar {{progressBarClass}}" style="width: {{salesRate}}%"></div></div>
-                                </a>
-                                <div class="pl-3 mb-3">
-                                    {{#gradeSalesRates}}
-                                    <div class="d-flex justify-content-between text-gray-600" style="font-size: 12px;">
-                                        <span>{{grade}}</span>
-                                        <span>{{soldCount}} / {{totalCount}} ({{salesRate}}%)</span>
-                                    </div>
-                                    {{/gradeSalesRates}}
+                                <div class="chart-bar" style="height: 220px;">
+                                    <canvas id="salesRateChart"></canvas>
                                 </div>
-                                {{/summary.concertSalesRates}}
-                                {{^summary.concertSalesRates}}
-                                <p class="text-gray-500 small mb-0">등록된 공연 좌석 데이터가 없습니다.</p>
-                                {{/summary.concertSalesRates}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 오늘 공연 회차 -->
+                    <div class="col-xl-3 col-lg-3">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">오늘 공연 회차</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush">
+                                    {{#todaySessions}}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="font-weight-bold small">{{concertTitle}}</div>
+                                            <div class="text-gray-500" style="font-size:11px;">{{round}}</div>
+                                        </div>
+                                        <span class="badge badge-primary badge-pill">{{sessionTime}}</span>
+                                    </li>
+                                    {{/todaySessions}}
+                                    {{^todaySessions}}
+                                    <li class="list-group-item text-gray-500 small">오늘 예정된 공연이 없습니다.</li>
+                                    {{/todaySessions}}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 최근 예매 -->
+                    <div class="col-xl-4 col-lg-4">
+                        <div class="card shadow mb-4">
+                            <a href="/admin/bookings" class="card-header py-3 d-block text-decoration-none">
+                                <h6 class="m-0 font-weight-bold text-primary">최근 예매 <i class="fas fa-chevron-right fa-xs ml-1"></i></h6>
+                            </a>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush" id="recentBookingList">
+                                    {{#recentBookings}}
+                                    <li class="list-group-item">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="font-weight-bold small">{{userName}}</span>
+                                            <span class="text-success small font-weight-bold">{{totalAmountFormatted}}원</span>
+                                        </div>
+                                        <div class="text-gray-500" style="font-size:11px;">{{concertTitle}} · {{round}} · {{paidAt}}</div>
+                                    </li>
+                                    {{/recentBookings}}
+                                    {{^recentBookings}}
+                                    <li class="list-group-item text-gray-500 small">최근 예매 내역이 없습니다.</li>
+                                    {{/recentBookings}}
+                                </ul>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- 하단: 운영 로그 + 시스템 에러 -->
                 <div class="row">
                     <div class="col-lg-6">
                         <div class="card shadow mb-4">
                             <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">최근 운영 로그</h6></div>
-                            <div class="card-body">
-                                <ul class="list-group">
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush" id="operationLogList">
                                     {{#operationLogs}}
-                                    <li class="list-group-item">[{{level}}] {{message}} ({{createdAt}})</li>
+                                    <li class="list-group-item small">
+                                        <span class="text-gray-500">[{{level}}]</span>
+                                        <span class="font-weight-bold">{{actor}}</span>
+                                        {{message}}
+                                        <span class="text-gray-400 float-right">{{createdAt}}</span>
+                                    </li>
                                     {{/operationLogs}}
                                     {{^operationLogs}}
-                                    <li class="list-group-item text-gray-500">최근 운영 로그가 없습니다.</li>
+                                    <li class="list-group-item text-gray-500 small">최근 운영 로그가 없습니다.</li>
                                     {{/operationLogs}}
                                 </ul>
                             </div>
@@ -161,13 +260,13 @@
                     <div class="col-lg-6">
                         <div class="card shadow mb-4">
                             <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">최근 시스템 에러</h6></div>
-                            <div class="card-body">
-                                <ul class="list-group">
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush" id="systemErrorList">
                                     {{#systemErrorStats.recentErrors}}
-                                    <li class="list-group-item {{#isError}}text-danger{{/isError}} {{#isWarn}}text-warning{{/isWarn}}">[{{level}}] {{message}} ({{occurredAt}})</li>
+                                    <li class="list-group-item small {{#isError}}text-danger{{/isError}}{{#isWarn}}text-warning{{/isWarn}}">[{{level}}] {{message}} <span class="float-right">{{occurredAt}}</span></li>
                                     {{/systemErrorStats.recentErrors}}
                                     {{^systemErrorStats.recentErrors}}
-                                    <li class="list-group-item text-gray-500">최근 1시간 내 발생한 에러가 없습니다.</li>
+                                    <li class="list-group-item text-gray-500 small">최근 1시간 내 에러가 없습니다.</li>
                                     {{/systemErrorStats.recentErrors}}
                                 </ul>
                             </div>
@@ -179,114 +278,12 @@
         </div>
         {{> admin/layout/footer}}
 
-        <script src="/admin/vendor/chart.js/Chart.min.js"></script>
         <script>
-            var MAX_POINTS = 60;
-            var rawHistory = []; // { time: Date, value: number }
-            var chartUnit = 'second';
-
-            var ctx = document.getElementById("myAreaChart");
-            var trafficChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{ label: "실시간 대기 인원", data: [], fill: true }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-
-            function pad(n) {
-                return n < 10 ? '0' + n : '' + n;
-            }
-
-            function bucketKey(date, unit) {
-                if (unit === 'hour') {
-                    return pad(date.getHours()) + ':00';
-                }
-                if (unit === 'minute') {
-                    return pad(date.getHours()) + ':' + pad(date.getMinutes());
-                }
-                return pad(date.getHours()) + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds());
-            }
-
-            function rebuildChart() {
-                var buckets = [];
-                var bucketIndex = {};
-
-                rawHistory.forEach(function (point) {
-                    var key = bucketKey(point.time, chartUnit);
-                    if (!(key in bucketIndex)) {
-                        bucketIndex[key] = { key: key, value: point.value };
-                        buckets.push(bucketIndex[key]);
-                    } else {
-                        bucketIndex[key].value = point.value; // 같은 구간의 마지막 값 사용
-                    }
-                });
-
-                var visible = buckets.slice(-MAX_POINTS);
-                trafficChart.data.labels = visible.map(function (b) { return b.key; });
-                trafficChart.data.datasets[0].data = visible.map(function (b) { return b.value; });
-                trafficChart.update();
-            }
-
-            function setChartUnit(unit) {
-                chartUnit = unit;
-                document.querySelectorAll('[data-chart-unit]').forEach(function (btn) {
-                    var isActive = btn.getAttribute('data-chart-unit') === unit;
-                    btn.classList.toggle('btn-primary', isActive);
-                    btn.classList.toggle('btn-outline-primary', !isActive);
-                });
-                rebuildChart();
-            }
-
-            document.querySelectorAll('[data-chart-unit]').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    setChartUnit(btn.getAttribute('data-chart-unit'));
-                });
-            });
+            var DASHBOARD_PERIOD = '{{summary.period}}';
         </script>
-        <script>
-            function renderSessionQueueList(sessionQueues) {
-                var listEl = document.getElementById("sessionQueueList");
-                if (!sessionQueues || sessionQueues.length === 0) {
-                    listEl.innerHTML = '<li class="list-group-item text-gray-500">현재 대기 중인 공연 회차가 없습니다.</li>';
-                    return;
-                }
-                listEl.innerHTML = sessionQueues.map(function (s) {
-                    return '<li class="list-group-item d-flex justify-content-between align-items-center">'
-                        + '<span>' + s.concertTitle + ' ' + s.round + '회차</span>'
-                        + '<span class="font-weight-bold">' + s.waitingCount + '명 대기</span>'
-                        + '</li>';
-                }).join('');
-            }
-
-            function refreshQueueStats() {
-                fetch('/admin/api/queue-stats')
-                    .then(function (res) { return res.json(); })
-                    .then(function (data) {
-                        document.getElementById("totalWaitingCount").textContent = data.totalWaitingCount;
-                        document.getElementById("activeSessionCount").textContent = data.activeSessionCount;
-                        renderSessionQueueList(data.sessionQueues);
-
-                        rawHistory.push({ time: new Date(), value: data.totalWaitingCount });
-                        if (rawHistory.length > MAX_POINTS * 60) {
-                            rawHistory.shift();
-                        }
-                        rebuildChart();
-                    });
-            }
-
-            var queueStatsSource = new EventSource("/api/queue/admin/subscribe");
-            queueStatsSource.addEventListener("queue-stats-updated", refreshQueueStats);
-
-            refreshQueueStats();
-            setInterval(refreshQueueStats, 1000);
-        </script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+        <script src="/js/admin/queue-monitor.js"></script>
+        <script src="/js/admin/dashboard-charts.js"></script>
     </div>
 </div>
 </body>

@@ -29,6 +29,11 @@ dependencies {
     // AOP (운영 로그 등)
     implementation 'org.springframework.boot:spring-boot-starter-aop'
 
+    // Redis (대기열)
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    // 로컬 개발 전용: 별도 Redis 서버 설치 없이 앱 기동 시 자동으로 내장 Redis 실행
+    implementation 'com.github.codemonstur:embedded-redis:1.4.3'
+
     // CoolSMS
     implementation 'com.solapi:sdk:1.0.3'
 
@@ -43,8 +48,9 @@ dependencies {
     implementation 'org.springframework.security:spring-security-crypto'
     // Source: https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.18.0'
-    // Swagger (springdoc-openapi)
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
+    // jsoup - HTML Sanitize (이벤트 HTML 콘텐츠 XSS 방어)
+    implementation 'org.jsoup:jsoup:1.18.3'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-mustache'
     implementation 'org.springframework.boot:spring-boot-starter-web'

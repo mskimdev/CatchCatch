@@ -1,6 +1,7 @@
 {{> admin/layout/header}}
 
 <script src="/js/core/api.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs4.min.css" rel="stylesheet">
 
 <body id="page-top">
 <div id="wrapper">
@@ -40,23 +41,21 @@
                                             <option value="{{id}}">{{name}}</option>
                                         {{/venueList}}
                                         {{^venueList}}
-                                            <option value="1">올림픽공원 체조경기장 (기본값)</option>
+                                            <option value="1">올림픽체조경기장 (기본값)</option>
                                             <option value="2">KSPO DOME</option>
                                         {{/venueList}}
                                     </select>
                                 </div>
                                 <div class="col-md-4 form-group">
-                                    <label>카테고리</label>
-                                    <select name="category" class="form-control">
-                                        <option value="콘서트" selected>콘서트</option>
-                                        <option value="뮤지컬">뮤지컬</option>
-                                        <option value="팬미팅">팬미팅</option>
-                                        <option value="페스티벌">페스티벌</option>
+                                    <label>장르</label>
+                                    <select name="genre" class="form-control" required>
+                                        <option value="concert" selected>콘서트</option>
+                                        <option value="musical">뮤지컬</option>
+                                        <option value="festival">페스티벌</option>
+                                        <option value="fanmeeting">팬미팅</option>
+                                        <option value="classic">클래식</option>
+                                        <option value="etc">기타</option>
                                     </select>
-                                </div>
-                                <div class="col-md-4 form-group">
-                                    <label>장르 (검색용)</label>
-                                    <input type="text" name="genre" class="form-control" value="concert" required>
                                 </div>
                             </div>
 
@@ -169,15 +168,7 @@
                             </div>
                             <div class="form-group">
                                 <label>간략 설명 (description)</label>
-                                <input type="text" name="description" class="form-control" value="싸이의 역대급 워터 파티 브랜드 콘서트" required>
-                            </div>
-                            <div class="form-group">
-                                <label>상세 설명 1</label>
-                                <textarea name="detailDescription1" class="form-control" rows="3" required>더 강력해진 물대포와 역대급 스케일의 무대</textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>상세 설명 2</label>
-                                <textarea name="detailDescription2" class="form-control" rows="3" required>드레스코드는 블루! 흠뻑 젖을 준비 완료?</textarea>
+                                <input type="text" name="description" class="form-control" value="싸이의 대표 여름 워터 파티 브랜드 콘서트" required>
                             </div>
 
                             <div class="form-group mt-4">
@@ -187,6 +178,36 @@
                                     <label class="custom-file-label" for="customFile">이미지 파일을 선택하세요</label>
                                 </div>
                                 <small class="text-muted mt-2 d-block">가로 400px, 세로 600px 비율의 이미지를 권장합니다.</small>
+                            </div>
+
+                            <div class="form-group mt-4">
+                                <label class="font-weight-bold text-dark">상세 배너 이미지 (긴 세로 상세 이미지)</label>
+                                {{#_csrf}}<span id="uploadCsrfMeta" data-param="{{parameterName}}" data-token="{{token}}" hidden></span>{{/_csrf}}
+                                <div class="d-flex align-items-center" style="gap:8px;">
+                                    <input type="text" id="detailBannerUrlInput" name="detailBannerUrl"
+                                           class="form-control" placeholder="이미지를 업로드하면 URL이 자동으로 채워집니다." readonly>
+                                    <label for="detailBannerFileInput" class="btn btn-outline-secondary mb-0 text-nowrap" style="cursor:pointer;">파일 선택</label>
+                                    <input type="file" id="detailBannerFileInput" accept="image/*" class="d-none">
+                                </div>
+                                <div id="detailBannerUploadStatus" class="small mt-1"></div>
+                                <div id="detailBannerPreviewWrap" class="mt-2 d-none">
+                                    <img id="detailBannerPreview" src="" alt="상세 이미지 미리보기"
+                                         style="max-width:200px; border:1px solid #dee2e6; border-radius:4px;">
+                                </div>
+                                <small class="text-muted d-block mt-1">700px 폭의 긴 세로 이미지를 권장합니다. (최대 50MB)</small>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label class="font-weight-bold text-dark">상세페이지 내용</label>
+                                    <textarea name="detailDescription1" class="form-control js-summernote" rows="5"
+                                              placeholder="예: [티켓 예매 안내] 본 공연은 회차당 1인 2매까지 가능하며... (비워두면 사용자 화면에 노출되지 않습니다)"></textarea>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label class="font-weight-bold text-dark">추가 공연정보 / 유의사항 및 안내</label>
+                                    <textarea name="detailDescription2" class="form-control js-summernote" rows="5"
+                                              placeholder="예: [출연진 변경 안내] 25일 공연 캐스팅이 배우 사정으로 인해... (비워두면 사용자 화면에 노출되지 않습니다)"></textarea>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -204,7 +225,7 @@
                             <div class="modal-header">
                                 <h5 class="modal-title">새 회차 추가</h5>
                                 <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">×</span>
+                                    <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
                             <div class="modal-body">
@@ -226,6 +247,43 @@
                 </div>
 
                 <script>
+                    function initSummernoteEditors() {
+                        if (!window.jQuery || !jQuery.fn || !jQuery.fn.summernote) return;
+
+                        jQuery('.js-summernote').summernote({
+                            height: 280,
+                            placeholder: '상세 페이지에 표시할 내용을 입력하세요.',
+                            toolbar: [
+                                ['style', ['style']],
+                                ['font', ['bold', 'italic', 'underline', 'clear']],
+                                ['fontname', ['fontname']],
+                                ['color', ['color']],
+                                ['para', ['ul', 'ol', 'paragraph']],
+                                ['insert', ['link', 'picture', 'video']],
+                                ['view', ['fullscreen', 'codeview', 'help']]
+                            ]
+                        });
+                    }
+
+                    window.addEventListener('load', function () {
+                        if (window.jQuery && jQuery.fn && jQuery.fn.summernote) {
+                            initSummernoteEditors();
+                            return;
+                        }
+
+                        const script = document.createElement('script');
+                        script.src = 'https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs4.min.js';
+                        script.onload = initSummernoteEditors;
+                        document.body.appendChild(script);
+                    });
+
+                    function syncSummernoteEditors() {
+                        if (!window.jQuery || !jQuery.fn || !jQuery.fn.summernote) return;
+                        document.querySelectorAll('.js-summernote').forEach((editor) => {
+                            editor.value = jQuery(editor).summernote('code');
+                        });
+                    }
+
                     // 커스텀 파일 레이블 네임 스위칭
                     document.getElementById('customFile').addEventListener('change', function (e) {
                         var fileName = document.getElementById("customFile").files[0].name;
@@ -247,7 +305,7 @@
                             return;
                         }
 
-                        // 빈 행 숨기기
+                        // 빈줄 숨기기
                         const emptyRow = document.getElementById('emptyRow');
                         if (emptyRow) emptyRow.style.display = 'none';
 
@@ -290,7 +348,7 @@
                         reindexSessions();
                     }
 
-                    // 삭제/추가 시 배열 인덱스 번호 순차 재정렬 함수 (데이터 정합성 유지)
+                    // 삭제/추가 시 배열 인덱스 번호 순차 재설정 함수 (데이터 정합성 유지)
                     function reindexSessions() {
                         const rows = document.querySelectorAll('.session-row');
                         sessionIndex = 0;
@@ -302,6 +360,49 @@
                             sessionIndex++;
                         });
                     }
+
+                    // 상세 배너 이미지 업로드
+                    (function () {
+                        const fileInput = document.getElementById('detailBannerFileInput');
+                        const urlInput  = document.getElementById('detailBannerUrlInput');
+                        const status    = document.getElementById('detailBannerUploadStatus');
+                        const previewWrap = document.getElementById('detailBannerPreviewWrap');
+                        const preview   = document.getElementById('detailBannerPreview');
+                        if (!fileInput) return;
+
+                        fileInput.addEventListener('change', async function () {
+                            const file = this.files[0];
+                            if (!file) return;
+
+                            status.textContent = '업로드 중...';
+                            status.className = 'small mt-1 text-info';
+
+                            const csrfMeta = document.getElementById('uploadCsrfMeta');
+                            const headers  = {};
+                            if (csrfMeta) headers['X-CSRF-TOKEN'] = csrfMeta.dataset.token;
+
+                            const body = new FormData();
+                            body.append('file', file);
+
+                            try {
+                                const res  = await fetch('/admin/upload/image', { method: 'POST', headers, body });
+                                const data = await res.json();
+                                if (res.ok && data.status === 200) {
+                                    urlInput.value = data.body;
+                                    preview.src = data.body;
+                                    previewWrap.classList.remove('d-none');
+                                    status.textContent = '업로드 완료 ✓';
+                                    status.className = 'small mt-1 text-success';
+                                } else {
+                                    status.textContent = '업로드 실패: ' + (data.msg || '서버 오류');
+                                    status.className = 'small mt-1 text-danger';
+                                }
+                            } catch (e) {
+                                status.textContent = '업로드 중 오류가 발생했습니다.';
+                                status.className = 'small mt-1 text-danger';
+                            }
+                        });
+                    })();
 
                     // 최종 폼 제출 트리거
                     const form = document.getElementById("concertForm");
@@ -315,6 +416,7 @@
                             }
 
                             if (confirm('입력하신 정보로 새 공연 및 회차를 등록하시겠습니까?')) {
+                                syncSummernoteEditors();
                                 form.submit();
                             }
                         });

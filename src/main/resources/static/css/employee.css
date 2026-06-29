@@ -1,0 +1,104 @@
+/* 기본 레이아웃 */
+body {
+    font-family: 'Pretendard', sans-serif;
+    background-color: #f4f6f8;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+.admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* 상단 컨트롤 (검색창, 등록버튼) */
+.top-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.search-form { display: flex; gap: 10px; }
+.form-select, .form-input {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* 테이블 스타일 */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+.admin-table th, .admin-table td {
+    border-bottom: 1px solid #eee;
+    padding: 12px;
+    text-align: center;
+}
+.admin-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* 뱃지 (상태 표시) */
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+.status-badge.ACTIVE { background: #e3f2fd; color: #1976d2; }
+.status-badge.SUSPENDED { background: #fff3e0; color: #f57c00; }
+.status-badge.RESIGNED { background: #ffebee; color: #d32f2f; }
+
+/* 공통 버튼 디자인 */
+.btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+}
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-primary { background: #1976d2; color: white; }
+.btn-success { background: #2e7d32; color: white; }
+.btn-danger { background: #d32f2f; color: white; }
+.btn-outline { background: white; border: 1px solid #ccc; color: #333; }
+
+/* 모달(Dialog) 디자인 */
+.admin-modal {
+    border: none;
+    border-radius: 10px;
+    padding: 30px;
+    width: 400px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+.admin-modal::backdrop {
+    background: rgba(0,0,0,0.5); /* 뒤 배경 어둡게 */
+}
+.form-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+.form-group label { font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+.form-group input, .form-group select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+.warning-text { color: #d32f2f; font-size: 12px; margin-top: 10px; }

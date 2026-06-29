@@ -52,6 +52,6 @@ public class Notice {
     public void update(NoticeRequest.UpdateDTO reqDTO) {
         this.isPinned = Boolean.TRUE.equals(reqDTO.isPinned());
         this.title = reqDTO.title();
-        this.content = reqDTO.content();
+        this.content = reqDTO.sanitizedContent();
     }
 }

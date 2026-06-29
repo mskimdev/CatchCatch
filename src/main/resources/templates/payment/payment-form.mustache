@@ -1,6 +1,14 @@
-{{> layout/header}}
+{{> layout/header-booking}}
 
 <link rel="stylesheet" href="/css/booking-payment.css">
+
+<main class="cc-main">
+<input type="hidden" id="bookingExpiresAt" value="{{payment.expiresAtMillis}}">
+
+<div class="cc-timer cc-payment-timer">
+    <span>좌석 점유 보관 시간</span>
+    <b id="paymentCountdown">10:00</b>
+</div>
 
 <section class="cc-payment-layout">
     <!-- 왼쪽: 예매 정보 요약 + 결제 수단 -->
@@ -105,13 +113,17 @@
 
                     <label class="cc-pay-method">
                         <input type="radio" name="method" value="kakaopay">
-                        <span class="cc-pay-method__icon cc-pay-method__icon--kakao">K</span>
+                        <span class="cc-pay-method__icon">
+                            <img src="/images/payment/kakao_pay.png" alt="카카오페이">
+                        </span>
                         <span>카카오페이</span>
                     </label>
 
                     <label class="cc-pay-method">
                         <input type="radio" name="method" value="tosspay">
-                        <span class="cc-pay-method__icon cc-pay-method__icon--toss">T</span>
+                        <span class="cc-pay-method__icon">
+                            <img src="/images/payment/toss_pay.png" alt="토스페이">
+                        </span>
                         <span>토스페이</span>
                     </label>
 
@@ -138,6 +150,29 @@
                             <input type="checkbox" class="pay-agree-item" required>
                             <span>[필수] 결제 서비스 이용약관 동의</span>
                         </label>
+                    </div>
+                </div>
+
+                <div class="cc-pay-sms">
+                    <label class="cc-check">
+                        <input type="checkbox" id="notifySms">
+                        <span>예매 내용 문자로 받기</span>
+                    </label>
+
+                    <div id="smsPhoneWrap" class="cc-sms-phone-wrap">
+                        <input class="cc-input cc-sms-phone-input"
+                               type="tel"
+                               id="smsPhone"
+                               value="{{payment.userPhone}}"
+                               placeholder="010-0000-0000"
+                               maxlength="13">
+
+                        {{^payment.userPhone}}
+                        <label class="cc-check cc-sms-update-check">
+                            <input type="checkbox" id="updateProfile">
+                            <span>이 번호로 프로필 업데이트</span>
+                        </label>
+                        {{/payment.userPhone}}
                     </div>
                 </div>
             </form>
@@ -216,10 +251,9 @@
                 결제하기
             </button>
 
-            <a class="cc-btn cc-btn--outline cc-btn--full cc-payment-prev"
-               href="/booking/seat?concertId={{#payment.concertId}}{{payment.concertId}}{{/payment.concertId}}{{^payment.concertId}}1{{/payment.concertId}}">
-            이전 단계
-            </a>
+            <button type="button" class="cc-btn cc-btn--outline cc-btn--full" id="booking-cancel-btn">
+                예약취소
+            </button>
         </div>
 
         <div class="cc-card cc-notice-card">
@@ -232,6 +266,7 @@
         </div>
     </aside>
 </section>
+</main>
 <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
 <script src="/js/payment/payment.js"></script>
 {{> layout/footer}}

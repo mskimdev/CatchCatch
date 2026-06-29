@@ -1,0 +1,126 @@
+{{> admin/layout/header}}
+
+<style>
+    .badge-ongoing  { background: #1cc88a; color: #fff; font-size: .75rem; }
+    .badge-upcoming { background: #4e73df; color: #fff; font-size: .75rem; }
+    .badge-ended    { background: #858796; color: #fff; font-size: .75rem; }
+    .event-action-cell { width: 180px; min-width: 180px; white-space: nowrap; }
+    .event-action-buttons { display: flex; justify-content: center; gap: 6px; }
+</style>
+
+<body id="page-top">
+<div id="wrapper">
+    {{> admin/layout/sidebar}}
+
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            {{> admin/layout/topbar}}
+
+            <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">이벤트 관리</h1>
+                    <a href="/admin/events/save" class="btn btn-primary btn-sm shadow-sm">
+                        <i class="fas fa-plus fa-sm"></i> 이벤트 등록
+                    </a>
+                </div>
+
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">이벤트 목록</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover" id="eventTable" width="100%" cellspacing="0">
+                                <thead class="thead-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>제목</th>
+                                    <th>참여 조건</th>
+                                    <th>포인트</th>
+                                    <th>기간</th>
+                                    <th>상태</th>
+                                    <th>관리</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#events}}
+                                    <tr>
+                                        <td class="align-middle text-center" style="width:60px;">{{id}}</td>
+                                        <td class="align-middle"><strong>{{title}}</strong></td>
+                                        <td class="align-middle text-center">{{conditionLabel}}</td>
+                                        <td class="align-middle text-center">{{rewardPoint}}P</td>
+                                        <td class="align-middle text-center" style="width:200px;">{{startDate}} ~ {{endDate}}</td>
+                                        <td class="align-middle text-center" style="width:80px;">
+                                            <span class="badge
+                                                {{#isOngoing}}badge-ongoing{{/isOngoing}}
+                                                {{#isUpcoming}}badge-upcoming{{/isUpcoming}}
+                                                {{#isEnded}}badge-ended{{/isEnded}}
+                                            ">{{statusLabel}}</span>
+                                        </td>
+                                        <td class="align-middle text-center event-action-cell">
+                                            <div class="event-action-buttons">
+                                                <a href="/admin/events/{{id}}/edit" class="btn btn-warning btn-sm">
+                                                    <i class="fas fa-edit"></i> 수정
+                                                </a>
+                                                <button type="button"
+                                                        class="btn btn-danger btn-sm btn-delete"
+                                                        data-id="{{id}}"
+                                                        data-title="{{title}}">
+                                                    <i class="fas fa-trash"></i> 삭제
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {{/events}}
+                                {{^events}}
+                                    <tr>
+                                        <td colspan="7" class="text-center py-5 text-muted">
+                                            <i class="fas fa-gift fa-2x mb-2 d-block"></i>
+                                            등록된 이벤트가 없습니다.
+                                        </td>
+                                    </tr>
+                                {{/events}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{> admin/layout/footer}}
+
+        <script src="/admin/vendor/datatables/jquery.dataTables.min.js"></script>
+        <script src="/admin/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                $('#eventTable').DataTable({
+                    "order": [[0, "desc"]],
+                    "columnDefs": [{ "orderable": false, "targets": [6] }],
+                    "language": { "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Korean.json" }
+                });
+            });
+
+            document.querySelectorAll('.btn-delete').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    const id = this.dataset.id;
+                    const title = this.dataset.title;
+                    CcUI.confirm({
+                        title: '이벤트를 삭제하시겠습니까?',
+                        text: '"' + title + '" 이벤트를 삭제합니다. 되돌릴 수 없습니다.',
+                        confirmText: '삭제',
+                        danger: true,
+                        onConfirm: function () {
+                            fetch('/admin/events/' + id, { method: 'DELETE' })
+                                .then(res => res.json())
+                                .then(() => location.reload())
+                                .catch(() => CcUI.alert('삭제 중 오류가 발생했습니다.', 'error'));
+                        }
+                    });
+                });
+            });
+        </script>
+    </div>
+</div>
+</body>
+</html>

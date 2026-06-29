@@ -6,7 +6,7 @@ import com.catchcatch.ticket.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,7 +18,7 @@ import java.sql.Timestamp;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
 public class Inquiry {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,20 +44,30 @@ public class Inquiry {
 
     @ColumnDefault("false")
     @Column(nullable = false)
-    private boolean isPublic = false;
+    private boolean isPublic;
 
     @ColumnDefault("false")
     @Column(nullable = false)
-    private boolean notifyEmail = false;
+    private boolean notifyEmail;
 
     @ColumnDefault("false")
     @Column(nullable = false)
-    private boolean notifySms = false;
+    private boolean notifySms;
 
     private String reply;
 
     @CreationTimestamp
     private Timestamp createdAt;
+
+    public void update(InquiryCategory category, String title, String content,
+                       boolean isPublic, boolean notifyEmail, boolean notifySms) {
+        this.category = category;
+        this.title = title;
+        this.content = content;
+        this.isPublic = isPublic;
+        this.notifyEmail = notifyEmail;
+        this.notifySms = notifySms;
+    }
 
     public void reply(String reply) {
         this.reply = reply;

@@ -18,10 +18,30 @@ public class ProfileImageUtil {
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
     private static final Path profileDirectory = Path.of("uploads", "profiles").toAbsolutePath().normalize();
 
+    public static String saveToDirectory(MultipartFile file, String subDirectory) {
+        if (file == null || file.isEmpty()) return null;
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new BadRequestException("이미지는 50MB 이하로 업로드해주세요.");
+        }
+        String extension = getExtension(file.getOriginalFilename());
+        if (!ALLOWED_EXTENSIONS.contains(extension)) {
+            throw new BadRequestException("JPG, PNG, GIF, WEBP 이미지만 업로드할 수 있습니다.");
+        }
+        Path directory = Path.of("uploads", subDirectory).toAbsolutePath().normalize();
+        String filename = UUID.randomUUID() + "." + extension;
+        try {
+            Files.createDirectories(directory);
+            Files.copy(file.getInputStream(), directory.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+            return "/uploads/" + subDirectory + "/" + filename;
+        } catch (IOException e) {
+            throw new BadRequestException("이미지를 저장하지 못했습니다.");
+        }
+    }
+
     public static String save(MultipartFile file) {
         if (file == null || file.isEmpty()) return null;
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new BadRequestException("프로필 이미지는 5MB 이하로 업로드해주세요.");
+            throw new BadRequestException("프로필 이미지는 50MB 이하로 업로드해주세요.");
         }
 
         String extension = getExtension(file.getOriginalFilename());
@@ -60,7 +80,7 @@ public class ProfileImageUtil {
             throw new BadRequestException("이미지 인코딩이 올바르지 않습니다.");
         }
         if (imageBytes.length > MAX_FILE_SIZE) {
-            throw new BadRequestException("프로필 이미지는 5MB 이하로 업로드해주세요.");
+            throw new BadRequestException("프로필 이미지는 50MB 이하로 업로드해주세요.");
         }
         String filename = UUID.randomUUID() + "." + extension;
         try {

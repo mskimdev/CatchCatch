@@ -43,7 +43,7 @@ public class AdminUserService {
     @Transactional
     public void delete(Integer id) {
         User user = findUser(id);
-        if (user.isAdmin()) {
+        if (user.isAdminGroup()) {
             throw new BadRequestException("관리자 계정은 탈퇴 처리할 수 없습니다.");
         }
         if (user.isDeleted()) {
