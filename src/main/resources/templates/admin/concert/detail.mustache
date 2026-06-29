@@ -202,7 +202,6 @@
                 <script>
                     const concertId = {{concert.id}};
 
-                    // 1) 회차 추가 처리 (POST)
                     document.getElementById('addSessionForm').addEventListener('submit', async function (e) {
                         e.preventDefault();
                         const form = e.target;
@@ -217,17 +216,15 @@
 
                             if (res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
                                 CcUI.toast('회차가 성공적으로 추가되었습니다.', 'success');
-                                setTimeout(() => window.location.reload(), 1000); // 1초 후 새로고침
+                                setTimeout(() => window.location.reload(), 1000);
                             } else {
                                 CcUI.alert('회차 추가에 실패했습니다: ' + (data && data.msg ? data.msg : '알 수 없는 오류'));
                             }
                         } catch (error) {
-                            console.error('회차 추가 통신 에러:', error);
                             CcUI.alert('서버와 통신에 실패했습니다.');
                         }
                     });
 
-                    // 2) 수정 모달 띄우기 함수
                     function openEditModal(sessionId, round, sessionDate, sessionTime) {
                         document.getElementById('editSessionId').value = sessionId;
                         document.getElementById('editRound').value = round;
@@ -236,7 +233,6 @@
                         $('#editSessionModal').modal('show');
                     }
 
-                    // 3) 회차 수정 처리 (PUT)
                     document.getElementById('editSessionForm').addEventListener('submit', async function (e) {
                         e.preventDefault();
                         const sessionId = document.getElementById('editSessionId').value;
@@ -251,17 +247,15 @@
 
                             if (res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
                                 CcUI.toast('성공적으로 수정되었습니다.', 'success');
-                                setTimeout(() => window.location.reload(), 1000); // 1초 후 새로고침
+                                setTimeout(() => window.location.reload(), 1000);
                             } else {
                                 CcUI.alert('회차 수정에 실패했습니다: ' + (data && data.msg ? data.msg : '알 수 없는 오류'));
                             }
                         } catch (error) {
-                            console.error('회차 수정 통신 에러:', error);
                             CcUI.alert('서버와 통신에 실패했습니다.');
                         }
                     });
 
-                    // 4) 회차 논리 삭제 처리 (DELETE)
                     function deleteSession(sessionId) {
                     CcUI.confirm({
                         text: '이 회차를 정말 삭제하시겠습니까?',
@@ -277,7 +271,6 @@
                                     CcUI.alert('삭제에 실패했습니다.');
                                 }
                             } catch (error) {
-                                console.error('회차 삭제 통신 에러:', error);
                                 CcUI.alert('서버와 통신에 실패했습니다.');
                             }
                         }

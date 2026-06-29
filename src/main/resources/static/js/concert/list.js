@@ -1,3 +1,12 @@
+function showConcertAlert(message, type = 'warning') {
+  if (window.CcUI && typeof CcUI.alert === 'function') {
+    CcUI.alert(message, type);
+    return;
+  }
+
+  alert(message);
+}
+
 function initFilterState() {
   const urlParams = new URLSearchParams(window.location.search);
   const currentStatus = urlParams.get('status') || 'all';
@@ -59,7 +68,7 @@ function initHeartToggle() {
 
     if (res && res.status === 401) {
       const err = await res.json().catch(() => null);
-      alert(err?.message || '로그인 먼저 해주세요');
+      showConcertAlert(err?.message || '로그인 먼저 해주세요');
       location.href = '/login';
       return;
     }

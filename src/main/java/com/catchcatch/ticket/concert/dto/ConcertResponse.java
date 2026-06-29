@@ -16,9 +16,6 @@ import java.util.stream.Collectors;
 
 public class ConcertResponse {
 
-    // ==========================================
-    // 1. 메인/목록 페이지용 DTO
-    // ==========================================
     public record ListDTO(
             Integer id,
             String posterUrl,
@@ -59,12 +56,9 @@ public class ConcertResponse {
                     "예매가능"
             );
         }
-    } // end of ListDTO
+    }
 
 
-    // ==========================================
-    // 2. 상세 페이지(Detail)용 DTO
-    // ==========================================
     @Builder
     public record DetailDTO(
 
@@ -156,7 +150,7 @@ public class ConcertResponse {
                     .isLiked(isLiked)
                     .build();
         }
-    } // end of DetailDTO
+    }
 
 
     @Builder
@@ -178,7 +172,7 @@ public class ConcertResponse {
                     .label(label)
                     .build();
         }
-    } // end of SessionDTO
+    }
 
     @Builder
     public record DateDTO(
@@ -192,7 +186,7 @@ public class ConcertResponse {
                     .label(date.format(formatter))
                     .build();
         }
-    } // end of DateDTO
+    }
 
 
     @Builder
@@ -208,7 +202,7 @@ public class ConcertResponse {
                     .priceText(String.format("%,d원", price))
                     .build();
         }
-    } // end of PriceDTO
+    }
 
 
     // ==========================================

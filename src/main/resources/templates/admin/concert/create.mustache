@@ -284,7 +284,6 @@
                         });
                     }
 
-                    // 커스텀 파일 레이블 네임 스위칭
                     document.getElementById('customFile').addEventListener('change', function (e) {
                         var fileName = document.getElementById("customFile").files[0].name;
                         var nextSibling = e.target.nextElementSibling;
@@ -293,7 +292,6 @@
                         }
                     });
 
-                    // 클라이언트단 동적 회차 리스트 핸들링 로직
                     let sessionIndex = 0;
 
                     function addSessionRow() {
@@ -301,11 +299,10 @@
                         const sessionDate = document.getElementById('modalSessionDate').value;
 
                         if (!round || !sessionDate) {
-                            alert('회차 번호와 공연 일시를 모두 입력해 주세요.');
+                            CcUI.alert('회차 번호와 공연 일시를 모두 입력해 주세요.', 'warning');
                             return;
                         }
 
-                        // 빈줄 숨기기
                         const emptyRow = document.getElementById('emptyRow');
                         if (emptyRow) emptyRow.style.display = 'none';
 
@@ -313,7 +310,6 @@
                         const tr = document.createElement('tr');
                         tr.className = 'text-center session-row';
 
-                        // Spring ModelAttribute List Binding 규격 적용 (sessions[index].field)
                         tr.innerHTML = `
                             <td class="align-middle">
                                 <strong>${round}회차</strong>
@@ -331,7 +327,6 @@
                         tbody.appendChild(tr);
                         sessionIndex++;
 
-                        // 모달 초기화 및 닫기
                         document.getElementById('modalRound').value = '';
                         document.getElementById('modalSessionDate').value = '';
                         $('#addSessionModal').modal('hide');
@@ -348,7 +343,6 @@
                         reindexSessions();
                     }
 
-                    // 삭제/추가 시 배열 인덱스 번호 순차 재설정 함수 (데이터 정합성 유지)
                     function reindexSessions() {
                         const rows = document.querySelectorAll('.session-row');
                         sessionIndex = 0;
@@ -361,7 +355,6 @@
                         });
                     }
 
-                    // 상세 배너 이미지 업로드
                     (function () {
                         const fileInput = document.getElementById('detailBannerFileInput');
                         const urlInput  = document.getElementById('detailBannerUrlInput');
@@ -404,21 +397,30 @@
                         });
                     })();
 
-                    // 최종 폼 제출 트리거
                     const form = document.getElementById("concertForm");
                     if (form) {
                         form.addEventListener("submit", function(e) {
                             e.preventDefault();
-                            if (document.querySelectorAll('.session-row').length === 0) {
-                                if (!confirm('등록된 회차가 없습니다. 회차 없이 공연 정보만 먼저 생성하시겠습니까?')) {
-                                    return;
-                                }
-                            }
-
-                            if (confirm('입력하신 정보로 새 공연 및 회차를 등록하시겠습니까?')) {
+                            const submitForm = () => {
                                 syncSummernoteEditors();
                                 form.submit();
+                            };
+
+                            if (document.querySelectorAll('.session-row').length === 0) {
+                                CcUI.confirm({
+                                    text: '등록된 회차가 없습니다. 회차 없이 공연 정보만 먼저 생성하시겠습니까?',
+                                    onConfirm: () => CcUI.confirm({
+                                        text: '입력하신 정보로 새 공연 및 회차를 등록하시겠습니까?',
+                                        onConfirm: submitForm
+                                    })
+                                });
+                                return;
                             }
+
+                            CcUI.confirm({
+                                text: '입력하신 정보로 새 공연 및 회차를 등록하시겠습니까?',
+                                onConfirm: submitForm
+                            });
                         });
                     }
                 </script>
