@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.employee;
 
+import com.catchcatch.ticket.employee.enums.EmployeeStatus;
 import com.catchcatch.ticket.user.User; // User 엔티티 임포트
 import jakarta.persistence.*;
 import lombok.Builder;

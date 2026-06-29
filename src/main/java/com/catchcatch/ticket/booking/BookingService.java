@@ -8,7 +8,7 @@ import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.payment.Payment;
-import com.catchcatch.ticket.payment.PaymentRepository;
+import com.catchcatch.ticket.payment.repository.PaymentRepository;
 import com.catchcatch.ticket.queue.QueueService;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.seat.SeatRepository;

@@ -1,8 +1,8 @@
 package com.catchcatch.ticket.admin;
 
 import com.catchcatch.ticket.core.util.Define;
-import com.catchcatch.ticket.employee.EmployeeRequest;
-import com.catchcatch.ticket.employee.EmployeeStatus;
+import com.catchcatch.ticket.employee.dto.EmployeeRequest;
+import com.catchcatch.ticket.employee.enums.EmployeeStatus;
 import com.catchcatch.ticket.user.dto.SessionUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

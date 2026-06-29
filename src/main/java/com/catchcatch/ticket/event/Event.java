@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.event;
 
+import com.catchcatch.ticket.event.enums.ConditionType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
