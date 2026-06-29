@@ -8,11 +8,12 @@
     </div>
 
     <div class="seatmap-header-simple__actions">
-        <div class="seatmap-header-simple__save-info" id="seatmapSaveInfo">
-            <strong id="seatmapSaveInfoTitle">저장 대상: 좌석 JSON · 구역 JSON · 도형 이미지</strong>
-            <span id="seatmapSavePathText">
-                /temp/seatmap/concert-session/seatmap-seats.json · seatmap-sections.json · seatmap-image.png
-            </span>
+        <div class="seatmap-header-simple__save-info"
+             id="seatmapSaveInfo"
+             data-save-title="{{seatmapSaveTitle}}"
+             data-save-path="{{seatmapSavePathText}}">
+            <strong id="seatmapSaveInfoTitle">{{seatmapSaveTitle}}</strong>
+            <span id="seatmapSavePathText">{{seatmapSavePathText}}</span>
         </div>
 
         <button type="button" class="seatmap-header-simple__save" id="seatmapHeaderSave">
@@ -22,12 +23,6 @@
         {{#prevUrl}}
             <a class="seatmap-header-simple__button" href="{{prevUrl}}">이전</a>
         {{/prevUrl}}
-
-        {{#nextUrl}}
-            <a class="seatmap-header-simple__button seatmap-header-simple__button--primary" href="{{nextUrl}}">
-                {{nextLabel}}
-            </a>
-        {{/nextUrl}}
     </div>
 </header>
 

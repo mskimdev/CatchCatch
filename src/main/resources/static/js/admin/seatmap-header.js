@@ -421,8 +421,11 @@
         }
 
         box.classList.remove("is-saving", "is-saved", "is-error");
-        title.textContent = "저장 대상: 좌석 JSON · 구역 JSON · 도형 이미지";
-        pathText.textContent = `${TEMP_PATHS.seats} · seatmap-sections.json · seatmap-image.png`;
+        const defaultTitle = box.dataset.saveTitle || "저장 위치: 좌석 JSON · 구역 JSON · 도형 이미지";
+        const defaultPath = box.dataset.savePath || `${TEMP_PATHS.seats} · seatmap-sections.json · seatmap-image.png`;
+
+        title.textContent = defaultTitle;
+        pathText.textContent = defaultPath;
     }
 
     function updateSaveInfoSaving() {
@@ -436,8 +439,11 @@
 
         box.classList.remove("is-saved", "is-error");
         box.classList.add("is-saving");
-        title.textContent = "저장 중: 좌석 JSON · 구역 JSON · 도형 이미지";
-        pathText.textContent = TEMP_PATHS.base;
+        const defaultTitle = box.dataset.saveTitle || "저장 위치: 좌석 JSON · 구역 JSON · 도형 이미지";
+        const defaultPath = box.dataset.savePath || TEMP_PATHS.base;
+
+        title.textContent = "저장 중: " + defaultTitle.replace(/^저장 위치:\s*/, "");
+        pathText.textContent = defaultPath;
     }
 
     function updateSaveInfoSuccess(result) {
@@ -457,7 +463,8 @@
 
         box.classList.remove("is-saving", "is-error");
         box.classList.add("is-saved");
-        title.textContent = `최근 저장 완료: ${time} / 좌석 JSON · 구역 JSON · 도형 이미지`;
+        const defaultTitle = box.dataset.saveTitle || "저장 위치: 좌석 JSON · 구역 JSON · 도형 이미지";
+        title.textContent = `최근 저장 완료: ${time} / ${defaultTitle.replace(/^저장 위치:\s*/, "")}`;
         pathText.textContent = [
             result.seatJsonUrl || TEMP_PATHS.seats,
             result.sectionJsonUrl || TEMP_PATHS.sections,

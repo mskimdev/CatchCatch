@@ -1,0 +1,25 @@
+<nav class="seatmap-work-toolbar">
+    <div class="seatmap-work-toolbar__left">
+        <a class="seatmap-work-toolbar__button" href="{{prevUrl}}">이전</a>
+        <div class="seatmap-work-toolbar__title">
+            <strong>{{seatmapTitle}}</strong>
+            <span>{{seatmapSubTitle}}</span>
+        </div>
+    </div>
+
+    <div class="seatmap-work-toolbar__tools">
+        <button type="button" class="seatmap-work-toolbar__button" id="cropZoomOut">축소</button>
+        <button type="button" class="seatmap-work-toolbar__button" id="cropZoomIn">확대</button>
+        <button type="button" class="seatmap-work-toolbar__button" id="cropFit">맞춤</button>
+        <button type="button" class="seatmap-work-toolbar__button" id="cropRotateLeft">왼쪽 회전</button>
+        <button type="button" class="seatmap-work-toolbar__button" id="cropRotateRight">오른쪽 회전</button>
+        <button type="button" class="seatmap-work-toolbar__button" id="cropReset">초기화</button>
+    </div>
+
+    <div class="seatmap-work-toolbar__right">
+        <button type="button" class="seatmap-work-toolbar__save" id="cropSave">저장하기</button>
+        {{#nextUrl}}
+            <a class="seatmap-work-toolbar__next" href="{{nextUrl}}">다음</a>
+        {{/nextUrl}}
+    </div>
+</nav>
