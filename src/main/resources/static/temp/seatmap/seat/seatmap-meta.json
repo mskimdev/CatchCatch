@@ -1,57 +1,55 @@
 {
+  "version": 2,
   "projectId": "seat",
-  "name": "멜론형 예제 도면",
+  "name": "CatchCatch 정밀 예제 좌석도",
   "type": "CONCERT",
-  "currentStep": "BOOKING_BUTTONS",
+  "currentStep": "BOOKING_READY",
   "imageWidth": 746,
   "imageHeight": 532,
-  "createdAt": "2026-06-30T06:30:00",
-  "updatedAt": "2026-06-30T06:30:00",
+  "description": "STANDING_C와 D2는 사용자가 제공한 Melon 참고 화면의 행/열 수량을 기준으로 맞춘 예제입니다.",
   "paths": {
     "originalImage": "/temp/seatmap/seat/original-image.png",
     "croppedImage": "/temp/seatmap/seat/cropped-image.png",
     "seatmapImage": "/temp/seatmap/seat/seatmap-image.png",
     "buttonImage": "/temp/seatmap/seat/button-image.png",
-    "seatsJson": "/temp/seatmap/seat/seatmap-seats.json",
+    "thumbnail": "/temp/seatmap/seat/thumbnail.png",
+    "seatsJson": "/temp/seatmap/seats/seat-seatmap-seats.json",
     "sectionsJson": "/temp/seatmap/seat/seatmap-sections.json",
-    "bookingButtonsJson": "/temp/seatmap/seat/booking-buttons.json"
+    "bookingButtonsJson": "/temp/seatmap/seat/booking-buttons.json",
+    "seatmapSeats": "/temp/seatmap/seats/seat-seatmap-seats.json"
   },
-  "grades": [
-    {
-      "grade": "VIP",
-      "name": "플로어 FR",
-      "price": 210000,
-      "color": "#c6b693"
+  "summary": {
+    "sectionCount": 17,
+    "seatCount": 3462,
+    "sections": {
+      "VIP_A": 24,
+      "VIP_B": 24,
+      "STANDING_C": 1800,
+      "D2": 196,
+      "S_C2": 83,
+      "C2": 127,
+      "S_B2": 82,
+      "B2": 125,
+      "S_A2": 81,
+      "A2": 115,
+      "S_P2": 79,
+      "P2": 119,
+      "S_O2": 76,
+      "O2": 127,
+      "S_N2": 76,
+      "N2": 132,
+      "M2": 196
     },
-    {
-      "grade": "SR",
-      "name": "플로어 SR",
-      "price": 198000,
-      "color": "#8669f4"
+    "notes": {
+      "STANDING_C": "75열 x 24행 = 1800석",
+      "D2": "제공 스크린샷 기준 11행 / 196석",
+      "M2": "D2와 동일한 대칭 구역으로 196석 추정",
+      "otherSections": "D2 좌석 밀도와 polygon 면적을 기준으로 추정"
     },
-    {
-      "grade": "R",
-      "name": "플로어 R",
-      "price": 187000,
-      "color": "#ff7faf"
-    },
-    {
-      "grade": "S",
-      "name": "지정석 S",
-      "price": 165000,
-      "color": "#65cce1"
-    },
-    {
-      "grade": "A",
-      "name": "지정석 A",
-      "price": 154000,
-      "color": "#a9e34b"
-    },
-    {
-      "grade": "B",
-      "name": "지정석 B",
-      "price": 132000,
-      "color": "#ffc35a"
-    }
-  ]
+    "seatIdExample": "1-VIP_A-A-1-VIP-AVAILABLE"
+  },
+  "seatsJsonPath": "/temp/seatmap/seats/seat-seatmap-seats.json",
+  "projectSeatsJsonPath": "/temp/seatmap/seats/seat-seatmap-seats.json",
+  "allSeatsAvailable": true,
+  "seatIdRule": "층-구역-행-렬-좌석등급-상태"
 }

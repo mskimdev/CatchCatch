@@ -92,12 +92,19 @@
   function normalizeSeats(rawSeats) {
     return rawSeats.map((seat) => {
       const grade = normalizeGrade(seat.grade || seat.gradeCode);
-      const seatNumber = String(seat.seatNumber || seat.name || "");
+      const seatNumber = String(seat.seatNumber || seat.name || seat.id || "");
       const parsed = parseSeatNumber(seatNumber);
-      const rowName = String(seat.rowName || seat.row || seat.seatRow || parsed.row || "A");
-      const seatNo = String(seat.seatNo || seat.no || seat.number || parsed.col || "");
-      const sectionName = String(seat.sectionName || seat.section || parsed.section || grade || "A");
-      const floor = Number(seat.floor || parsed.floor || 1);
+
+      // 서버 DTO의 rowName/seatNo가 기존 "A-1" 형식 기준으로 잘못 들어오는 경우가 있음.
+      // 그래서 seatNumber를 먼저 파싱하고, 파싱이 실패했을 때만 DTO 값을 보조로 사용한다.
+      const rawRow = seat.rowName || seat.row || seat.seatRow || "";
+      const rawNo = seat.seatNo || seat.no || seat.number || "";
+      const rawSection = seat.sectionName || seat.section || "";
+
+      const rowName = String(parsed.row || normalizeRowName(rawRow) || "A");
+      const seatNo = String(parsed.col || normalizeSeatNo(rawNo) || "");
+      const sectionName = String(parsed.section || normalizeSectionName(rawSection) || grade || "A");
+      const floor = Number(parsed.floor || seat.floor || 1);
       const id = seat.id || seat.seatId;
       const status = String(seat.status || "AVAILABLE").toUpperCase();
       const available = seat.available !== false && !["SOLD", "RESERVED", "BOOKED", "CONFIRMED", "PENDING", "HELD", "UNAVAILABLE", "OBSTRUCTED"].includes(status);
@@ -142,6 +149,45 @@
     }
 
     return result;
+  }
+
+  function normalizeRowName(value) {
+    const text = String(value || "").trim();
+    const korean = text.match(/(.+?)열/);
+    if (korean) return korean[1].replace(/.*구역\s*/, "").trim();
+
+    // "1층 D2구역 A열 1번" 같은 전체 좌석명이 들어온 경우 방어
+    const parsed = parseSeatNumber(text);
+    if (parsed.row) return parsed.row;
+
+    return text;
+  }
+
+  function normalizeSeatNo(value) {
+    const text = String(value || "").trim();
+    const korean = text.match(/(\d+)번/);
+    if (korean) return korean[1];
+
+    const parsed = parseSeatNumber(text);
+    if (parsed.col) return parsed.col;
+
+    return text;
+  }
+
+  function compareRowName(a, b) {
+    return String(a || "").localeCompare(String(b || ""), "ko-KR", { numeric: true });
+  }
+
+  function compareSeatNo(a, b) {
+    return Number(a.seatNo || 0) - Number(b.seatNo || 0);
+  }
+
+  function getSeatSize(maxCols) {
+    if (maxCols >= 70) return 10;
+    if (maxCols >= 50) return 12;
+    if (maxCols >= 35) return 14;
+    if (maxCols >= 25) return 16;
+    return 20;
   }
 
   function normalizeArea(area, index) {
@@ -402,22 +448,29 @@
     }
 
     const grouped = groupBy(seats, (seat) => seat.rowName || "A");
-    const rowNames = Object.keys(grouped).sort((a, b) => a.localeCompare(b, "ko-KR", { numeric: true }));
+    const rowNames = Object.keys(grouped).sort(compareRowName);
+    const maxCols = Math.max(...rowNames.map((rowName) => grouped[rowName].length), 1);
+    const seatSize = getSeatSize(maxCols);
 
     dom.realSeatGrid.innerHTML = "";
+    dom.realSeatGrid.style.setProperty("--seat-size", `${seatSize}px`);
 
     rowNames.forEach((rowName) => {
+      const rowSeats = grouped[rowName].sort(compareSeatNo);
       const row = document.createElement("div");
       row.className = "cc-seat-row";
+      row.dataset.row = rowName;
+      row.style.setProperty("--seat-count", String(rowSeats.length));
 
       const label = document.createElement("div");
       label.className = "cc-seat-row__label";
       label.textContent = `${rowName}열`;
       row.appendChild(label);
 
-      grouped[rowName]
-        .sort((a, b) => Number(a.seatNo || 0) - Number(b.seatNo || 0))
-        .forEach((seat) => row.appendChild(createSeatButton(seat)));
+      const seatsBox = document.createElement("div");
+      seatsBox.className = "cc-seat-row__seats";
+      rowSeats.forEach((seat) => seatsBox.appendChild(createSeatButton(seat)));
+      row.appendChild(seatsBox);
 
       dom.realSeatGrid.appendChild(row);
     });

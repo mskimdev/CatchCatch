@@ -405,21 +405,24 @@
 }
 
 .cc-real-seat-grid {
+    --seat-size: 18px;
     max-height: 100%;
     overflow: auto;
     padding: 16px 0 40px;
+    white-space: nowrap;
 }
 
 .cc-seat-row {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 4px;
-    min-height: 30px;
+    justify-content: flex-start;
+    gap: 8px;
+    min-height: calc(var(--seat-size) + 6px);
     margin-bottom: 4px;
 }
 
 .cc-seat-row__label {
+    flex: 0 0 58px;
     width: 58px;
     text-align: right;
     color: #999;
@@ -427,13 +430,26 @@
     padding-right: 8px;
 }
 
+.cc-seat-row__seats {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    flex: 0 0 auto;
+}
+
 .cc-real-seat {
-    width: 26px;
-    height: 26px;
+    flex: 0 0 var(--seat-size);
+    width: var(--seat-size);
+    height: var(--seat-size);
+    aspect-ratio: 1 / 1;
     border: 1px solid #fff;
     background: #d8d8d8;
     color: transparent;
     font-size: 0;
+    line-height: 1;
+    padding: 0;
+    border-radius: 0;
     cursor: pointer;
     transition: transform .08s ease, outline .08s ease;
 }

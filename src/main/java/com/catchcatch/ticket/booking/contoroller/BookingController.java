@@ -129,19 +129,17 @@ public class BookingController {
 
         req.validate();
 
-        // todo 추후 예매 json 불러 오기 완성 후 연결
-//        BookingResponse.DetailDTO booking = bookingService.save(new BookingRequest.SaveDTO(
-//                sessionUser.getId(),
-//                req.getSessionId(),
-//                req.getSeatIdList()
-//        ));
-//
-//        // 완료 화면에서 조회할 예매 ID 저장
-//        session.setAttribute("bookingId", booking.getId());
-//
-//        return "redirect:/booking/payment?bookingId=" + booking.getId();
+        BookingResponse.DetailDTO booking = bookingService.save(
+                sessionUser.getId(),
+                new BookingRequest.SaveDTO(
+                        req.sessionId(),
+                        req.getSeatIdList()
+                )
+        );
 
-        return null;
+        session.setAttribute("bookingId", booking.getId());
+
+        return "redirect:/booking/payment?bookingId=" + booking.getId();
     }
 
     // 예매 완료

@@ -61,26 +61,25 @@ public class BookingService {
      * 7. Seat AVAILABLE -> HELD 처리
      */
     @Transactional
-    public BookingResponse.DetailDTO save(User user, BookingRequest.SaveDTO requestDTO) {
-        // 이하 기존 예매 로직
+    public BookingResponse.DetailDTO save(Integer userId, BookingRequest.SaveDTO requestDTO) {
+        if (userId == null) {
+            throw new BadRequestException("사용자 정보가 없습니다.");
+        }
+
         if (requestDTO == null) {
             throw new BadRequestException("예매 요청 정보가 없습니다.");
         }
 
-        if (user == null) {
-            throw new BadRequestException("사용자 정보가 없습니다.");
-        }
+        requestDTO.validate();
 
-        if (requestDTO.sessionId() == null) {
-            throw new BadRequestException("공연 회차 정보가 없습니다.");
-        }
+        User user = getUserReference(userId);
 
-        if (requestDTO.seatIds() == null || requestDTO.seatIds().isEmpty()) {
-            throw new BadRequestException("선택된 좌석이 없습니다.");
-        }
-
-        Integer userId = user.getId();
         Integer sessionId = requestDTO.sessionId();
+
+        List<Integer> seatIds = requestDTO.seatIds()
+                .stream()
+                .distinct()
+                .toList();
 
         if (bookingRepository.existsByUser_IdAndConcertSession_IdAndStatusIn(
                 userId,
@@ -90,12 +89,6 @@ public class BookingService {
             throw new BadRequestException("이미 진행 중인 예매가 있습니다.");
         }
 
-        List<Integer> seatIds = requestDTO.seatIds()
-                .stream()
-                .distinct()
-                .toList();
-
-        // 비관적 락으로 좌석을 잠근 채 조회
         List<Seat> seats = seatRepository.findAllByIdInAndSessionIdForUpdate(sessionId, seatIds);
 
         if (seats.size() != seatIds.size()) {
