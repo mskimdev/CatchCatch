@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.payment;
 
 import com.catchcatch.ticket.booking.Booking;
+import com.catchcatch.ticket.payment.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

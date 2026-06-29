@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.payment;
 
 import com.catchcatch.ticket.booking.Booking;
+import com.catchcatch.ticket.concert.enums.ConcertGenre;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -26,16 +27,21 @@ public final class PaymentPolicy {
 
     // genre Enum 타입 수정 시 String --> 타입변경
     public static Integer calculateTicketFee(Booking booking) {
-        String genre = String.valueOf(booking.getConcertSession().getConcert().getGenre());
-        if ("CONCERT".equals(genre)) {
+        ConcertGenre genre = booking.getConcertSession().getConcert().getGenre();
+
+        if (genre == null) {
+            return ELSE_FEE;
+        }
+
+        if (genre == ConcertGenre.CONCERT) {
             return CONCERT_FEE;
-        } else if ("FESTIVAL".equals(genre)) {
+        } else if (genre == ConcertGenre.FESTIVAL) {
             return FESTIVAL_FEE;
-        } else if ("MUSICAL".equals(genre)) {
+        } else if (genre == ConcertGenre.MUSICAL) {
             return MUSICAL_FEE;
-        } else if ("CLASSIC".equals(genre)) {
+        } else if (genre == ConcertGenre.CLASSIC) {
             return CLASSIC_FEE;
-        } else if ("FAN_MEETING".equals(genre)) {
+        } else if (genre == ConcertGenre.FANMEETING) {
             return FAN_MEETING_FEE;
         } else {
             return ELSE_FEE;

@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.pointHistory;
 
-import com.catchcatch.ticket.point.PointHistoryRepository;
+import com.catchcatch.ticket.pointHistory.repository.PointHistoryRepository;
+import com.catchcatch.ticket.pointHistory.service.PointService;
 import com.catchcatch.ticket.user.User;
 import com.catchcatch.ticket.user.UserRepository;
 import lombok.RequiredArgsConstructor;
