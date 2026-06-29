@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.booking;
 
 import com.catchcatch.ticket.booking.bookingSeat.BookingSeat;
+import com.catchcatch.ticket.booking.enums.Status;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.catchcatch.ticket.user.User;
 import jakarta.persistence.*;
@@ -105,7 +106,7 @@ public class Booking {
      */
     public void addBookingSeat(BookingSeat bookingSeat) {
         this.bookingSeats.add(bookingSeat);
-        bookingSeat.setBooking(this);
+        bookingSeat.assignBooking(this);
     }
 
     /**

@@ -1,8 +1,8 @@
 package com.catchcatch.ticket.booking.dto;
 
 import com.catchcatch.ticket.booking.Booking;
-import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.booking.bookingSeat.BookingSeat;
+import com.catchcatch.ticket.booking.enums.Status;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.payment.Payment;
 import com.catchcatch.ticket.seat.Seat;

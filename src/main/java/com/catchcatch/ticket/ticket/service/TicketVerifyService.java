@@ -2,7 +2,7 @@ package com.catchcatch.ticket.ticket.service;
 
 import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.booking.BookingRepository;
-import com.catchcatch.ticket.booking.Status;
+import com.catchcatch.ticket.booking.enums.Status;
 import com.catchcatch.ticket.booking.bookingSeat.BookingSeat;
 import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.ticket.dto.TicketResponse;

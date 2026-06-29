@@ -1,6 +1,6 @@
 package com.catchcatch.ticket.refund.service;
 
-import com.catchcatch.ticket.booking.BookingService;
+import com.catchcatch.ticket.booking.service.BookingService;
 import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.notification.service.NotificationDispatcher;
 import com.catchcatch.ticket.payment.*;

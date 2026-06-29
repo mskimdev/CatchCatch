@@ -1,9 +1,12 @@
-package com.catchcatch.ticket.booking;
+package com.catchcatch.ticket.booking.service;
 
+import com.catchcatch.ticket.booking.Booking;
+import com.catchcatch.ticket.booking.BookingRepository;
 import com.catchcatch.ticket.booking.bookingSeat.BookingSeat;
-import com.catchcatch.ticket.booking.bookingSeat.BookingSeatRepository;
+import com.catchcatch.ticket.booking.bookingSeat.repository.BookingSeatRepository;
 import com.catchcatch.ticket.booking.dto.BookingRequest;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
+import com.catchcatch.ticket.booking.enums.Status;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.core.exception.NotFoundException;
@@ -58,43 +61,48 @@ public class BookingService {
      * 7. Seat AVAILABLE -> HELD 처리
      */
     @Transactional
-    public BookingResponse.DetailDTO save(BookingRequest.SaveDTO requestDTO) {
+    public BookingResponse.DetailDTO save(User user, BookingRequest.SaveDTO requestDTO) {
+        // 이하 기존 예매 로직
         if (requestDTO == null) {
             throw new BadRequestException("예매 요청 정보가 없습니다.");
         }
 
-        if (requestDTO.getUserId() == null) {
+        if (user == null) {
             throw new BadRequestException("사용자 정보가 없습니다.");
         }
 
-        if (requestDTO.getSessionId() == null) {
+        if (requestDTO.sessionId() == null) {
             throw new BadRequestException("공연 회차 정보가 없습니다.");
         }
 
-        if (requestDTO.getSeatIds() == null || requestDTO.getSeatIds().isEmpty()) {
+        if (requestDTO.seatIds() == null || requestDTO.seatIds().isEmpty()) {
             throw new BadRequestException("선택된 좌석이 없습니다.");
         }
 
-        User user = getUserReference(requestDTO.getUserId());
+        Integer userId = user.getId();
+        Integer sessionId = requestDTO.sessionId();
 
         if (bookingRepository.existsByUser_IdAndConcertSession_IdAndStatusIn(
-                requestDTO.getUserId(), requestDTO.getSessionId(), ACTIVE_BOOKING_STATUSES)) {
+                userId,
+                sessionId,
+                ACTIVE_BOOKING_STATUSES
+        )) {
             throw new BadRequestException("이미 진행 중인 예매가 있습니다.");
         }
 
-        List<Integer> seatIds = requestDTO.getSeatIds()
+        List<Integer> seatIds = requestDTO.seatIds()
                 .stream()
                 .distinct()
                 .toList();
 
-        // 비관적 락으로 좌석을 잠근 채 조회 -> 동시에 같은 좌석을 선택해도 한 트랜잭션만 통과한다.
-        List<Seat> seats = seatRepository.findAllByIdInAndSessionIdForUpdate(requestDTO.getSessionId(), seatIds);
+        // 비관적 락으로 좌석을 잠근 채 조회
+        List<Seat> seats = seatRepository.findAllByIdInAndSessionIdForUpdate(sessionId, seatIds);
 
         if (seats.size() != seatIds.size()) {
             throw new BadRequestException("존재하지 않는 좌석이 포함되어 있습니다.");
         }
 
-        validateSeats(requestDTO.getSessionId(), seats);
+        validateSeats(sessionId, seats);
 
         ConcertSession concertSession = seats.get(0).getConcertSession();
 
@@ -112,20 +120,11 @@ public class BookingService {
                 .build();
 
         for (Seat seat : seats) {
-            BookingSeat bookingSeat = BookingSeat.builder()
-                    .seat(seat)
-                    .price(seat.getPrice())
-                    .seatNumberSnapshot(seat.getSeatNumber())
-                    .seatGradeSnapshot(seat.getGrade().name())
-                    .build();
+            BookingSeat bookingSeat = BookingSeat.create(seat);
 
             booking.addBookingSeat(bookingSeat);
-
             seat.hold();
         }
-
-        // 결제 없이 예매 완료 처리
-        // booking.completePayment();
 
         Booking savedBooking = bookingRepository.save(booking);
 

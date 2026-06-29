@@ -1,7 +1,8 @@
-package com.catchcatch.ticket.booking;
+package com.catchcatch.ticket.booking.contoroller;
 
 import com.catchcatch.ticket.booking.dto.BookingRequest;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
+import com.catchcatch.ticket.booking.service.BookingService;
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.Resp;
 import com.catchcatch.ticket.queue.QueueService;
@@ -44,8 +45,8 @@ public class BookingController {
         req.validate();
 
         // 예매 단계 유지용 정보 저장
-        session.setAttribute("bookingConcertId", req.getConcertId());
-        session.setAttribute("bookingSessionId", req.getSessionId());
+        session.setAttribute("bookingConcertId", req.concertId());
+        session.setAttribute("bookingSessionId", req.sessionId());
 
         return "redirect:/booking/info";
     }
@@ -128,16 +129,19 @@ public class BookingController {
 
         req.validate();
 
-        BookingResponse.DetailDTO booking = bookingService.save(new BookingRequest.SaveDTO(
-                sessionUser.getId(),
-                req.getSessionId(),
-                req.getSeatIdList()
-        ));
+        // todo 추후 예매 json 불러 오기 완성 후 연결
+//        BookingResponse.DetailDTO booking = bookingService.save(new BookingRequest.SaveDTO(
+//                sessionUser.getId(),
+//                req.getSessionId(),
+//                req.getSeatIdList()
+//        ));
+//
+//        // 완료 화면에서 조회할 예매 ID 저장
+//        session.setAttribute("bookingId", booking.getId());
+//
+//        return "redirect:/booking/payment?bookingId=" + booking.getId();
 
-        // 완료 화면에서 조회할 예매 ID 저장
-        session.setAttribute("bookingId", booking.getId());
-
-        return "redirect:/booking/payment?bookingId=" + booking.getId();
+        return null;
     }
 
     // 예매 완료

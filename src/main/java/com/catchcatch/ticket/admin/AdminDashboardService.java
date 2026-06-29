@@ -1,8 +1,7 @@
 package com.catchcatch.ticket.admin;
 
-import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.booking.BookingRepository;
-import com.catchcatch.ticket.booking.Status;
+import com.catchcatch.ticket.booking.enums.Status;
 import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.core.log.InMemoryErrorLogAppender;
