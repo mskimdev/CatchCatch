@@ -45,7 +45,7 @@ html, body, .cc-main, .cc-detail-main {
 
 .cc-poster-large {
     flex: 0 0 45%;
-    border-radius: 5%;
+    border-radius: 1%;
     background: #0f1224;
     box-shadow: 0 12px 30px rgba(0,0,0,0.15);
     overflow: hidden;
