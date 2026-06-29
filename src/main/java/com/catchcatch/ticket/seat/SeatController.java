@@ -21,7 +21,7 @@ public class SeatController {
     public List<SeatResponse.SeatDTO> getSeats(
             @PathVariable Integer sessionId
     ) {
-        return seatService.좌석목록조회(sessionId);
+        return seatService.getSeatList(sessionId);
     }
 
     /**
@@ -33,7 +33,7 @@ public class SeatController {
     public SeatResponse.SummaryDTO getSeatSummary(
             @PathVariable Integer sessionId
     ) {
-        return seatService.좌석요약조회(sessionId);
+        return seatService.getSeatSummary(sessionId);
     }
 
     /**
@@ -46,7 +46,7 @@ public class SeatController {
             @PathVariable Integer sessionId,
             @RequestBody SeatRequest.HoldDTO requestDTO
     ) {
-        return seatService.좌석임시점유(sessionId, requestDTO);
+        return seatService.holdSeats(sessionId, requestDTO);
     }
 
     /**
@@ -59,6 +59,6 @@ public class SeatController {
             @PathVariable Integer sessionId,
             @RequestBody SeatRequest.HoldDTO requestDTO
     ) {
-        seatService.좌석해제(sessionId, requestDTO.getSeatIds());
+        seatService.releaseSeats(sessionId, requestDTO.getSeatIds());
     }
 }

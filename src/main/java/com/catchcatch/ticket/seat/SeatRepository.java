@@ -11,6 +11,8 @@ import java.util.List;
 
 public interface SeatRepository extends JpaRepository<Seat, Integer> {
 
+    boolean existsByConcertSession_Id(@Param("sessionId") Integer sessionId);
+
     /**
      * 좌석 화면에서 특정 회차의 전체 좌석 조회
      */
