@@ -120,7 +120,6 @@ public class ConcertService {
      */
     public ConcertResponse.ConcertListResponseDTO getList(ConcertRequest.SearchConditionDTO condition) {
 
-        // 2. 다시 QueryDSL로 스위치 ON!
         return concertRepository.findConcertsByFilters(condition);
     }
 
