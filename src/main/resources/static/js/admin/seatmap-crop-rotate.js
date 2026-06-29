@@ -18,8 +18,12 @@
         canvasHeight: 600,
         crop: null,
         dragging: false,
+        dragMode: "none",
+        dragStartX: 0,
+        dragStartY: 0,
         dragOffsetX: 0,
-        dragOffsetY: 0
+        dragOffsetY: 0,
+        resizeHandle: ""
     };
 
     const $ = (id) => document.getElementById(id);
@@ -30,13 +34,22 @@
     });
 
     function bindButtons() {
+        bindClick("zoomOut", () => setZoom(state.zoom - 0.12));
+        bindClick("zoomIn", () => setZoom(state.zoom + 0.12));
+        bindClick("zoomFit", fitToScreen);
+        bindClick("zoomReset", resetView);
+
+        // 이전 crop 전용 ID와도 호환
         bindClick("cropZoomOut", () => setZoom(state.zoom - 0.12));
         bindClick("cropZoomIn", () => setZoom(state.zoom + 0.12));
         bindClick("cropFit", fitToScreen);
         bindClick("cropRotateLeft", () => rotate(-90));
         bindClick("cropRotateRight", () => rotate(90));
+        bindClick("rotateLeft", () => rotate(-90));
+        bindClick("rotateRight", () => rotate(90));
         bindClick("cropReset", resetView);
         bindClick("cropSave", saveCropImage);
+        window.SeatMapCustomHeaderSave = saveCropImage;
         bindClick("applyFullCrop", selectFullArea);
         bindClick("openMainPage", () => location.href = "/admin/seatmap/main");
 
@@ -273,6 +286,7 @@
     function resetView() {
         state.rotation = 0;
         state.zoom = 1;
+        updateZoomValue();
         fitToScreen();
     }
 
@@ -297,7 +311,15 @@
             h: oldCrop.h * ratioY
         });
 
+        updateZoomValue();
         draw();
+    }
+
+    function updateZoomValue() {
+        const value = document.getElementById("zoomValue");
+        if (value) {
+            value.textContent = `${Math.round(state.zoom * 100)}%`;
+        }
     }
 
     function rotate(delta) {
@@ -310,20 +332,37 @@
     }
 
     function startDrag(event) {
-        if (!state.crop) {
+        if (!state.image) {
             return;
         }
 
         const point = getCanvasPoint(event);
-        const crop = state.crop;
+        const crop = state.crop ? normalizeCrop(state.crop) : null;
+        const handle = crop ? getResizeHandle(point, crop) : "";
 
-        if (!isPointInCrop(point, crop)) {
+        state.dragging = true;
+        state.dragStartX = point.x;
+        state.dragStartY = point.y;
+        state.resizeHandle = handle;
+
+        if (handle) {
+            state.dragMode = "resize";
+            state.crop = crop;
             return;
         }
 
-        state.dragging = true;
-        state.dragOffsetX = point.x - crop.x;
-        state.dragOffsetY = point.y - crop.y;
+        if (crop && isPointInCrop(point, crop)) {
+            state.dragMode = "move";
+            state.dragOffsetX = point.x - crop.x;
+            state.dragOffsetY = point.y - crop.y;
+            state.crop = crop;
+            return;
+        }
+
+        // 빈 영역에서 드래그하면 새 자르기 영역을 만든다.
+        state.dragMode = "create";
+        state.crop = { x: point.x, y: point.y, w: 1, h: 1 };
+        draw();
     }
 
     function dragCrop(event) {
@@ -332,14 +371,75 @@
         }
 
         const point = getCanvasPoint(event);
-        state.crop.x = point.x - state.dragOffsetX;
-        state.crop.y = point.y - state.dragOffsetY;
-        state.crop = normalizeCrop(state.crop);
-        draw();
+
+        if (state.dragMode === "move") {
+            state.crop.x = point.x - state.dragOffsetX;
+            state.crop.y = point.y - state.dragOffsetY;
+            state.crop = normalizeCrop(state.crop);
+            draw();
+            return;
+        }
+
+        if (state.dragMode === "resize") {
+            state.crop = resizeCropFromHandle(state.crop, point, state.resizeHandle);
+            draw();
+            return;
+        }
+
+        if (state.dragMode === "create") {
+            state.crop = makeCropFromPoints(state.dragStartX, state.dragStartY, point.x, point.y);
+            draw();
+        }
     }
 
     function endDrag() {
+        if (state.dragMode === "create" && state.crop) {
+            state.crop = normalizeCrop(state.crop);
+        }
         state.dragging = false;
+        state.dragMode = "none";
+        state.resizeHandle = "";
+    }
+
+
+    function getResizeHandle(point, crop) {
+        const handles = [
+            ["nw", crop.x, crop.y],
+            ["ne", crop.x + crop.w, crop.y],
+            ["sw", crop.x, crop.y + crop.h],
+            ["se", crop.x + crop.w, crop.y + crop.h]
+        ];
+        const radius = 12;
+
+        for (const [name, x, y] of handles) {
+            if (Math.abs(point.x - x) <= radius && Math.abs(point.y - y) <= radius) {
+                return name;
+            }
+        }
+
+        return "";
+    }
+
+    function makeCropFromPoints(x1, y1, x2, y2) {
+        const x = Math.min(x1, x2);
+        const y = Math.min(y1, y2);
+        const w = Math.abs(x2 - x1);
+        const h = Math.abs(y2 - y1);
+        return normalizeCrop({ x, y, w, h });
+    }
+
+    function resizeCropFromHandle(crop, point, handle) {
+        let left = crop.x;
+        let top = crop.y;
+        let right = crop.x + crop.w;
+        let bottom = crop.y + crop.h;
+
+        if (handle.includes("w")) left = point.x;
+        if (handle.includes("e")) right = point.x;
+        if (handle.includes("n")) top = point.y;
+        if (handle.includes("s")) bottom = point.y;
+
+        return makeCropFromPoints(left, top, right, bottom);
     }
 
     function handleWheel(event) {
@@ -380,13 +480,13 @@
         return { x, y, w, h };
     }
 
-    async function saveCropImage() {
+    async function saveCropImage(buttonOverride) {
         if (!state.image || !state.project) {
             toast("저장할 도면이 없습니다.");
             return;
         }
 
-        const button = $("cropSave");
+        const button = buttonOverride || $("cropSave");
         const oldText = button ? button.textContent : "";
 
         try {

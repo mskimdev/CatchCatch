@@ -33,6 +33,7 @@ public class SeatMapRequest {
     @Getter
     @Setter
     public static class OverwriteSaveDTO {
+        private String folderName;
         private String imageDataUrl;
         private String jsonText;
     }

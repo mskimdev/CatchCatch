@@ -1,1 +1,57 @@
-{"name":"seat","type":"CONCERT","status":"CREATED","folderName":"seat","sourceFileName":"seat.png","createdAt":"2026-06-30T04:13:54.449434100","updatedAt":"2026-06-30T04:13:54.449434100","files":{"originalImage":"original-image.png","croppedImage":"cropped-image.png","image":"seatmap-image.png","seats":"seatmap-seats.json","sections":"seatmap-sections.json"}}
+{
+  "projectId": "seat",
+  "name": "멜론형 예제 도면",
+  "type": "CONCERT",
+  "currentStep": "BOOKING_BUTTONS",
+  "imageWidth": 746,
+  "imageHeight": 532,
+  "createdAt": "2026-06-30T06:30:00",
+  "updatedAt": "2026-06-30T06:30:00",
+  "paths": {
+    "originalImage": "/temp/seatmap/seat/original-image.png",
+    "croppedImage": "/temp/seatmap/seat/cropped-image.png",
+    "seatmapImage": "/temp/seatmap/seat/seatmap-image.png",
+    "buttonImage": "/temp/seatmap/seat/button-image.png",
+    "seatsJson": "/temp/seatmap/seat/seatmap-seats.json",
+    "sectionsJson": "/temp/seatmap/seat/seatmap-sections.json",
+    "bookingButtonsJson": "/temp/seatmap/seat/booking-buttons.json"
+  },
+  "grades": [
+    {
+      "grade": "VIP",
+      "name": "플로어 FR",
+      "price": 210000,
+      "color": "#c6b693"
+    },
+    {
+      "grade": "SR",
+      "name": "플로어 SR",
+      "price": 198000,
+      "color": "#8669f4"
+    },
+    {
+      "grade": "R",
+      "name": "플로어 R",
+      "price": 187000,
+      "color": "#ff7faf"
+    },
+    {
+      "grade": "S",
+      "name": "지정석 S",
+      "price": 165000,
+      "color": "#65cce1"
+    },
+    {
+      "grade": "A",
+      "name": "지정석 A",
+      "price": 154000,
+      "color": "#a9e34b"
+    },
+    {
+      "grade": "B",
+      "name": "지정석 B",
+      "price": 132000,
+      "color": "#ffc35a"
+    }
+  ]
+}

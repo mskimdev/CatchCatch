@@ -1,0 +1,16 @@
+<div class="seatmap-command-bar seatmap-canvas-control" aria-label="도면 작업 공통 컨트롤">
+    {{#prevUrl}}
+        <a class="seatmap-command-btn seatmap-command-btn--link" href="{{prevUrl}}">← 이전</a>
+    {{/prevUrl}}
+
+    <button type="button" class="seatmap-command-btn" id="undoAction" title="이전 작업">↶ 작업취소</button>
+    <button type="button" class="seatmap-command-btn" id="redoAction" title="다음 작업">↷ 다시실행</button>
+
+    <button type="button" class="seatmap-command-btn" id="zoomOut">－ 축소</button>
+    <button type="button" class="seatmap-command-btn" id="zoomReset">100%</button>
+    <button type="button" class="seatmap-command-btn" id="zoomIn">＋ 확대</button>
+    <button type="button" class="seatmap-command-btn" id="zoomFit">맞춤</button>
+    <button type="button" class="seatmap-command-btn" id="zoomTool" title="도면 확대 도구">도면</button>
+
+    <span class="seatmap-zoom-value" id="zoomValue">100%</span>
+</div>

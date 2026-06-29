@@ -135,16 +135,10 @@ public class SeatMapService {
     // 이미지 버튼화 이미지 저장
     public OverwriteSaveResult overwriteSave(SeatMapRequest.OverwriteSaveDTO req) {
         try {
-            Path jsonPath = Path.of(
-                    "src/main/resources/static/json/seatmap/seatmap-concert-session.json"
-            );
-
-            Path imagePath = Path.of(
-                    "src/main/resources/static/images/seatmap/generated/seatmap-concert-image.png"
-            );
-
-            Files.createDirectories(jsonPath.getParent());
-            Files.createDirectories(imagePath.getParent());
+            String folderName = sanitizeFolderName(req.getFolderName());
+            String folderRelativePath = "temp/seatmap/" + folderName;
+            String jsonRelativePath = folderRelativePath + "/button-image-state.json";
+            String imageRelativePath = folderRelativePath + "/button-image.png";
 
             String jsonText = req.getJsonText();
 
@@ -152,23 +146,21 @@ public class SeatMapService {
                 jsonText = "{}";
             }
 
-            Files.writeString(jsonPath, jsonText, StandardCharsets.UTF_8);
+            writeTextToStaticAll(jsonRelativePath, jsonText);
 
             String imageDataUrl = req.getImageDataUrl();
 
             if (imageDataUrl != null && imageDataUrl.startsWith("data:image")) {
-                String base64 = imageDataUrl.replaceFirst("^data:image/\\w+;base64,", "");
-                byte[] imageBytes = Base64.getDecoder().decode(base64);
-                Files.write(imagePath, imageBytes);
+                byte[] imageBytes = decodeBase64Image(imageDataUrl);
+                writeBytesToStaticAll(imageRelativePath, imageBytes);
             }
 
             return new OverwriteSaveResult(
-                    "/json/seatmap/seatmap-concert-session.json",
-                    "/images/seatmap/generated/seatmap-concert-image.png"
+                    "/" + jsonRelativePath,
+                    "/" + imageRelativePath
             );
-
-        } catch (IOException e) {
-            throw new RuntimeException("좌석도 덮어쓰기 저장 실패", e);
+        } catch (Exception e) {
+            throw new RuntimeException("좌석 이미지 버튼화 저장 실패", e);
         }
     }
 
@@ -377,7 +369,7 @@ public class SeatMapService {
 
     private String sanitizeFolderName(String folderName) {
         if (folderName == null || folderName.isBlank()) {
-            return "concert-session";
+            return "seat";
         }
 
         String cleaned = folderName
@@ -388,7 +380,7 @@ public class SeatMapService {
                 .replaceAll("^_+|_+$", "");
 
         if (cleaned.isBlank()) {
-            return "concert-session";
+            return "seat";
         }
 
         return cleaned;

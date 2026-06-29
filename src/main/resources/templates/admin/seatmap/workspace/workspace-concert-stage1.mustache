@@ -3,7 +3,7 @@
 
 <div class="seatmap-workspace seatmap-workspace--concert-stage1"
      id="concertStage1App"
-     data-next-url="/admin/seatmap/concert/stage2">
+     data-next-url="{{stage2Url}}">
 
     <aside class="seatmap-side seatmap-side--left">
         <div class="seatmap-step-list">
@@ -217,6 +217,8 @@
     </aside>
 
     <main class="seatmap-canvas-area">
+        {{> admin/seatmap/canvas-control/workspace-control}}
+
         <div class="stage1-toolbar">
             <strong id="stage1Title">색상 추출</strong>
             <span id="stage1Size">-</span>

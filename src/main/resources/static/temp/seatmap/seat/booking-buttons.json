@@ -3,14 +3,18 @@
   "projectId": "seat",
   "imageWidth": 746,
   "imageHeight": 532,
-  "sections": [
+  "areas": [
     {
-      "id": "1-VIP_A",
-      "floor": 1,
+      "id": "btn-1-VIP_A",
+      "sectionId": "1-VIP_A",
       "name": "VIP STANDING(SC+HT) A",
+      "floor": 1,
       "grade": "VIP",
-      "price": 210000,
-      "seatCount": 40,
+      "x": 185,
+      "y": 110,
+      "width": 152,
+      "height": 52,
+      "angle": 0,
       "polygon": [
         {
           "x": 185,
@@ -31,12 +35,16 @@
       ]
     },
     {
-      "id": "1-VIP_B",
-      "floor": 1,
+      "id": "btn-1-VIP_B",
+      "sectionId": "1-VIP_B",
       "name": "VIP STANDING(SC+HT) B",
+      "floor": 1,
       "grade": "VIP",
-      "price": 210000,
-      "seatCount": 40,
+      "x": 397,
+      "y": 110,
+      "width": 153,
+      "height": 52,
+      "angle": 0,
       "polygon": [
         {
           "x": 397,
@@ -57,12 +65,16 @@
       ]
     },
     {
-      "id": "1-STANDING_C",
-      "floor": 1,
+      "id": "btn-1-STANDING_C",
+      "sectionId": "1-STANDING_C",
       "name": "STANDING C",
+      "floor": 1,
       "grade": "SR",
-      "price": 198000,
-      "seatCount": 120,
+      "x": 185,
+      "y": 172,
+      "width": 365,
+      "height": 114,
+      "angle": 0,
       "polygon": [
         {
           "x": 185,
@@ -91,12 +103,16 @@
       ]
     },
     {
-      "id": "2-D2",
-      "floor": 2,
+      "id": "btn-2-D2",
+      "sectionId": "2-D2",
       "name": "D2",
+      "floor": 2,
       "grade": "A",
-      "price": 154000,
-      "seatCount": 30,
+      "x": 15,
+      "y": 185,
+      "width": 99,
+      "height": 163,
+      "angle": 0,
       "polygon": [
         {
           "x": 15,
@@ -125,12 +141,16 @@
       ]
     },
     {
-      "id": "2-C2",
-      "floor": 2,
+      "id": "btn-2-C2",
+      "sectionId": "2-C2",
       "name": "C2",
+      "floor": 2,
       "grade": "R",
-      "price": 187000,
-      "seatCount": 30,
+      "x": 80,
+      "y": 293,
+      "width": 104,
+      "height": 140,
+      "angle": 0,
       "polygon": [
         {
           "x": 98,
@@ -155,12 +175,16 @@
       ]
     },
     {
-      "id": "2-B2",
-      "floor": 2,
+      "id": "btn-2-B2",
+      "sectionId": "2-B2",
       "name": "B2",
+      "floor": 2,
       "grade": "R",
-      "price": 187000,
-      "seatCount": 30,
+      "x": 149,
+      "y": 362,
+      "width": 108,
+      "height": 108,
+      "angle": 0,
       "polygon": [
         {
           "x": 183,
@@ -181,12 +205,16 @@
       ]
     },
     {
-      "id": "2-A2",
-      "floor": 2,
+      "id": "btn-2-A2",
+      "sectionId": "2-A2",
       "name": "A2",
+      "floor": 2,
       "grade": "R",
-      "price": 187000,
-      "seatCount": 35,
+      "x": 236,
+      "y": 418,
+      "width": 129,
+      "height": 82,
+      "angle": 0,
       "polygon": [
         {
           "x": 281,
@@ -211,12 +239,16 @@
       ]
     },
     {
-      "id": "2-P2",
-      "floor": 2,
+      "id": "btn-2-P2",
+      "sectionId": "2-P2",
       "name": "P2",
+      "floor": 2,
       "grade": "R",
-      "price": 187000,
-      "seatCount": 35,
+      "x": 368,
+      "y": 418,
+      "width": 130,
+      "height": 82,
+      "angle": 0,
       "polygon": [
         {
           "x": 368,
@@ -237,12 +269,16 @@
       ]
     },
     {
-      "id": "2-O2",
-      "floor": 2,
+      "id": "btn-2-O2",
+      "sectionId": "2-O2",
       "name": "O2",
+      "floor": 2,
       "grade": "R",
-      "price": 187000,
-      "seatCount": 30,
+      "x": 492,
+      "y": 362,
+      "width": 120,
+      "height": 108,
+      "angle": 0,
       "polygon": [
         {
           "x": 492,
@@ -263,12 +299,16 @@
       ]
     },
     {
-      "id": "2-N2",
-      "floor": 2,
+      "id": "btn-2-N2",
+      "sectionId": "2-N2",
       "name": "N2",
+      "floor": 2,
       "grade": "R",
-      "price": 187000,
-      "seatCount": 30,
+      "x": 563,
+      "y": 293,
+      "width": 103,
+      "height": 140,
+      "angle": 0,
       "polygon": [
         {
           "x": 563,
@@ -293,12 +333,16 @@
       ]
     },
     {
-      "id": "2-M2",
-      "floor": 2,
+      "id": "btn-2-M2",
+      "sectionId": "2-M2",
       "name": "M2",
+      "floor": 2,
       "grade": "A",
-      "price": 154000,
-      "seatCount": 30,
+      "x": 632,
+      "y": 185,
+      "width": 100,
+      "height": 163,
+      "angle": 0,
       "polygon": [
         {
           "x": 653,

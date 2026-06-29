@@ -34,6 +34,9 @@ public class VenueService {
     public List<String> getSeatMapFiles() {
         List<String> filePaths = new ArrayList<>();
 
+        // SeatTrace 임시 도면 기본 경로: 현재는 seat 폴더를 고정으로 노출
+        filePaths.add("/temp/seatmap/seat/seatmap-seats.json");
+
         try {
             ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
             Resource[] resources = resolver.getResources("classpath:static/json/seatmap/*.json");

@@ -24,6 +24,40 @@
         originalImage: "concert_originalImage"
     };
 
+    function getCurrentFolderName() {
+        const urlProjectId = new URLSearchParams(location.search).get("projectId");
+        const headerProjectId = document.querySelector(".seatmap-header-simple")?.dataset.projectId;
+        const storedFolder = localStorage.getItem("seatmap_current_folder_name");
+        const currentId = localStorage.getItem("seatmap_current_project_id");
+
+        return sanitizeFolderName(urlProjectId || headerProjectId || storedFolder || currentId || "seat");
+    }
+
+    function getTempPaths() {
+        const folderName = getCurrentFolderName();
+        const base = `/temp/seatmap/${folderName}/`;
+
+        return {
+            base,
+            folderName,
+            seats: `${base}seatmap-seats.json`,
+            sections: `${base}seatmap-sections.json`,
+            image: `${base}seatmap-image.png`,
+            croppedImage: `${base}cropped-image.png`,
+            buttonImage: `${base}button-image.png`,
+            originalImage: `${base}original-image.png`
+        };
+    }
+
+    function sanitizeFolderName(value) {
+        return String(value || "seat")
+            .trim()
+            .replace(/\s+/g, "_")
+            .replace(/[^a-zA-Z0-9가-힣._-]/g, "_")
+            .replace(/_+/g, "_")
+            .replace(/^_+|_+$/g, "") || "seat";
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
         initSaveInfo();
 
@@ -41,6 +75,11 @@
     }
 
     async function saveSeatmapTemp(button) {
+        if (typeof window.SeatMapCustomHeaderSave === "function") {
+            await window.SeatMapCustomHeaderSave(button);
+            return;
+        }
+
         const originalText = button.textContent;
 
         try {
@@ -96,6 +135,7 @@
 
         return {
             page: getPageName(),
+            folderName: getCurrentFolderName(),
             seatJsonText: JSON.stringify(seatJson, null, 2),
             sectionJsonText: JSON.stringify(sectionJson, null, 2),
             imageDataUrl
@@ -421,8 +461,9 @@
         }
 
         box.classList.remove("is-saving", "is-saved", "is-error");
+        const paths = getTempPaths();
         const defaultTitle = box.dataset.saveTitle || "저장 위치: 좌석 JSON · 구역 JSON · 도형 이미지";
-        const defaultPath = box.dataset.savePath || `${TEMP_PATHS.seats} · seatmap-sections.json · seatmap-image.png`;
+        const defaultPath = box.dataset.savePath || `${paths.seats} · ${paths.sections} · ${paths.image}`;
 
         title.textContent = defaultTitle;
         pathText.textContent = defaultPath;
@@ -439,8 +480,9 @@
 
         box.classList.remove("is-saved", "is-error");
         box.classList.add("is-saving");
+        const paths = getTempPaths();
         const defaultTitle = box.dataset.saveTitle || "저장 위치: 좌석 JSON · 구역 JSON · 도형 이미지";
-        const defaultPath = box.dataset.savePath || TEMP_PATHS.base;
+        const defaultPath = box.dataset.savePath || paths.base;
 
         title.textContent = "저장 중: " + defaultTitle.replace(/^저장 위치:\s*/, "");
         pathText.textContent = defaultPath;
@@ -465,10 +507,11 @@
         box.classList.add("is-saved");
         const defaultTitle = box.dataset.saveTitle || "저장 위치: 좌석 JSON · 구역 JSON · 도형 이미지";
         title.textContent = `최근 저장 완료: ${time} / ${defaultTitle.replace(/^저장 위치:\s*/, "")}`;
+        const paths = getTempPaths();
         pathText.textContent = [
-            result.seatJsonUrl || TEMP_PATHS.seats,
-            result.sectionJsonUrl || TEMP_PATHS.sections,
-            result.imageUrl || TEMP_PATHS.image
+            result.seatJsonUrl || paths.seats,
+            result.sectionJsonUrl || paths.sections,
+            result.imageUrl || paths.image
         ].join(" · ");
     }
 

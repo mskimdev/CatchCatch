@@ -1,20 +1,18 @@
-<header class="seatmap-header-simple" data-step="{{seatmapStep}}">
-    <div class="seatmap-header-simple__brand">
-        <a class="seatmap-header-simple__home" href="/admin/seatmap/main" aria-label="좌석 도면 제작 시스템 홈">
-            <span class="seatmap-header-simple__logo">▦</span>
-            <strong class="seatmap-header-simple__name">SeatTrace</strong>
-            <span class="seatmap-header-simple__sub">좌석 도면 제작 시스템</span>
-        </a>
-    </div>
-</header>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SeatTrace - 버튼 이미지화</title>
 
-<link rel="stylesheet" href="/css/admin/seatmap-header.css">
-<script defer src="/js/admin/seatmap-header.js"></script>
-
-<link href="/css/admin/seatmap-workspace.css" rel="stylesheet">
-<link href="/css/admin/seatmap-button-image.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/admin/seatmap-header.css">
+    <link rel="stylesheet" href="/css/admin/seatmap-workspace.css">
+    <link rel="stylesheet" href="/css/admin/seatmap-button-image.css">
+</head>
 
 <body>
+{{> admin/seatmap/common/header}}
+
 <div class="seatmap-workspace seatmap-workspace--button-image"
      id="buttonImageApp"
      data-main-url="/admin/seatmap/main"
@@ -375,13 +373,7 @@
     </aside>
 
     <main class="seatmap-main">
-        <div class="button-image-command-bar">
-            <button type="button" class="button-image-command-btn" id="undoAction">↶ 이전</button>
-            <button type="button" class="button-image-command-btn" id="zoomOut">− 축소</button>
-            <button type="button" class="button-image-command-btn" id="zoomIn">＋ 확대</button>
-            <button type="button" class="button-image-command-btn" id="zoomReset">100%</button>
-            <span class="button-image-zoom-value" id="zoomValue">100%</span>
-        </div>
+        {{> admin/seatmap/canvas-control/workspace-control}}
 
         <div class="button-image-canvas-wrap">
             <div class="button-image-canvas-box" id="box">

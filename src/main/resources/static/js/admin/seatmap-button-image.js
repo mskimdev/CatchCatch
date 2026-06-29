@@ -1616,6 +1616,19 @@
         }
     }
 
+    function getSeatmapProjectFolderName() {
+        const urlProjectId = new URLSearchParams(location.search).get("projectId");
+        const storedFolder = localStorage.getItem("seatmap_current_folder_name");
+        const currentId = localStorage.getItem("seatmap_current_project_id");
+
+        return String(urlProjectId || storedFolder || currentId || "seat")
+            .trim()
+            .replace(/\s+/g, "_")
+            .replace(/[^a-zA-Z0-9가-힣._-]/g, "_")
+            .replace(/_+/g, "_")
+            .replace(/^_+|_+$/g, "") || "seat";
+    }
+
     function buildHeaderStyleSavePayload() {
         const imageDataUrl = getHeaderStyleCurrentImageDataUrl();
         const pageState = buildButtonImageResultState(imageDataUrl);
@@ -1624,6 +1637,7 @@
 
         return {
             page: "button-image",
+            folderName: getSeatmapProjectFolderName(),
             imageDataUrl,
             jsonText,
             htmlText,
@@ -12009,3 +12023,32 @@ SeatTrace 버튼 이미지화 결과 파일
     setTimeout(bindPart2SolidifyV47, 0);
 
 })();
+
+// v52 safety patch: Part1 next 버튼을 눌렀을 때 UI가 Part2로 확실히 넘어가도록 보정한다.
+document.addEventListener("DOMContentLoaded", () => {
+    const next = document.getElementById("goPart2FromPart1");
+    if (!next || next.dataset.part2SafetyBound === "true") return;
+    next.dataset.part2SafetyBound = "true";
+
+    next.addEventListener("click", () => {
+        window.setTimeout(() => {
+            const part1 = document.getElementById("part1");
+            const part2 = document.getElementById("part2");
+            if (!part2) return;
+
+            document.querySelectorAll(".button-image-step").forEach((section) => {
+                section.classList.remove("is-active");
+                section.querySelector(".button-image-step__header")?.classList.remove("active");
+                const status = section.querySelector(".button-image-step__status");
+                if (status) status.textContent = "대기";
+            });
+
+            part2.classList.add("is-active");
+            part2.querySelector(".button-image-step__header")?.classList.add("active");
+            const status = part2.querySelector(".button-image-step__status");
+            if (status) status.textContent = "진행중";
+
+            part2.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 80);
+    });
+});

@@ -1,0 +1,130 @@
+{{> layout/header-booking}}
+
+<main class="cc-booking-shell">
+    <section class="cc-booking-popup" id="bookingSeatApp" data-max-select="4" data-concert-id="{{concertId}}" data-session-id="{{sessionId}}">
+
+        <header class="cc-booking-top">
+            <div class="cc-booking-title">
+                <strong>좌석 선택</strong>
+                <span>{{#concert.title}}{{concert.title}}{{/concert.title}}{{^concert.title}}CatchCatch 공연{{/concert.title}}</span>
+            </div>
+
+            <select class="cc-booking-session-select" aria-label="공연 회차">
+                <option selected>{{#sessionText}}{{sessionText}}{{/sessionText}}{{^sessionText}}{{sessionId}}{{/sessionText}}</option>
+            </select>
+        </header>
+
+        <div class="cc-booking-body">
+            <section class="cc-booking-map-area">
+
+                <div class="cc-zone-view is-active" id="zoneView">
+                    <div class="cc-map-notice">구역을 먼저 선택해주세요. 우측 좌석등급을 선택해도 됩니다.</div>
+                    <div class="cc-zone-map-stage">STAGE</div>
+
+                    <div class="cc-zone-map-frame" id="zoneMapFrame">
+                        <img id="zoneMapImage"
+                             class="cc-zone-map-image"
+                             src="{{#seat.overviewImageUrl}}{{seat.overviewImageUrl}}{{/seat.overviewImageUrl}}{{^seat.overviewImageUrl}}/temp/seatmap/seat/seatmap-image.png{{/seat.overviewImageUrl}}"
+                             alt="전체 좌석도">
+                        <div class="cc-zone-button-layer" id="zoneButtonLayer" aria-label="구역 선택"></div>
+                    </div>
+
+                    <div class="cc-bottom-guide">
+                        <span id="zoneGuideText">구역을 먼저 선택해주세요.</span>
+                        <button type="button" class="cc-guide-fold-btn" id="zoneFoldBtn" aria-label="안내 접기">⌃</button>
+                    </div>
+                </div>
+
+                <div class="cc-seat-view" id="seatView">
+                    <div class="cc-seat-view-head">
+                        <button type="button" class="cc-back-zone-btn" id="backZoneBtn">구역 다시 선택</button>
+                        <div>
+                            <strong id="selectedZoneTitle">좌석 선택</strong>
+                            <span id="selectedZoneSubText">좌석을 선택해주세요.</span>
+                        </div>
+                    </div>
+
+                    <div class="cc-seat-canvas" id="seatCanvas">
+                        <div class="cc-seat-canvas-inner" id="seatCanvasInner">
+                            <div class="cc-seat-canvas-guide" id="seatCanvasGuide">좌석을 선택해주세요.</div>
+                        </div>
+                    </div>
+
+                    <div class="cc-bottom-guide">
+                        <span id="seatHoverInfo">좌석에 마우스를 올리면 좌석 정보가 표시됩니다.</span>
+                        <button type="button" class="cc-guide-reset-btn" id="resetZoneBtn">선택 초기화</button>
+                    </div>
+                </div>
+
+            </section>
+
+            <aside class="cc-booking-side">
+                <section class="cc-side-card cc-mini-card">
+                    <div class="cc-brand"><b>Catch</b><span>티켓</span></div>
+                    <div class="cc-mini-map" id="miniMapBox">
+                        <img class="cc-mini-map-image"
+                             src="{{#seat.overviewImageUrl}}{{seat.overviewImageUrl}}{{/seat.overviewImageUrl}}{{^seat.overviewImageUrl}}/temp/seatmap/seat/seatmap-image.png{{/seat.overviewImageUrl}}"
+                             alt="미니 좌석도">
+                    </div>
+                    <button type="button" class="cc-full-map-btn" id="fullMapBtn">좌석도 전체 보기</button>
+                </section>
+
+                <section class="cc-side-card cc-grade-card">
+                    <div class="cc-grade-head">
+                        <h3>좌석등급/잔여석</h3>
+                        <button type="button" id="autoGradeBtn">새로고침</button>
+                    </div>
+                    <div class="cc-grade-list" id="gradeList" aria-label="좌석 등급 선택"></div>
+                </section>
+
+                <section class="cc-side-card cc-selected-card">
+                    <h3>선택 좌석</h3>
+                    <div class="cc-timer">
+                        <span>선택 가능</span>
+                        <b>최대 4석</b>
+                    </div>
+                    <div class="cc-selected-list" id="selectedSeatList"></div>
+                    <div class="cc-total">
+                        <span>총 0석</span>
+                        <strong class="cc-total__price">0원</strong>
+                    </div>
+                </section>
+
+                <form action="/booking/complete" method="post" class="cc-complete-form" id="seatCompleteForm">
+                    {{#_csrf}}
+                        <input type="hidden" name="{{parameterName}}" value="{{token}}">
+                    {{/_csrf}}
+                    <input type="hidden" name="seatIds" id="selectedSeatIds">
+                    <div id="selectedSeatInputs"></div>
+                    <input type="hidden" name="sessionId" value="{{sessionId}}">
+                    <input type="hidden" name="concertId" value="{{concertId}}">
+                    <button type="submit" class="cc-complete-btn" id="completeSeatBtn" disabled>좌석 선택 완료</button>
+                </form>
+            </aside>
+        </div>
+
+        <script>
+            (() => {
+                const rawSeats =
+            {{#seat.seatsJson}}
+                {{{seat.seatsJson}}}
+            {{/seat.seatsJson}}
+            {{^seat.seatsJson}}
+                []
+            {{/seat.seatsJson}};
+
+                window.CATCHCATCH_SEATS = Array.isArray(rawSeats) ? rawSeats : [];
+                window.CATCHCATCH_SEAT_META = {
+                    concertId: "{{concertId}}",
+                    sessionId: "{{sessionId}}",
+                    maxSelectCount: 4,
+                    overviewImageUrl: "{{#seat.overviewImageUrl}}{{seat.overviewImageUrl}}{{/seat.overviewImageUrl}}{{^seat.overviewImageUrl}}/temp/seatmap/seat/seatmap-image.png{{/seat.overviewImageUrl}}"
+                };
+            })();
+        </script>
+
+        <script src="/js/booking/seat.js?v=20260630"></script>
+    </section>
+</main>
+
+{{> layout/footer}}

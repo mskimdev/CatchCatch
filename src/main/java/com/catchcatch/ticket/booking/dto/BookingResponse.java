@@ -468,9 +468,12 @@ public class BookingResponse {
 
     @Getter
     public static class SeatFormDTO {
+        private static final String DEFAULT_SEATMAP_IMAGE_URL = "/temp/seatmap/seat/seatmap-image.png";
+
         private List<SeatDTO> seats;
         private List<SeatGradeTabDTO> gradeTabs;
         private String seatsJson;
+        private String overviewImageUrl;
 
         public SeatFormDTO(List<Seat> seats) {
             this(seats, Set.of());
@@ -495,6 +498,7 @@ public class BookingResponse {
             activateFirstGradeTab();
 
             this.seatsJson = toJson(this.seats);
+            this.overviewImageUrl = DEFAULT_SEATMAP_IMAGE_URL;
         }
 
         private void activateFirstGradeTab() {
