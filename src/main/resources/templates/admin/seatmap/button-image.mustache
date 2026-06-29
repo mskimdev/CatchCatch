@@ -15,7 +15,7 @@
 <link href="/css/admin/seatmap-button-image.css" rel="stylesheet">
 
 <body>
-<div class="seatmap-workspace seatmap-workspace--button-image seatmap-workspace--no-right"
+<div class="seatmap-workspace seatmap-workspace--button-image"
      id="buttonImageApp"
      data-main-url="/admin/seatmap/main"
      data-save-url="/admin/seatmap/overwrite-save">
@@ -27,7 +27,7 @@
         </div>
 
         <div class="button-image-step-list">
-            <section id="prepart1" class="button-image-step is-active button-image-step--pre">
+            <section id="prepart1" class="button-image-step button-image-step--pre button-image-step--hidden-pre">
                 <button type="button" class="button-image-step__header active" id="tabPre1">
                     <span class="button-image-step__check" data-step="1"></span>
                     <span class="button-image-step__text">
@@ -83,10 +83,10 @@
 
             <section id="part1" class="button-image-step is-active" data-step="1">
                 <button type="button" class="button-image-step__header active" id="tab1">
-                    <span class="button-image-step__check" data-step="2"></span>
+                    <span class="button-image-step__check" data-step="1"></span>
                     <span class="button-image-step__text">
-                        <b>단색화 및 내부 글자 제거</b>
-                        <small>전처리 결과 단색화</small>
+                        <b>도형 색상 추출</b>
+                        <small>버튼 후보 색상 선택 + 원본 위 커버 미리보기</small>
                     </span>
                     <span class="button-image-step__status">진행중</span>
                     <span class="button-image-step__arrow">⌄</span>
@@ -95,11 +95,45 @@
                 <div class="button-image-step__body">
                     <div class="button-image-box">
                         <div class="button-image-guide">
-                            파트 1에서 지정한 배경/글자 색상을 기준으로 좌석 안의 숫자/글자를 제거하고 구역을 단색화합니다.
+                            원본은 그대로 두고, 버튼 도형으로 사용할 색상만 추출합니다. 아래 색상 네모에 커서를 올리면 도면에서 해당 색상만 강조되어 어떤 색을 넣고 뺄지 쉽게 확인할 수 있습니다.
                         </div>
 
-                        <button type="button" class="btn btn--primary" id="generateButtonImage">
-                            단색화 이미지 생성
+                        <div class="button-image-row">
+                            <button type="button" class="btn btn--primary" id="extractShapeColors">
+                                도형 색상 추출
+                            </button>
+                        </div>
+
+                        <label class="button-image-input-label" for="part1ColorTolerance">색상 허용범위</label>
+                        <input type="range" id="part1ColorTolerance" min="0" max="80" value="18">
+                        <div class="button-image-range-value">
+                            <span>정확</span>
+                            <b id="part1ColorToleranceText">18</b>
+                            <span>넓게</span>
+                        </div>
+
+                        <div class="button-image-guide button-image-guide--compact" id="part1ColorStatus">
+                            색상을 추출하면 아래에 원본 색상 목록이 표시됩니다. 체크된 색상만 버튼 후보 레이어에 포함됩니다.
+                        </div>
+
+
+                        <div class="button-image-preview-mode" aria-label="파트1 미리보기 방식">
+                            <button type="button" class="button-image-preview-mode__btn is-active" id="part1PreviewMask">
+                                선택색 표시
+                            </button>
+                            <button type="button" class="button-image-preview-mode__btn" id="part1PreviewOverlay">
+                                커버 표시
+                            </button>
+                        </div>
+
+                        <div class="button-image-color-palette" id="part1ColorPalette">
+                            <div class="button-image-empty-palette">
+                                아직 추출된 색상이 없습니다. [도형 색상 추출]을 누르세요.
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn--primary" id="goPart2FromPart1">
+                            다음: 버튼 네모 단색화
                         </button>
                         <button type="button" class="btn" id="restoreSource">
                             원본 다시 표시
@@ -110,10 +144,10 @@
 
             <section id="part2" class="button-image-step" data-step="2">
                 <button type="button" class="button-image-step__header" id="tab2">
-                    <span class="button-image-step__check" data-step="3"></span>
+                    <span class="button-image-step__check" data-step="2"></span>
                     <span class="button-image-step__text">
-                        <b>누락 색칠 보정</b>
-                        <small>브러쉬 + 색상 찍기</small>
+                        <b>버튼 네모 단색화</b>
+                        <small>선택 색상 기준 단색화 + 누락 보정</small>
                     </span>
                     <span class="button-image-step__status">대기</span>
                     <span class="button-image-step__arrow">⌄</span>
@@ -122,20 +156,44 @@
                 <div class="button-image-step__body">
                     <div class="button-image-box">
                         <div class="button-image-guide">
-                            파트 2 결과에서 숫자/글자가 너무 커서 단색화가 안 된 부분만 보정합니다. 먼저 색을 찍고, 브러쉬로 누락 부분을 칠하세요.
+                            파트 1에서 고른 색상 그룹을 기준으로 버튼 네모를 자동 단색화합니다. 먼저 자동 단색화를 실행하고, 그 다음에 브러쉬/지우개로 부족한 부분만 보정하세요.
                         </div>
 
-                        <label class="button-image-input-label" for="regionColorInput">칠할 색상</label>
-                        <div class="button-image-color-row">
-                            <input type="color" id="regionColorInput" value="#ef5e94" title="직접 색상 선택">
-                            <button type="button" class="btn btn--tool" id="pickColorFromCanvas">
-                                도면에서 색상 찍기
-                            </button>
+                        <button type="button" class="btn btn--primary" id="part2AutoSolidify">
+                            버튼 네모 단색화 실행
+                        </button>
+
+                        <label class="button-image-input-label" for="part2HoleThreshold">내부 구멍 메우기 강도</label>
+                        <input type="range" id="part2HoleThreshold" min="20" max="500" value="160">
+                        <div class="button-image-range-value">
+                            <span>약하게</span>
+                            <b id="part2HoleThresholdText">160px</b>
+                            <span>강하게</span>
                         </div>
+
+                        <label class="button-image-input-label" for="part2NoiseThreshold">작은 조각 제거 기준</label>
+                        <input type="range" id="part2NoiseThreshold" min="4" max="120" value="20">
+                        <div class="button-image-range-value">
+                            <span>작게</span>
+                            <b id="part2NoiseThresholdText">20px</b>
+                            <span>크게</span>
+                        </div>
+
+                        <div class="button-image-guide button-image-guide--compact" id="part2SolidifyStatus">
+                            자동 단색화 전입니다. 실행 후 내부 검은 구멍 메우기와 작은 잡색 제거가 함께 적용됩니다.
+                        </div>
+
+                        <div class="button-image-guide button-image-guide--compact">
+                            칠할 색상을 따로 고르지 않습니다. 브러쉬 보정 시 클릭 위치 주변의 가장 가까운 구역 색상을 자동으로 찾아 채웁니다.
+                        </div>
+                        <input type="color" id="regionColorInput" value="#ef5e94" title="자동 보정용 내부 색상" style="display:none">
+                        <button type="button" class="btn btn--tool" id="pickColorFromCanvas" style="display:none">
+                            도면에서 색상 찍기
+                        </button>
 
                         <div class="button-image-tool-block button-image-tool-block--first">
                             <strong>브러쉬 보정</strong>
-                            <small>단색화가 안 된 내부 숫자/글자/누락 부분을 선택 색상으로 칠하거나 지우개로 제거합니다.</small>
+                            <small>단색화가 안 된 내부 숫자/글자/누락 부분을 주변 가장 가까운 구역 색상으로 칠하거나 지우개로 제거합니다.</small>
 
                             <div class="button-image-row">
                                 <button type="button" class="btn btn--tool" id="brushTool">브러쉬</button>
@@ -165,7 +223,7 @@
 
             <section id="part3" class="button-image-step" data-step="3">
                 <button type="button" class="button-image-step__header" id="tab3">
-                    <span class="button-image-step__check" data-step="4"></span>
+                    <span class="button-image-step__check" data-step="3"></span>
                     <span class="button-image-step__text">
                         <b>색상 추출 / 재단색화</b>
                         <small>허용범위 클릭 추출</small>
@@ -206,7 +264,7 @@
 
             <section id="part4" class="button-image-step" data-step="4">
                 <button type="button" class="button-image-step__header" id="tab4">
-                    <span class="button-image-step__check" data-step="5"></span>
+                    <span class="button-image-step__check" data-step="4"></span>
                     <span class="button-image-step__text">
                         <b>구역 병합</b>
                         <small>드래그 선택 + Shift/Ctrl 클릭</small>
@@ -240,7 +298,7 @@
 
             <section id="part5" class="button-image-step" data-step="5">
                 <button type="button" class="button-image-step__header" id="tab5">
-                    <span class="button-image-step__check" data-step="6"></span>
+                    <span class="button-image-step__check" data-step="5"></span>
                     <span class="button-image-step__text">
                         <b>최종 색상 정리 / 저장</b>
                         <small>비슷한 색상 일치화</small>
@@ -287,7 +345,7 @@
                 </div>
             </section>
             <div class="button-image-side-guide" id="buttonImageGuide">
-                단색화 → 브러쉬 보정 → 색상 추출 → 구역 병합 → 색상 정리/저장 순서로 진행합니다.
+                도형 색상 추출 → 버튼 후보 이미지 생성 → 브러쉬 보정 → 구역 병합 → 색상 정리/저장 순서로 진행합니다.
             </div>
 
             <div class="button-image-hidden-compat" style="display:none">
@@ -340,6 +398,21 @@
             </div>
         </div>
     </main>
+
+    <aside class="seatmap-side seatmap-side--right button-image-right-panel">
+        <section class="button-image-right-card">
+            <div class="button-image-right-card__head">
+                <strong>원본 미니맵</strong>
+                <span>현재 화면 위치 확인</span>
+            </div>
+            <canvas class="button-image-minimap-canvas" id="part1MiniMapCanvas" width="260" height="180"></canvas>
+            <canvas class="button-image-minimap-float-canvas" id="part1MiniMapFloatCanvas" width="520" height="360"></canvas>
+            <div class="button-image-right-help">
+                원본은 수정하지 않고, 현재 작업 위치만 빨간 박스로 표시합니다. 미니맵에 커서를 올리면 원본 미니맵이 2배 크기로 떠서 보입니다.
+            </div>
+        </section>
+    </aside>
+
 </div>
 
 <div class="toast" id="toast"></div>

@@ -2573,7 +2573,7 @@ SeatTrace 버튼 이미지화 결과 파일
         const radius = Math.max(1, state.brush.size / 2);
         const color = state.brush.mode === "erase"
             ? getBrushEraseColor()
-            : getBrushPaintColor();
+            : getBrushPaintColor(point, radius);
 
         ctx.save();
         ctx.beginPath();
@@ -2606,10 +2606,94 @@ SeatTrace 버튼 이미지화 결과 파일
         toast(state.brush.mode === "erase" ? "지우개 보정을 적용했습니다." : "브러쉬 보정을 적용했습니다.");
     }
 
-    function getBrushPaintColor() {
+    function getBrushPaintColor(point, radius = 12) {
+        const auto = findNearestRegionColorForBrushV48(point, radius);
+        if (auto) {
+            const hex = rgbToHex(auto.r, auto.g, auto.b);
+            state.region.color = hex;
+            state.brush.color = hex;
+            const input = $("regionColorInput");
+            if (input) {
+                input.value = hex;
+            }
+            return auto;
+        }
+
         const input = $("regionColorInput");
         const hex = input?.value || state.region.color || "#ef5e94";
         return hexToRgb(hex);
+    }
+
+    function findNearestRegionColorForBrushV48(point, radius = 12) {
+        if (!canvas.width || !canvas.height) {
+            return null;
+        }
+
+        const cx = clamp(Math.round(point.x), 0, canvas.width - 1);
+        const cy = clamp(Math.round(point.y), 0, canvas.height - 1);
+        const maxRadius = Math.max(8, Math.round(radius * 2.5), 24);
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        const votes = new Map();
+        let fallback = null;
+
+        for (let r = 1; r <= maxRadius; r += 1) {
+            const minX = Math.max(0, cx - r);
+            const maxX = Math.min(canvas.width - 1, cx + r);
+            const minY = Math.max(0, cy - r);
+            const maxY = Math.min(canvas.height - 1, cy + r);
+
+            for (let x = minX; x <= maxX; x += 1) {
+                collectBrushColorVoteV48(x, minY, r);
+                if (maxY !== minY) {
+                    collectBrushColorVoteV48(x, maxY, r);
+                }
+            }
+
+            for (let y = minY + 1; y < maxY; y += 1) {
+                collectBrushColorVoteV48(minX, y, r);
+                if (maxX !== minX) {
+                    collectBrushColorVoteV48(maxX, y, r);
+                }
+            }
+
+            if (votes.size > 0 && r >= Math.max(3, Math.round(radius * 0.8))) {
+                break;
+            }
+        }
+
+        let best = null;
+        votes.forEach((entry) => {
+            if (!best || entry.score > best.score) {
+                best = entry;
+            }
+        });
+
+        return best ? best.rgb : fallback;
+
+        function collectBrushColorVoteV48(x, y, ring) {
+            const idx = (y * canvas.width + x) * 4;
+            const a = image[idx + 3];
+            const rr = image[idx];
+            const gg = image[idx + 1];
+            const bb = image[idx + 2];
+            if (a < 10) {
+                return;
+            }
+            if (rr <= 10 && gg <= 10 && bb <= 10) {
+                return;
+            }
+            if (rr >= 245 && gg >= 245 && bb >= 245) {
+                return;
+            }
+            const key = `${rr},${gg},${bb}`;
+            const ringWeight = Math.max(1, maxRadius - ring + 1);
+            const existing = votes.get(key) || { rgb: { r: rr, g: gg, b: bb }, score: 0 };
+            existing.score += ringWeight;
+            votes.set(key, existing);
+            if (!fallback) {
+                fallback = { r: rr, g: gg, b: bb };
+            }
+        }
     }
 
     function getBrushEraseColor() {
@@ -10111,5 +10195,1817 @@ SeatTrace 버튼 이미지화 결과 파일
     }
 
     setTimeout(bindV40PreprocessContinue, 0);
+
+
+    // ============================================================================
+    // v41 patch: button-image Part 1 = 도형 색상 추출 + 원본 위 cover 미리보기
+    // - 수정 대상은 concert-stage1이 아니라 /admin/seatmap/button-image 흐름이다.
+    // - 원본(sourceCanvas)은 절대 덮어쓰지 않고, 선택 색상만 새 후보 레이어로 생성한다.
+    // ============================================================================
+
+    const PART1_PREVIEW_COLORS_V41 = [
+        "#7c3aed", "#2563eb", "#059669", "#ea580c", "#db2777",
+        "#0891b2", "#65a30d", "#9333ea", "#dc2626", "#0f766e"
+    ];
+
+    function ensurePart1ColorStateV41() {
+        if (!state.part1ColorExtract) {
+            state.part1ColorExtract = {
+                colors: [],
+                extracted: false,
+                tolerance: 18,
+                lastPreviewDataUrl: ""
+            };
+        }
+
+        return state.part1ColorExtract;
+    }
+
+    function bindPart1ColorExtractV41() {
+        const extractButton = $("extractShapeColors");
+        const generateButton = $("generateButtonImage");
+        const restoreButton = $("restoreSource");
+
+        replaceButtonListenerV41(extractButton, extractPart1ShapeColorsV41);
+        replaceButtonListenerV41($("part1SelectColored"), () => {
+            autoSelectPart1CandidateColorsV41(true);
+            renderPart1ColorPaletteV41();
+            drawPart1SelectedColorPreviewV41();
+        });
+        replaceButtonListenerV41($("part1InvertSelection"), () => {
+            const part1 = ensurePart1ColorStateV41();
+            part1.colors.forEach((item) => item.selected = !item.selected);
+            renderPart1ColorPaletteV41();
+            drawPart1SelectedColorPreviewV41();
+        });
+        replaceButtonListenerV41($("part1ClearSelection"), () => {
+            const part1 = ensurePart1ColorStateV41();
+            part1.colors.forEach((item) => item.selected = false);
+            renderPart1ColorPaletteV41();
+            drawPart1SelectedColorPreviewV41();
+        });
+        replaceButtonListenerV41($("part1PreviewSelected"), drawPart1SelectedColorPreviewV41);
+        replaceButtonListenerV41(generateButton, createPart1ButtonCandidateImageV41);
+        replaceButtonListenerV41(restoreButton, () => {
+            restoreSourceImage();
+            renderPart1ColorPaletteV41();
+        });
+
+        const tolerance = $("part1ColorTolerance");
+        if (tolerance && !tolerance.dataset.boundV41) {
+            tolerance.dataset.boundV41 = "true";
+            tolerance.addEventListener("input", () => {
+                const part1 = ensurePart1ColorStateV41();
+                part1.tolerance = Math.max(0, Number(tolerance.value) || 0);
+                setText("part1ColorToleranceText", String(part1.tolerance));
+                drawPart1SelectedColorPreviewV41();
+            });
+        }
+
+        setText("part1ColorToleranceText", String(Number(tolerance?.value || 18)));
+    }
+
+    function replaceButtonListenerV41(button, handler) {
+        if (!button || button.dataset.boundV41) {
+            return;
+        }
+
+        const clone = button.cloneNode(true);
+        clone.dataset.boundV41 = "true";
+        button.parentNode.replaceChild(clone, button);
+        clone.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            handler(event);
+        });
+    }
+
+    function extractPart1ShapeColorsV41() {
+        if (!state.imageReady || !sourceCanvas.width || !sourceCanvas.height) {
+            toast("원본 이미지 로딩이 끝난 뒤 다시 실행하세요.");
+            return;
+        }
+
+        const part1 = ensurePart1ColorStateV41();
+        const width = sourceCanvas.width;
+        const height = sourceCanvas.height;
+        const image = sourceCtx.getImageData(0, 0, width, height);
+        const buckets = new Map();
+        const data = image.data;
+        const step = 16;
+
+        for (let i = 0; i < data.length; i += 4) {
+            const alpha = data[i + 3];
+
+            if (alpha < 10) {
+                continue;
+            }
+
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            const key = `${Math.round(r / step) * step},${Math.round(g / step) * step},${Math.round(b / step) * step}`;
+            let bucket = buckets.get(key);
+
+            if (!bucket) {
+                bucket = { count: 0, r: 0, g: 0, b: 0 };
+                buckets.set(key, bucket);
+            }
+
+            bucket.count += 1;
+            bucket.r += r;
+            bucket.g += g;
+            bucket.b += b;
+        }
+
+        const minCount = Math.max(18, Math.floor((width * height) * 0.00004));
+        const colors = Array.from(buckets.values())
+            .filter((bucket) => bucket.count >= minCount)
+            .map((bucket, index) => {
+                const rgb = {
+                    r: Math.round(bucket.r / bucket.count),
+                    g: Math.round(bucket.g / bucket.count),
+                    b: Math.round(bucket.b / bucket.count)
+                };
+                const hsl = rgbToHslV41(rgb.r, rgb.g, rgb.b);
+                const hex = rgbToHexV41(rgb.r, rgb.g, rgb.b);
+                const role = guessPart1ColorRoleV41(rgb, hsl, bucket.count, width * height);
+
+                return {
+                    id: `color-${index + 1}`,
+                    sourceColor: hex,
+                    rgb,
+                    count: bucket.count,
+                    ratio: bucket.count / Math.max(1, width * height),
+                    saturation: hsl.s,
+                    lightness: hsl.l,
+                    role,
+                    selected: role === "button",
+                    previewColor: PART1_PREVIEW_COLORS_V41[index % PART1_PREVIEW_COLORS_V41.length]
+                };
+            })
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 80)
+            .map((item, index) => ({
+                ...item,
+                id: `color-${index + 1}`,
+                previewColor: PART1_PREVIEW_COLORS_V41[index % PART1_PREVIEW_COLORS_V41.length]
+            }));
+
+        part1.colors = colors;
+        part1.extracted = true;
+        part1.tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
+
+        renderPart1ColorPaletteV41();
+        drawPart1SelectedColorPreviewV41();
+        savePart1ColorExtractStateV41();
+
+        toast(`도형 색상 후보 ${colors.length}개를 추출했습니다.`);
+    }
+
+    function guessPart1ColorRoleV41(rgb, hsl, count, totalPixels) {
+        const max = Math.max(rgb.r, rgb.g, rgb.b);
+        const min = Math.min(rgb.r, rgb.g, rgb.b);
+        const chroma = max - min;
+        const ratio = count / Math.max(1, totalPixels);
+
+        if (hsl.l >= 0.90 && hsl.s <= 0.18) {
+            return "background";
+        }
+
+        if (hsl.l <= 0.16 && hsl.s <= 0.30) {
+            return "text";
+        }
+
+        if (hsl.s <= 0.13 && chroma <= 24) {
+            return ratio > 0.05 ? "background" : "line";
+        }
+
+        if (count < 35) {
+            return "noise";
+        }
+
+        if (hsl.s >= 0.18 && hsl.l >= 0.16 && hsl.l <= 0.88 && chroma >= 24) {
+            return "button";
+        }
+
+        return "etc";
+    }
+
+    function autoSelectPart1CandidateColorsV41(forceToast) {
+        const part1 = ensurePart1ColorStateV41();
+
+        if (!part1.extracted || part1.colors.length === 0) {
+            extractPart1ShapeColorsV41();
+            return;
+        }
+
+        part1.colors.forEach((item) => {
+            item.selected = item.role === "button";
+        });
+
+        if (forceToast) {
+            toast("도형 후보 색상만 자동 선택했습니다.");
+        }
+    }
+
+    function renderPart1ColorPaletteV41() {
+        const palette = $("part1ColorPalette");
+        const part1 = ensurePart1ColorStateV41();
+
+        if (!palette) {
+            return;
+        }
+
+        if (!part1.colors || part1.colors.length === 0) {
+            palette.innerHTML = `
+                <div class="button-image-empty-palette">
+                    아직 추출된 색상이 없습니다. [도형 색상 추출]을 누르세요.
+                </div>
+            `;
+            updatePart1ColorStatusV41();
+            return;
+        }
+
+        palette.innerHTML = part1.colors.map((item, index) => {
+            const roleText = getPart1RoleTextV41(item.role);
+            const selected = item.selected ? "is-selected" : "";
+            const checked = item.selected ? "checked" : "";
+            const countText = item.count.toLocaleString();
+
+            return `
+                <button type="button" class="button-image-color-chip ${selected}" data-color-index="${index}">
+                    <span class="button-image-color-chip__check">
+                        <input type="checkbox" ${checked} tabindex="-1">
+                    </span>
+                    <span class="button-image-color-chip__swatch" style="background:${item.sourceColor}"></span>
+                    <span class="button-image-color-chip__body">
+                        <strong>${escapeHtml(item.sourceColor)}</strong>
+                        <small>${roleText} · ${countText}px</small>
+                    </span>
+                    <span class="button-image-color-chip__cover" style="background:${item.previewColor}"></span>
+                </button>
+            `;
+        }).join("");
+
+        palette.querySelectorAll("[data-color-index]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const index = Number(button.dataset.colorIndex);
+                const item = part1.colors[index];
+
+                if (!item) {
+                    return;
+                }
+
+                item.selected = !item.selected;
+                renderPart1ColorPaletteV41();
+                drawPart1SelectedColorPreviewV41();
+            });
+        });
+
+        updatePart1ColorStatusV41();
+    }
+
+    function updatePart1ColorStatusV41() {
+        const part1 = ensurePart1ColorStateV41();
+        const selected = part1.colors.filter((item) => item.selected);
+        const totalPixels = selected.reduce((sum, item) => sum + item.count, 0);
+        const text = part1.colors.length === 0
+            ? "색상을 추출하면 아래에 원본 색상 목록이 표시됩니다."
+            : `추출 ${part1.colors.length}개 / 선택 ${selected.length}개 / 선택 픽셀 ${totalPixels.toLocaleString()}px`;
+
+        setText("part1ColorStatus", text);
+    }
+
+    function getPart1RoleTextV41(role) {
+        if (role === "button") return "도형 후보";
+        if (role === "background") return "배경 후보";
+        if (role === "text") return "글자 후보";
+        if (role === "line") return "선/회색 후보";
+        if (role === "noise") return "작은 색상";
+        return "기타";
+    }
+
+    function drawPart1SelectedColorPreviewV41(options = {}) {
+        const part1 = ensurePart1ColorStateV41();
+
+        if (!state.imageReady || !sourceCanvas.width || !sourceCanvas.height) {
+            return;
+        }
+
+        if (!part1.extracted || part1.colors.length === 0) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(sourceCanvas, 0, 0);
+            clearOverlay();
+            return;
+        }
+
+        const hoverGroup = Number.isInteger(part1.hoverGroupIndex)
+            ? part1.groups?.[part1.hoverGroupIndex]
+            : null;
+        const selected = options.hoverOnly && hoverGroup
+            ? getPart1GroupColorsV42(hoverGroup)
+            : part1.colors.filter((item) => item.selected);
+        const width = sourceCanvas.width;
+        const height = sourceCanvas.height;
+        const source = sourceCtx.getImageData(0, 0, width, height);
+        const output = new ImageData(new Uint8ClampedArray(source.data), width, height);
+        const src = source.data;
+        const dst = output.data;
+        const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
+        const alpha = 0.68;
+
+        for (let i = 0; i < src.length; i += 4) {
+            const match = findMatchingPart1ColorV41(src[i], src[i + 1], src[i + 2], selected, tolerance);
+
+            if (!match) {
+                dst[i] = Math.round(src[i] * 0.72 + 255 * 0.28);
+                dst[i + 1] = Math.round(src[i + 1] * 0.72 + 255 * 0.28);
+                dst[i + 2] = Math.round(src[i + 2] * 0.72 + 255 * 0.28);
+                dst[i + 3] = src[i + 3];
+                continue;
+            }
+
+            const cover = hexToRgbV41(match.previewColor);
+            dst[i] = Math.round(src[i] * (1 - alpha) + cover.r * alpha);
+            dst[i + 1] = Math.round(src[i + 1] * (1 - alpha) + cover.g * alpha);
+            dst[i + 2] = Math.round(src[i + 2] * (1 - alpha) + cover.b * alpha);
+            dst[i + 3] = 255;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.putImageData(output, 0, 0);
+        state.part1ColorExtract.lastPreviewDataUrl = canvas.toDataURL("image/png");
+        clearOverlay();
+        updatePart1ColorStatusV41();
+        savePart1ColorExtractStateV41();
+    }
+
+    function createPart1ButtonCandidateImageV41() {
+        const part1 = ensurePart1ColorStateV41();
+
+        if (!state.imageReady || !sourceCanvas.width || !sourceCanvas.height) {
+            toast("원본 이미지 로딩이 끝난 뒤 다시 실행하세요.");
+            return;
+        }
+
+        if (!part1.extracted || part1.colors.length === 0) {
+            extractPart1ShapeColorsV41();
+            return;
+        }
+
+        const selected = part1.colors.filter((item) => item.selected);
+
+        if (selected.length === 0) {
+            toast("버튼 후보로 사용할 색상을 하나 이상 선택하세요.");
+            return;
+        }
+
+        const width = sourceCanvas.width;
+        const height = sourceCanvas.height;
+        const source = sourceCtx.getImageData(0, 0, width, height);
+        const output = ctx.createImageData(width, height);
+        const src = source.data;
+        const dst = output.data;
+        const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
+        const masks = new Map(selected.map((item) => [item.id, {
+            id: item.id,
+            sourceColor: item.sourceColor,
+            previewColor: item.previewColor,
+            count: 0,
+            minX: width,
+            minY: height,
+            maxX: -1,
+            maxY: -1,
+            spans: new Map()
+        }]));
+
+        for (let y = 0; y < height; y += 1) {
+            for (let x = 0; x < width; x += 1) {
+                const offset = (y * width + x) * 4;
+                const match = findMatchingPart1ColorV41(src[offset], src[offset + 1], src[offset + 2], selected, tolerance);
+
+                if (!match) {
+                    dst[offset] = 255;
+                    dst[offset + 1] = 255;
+                    dst[offset + 2] = 255;
+                    dst[offset + 3] = 255;
+                    continue;
+                }
+
+                const color = hexToRgbV41(match.previewColor);
+                dst[offset] = color.r;
+                dst[offset + 1] = color.g;
+                dst[offset + 2] = color.b;
+                dst[offset + 3] = 255;
+
+                const mask = masks.get(match.id);
+                if (mask) {
+                    mask.count += 1;
+                    mask.minX = Math.min(mask.minX, x);
+                    mask.minY = Math.min(mask.minY, y);
+                    mask.maxX = Math.max(mask.maxX, x);
+                    mask.maxY = Math.max(mask.maxY, y);
+                    addXToSpanMapV41(mask.spans, y, x);
+                }
+            }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.putImageData(output, 0, 0);
+
+        resultCanvas.width = width;
+        resultCanvas.height = height;
+        resultCtx.putImageData(output, 0, 0);
+
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+        state.lastStats = {
+            seatRegions: selected.length,
+            regionRoleCounts: selected.map((item) => ({ role: item.role || "button", count: item.count || 0 }))
+        };
+
+        const maskList = Array.from(masks.values())
+            .filter((mask) => mask.count > 0)
+            .map((mask) => ({
+                id: mask.id,
+                sourceColor: mask.sourceColor,
+                previewColor: mask.previewColor,
+                pixelCount: mask.count,
+                bbox: {
+                    x: mask.minX,
+                    y: mask.minY,
+                    w: mask.maxX - mask.minX + 1,
+                    h: mask.maxY - mask.minY + 1
+                },
+                maskSpans: spanMapToMaskSpansV41(mask.spans)
+            }));
+
+        const meta = {
+            width,
+            height,
+            mode: "button-image-color-extract-v41",
+            tolerance,
+            selectedColors: selected.map((item) => ({
+                id: item.id,
+                sourceColor: item.sourceColor,
+                previewColor: item.previewColor,
+                count: item.count,
+                role: item.role
+            })),
+            masks: maskList,
+            createdAt: new Date().toISOString()
+        };
+
+        localStorage.setItem(STORAGE.result, state.resultBaseDataUrl);
+        localStorage.setItem(STORAGE.concertButton, state.resultBaseDataUrl);
+        localStorage.setItem(STORAGE.meta, JSON.stringify(meta));
+        localStorage.setItem(STORAGE.concertButtonMeta, JSON.stringify(meta));
+        localStorage.setItem("seat_button_part1_color_extract", JSON.stringify(meta));
+
+        savePart1ColorExtractStateV41();
+        pushHistory("도형 색상 추출 기반 버튼 후보 이미지 생성");
+        updateStats();
+        setActionButtonsEnabled(true);
+        setStep(2);
+        toast("선택 색상만 남긴 버튼 후보 이미지를 생성했습니다.");
+    }
+
+    function findMatchingPart1ColorV41(r, g, b, colors, tolerance) {
+        if (!colors || colors.length === 0) {
+            return null;
+        }
+
+        let best = null;
+        let bestDistance = Infinity;
+        const limit = Math.max(4, tolerance) * 2.2;
+
+        for (const item of colors) {
+            const distance = colorDistanceV41({ r, g, b }, item.rgb);
+
+            if (distance <= limit && distance < bestDistance) {
+                best = item;
+                bestDistance = distance;
+            }
+        }
+
+        return best;
+    }
+
+    function addXToSpanMapV41(spanMap, y, x) {
+        let list = spanMap.get(y);
+
+        if (!list) {
+            list = [];
+            spanMap.set(y, list);
+        }
+
+        const last = list[list.length - 1];
+
+        if (last && last[1] + 1 === x) {
+            last[1] = x;
+        } else {
+            list.push([x, x]);
+        }
+    }
+
+    function spanMapToMaskSpansV41(spanMap) {
+        return Array.from(spanMap.entries())
+            .sort((a, b) => a[0] - b[0])
+            .map(([y, ranges]) => ({ y, ranges }));
+    }
+
+    function savePart1ColorExtractStateV41() {
+        const part1 = ensurePart1ColorStateV41();
+        const payload = {
+            tolerance: part1.tolerance,
+            extracted: part1.extracted,
+            colors: part1.colors.map((item) => ({
+                id: item.id,
+                sourceColor: item.sourceColor,
+                previewColor: item.previewColor,
+                count: item.count,
+                role: item.role,
+                selected: item.selected,
+                saturation: item.saturation,
+                lightness: item.lightness
+            }))
+        };
+
+        localStorage.setItem("seat_button_part1_colors", JSON.stringify(payload));
+    }
+
+    function rgbToHslV41(r, g, b) {
+        r /= 255;
+        g /= 255;
+        b /= 255;
+
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        let h = 0;
+        let s = 0;
+        const l = (max + min) / 2;
+
+        if (max !== min) {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+            switch (max) {
+                case r:
+                    h = (g - b) / d + (g < b ? 6 : 0);
+                    break;
+                case g:
+                    h = (b - r) / d + 2;
+                    break;
+                default:
+                    h = (r - g) / d + 4;
+                    break;
+            }
+
+            h /= 6;
+        }
+
+        return { h, s, l };
+    }
+
+    function colorDistanceV41(a, b) {
+        const dr = (a.r || 0) - (b.r || 0);
+        const dg = (a.g || 0) - (b.g || 0);
+        const db = (a.b || 0) - (b.b || 0);
+        return Math.sqrt((dr * dr) + (dg * dg) + (db * db));
+    }
+
+    function rgbToHexV41(r, g, b) {
+        return `#${toHex2V41(r)}${toHex2V41(g)}${toHex2V41(b)}`.toUpperCase();
+    }
+
+    function hexToRgbV41(hex) {
+        const value = String(hex || "#000000").replace("#", "");
+        const normalized = value.length === 3
+            ? value.split("").map((char) => char + char).join("")
+            : value.padEnd(6, "0").slice(0, 6);
+
+        return {
+            r: parseInt(normalized.slice(0, 2), 16) || 0,
+            g: parseInt(normalized.slice(2, 4), 16) || 0,
+            b: parseInt(normalized.slice(4, 6), 16) || 0
+        };
+    }
+
+    function toHex2V41(value) {
+        return Math.max(0, Math.min(255, Math.round(value || 0))).toString(16).padStart(2, "0");
+    }
+
+
+
+    // ============================================================================
+    // v42 patch: Part 1 그룹화 + 흑백 마스크 + 원본 미니맵/커서 확대
+    // ============================================================================
+
+    function ensurePart1ColorStateV41() {
+        if (!state.part1ColorExtract) {
+            state.part1ColorExtract = {
+                colors: [],
+                groups: [],
+                extracted: false,
+                tolerance: 18,
+                previewMode: "mask",
+                lastPreviewDataUrl: ""
+            };
+        }
+
+        if (!Array.isArray(state.part1ColorExtract.colors)) {
+            state.part1ColorExtract.colors = [];
+        }
+
+        if (!Array.isArray(state.part1ColorExtract.groups)) {
+            state.part1ColorExtract.groups = [];
+        }
+
+        if (!state.part1ColorExtract.previewMode) {
+            state.part1ColorExtract.previewMode = "mask";
+        }
+
+        return state.part1ColorExtract;
+    }
+
+    function bindPart1ColorExtractV41() {
+        const extractButton = $("extractShapeColors");
+        const nextStepButton = $("goPart2FromPart1");
+        const restoreButton = $("restoreSource");
+
+        replaceButtonListenerV41(extractButton, extractPart1ShapeColorsV41);
+        replaceButtonListenerV41($("part1PreviewMask"), () => setPart1PreviewModeV42("mask"));
+        replaceButtonListenerV41($("part1PreviewOverlay"), () => setPart1PreviewModeV42("overlay"));
+        replaceButtonListenerV41(nextStepButton, createPart1ButtonCandidateImageV41);
+        replaceButtonListenerV41(restoreButton, () => {
+            restoreSourceImage();
+            renderPart1ColorPaletteV41();
+            drawPart1MiniMapV42();
+        });
+
+        const tolerance = $("part1ColorTolerance");
+        if (tolerance && !tolerance.dataset.boundV42) {
+            tolerance.dataset.boundV42 = "true";
+            tolerance.addEventListener("input", () => {
+                const part1 = ensurePart1ColorStateV41();
+                part1.tolerance = Math.max(0, Number(tolerance.value) || 0);
+                setText("part1ColorToleranceText", String(part1.tolerance));
+                part1.groups = buildPart1ColorGroupsV42(part1.colors, part1.tolerance);
+                renderPart1ColorPaletteV41();
+                drawPart1SelectedColorPreviewV41();
+            });
+        }
+
+        setText("part1ColorToleranceText", String(Number(tolerance?.value || 18)));
+        setPart1PreviewModeV42(ensurePart1ColorStateV41().previewMode || "mask", { silent: true });
+        bindPart1MiniMapV42();
+    }
+
+    function extractPart1ShapeColorsV41() {
+        if (!state.imageReady || !sourceCanvas.width || !sourceCanvas.height) {
+            toast("원본 이미지 로딩이 끝난 뒤 다시 실행하세요.");
+            return;
+        }
+
+        const part1 = ensurePart1ColorStateV41();
+        const width = sourceCanvas.width;
+        const height = sourceCanvas.height;
+        const image = sourceCtx.getImageData(0, 0, width, height);
+        const buckets = new Map();
+        const data = image.data;
+        const step = 16;
+
+        for (let i = 0; i < data.length; i += 4) {
+            const alpha = data[i + 3];
+
+            if (alpha < 10) {
+                continue;
+            }
+
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            const key = `${Math.round(r / step) * step},${Math.round(g / step) * step},${Math.round(b / step) * step}`;
+            let bucket = buckets.get(key);
+
+            if (!bucket) {
+                bucket = { count: 0, r: 0, g: 0, b: 0 };
+                buckets.set(key, bucket);
+            }
+
+            bucket.count += 1;
+            bucket.r += r;
+            bucket.g += g;
+            bucket.b += b;
+        }
+
+        const minCount = Math.max(18, Math.floor((width * height) * 0.00004));
+        const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
+        const colors = Array.from(buckets.values())
+            .filter((bucket) => bucket.count >= minCount)
+            .map((bucket, index) => {
+                const rgb = {
+                    r: Math.round(bucket.r / bucket.count),
+                    g: Math.round(bucket.g / bucket.count),
+                    b: Math.round(bucket.b / bucket.count)
+                };
+                const hsl = rgbToHslV41(rgb.r, rgb.g, rgb.b);
+                const hex = rgbToHexV41(rgb.r, rgb.g, rgb.b);
+                const role = guessPart1ColorRoleV41(rgb, hsl, bucket.count, width * height);
+
+                return {
+                    id: `color-${index + 1}`,
+                    sourceColor: hex,
+                    rgb,
+                    count: bucket.count,
+                    ratio: bucket.count / Math.max(1, width * height),
+                    saturation: hsl.s,
+                    lightness: hsl.l,
+                    hue: hsl.h,
+                    role,
+                    selected: role === "button",
+                    previewColor: PART1_PREVIEW_COLORS_V41[index % PART1_PREVIEW_COLORS_V41.length]
+                };
+            })
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 96)
+            .map((item, index) => ({
+                ...item,
+                id: `color-${index + 1}`,
+                previewColor: PART1_PREVIEW_COLORS_V41[index % PART1_PREVIEW_COLORS_V41.length]
+            }));
+
+        part1.colors = colors;
+        part1.groups = buildPart1ColorGroupsV42(colors, tolerance);
+        part1.extracted = true;
+        part1.tolerance = tolerance;
+        part1.previewMode = part1.previewMode || "mask";
+
+        autoSelectPart1CandidateColorsV41(false);
+        renderPart1ColorPaletteV41();
+        drawPart1SelectedColorPreviewV41();
+        savePart1ColorExtractStateV41();
+        drawPart1MiniMapV42();
+
+        toast(`색상 ${colors.length}개를 추출하고 유사 색상 그룹 ${part1.groups.length}개로 묶었습니다.`);
+    }
+
+    function buildPart1ColorGroupsV42(colors, tolerance) {
+        const groups = [];
+        const limit = Math.max(30, 42 + (Number(tolerance) || 0) * 0.55);
+        const sorted = [...(colors || [])].sort((a, b) => b.count - a.count);
+
+        sorted.forEach((color) => {
+            let bestGroup = null;
+            let bestDistance = Infinity;
+
+            groups.forEach((group) => {
+                const distance = colorDistanceV41(color.rgb, group.center);
+                const rolePenalty = color.role === group.role ? 0 : 12;
+                const finalDistance = distance + rolePenalty;
+
+                if (finalDistance <= limit && finalDistance < bestDistance) {
+                    bestGroup = group;
+                    bestDistance = finalDistance;
+                }
+            });
+
+            if (!bestGroup) {
+                bestGroup = {
+                    id: `group-${groups.length + 1}`,
+                    role: color.role,
+                    center: { ...color.rgb },
+                    count: 0,
+                    colorIds: [],
+                    previewColor: PART1_PREVIEW_COLORS_V41[groups.length % PART1_PREVIEW_COLORS_V41.length]
+                };
+                groups.push(bestGroup);
+            }
+
+            color.groupId = bestGroup.id;
+            color.previewColor = bestGroup.previewColor;
+            bestGroup.colorIds.push(color.id);
+            bestGroup.count += color.count;
+            const weight = Math.max(1, color.count);
+            const prevWeight = Math.max(1, bestGroup.count - color.count);
+            bestGroup.center = {
+                r: Math.round(((bestGroup.center.r * prevWeight) + (color.rgb.r * weight)) / (prevWeight + weight)),
+                g: Math.round(((bestGroup.center.g * prevWeight) + (color.rgb.g * weight)) / (prevWeight + weight)),
+                b: Math.round(((bestGroup.center.b * prevWeight) + (color.rgb.b * weight)) / (prevWeight + weight))
+            };
+            bestGroup.sourceColor = rgbToHexV41(bestGroup.center.r, bestGroup.center.g, bestGroup.center.b);
+        });
+
+        groups.forEach((group, index) => {
+            group.id = `group-${index + 1}`;
+            group.colorIds.forEach((colorId) => {
+                const color = colors.find((item) => item.id === colorId);
+                if (color) {
+                    color.groupId = group.id;
+                    color.previewColor = group.previewColor;
+                }
+            });
+        });
+
+        return groups;
+    }
+
+    function syncPart1GroupsFromColorsV42() {
+        const part1 = ensurePart1ColorStateV41();
+        part1.groups = buildPart1ColorGroupsV42(part1.colors, part1.tolerance);
+    }
+
+    function autoSelectPart1CandidateColorsV41(forceToast) {
+        const part1 = ensurePart1ColorStateV41();
+
+        if (!part1.extracted || part1.colors.length === 0) {
+            extractPart1ShapeColorsV41();
+            return;
+        }
+
+        part1.colors.forEach((item) => {
+            item.selected = item.role === "button";
+        });
+        syncPart1GroupsFromColorsV42();
+
+        if (forceToast) {
+            toast("도형 후보 그룹을 자동 선택했습니다.");
+        }
+    }
+
+    function renderPart1ColorPaletteV41() {
+        const palette = $("part1ColorPalette");
+        const part1 = ensurePart1ColorStateV41();
+
+        if (!palette) {
+            return;
+        }
+
+        if (!part1.colors || part1.colors.length === 0) {
+            palette.innerHTML = `
+                <div class="button-image-empty-palette">
+                    아직 추출된 색상이 없습니다. [도형 색상 추출]을 누르세요.
+                </div>
+            `;
+            updatePart1ColorStatusV41();
+            return;
+        }
+
+        if (!part1.groups || part1.groups.length === 0) {
+            syncPart1GroupsFromColorsV42();
+        }
+
+        palette.innerHTML = `
+            <div class="button-image-color-tile-grid">
+                ${part1.groups.map((group, groupIndex) => renderPart1GroupTileV43(group, groupIndex)).join("")}
+            </div>
+        `;
+
+        palette.querySelectorAll("[data-group-index]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const groupIndex = Number(button.dataset.groupIndex);
+                const group = part1.groups[groupIndex];
+                const colors = getPart1GroupColorsV42(group);
+                const allSelected = colors.length > 0 && colors.every((item) => item.selected);
+                colors.forEach((item) => item.selected = !allSelected);
+                part1.hoverGroupIndex = null;
+                renderPart1ColorPaletteV41();
+                drawPart1SelectedColorPreviewV41();
+            });
+
+            button.addEventListener("mouseenter", () => {
+                const groupIndex = Number(button.dataset.groupIndex);
+                part1.hoverGroupIndex = groupIndex;
+                drawPart1SelectedColorPreviewV41({ hoverOnly: true });
+            });
+
+            button.addEventListener("mouseleave", () => {
+                part1.hoverGroupIndex = null;
+                drawPart1SelectedColorPreviewV41();
+            });
+        });
+
+        updatePart1ColorStatusV41();
+    }
+
+    function renderPart1GroupTileV43(group, groupIndex) {
+        const colors = getPart1GroupColorsV42(group);
+        const selectedCount = colors.filter((item) => item.selected).length;
+        const allSelected = colors.length > 0 && selectedCount === colors.length;
+        const anySelected = selectedCount > 0;
+        const selectedClass = anySelected ? "is-selected" : "";
+        const partialClass = anySelected && !allSelected ? "is-partial" : "";
+        const groupName = getPart1GroupNameV42(group, groupIndex);
+        const countText = Number(group.count || 0).toLocaleString();
+        const title = `${groupName} / ${colors.length}색 / ${selectedCount}/${colors.length} 선택 / ${countText}px`;
+
+        return `
+            <button type="button"
+                    class="button-image-color-tile ${selectedClass} ${partialClass}"
+                    data-group-index="${groupIndex}"
+                    title="${escapeHtml(title)}">
+                <span class="button-image-color-tile__swatch" style="background:${escapeHtml(group.sourceColor || '#ffffff')}"></span>
+                <span class="button-image-color-tile__check" aria-hidden="true"></span>
+            </button>
+        `;
+    }
+
+    function getPart1GroupColorsV42(group) {
+        const part1 = ensurePart1ColorStateV41();
+        if (!group || !Array.isArray(group.colorIds)) {
+            return [];
+        }
+        return group.colorIds
+            .map((id) => part1.colors.find((item) => item.id === id))
+            .filter(Boolean);
+    }
+
+    function getPart1GroupNameV42(group, index) {
+        const roleText = getPart1RoleTextV41(group.role || "etc");
+        return `${roleText} 그룹 ${index + 1}`;
+    }
+
+    function updatePart1ColorStatusV41() {
+        const part1 = ensurePart1ColorStateV41();
+        const selected = part1.colors.filter((item) => item.selected);
+        const selectedGroups = (part1.groups || []).filter((group) => getPart1GroupColorsV42(group).some((item) => item.selected));
+        const totalPixels = selected.reduce((sum, item) => sum + item.count, 0);
+        const text = part1.colors.length === 0
+            ? "색상을 추출하면 유사 색상 그룹이 표시됩니다."
+            : `추출 ${part1.colors.length}개 / 그룹 ${part1.groups.length}개 / 선택 그룹 ${selectedGroups.length}개 / 선택 픽셀 ${totalPixels.toLocaleString()}px`;
+
+        setText("part1ColorStatus", text);
+    }
+
+    function setPart1PreviewModeV42(mode, options = {}) {
+        const part1 = ensurePart1ColorStateV41();
+        part1.previewMode = mode === "overlay" ? "overlay" : "mask";
+
+        const mask = $("part1PreviewMask");
+        const overlayButton = $("part1PreviewOverlay");
+        mask?.classList.toggle("is-active", part1.previewMode === "mask");
+        overlayButton?.classList.toggle("is-active", part1.previewMode === "overlay");
+
+        if (!options.silent) {
+            drawPart1SelectedColorPreviewV41();
+        }
+    }
+
+    function drawPart1SelectedColorPreviewV41(options = {}) {
+        const part1 = ensurePart1ColorStateV41();
+
+        if (!state.imageReady || !sourceCanvas.width || !sourceCanvas.height) {
+            return;
+        }
+
+        if (!part1.extracted || part1.colors.length === 0) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(sourceCanvas, 0, 0);
+            clearOverlay();
+            drawPart1MiniMapV42();
+            return;
+        }
+
+        const hoverGroup = Number.isInteger(options.hoverGroupIndex)
+            ? part1.groups?.[options.hoverGroupIndex]
+            : Number.isInteger(part1.hoverGroupIndex)
+                ? part1.groups?.[part1.hoverGroupIndex]
+                : null;
+        const selected = hoverGroup
+            ? getPart1GroupColorsV42(hoverGroup)
+            : part1.colors.filter((item) => item.selected);
+        const width = sourceCanvas.width;
+        const height = sourceCanvas.height;
+        const source = sourceCtx.getImageData(0, 0, width, height);
+        const output = new ImageData(new Uint8ClampedArray(source.data), width, height);
+        const src = source.data;
+        const dst = output.data;
+        const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
+        const alpha = 0.68;
+        const maskMode = part1.previewMode !== "overlay";
+
+        for (let i = 0; i < src.length; i += 4) {
+            const match = findMatchingPart1ColorV41(src[i], src[i + 1], src[i + 2], selected, tolerance);
+
+            if (maskMode) {
+                if (!match) {
+                    dst[i] = 0;
+                    dst[i + 1] = 0;
+                    dst[i + 2] = 0;
+                    dst[i + 3] = 255;
+                    continue;
+                }
+
+                dst[i] = src[i];
+                dst[i + 1] = src[i + 1];
+                dst[i + 2] = src[i + 2];
+                dst[i + 3] = 255;
+                continue;
+            }
+
+            if (!match) {
+                dst[i] = Math.round(src[i] * 0.72 + 255 * 0.28);
+                dst[i + 1] = Math.round(src[i + 1] * 0.72 + 255 * 0.28);
+                dst[i + 2] = Math.round(src[i + 2] * 0.72 + 255 * 0.28);
+                dst[i + 3] = src[i + 3];
+                continue;
+            }
+
+            const cover = hexToRgbV41(match.previewColor);
+            dst[i] = Math.round(src[i] * (1 - alpha) + cover.r * alpha);
+            dst[i + 1] = Math.round(src[i + 1] * (1 - alpha) + cover.g * alpha);
+            dst[i + 2] = Math.round(src[i + 2] * (1 - alpha) + cover.b * alpha);
+            dst[i + 3] = 255;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.putImageData(output, 0, 0);
+        syncCanvasDisplay();
+        state.part1ColorExtract.lastPreviewDataUrl = canvas.toDataURL("image/png");
+        clearOverlay();
+        updatePart1ColorStatusV41();
+        savePart1ColorExtractStateV41();
+        drawPart1MiniMapV42();
+    }
+
+    function createPart1ButtonCandidateImageV41() {
+        const part1 = ensurePart1ColorStateV41();
+
+        if (!state.imageReady || !sourceCanvas.width || !sourceCanvas.height) {
+            toast("원본 이미지 로딩이 끝난 뒤 다시 실행하세요.");
+            return;
+        }
+
+        if (!part1.extracted || part1.colors.length === 0) {
+            extractPart1ShapeColorsV41();
+            return;
+        }
+
+        const selected = part1.colors.filter((item) => item.selected);
+
+        if (selected.length === 0) {
+            toast("버튼 후보로 사용할 색상을 하나 이상 선택하세요.");
+            return;
+        }
+
+        const width = sourceCanvas.width;
+        const height = sourceCanvas.height;
+        const source = sourceCtx.getImageData(0, 0, width, height);
+        const output = ctx.createImageData(width, height);
+        const src = source.data;
+        const dst = output.data;
+        const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
+        const masks = new Map(selected.map((item) => [item.id, {
+            id: item.id,
+            groupId: item.groupId || "",
+            sourceColor: item.sourceColor,
+            previewColor: item.previewColor,
+            count: 0,
+            minX: width,
+            minY: height,
+            maxX: -1,
+            maxY: -1,
+            spans: new Map()
+        }]));
+
+        for (let y = 0; y < height; y += 1) {
+            for (let x = 0; x < width; x += 1) {
+                const offset = (y * width + x) * 4;
+                const match = findMatchingPart1ColorV41(src[offset], src[offset + 1], src[offset + 2], selected, tolerance);
+
+                if (!match) {
+                    dst[offset] = 0;
+                    dst[offset + 1] = 0;
+                    dst[offset + 2] = 0;
+                    dst[offset + 3] = 255;
+                    continue;
+                }
+
+                dst[offset] = src[offset];
+                dst[offset + 1] = src[offset + 1];
+                dst[offset + 2] = src[offset + 2];
+                dst[offset + 3] = 255;
+
+                const mask = masks.get(match.id);
+                if (mask) {
+                    mask.count += 1;
+                    mask.minX = Math.min(mask.minX, x);
+                    mask.minY = Math.min(mask.minY, y);
+                    mask.maxX = Math.max(mask.maxX, x);
+                    mask.maxY = Math.max(mask.maxY, y);
+                    addXToSpanMapV41(mask.spans, y, x);
+                }
+            }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.putImageData(output, 0, 0);
+        syncCanvasDisplay();
+
+        resultCanvas.width = width;
+        resultCanvas.height = height;
+        resultCtx.putImageData(output, 0, 0);
+
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+        state.lastStats = {
+            seatRegions: selected.length,
+            regionRoleCounts: selected.map((item) => ({ role: item.role || "button", count: item.count || 0 }))
+        };
+
+        const selectedGroups = (part1.groups || [])
+            .filter((group) => getPart1GroupColorsV42(group).some((item) => item.selected))
+            .map((group) => ({
+                id: group.id,
+                role: group.role,
+                sourceColor: group.sourceColor,
+                previewColor: group.previewColor,
+                count: group.count,
+                colorIds: group.colorIds
+            }));
+
+        const maskList = Array.from(masks.values())
+            .filter((mask) => mask.count > 0)
+            .map((mask) => ({
+                id: mask.id,
+                groupId: mask.groupId,
+                sourceColor: mask.sourceColor,
+                previewColor: mask.previewColor,
+                pixelCount: mask.count,
+                bbox: {
+                    x: mask.minX,
+                    y: mask.minY,
+                    w: mask.maxX - mask.minX + 1,
+                    h: mask.maxY - mask.minY + 1
+                },
+                maskSpans: spanMapToMaskSpansV41(mask.spans)
+            }));
+
+        const meta = {
+            width,
+            height,
+            mode: "button-image-color-extract-v43-selected-color-black",
+            tolerance,
+            previewMode: "mask",
+            selectedGroups,
+            selectedColors: selected.map((item) => ({
+                id: item.id,
+                groupId: item.groupId || "",
+                sourceColor: item.sourceColor,
+                previewColor: item.previewColor,
+                count: item.count,
+                role: item.role
+            })),
+            masks: maskList,
+            createdAt: new Date().toISOString()
+        };
+
+        localStorage.setItem(STORAGE.result, state.resultBaseDataUrl);
+        localStorage.setItem(STORAGE.concertButton, state.resultBaseDataUrl);
+        localStorage.setItem(STORAGE.meta, JSON.stringify(meta));
+        localStorage.setItem(STORAGE.concertButtonMeta, JSON.stringify(meta));
+        localStorage.setItem("seat_button_part1_color_extract", JSON.stringify(meta));
+
+        savePart1ColorExtractStateV41();
+        pushHistory("유사 색상 그룹 기반 선택 색상 버튼 후보 이미지 생성");
+        updateStats();
+        setActionButtonsEnabled(true);
+        setStep(2);
+        drawPart1MiniMapV42();
+        toast("선택한 그룹/색상은 원본 색상 유지, 제외 영역은 검은색인 버튼 후보 이미지를 생성했습니다.");
+    }
+
+    function savePart1ColorExtractStateV41() {
+        const part1 = ensurePart1ColorStateV41();
+        const payload = {
+            tolerance: part1.tolerance,
+            extracted: part1.extracted,
+            previewMode: part1.previewMode,
+            groups: (part1.groups || []).map((group) => ({
+                id: group.id,
+                role: group.role,
+                sourceColor: group.sourceColor,
+                previewColor: group.previewColor,
+                count: group.count,
+                colorIds: group.colorIds
+            })),
+            colors: part1.colors.map((item) => ({
+                id: item.id,
+                groupId: item.groupId || "",
+                sourceColor: item.sourceColor,
+                previewColor: item.previewColor,
+                count: item.count,
+                role: item.role,
+                selected: item.selected,
+                saturation: item.saturation,
+                lightness: item.lightness,
+                hue: item.hue
+            }))
+        };
+
+        localStorage.setItem("seat_button_part1_colors", JSON.stringify(payload));
+    }
+
+    function bindPart1MiniMapV42() {
+        if (state.__part1MiniMapBoundV42) {
+            drawPart1MiniMapV42();
+            return;
+        }
+
+        state.__part1MiniMapBoundV42 = true;
+        const main = document.querySelector(".seatmap-main");
+        const mini = $("part1MiniMapCanvas");
+
+        if (main) {
+            main.addEventListener("scroll", () => requestAnimationFrame(drawPart1MiniMapV42));
+        }
+
+        if (mini) {
+            mini.addEventListener("mouseenter", (event) => {
+                const point = getPart1MiniMapSourcePointV43(event);
+                drawPart1MiniMapFloatV46(point);
+            });
+            mini.addEventListener("mousemove", (event) => {
+                const point = getPart1MiniMapSourcePointV43(event);
+                drawPart1MiniMapFloatV46(point);
+                requestAnimationFrame(drawPart1MiniMapV42);
+            });
+            mini.addEventListener("mouseleave", () => {
+                hidePart1MiniMapFloatV46();
+            });
+        }
+
+        window.addEventListener("resize", () => requestAnimationFrame(drawPart1MiniMapV42));
+        setInterval(drawPart1MiniMapV42, 700);
+        drawPart1MiniMapV42();
+    }
+
+    function positionPart1MiniMapFloatV46() {
+        const mini = $("part1MiniMapCanvas");
+        const floatCanvas = $("part1MiniMapFloatCanvas");
+
+        if (!mini || !floatCanvas) {
+            return;
+        }
+
+        const rect = mini.getBoundingClientRect();
+        const width = Math.round(rect.width * 2);
+        const height = Math.round(rect.height * 2);
+        let left = rect.left - width - 14;
+        let top = rect.top;
+
+        if (left < 12) {
+            left = 12;
+        }
+
+        if (top + height > window.innerHeight - 12) {
+            top = Math.max(12, window.innerHeight - height - 12);
+        }
+
+        floatCanvas.style.width = `${width}px`;
+        floatCanvas.style.height = `${height}px`;
+        floatCanvas.style.left = `${left}px`;
+        floatCanvas.style.top = `${top}px`;
+    }
+
+    function hidePart1MiniMapFloatV46() {
+        const floatCanvas = $("part1MiniMapFloatCanvas");
+
+        if (!floatCanvas) {
+            return;
+        }
+
+        floatCanvas.classList.remove("is-visible");
+    }
+
+    function drawPart1MiniMapFloatV46(point) {
+        const floatCanvas = $("part1MiniMapFloatCanvas");
+
+        if (!floatCanvas || !sourceCanvas.width || !sourceCanvas.height) {
+            return;
+        }
+
+        positionPart1MiniMapFloatV46();
+        floatCanvas.classList.add("is-visible");
+
+        const ctx = floatCanvas.getContext("2d");
+        const w = floatCanvas.width;
+        const h = floatCanvas.height;
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, w, h);
+
+        const scale = Math.min(w / sourceCanvas.width, h / sourceCanvas.height);
+        const drawW = sourceCanvas.width * scale;
+        const drawH = sourceCanvas.height * scale;
+        const ox = (w - drawW) / 2;
+        const oy = (h - drawH) / 2;
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(sourceCanvas, ox, oy, drawW, drawH);
+
+        drawPart1ViewportRectOnContextV44(ctx, ox, oy, scale);
+
+        if (point) {
+            const x = Math.max(0, Math.min(sourceCanvas.width - 1, Math.round(point.x)));
+            const y = Math.max(0, Math.min(sourceCanvas.height - 1, Math.round(point.y)));
+            const px = ox + x * scale;
+            const py = oy + y * scale;
+
+            ctx.save();
+            ctx.strokeStyle = "#ef4444";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(px, oy);
+            ctx.lineTo(px, oy + drawH);
+            ctx.moveTo(ox, py);
+            ctx.lineTo(ox + drawW, py);
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+
+    function getPart1MiniMapSourcePointV43(event) {
+        const mini = $("part1MiniMapCanvas");
+        if (!mini || !sourceCanvas.width || !sourceCanvas.height) {
+            return null;
+        }
+
+        const rect = mini.getBoundingClientRect();
+        const scale = Math.min(mini.width / sourceCanvas.width, mini.height / sourceCanvas.height);
+        const drawW = sourceCanvas.width * scale;
+        const drawH = sourceCanvas.height * scale;
+        const ox = (mini.width - drawW) / 2;
+        const oy = (mini.height - drawH) / 2;
+        const mx = (event.clientX - rect.left) * (mini.width / Math.max(1, rect.width));
+        const my = (event.clientY - rect.top) * (mini.height / Math.max(1, rect.height));
+        const x = (mx - ox) / Math.max(0.0001, scale);
+        const y = (my - oy) / Math.max(0.0001, scale);
+
+        return {
+            x: Math.max(0, Math.min(sourceCanvas.width - 1, x)),
+            y: Math.max(0, Math.min(sourceCanvas.height - 1, y))
+        };
+    }
+
+    function drawPart1MiniMapV42() {
+        const mini = $("part1MiniMapCanvas");
+        if (!mini || !sourceCanvas.width || !sourceCanvas.height) {
+            return;
+        }
+
+        const miniCtx = mini.getContext("2d");
+        const w = mini.width;
+        const h = mini.height;
+        miniCtx.clearRect(0, 0, w, h);
+        miniCtx.fillStyle = "#f8fafc";
+        miniCtx.fillRect(0, 0, w, h);
+
+        const scale = Math.min(w / sourceCanvas.width, h / sourceCanvas.height);
+        const drawW = sourceCanvas.width * scale;
+        const drawH = sourceCanvas.height * scale;
+        const ox = (w - drawW) / 2;
+        const oy = (h - drawH) / 2;
+
+        miniCtx.drawImage(sourceCanvas, ox, oy, drawW, drawH);
+
+        const main = document.querySelector(".seatmap-main");
+        if (!main || !canvas.width || !canvas.height) {
+            return;
+        }
+
+        const canvasRect = canvas.getBoundingClientRect();
+        const mainRect = main.getBoundingClientRect();
+        const visibleLeft = Math.max(mainRect.left, canvasRect.left);
+        const visibleTop = Math.max(mainRect.top, canvasRect.top);
+        const visibleRight = Math.min(mainRect.right, canvasRect.right);
+        const visibleBottom = Math.min(mainRect.bottom, canvasRect.bottom);
+
+        if (visibleRight <= visibleLeft || visibleBottom <= visibleTop) {
+            return;
+        }
+
+        const imageX = (visibleLeft - canvasRect.left) * (canvas.width / Math.max(1, canvasRect.width));
+        const imageY = (visibleTop - canvasRect.top) * (canvas.height / Math.max(1, canvasRect.height));
+        const imageW = (visibleRight - visibleLeft) * (canvas.width / Math.max(1, canvasRect.width));
+        const imageH = (visibleBottom - visibleTop) * (canvas.height / Math.max(1, canvasRect.height));
+
+        miniCtx.save();
+        miniCtx.strokeStyle = "#ef4444";
+        miniCtx.lineWidth = 2;
+        miniCtx.setLineDash([5, 3]);
+        miniCtx.strokeRect(ox + imageX * scale, oy + imageY * scale, imageW * scale, imageH * scale);
+        miniCtx.restore();
+    }
+
+    function updatePart1HoverZoomV42(point) {
+        const zoomCanvas = $("part1HoverZoomCanvas");
+        if (!zoomCanvas || !sourceCanvas.width || !sourceCanvas.height) {
+            return;
+        }
+
+        const zoomCtx = zoomCanvas.getContext("2d");
+        const w = zoomCanvas.width;
+        const h = zoomCanvas.height;
+        zoomCtx.imageSmoothingEnabled = true;
+        zoomCtx.clearRect(0, 0, w, h);
+        zoomCtx.fillStyle = "#f8fafc";
+        zoomCtx.fillRect(0, 0, w, h);
+
+        const scale = Math.min(w / sourceCanvas.width, h / sourceCanvas.height);
+        const drawW = sourceCanvas.width * scale;
+        const drawH = sourceCanvas.height * scale;
+        const ox = (w - drawW) / 2;
+        const oy = (h - drawH) / 2;
+
+        // 특정 픽셀 crop 확대가 아니라, 원본 전체 사진을 더 크게 다시 그린다.
+        zoomCtx.drawImage(sourceCanvas, ox, oy, drawW, drawH);
+
+        // 현재 메인 화면 위치도 전체 확대 화면에 같이 표시한다.
+        drawPart1ViewportRectOnContextV44(zoomCtx, ox, oy, scale);
+
+        if (point) {
+            const x = Math.max(0, Math.min(sourceCanvas.width - 1, Math.round(point.x)));
+            const y = Math.max(0, Math.min(sourceCanvas.height - 1, Math.round(point.y)));
+            const px = ox + x * scale;
+            const py = oy + y * scale;
+
+            zoomCtx.save();
+            zoomCtx.strokeStyle = "#ef4444";
+            zoomCtx.lineWidth = 2;
+            zoomCtx.beginPath();
+            zoomCtx.moveTo(px, Math.max(oy, py - 18));
+            zoomCtx.lineTo(px, Math.min(oy + drawH, py + 18));
+            zoomCtx.moveTo(Math.max(ox, px - 18), py);
+            zoomCtx.lineTo(Math.min(ox + drawW, px + 18), py);
+            zoomCtx.stroke();
+            zoomCtx.restore();
+
+            const pixel = sourceCtx.getImageData(x, y, 1, 1).data;
+            const hex = rgbToHexV41(pixel[0], pixel[1], pixel[2]);
+            setText("part1HoverZoomText", `원본 전체 확대 · X ${x}, Y ${y} · ${hex}`);
+            return;
+        }
+
+        setText("part1HoverZoomText", "원본 전체 확대입니다. 미니맵 위에 커서를 올리면 위치만 빨간 십자로 표시됩니다.");
+    }
+
+    function drawPart1ViewportRectOnContextV44(targetCtx, ox, oy, scale) {
+        const main = document.querySelector(".seatmap-main");
+        if (!main || !canvas.width || !canvas.height) {
+            return;
+        }
+
+        const canvasRect = canvas.getBoundingClientRect();
+        const mainRect = main.getBoundingClientRect();
+        const visibleLeft = Math.max(mainRect.left, canvasRect.left);
+        const visibleTop = Math.max(mainRect.top, canvasRect.top);
+        const visibleRight = Math.min(mainRect.right, canvasRect.right);
+        const visibleBottom = Math.min(mainRect.bottom, canvasRect.bottom);
+
+        if (visibleRight <= visibleLeft || visibleBottom <= visibleTop) {
+            return;
+        }
+
+        const imageX = (visibleLeft - canvasRect.left) * (canvas.width / Math.max(1, canvasRect.width));
+        const imageY = (visibleTop - canvasRect.top) * (canvas.height / Math.max(1, canvasRect.height));
+        const imageW = (visibleRight - visibleLeft) * (canvas.width / Math.max(1, canvasRect.width));
+        const imageH = (visibleBottom - visibleTop) * (canvas.height / Math.max(1, canvasRect.height));
+
+        targetCtx.save();
+        targetCtx.strokeStyle = "#ef4444";
+        targetCtx.lineWidth = 2;
+        targetCtx.setLineDash([5, 3]);
+        targetCtx.strokeRect(ox + imageX * scale, oy + imageY * scale, imageW * scale, imageH * scale);
+        targetCtx.restore();
+    }
+
+
+
+    // ============================================================================
+    // v47 patch: Part 2 selected-group solidify + hole fill + noise cleanup
+    // ============================================================================
+
+    function bindPart2SolidifyV47() {
+        replaceButtonListenerV41($("part2AutoSolidify"), runPart2SolidifySelectedGroupsV47);
+
+        const holeInput = $("part2HoleThreshold");
+        const noiseInput = $("part2NoiseThreshold");
+
+        const syncText = () => {
+            setText("part2HoleThresholdText", `${Number(holeInput?.value || 160)}px`);
+            setText("part2NoiseThresholdText", `${Number(noiseInput?.value || 20)}px`);
+        };
+
+        if (holeInput && !holeInput.dataset.boundV47) {
+            holeInput.dataset.boundV47 = "true";
+            holeInput.addEventListener("input", syncText);
+        }
+
+        if (noiseInput && !noiseInput.dataset.boundV47) {
+            noiseInput.dataset.boundV47 = "true";
+            noiseInput.addEventListener("input", syncText);
+        }
+
+        syncText();
+    }
+
+    function runPart2SolidifySelectedGroupsV47() {
+        const part1 = ensurePart1ColorStateV41();
+
+        if (!state.hasResult || !canvas.width || !canvas.height) {
+            toast("먼저 파트 1에서 버튼 후보 이미지를 생성하세요.");
+            return;
+        }
+
+        const selectedGroups = collectPart2SelectedGroupsV47(part1);
+        if (selectedGroups.length === 0) {
+            toast("파트 1에서 선택된 색상 그룹이 없습니다.");
+            return;
+        }
+
+        const width = canvas.width;
+        const height = canvas.height;
+        const source = ctx.getImageData(0, 0, width, height);
+        const src = source.data;
+        const groupMap = new Int16Array(width * height);
+        groupMap.fill(-1);
+        const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
+        const holeThreshold = Math.max(1, Number($("part2HoleThreshold")?.value || 160));
+        const noiseThreshold = Math.max(1, Number($("part2NoiseThreshold")?.value || 20));
+        const selectedColors = part1.colors.filter((item) => item.selected);
+        const groupIndexById = new Map(selectedGroups.map((group, index) => [group.id, index]));
+
+        for (let i = 0; i < width * height; i += 1) {
+            const offset = i * 4;
+            const r = src[offset];
+            const g = src[offset + 1];
+            const b = src[offset + 2];
+            const alpha = src[offset + 3];
+
+            if (alpha < 10 || (r <= 10 && g <= 10 && b <= 10)) {
+                groupMap[i] = -1;
+                continue;
+            }
+
+            const match = findMatchingPart1ColorV41(r, g, b, selectedColors, tolerance);
+            if (!match) {
+                groupMap[i] = -1;
+                continue;
+            }
+
+            groupMap[i] = groupIndexById.has(match.groupId)
+                ? groupIndexById.get(match.groupId)
+                : -1;
+        }
+
+        const holeFillCount = fillBlackHolesByMajorityV47(groupMap, width, height, holeThreshold);
+        const cleanupCount = cleanupSmallColorComponentsV47(groupMap, width, height, noiseThreshold);
+        const output = new ImageData(width, height);
+        const dst = output.data;
+        const colorPixelsByGroup = new Array(selectedGroups.length).fill(0);
+
+        for (let i = 0; i < width * height; i += 1) {
+            const groupIndex = groupMap[i];
+            const offset = i * 4;
+
+            if (groupIndex < 0 || !selectedGroups[groupIndex]) {
+                dst[offset] = 0;
+                dst[offset + 1] = 0;
+                dst[offset + 2] = 0;
+                dst[offset + 3] = 255;
+                continue;
+            }
+
+            const rgb = selectedGroups[groupIndex].rgb;
+            dst[offset] = rgb.r;
+            dst[offset + 1] = rgb.g;
+            dst[offset + 2] = rgb.b;
+            dst[offset + 3] = 255;
+            colorPixelsByGroup[groupIndex] += 1;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.putImageData(output, 0, 0);
+        syncCanvasDisplay();
+        syncResultFromVisible();
+
+        state.hasResult = true;
+        state.saved = false;
+        state.resultBaseDataUrl = canvas.toDataURL("image/png");
+        state.lastStats = {
+            seatRegions: selectedGroups.length,
+            regionRoleCounts: selectedGroups.map((group, index) => ({
+                role: group.role || "button",
+                count: colorPixelsByGroup[index] || 0
+            })),
+            holeFillCount,
+            cleanupCount
+        };
+
+        const metaRaw = localStorage.getItem(STORAGE.meta);
+        let meta = {};
+        try {
+            meta = metaRaw ? JSON.parse(metaRaw) : {};
+        } catch (error) {
+            meta = {};
+        }
+        meta.width = width;
+        meta.height = height;
+        meta.mode = "button-image-part2-solidify-v47";
+        meta.selectedGroups = selectedGroups.map((group, index) => ({
+            id: group.id,
+            role: group.role,
+            sourceColor: group.sourceColor,
+            pixelCount: colorPixelsByGroup[index] || 0
+        }));
+        meta.holeThreshold = holeThreshold;
+        meta.noiseThreshold = noiseThreshold;
+        meta.holeFillCount = holeFillCount;
+        meta.cleanupCount = cleanupCount;
+        meta.createdAt = new Date().toISOString();
+
+        localStorage.setItem(STORAGE.result, state.resultBaseDataUrl);
+        localStorage.setItem(STORAGE.concertButton, state.resultBaseDataUrl);
+        localStorage.setItem(STORAGE.meta, JSON.stringify(meta));
+        localStorage.setItem(STORAGE.concertButtonMeta, JSON.stringify(meta));
+
+        setText("part2SolidifyStatus", `단색화 완료 · 내부 구멍 ${holeFillCount}개 메움 · 작은 조각 ${cleanupCount}개 정리`);
+        pushHistory("파트2 버튼 네모 단색화");
+        updateStats();
+        toast("파트 1 선택 그룹 기준으로 버튼 네모 단색화를 완료했습니다.");
+    }
+
+    function collectPart2SelectedGroupsV47(part1) {
+        const groups = (part1.groups || []).filter((group) => getPart1GroupColorsV42(group).some((item) => item.selected));
+        return groups.map((group, index) => {
+            const rgb = hexToRgbV41(group.sourceColor || PART1_PREVIEW_COLORS_V41[index % PART1_PREVIEW_COLORS_V41.length]);
+            return {
+                id: group.id,
+                role: group.role,
+                sourceColor: group.sourceColor || rgbToHexV41(rgb.r, rgb.g, rgb.b),
+                rgb,
+                colorIds: Array.isArray(group.colorIds) ? group.colorIds.slice() : []
+            };
+        });
+    }
+
+    function fillBlackHolesByMajorityV47(groupMap, width, height, maxHoleSize) {
+        const visited = new Uint8Array(width * height);
+        const queue = new Int32Array(width * height);
+        const dirs = [-1, 1, -width, width];
+        let filled = 0;
+
+        for (let start = 0; start < groupMap.length; start += 1) {
+            if (groupMap[start] !== -1 || visited[start]) {
+                continue;
+            }
+
+            let head = 0;
+            let tail = 0;
+            queue[tail++] = start;
+            visited[start] = 1;
+            const component = [];
+            let touchesEdge = false;
+            const neighborCounts = new Map();
+
+            while (head < tail) {
+                const current = queue[head++];
+                component.push(current);
+                const x = current % width;
+                const y = Math.floor(current / width);
+
+                if (x === 0 || y === 0 || x === width - 1 || y === height - 1) {
+                    touchesEdge = true;
+                }
+
+                if (x > 0) {
+                    tail = visitNeighborForHoleV47(current - 1, neighborCounts, visited, queue, tail, groupMap);
+                }
+                if (x < width - 1) {
+                    tail = visitNeighborForHoleV47(current + 1, neighborCounts, visited, queue, tail, groupMap);
+                }
+                if (y > 0) {
+                    tail = visitNeighborForHoleV47(current - width, neighborCounts, visited, queue, tail, groupMap);
+                }
+                if (y < height - 1) {
+                    tail = visitNeighborForHoleV47(current + width, neighborCounts, visited, queue, tail, groupMap);
+                }
+            }
+
+            if (touchesEdge || component.length > maxHoleSize || neighborCounts.size === 0) {
+                continue;
+            }
+
+            let bestGroup = -1;
+            let bestCount = 0;
+            neighborCounts.forEach((count, groupIndex) => {
+                if (count > bestCount) {
+                    bestCount = count;
+                    bestGroup = Number(groupIndex);
+                }
+            });
+
+            if (bestGroup < 0) {
+                continue;
+            }
+
+            component.forEach((index) => {
+                groupMap[index] = bestGroup;
+            });
+            filled += 1;
+        }
+
+        return filled;
+    }
+
+    function visitNeighborForHoleV47(index, neighborCounts, visited, queue, tail, groupMap) {
+        if (groupMap[index] === -1) {
+            if (!visited[index]) {
+                visited[index] = 1;
+                queue[tail] = index;
+                tail += 1;
+            }
+            return tail;
+        }
+
+        neighborCounts.set(groupMap[index], (neighborCounts.get(groupMap[index]) || 0) + 1);
+        return tail;
+    }
+
+    function cleanupSmallColorComponentsV47(groupMap, width, height, minSize) {
+        const visited = new Uint8Array(width * height);
+        const queue = new Int32Array(width * height);
+        let cleaned = 0;
+
+        for (let start = 0; start < groupMap.length; start += 1) {
+            if (groupMap[start] < 0 || visited[start]) {
+                continue;
+            }
+
+            const targetGroup = groupMap[start];
+            let head = 0;
+            let tail = 0;
+            queue[tail++] = start;
+            visited[start] = 1;
+            const component = [];
+            const neighborCounts = new Map();
+
+            while (head < tail) {
+                const current = queue[head++];
+                component.push(current);
+                const x = current % width;
+                const y = Math.floor(current / width);
+                const neighbors = [];
+                if (x > 0) neighbors.push(current - 1);
+                if (x < width - 1) neighbors.push(current + 1);
+                if (y > 0) neighbors.push(current - width);
+                if (y < height - 1) neighbors.push(current + width);
+
+                neighbors.forEach((next) => {
+                    if (groupMap[next] === targetGroup) {
+                        if (!visited[next]) {
+                            visited[next] = 1;
+                            queue[tail++] = next;
+                        }
+                    } else if (groupMap[next] >= 0) {
+                        neighborCounts.set(groupMap[next], (neighborCounts.get(groupMap[next]) || 0) + 1);
+                    }
+                });
+            }
+
+            if (component.length >= minSize) {
+                continue;
+            }
+
+            let replacement = -1;
+            let bestCount = 0;
+            neighborCounts.forEach((count, groupIndex) => {
+                if (count > bestCount) {
+                    bestCount = count;
+                    replacement = Number(groupIndex);
+                }
+            });
+
+            component.forEach((index) => {
+                groupMap[index] = replacement;
+            });
+            cleaned += 1;
+        }
+
+        return cleaned;
+    }
+
+    setTimeout(bindPart1ColorExtractV41, 0);
+    setTimeout(bindPart2SolidifyV47, 0);
 
 })();
