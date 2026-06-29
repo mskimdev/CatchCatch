@@ -213,7 +213,7 @@
                         };
 
                         try {
-                            let { res, data } = await apiPost(`/api/concert/${concertId}/sessions`, reqDTO);
+                            let { res, data } = await apiPost(`/api/admin/concerts/${concertId}/sessions`, reqDTO);
 
                             if (res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
                                 CcUI.toast('회차가 성공적으로 추가되었습니다.', 'success');
@@ -247,7 +247,7 @@
                         };
 
                         try {
-                            let { res, data } = await apiPut(`/api/concert/${concertId}/sessions/${sessionId}`, reqDTO);
+                            let { res, data } = await apiPut(`/api/admin/concerts/${concertId}/sessions/${sessionId}`, reqDTO);
 
                             if (res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
                                 CcUI.toast('성공적으로 수정되었습니다.', 'success');
@@ -268,7 +268,7 @@
                         danger: true,
                         onConfirm: async () => {
                             try {
-                                let { res, data } = await apiDelete(`/api/concert/${concertId}/sessions/${sessionId}`);
+                                let { res, data } = await apiDelete(`/api/admin/concerts/${concertId}/sessions/${sessionId}`);
 
                                 if (res && res.ok && data && (data.code === 1 || data.code === 200 || res.status === 200)) {
                                     CcUI.toast('성공적으로 삭제되었습니다.', 'success');

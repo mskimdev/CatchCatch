@@ -335,7 +335,7 @@
                                             reqDTO.posterImageBase64 = await toBase64(posterFile);
                                         }
 
-                                        const { res, data } = await apiPut(`/api/concert/${concertId}`, reqDTO);
+                                        const { res, data } = await apiPut(`/api/admin/concerts/${concertId}`, reqDTO);
 
                                         if (res?.ok && data && (data.status === 200 || data.code === 1 || data.code === 200 || res.status === 200)) {
                                             CcUI.toast('공연 정보가 수정되었습니다.');

@@ -29,7 +29,6 @@ public class BannerService {
 
     @Transactional
     public void createBanner(BannerRequest.SaveDTO dto) {
-        // (프로젝트에서 사용하시는 클래스명으로 변경하세요. ex: fileService.upload(dto.imageFile()))
         String savedImageUrl = ProfileImageUtil.save(dto.imageFile());
 
         Banner banner = Banner.builder()
@@ -56,16 +55,14 @@ public class BannerService {
         // 기본값은 기존 배너의 이미지 경로
         String updatedImageUrl = banner.getImageUrl();
 
-        // 만약 관리자가 수정 폼에서 새 이미지를 첨부했다면?
         if (dto.imageFile() != null && !dto.imageFile().isEmpty()) {
-            // 기존 이미지는 서버 용량 확보를 위해 삭제 처리 (선택사항)
+            // 기존 이미지는 서버 용량 확보를 위해 삭제 처리
             ProfileImageUtil.delete(banner.getImageUrl());
 
             // 새 이미지를 저장하고 경로를 갱신
             updatedImageUrl = ProfileImageUtil.save(dto.imageFile());
         }
 
-        // 엔티티 업데이트 (이미지 경로는 따로 넘겨줍니다)
         banner.update(dto, updatedImageUrl);
     }
 

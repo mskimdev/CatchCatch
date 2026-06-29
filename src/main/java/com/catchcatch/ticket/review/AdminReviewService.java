@@ -80,7 +80,7 @@ public class AdminReviewService {
         Concert concert = concertRepository.findById(concertId)
                 .orElseThrow(() -> new BadRequestException("콘서트를 찾을 수 없습니다."));
 
-        concert.setReviewEnabled(Boolean.TRUE.equals(dto.reviewEnabled()));
+        concert.updateReviewEnabled(Boolean.TRUE.equals(dto.reviewEnabled()));
     }
 
     private ReviewResponse.AdminReviewDTO toAdminReviewDTO(Review review) {

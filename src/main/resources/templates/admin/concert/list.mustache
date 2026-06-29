@@ -121,7 +121,7 @@
             onConfirm: async () => {
                 try {
                     CcUI.loading.show('공연을 삭제하고 있습니다...');
-                    const { res, data } = await apiDelete(`/api/concert/${id}`);
+                    const { res, data } = await apiDelete(`/api/admin/concerts/${id}`);
                     CcUI.loading.hide();
 
                     if (res && res.ok) {

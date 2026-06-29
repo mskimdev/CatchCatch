@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.concert.repository;
 
 import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.concert.dto.ConcertRequest;
 import com.catchcatch.ticket.concert.dto.ConcertResponse;
 import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.concert.enums.ConcertGenre;
@@ -18,11 +19,10 @@ import static com.catchcatch.ticket.venue.QVenue.venue;
 @RequiredArgsConstructor
 public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
 
-    // 💡 Bean으로 등록해둔 core/config/QueryDSL .
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public ConcertResponse.ConcertListResponseDTO findConcertsByFilters(Concert.ConcertSearchCondition condition) {
+    public ConcertResponse.ConcertListResponseDTO findConcertsByFilters(ConcertRequest.SearchConditionDTO condition) {
 
         // =========================================================
         // 1. 메인 쿼리 조립
@@ -49,7 +49,7 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
 
         // 3. DTO 변환
         List<ConcertResponse.ListDTO> dtoList = content.stream()
-                .map(ConcertResponse.ListDTO::from) // <-- 이 부분 변경
+                .map(ConcertResponse.ListDTO::from)
                 .collect(Collectors.toList());
 
         // 4. 최종 결과 반환
@@ -69,7 +69,7 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
         return queryFactory
                 .selectFrom(concert)
                 .where(
-                        // 상태가 OPEN_SOON인 것만 필터링( Enu, 이름 확인 필수!)
+
                         concert.concertStatus.eq(ConcertStatus.COMING_SOON),
                         genreEq(genre)
                 )
@@ -78,9 +78,7 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
                 .fetch();
     }
 
-    // =========================================================
-    // 💡 헬퍼 메서드: 상태별 카운트 쿼리
-    // =========================================================
+
     private long getCountByStatus(ConcertStatus status) {
         Long count = queryFactory
                 .select(concert.count())
@@ -98,14 +96,10 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
         return count != null ? count : 0L;
     }
 
-    // =========================================================
-    // 동적 쿼리 레고 블록 공장 (BooleanExpression)
-    // 값이 없으면 null을 반환하여 where 절에서 투명하게 사라짐
-    // =========================================================
 
     // 1. 검색어 (제목 또는 아티스트)
     private BooleanExpression keywordContains(String keyword) {
-        if (!StringUtils.hasText(keyword)) return null; // 값이 없으면 쿼리에 안 붙음!
+        if (!StringUtils.hasText(keyword)) return null;
 
         return concert.title.containsIgnoreCase(keyword)
                 .or(concert.artist.containsIgnoreCase(keyword));
@@ -125,7 +119,7 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
 
     // 3. 장르 (genre)
     private BooleanExpression genreEq(String genre) {
-        // 💡 넘어온 값이 아예 없거나(null/빈칸), "all"일 경우에는 장르 조건을 무시
+
         if (!StringUtils.hasText(genre) || "all".equals(genre)) {
             return null;
         }
@@ -133,7 +127,7 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
         if (concertGenre == null) {
             return null;
         }
-        // "concert", "musical" 등 특정 장르가 넘어왔을 때만 해당 장르를 필터링
+
         return concert.genre.eq(concertGenre);
     }
 
@@ -142,7 +136,7 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
         if (!StringUtils.hasText(region) || "all".equalsIgnoreCase(region)) return null;
 
         String krRegion = convertRegionToKorean(region);
-        return venue.address.contains(krRegion); // 💡 조인된 venue의 이름으로 검색!
+        return venue.address.contains(krRegion);
     }
 
     // [유틸] 영문 -> 한글 지역명 변환
