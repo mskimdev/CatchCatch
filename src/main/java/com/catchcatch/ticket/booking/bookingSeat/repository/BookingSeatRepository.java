@@ -22,4 +22,17 @@ public interface BookingSeatRepository extends JpaRepository<BookingSeat, Intege
             @Param("sessionId") Integer sessionId,
             @Param("statuses") Collection<Status> statuses
     );
+
+    @Query("""
+        SELECT COUNT(bs) 
+        FROM BookingSeat bs 
+        WHERE bs.booking.user.id = :userId 
+          AND bs.booking.concertSession.id = :sessionId 
+          AND bs.booking.status IN :statuses
+    """)
+    long countAllocatedSeats(
+            @Param("userId") Integer userId,
+            @Param("sessionId") Integer sessionId,
+            @Param("statuses") List<Status> statuses
+    );
 }

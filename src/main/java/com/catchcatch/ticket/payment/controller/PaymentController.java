@@ -14,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
 import java.util.List;
 
@@ -29,14 +30,17 @@ public class PaymentController {
 
 
     @GetMapping("/booking/payment")
-    public String paymentForm(@RequestParam("bookingId") Integer bookingId,
-                              Model model,
-                              HttpSession session) {
-
-        SessionUser sessionUser = (SessionUser) session.getAttribute(Define.SESSION_USER);
-
+    public String paymentForm(
+            @SessionAttribute(name = Define.SESSION_USER, required = false) SessionUser sessionUser,
+            @SessionAttribute(name = "bookingId", required = false) Integer bookingId,
+            Model model
+    ) {
         if (sessionUser == null) {
             return "redirect:/login-form";
+        }
+
+        if (bookingId == null) {
+            return "redirect:/";
         }
 
         PaymentResponse.FormDTO payment =
@@ -44,7 +48,6 @@ public class PaymentController {
 
         model.addAttribute("payment", payment);
         model.addAttribute("pageTitle", "결제");
-        setBookingStep(model, 3);
 
         return "payment/payment-form";
     }

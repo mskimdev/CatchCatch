@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.payment.repository;
 
+import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.payment.Payment;
 import com.catchcatch.ticket.payment.enums.PaymentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -95,5 +96,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
             @Param("paymentId") String paymentId,
             @Param("userId") Integer userId
     );
+
+
+    Optional<Payment> findByBookingAndStatus(Booking booking, PaymentStatus status);
 
 }
