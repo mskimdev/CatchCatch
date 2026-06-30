@@ -5,6 +5,7 @@ import com.catchcatch.ticket.booking.bookingSeat.BookingSeat;
 import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.payment.Payment;
+import com.catchcatch.ticket.payment.PaymentPolicy;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.session.ConcertSession;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -126,6 +127,7 @@ public class BookingResponse {
         public DetailDTO(Booking booking) {
             List<BookingSeat> bookingSeats = safeBookingSeats(booking);
             ConcertSession concertSession = booking.getConcertSession();
+            int ticketFee = PaymentPolicy.calculateTicketFee(booking);
 
             this.id = booking.getId();
             this.userId = booking.getUser().getId();
@@ -147,7 +149,7 @@ public class BookingResponse {
                     && booking.getTicketToken() != null
                     && !booking.getTicketToken().isBlank();
 
-            this.totalPrice = calculateTotalPrice(bookingSeats);
+            this.totalPrice = calculateTotalPrice(bookingSeats, ticketFee);
             this.totalPriceText = formatPrice(this.totalPrice);
 
             this.expiresAt = booking.getExpiresAt();
@@ -245,6 +247,7 @@ public class BookingResponse {
 
         public ListDTO(Booking booking) {
             List<BookingSeat> bookingSeats = safeBookingSeats(booking);
+            int ticketFee = PaymentPolicy.calculateTicketFee(booking);
 
             this.id = booking.getId();
             this.bookingNumber = booking.getBookingNumber();
@@ -257,7 +260,7 @@ public class BookingResponse {
             this.seatCount = bookingSeats.size();
             this.seatName = formatSeatName(bookingSeats);
 
-            this.totalPrice = calculateTotalPrice(bookingSeats);
+            this.totalPrice = calculateTotalPrice(bookingSeats, ticketFee);
             this.totalPriceText = formatPrice(this.totalPrice);
 
             this.status = booking.getStatus();
@@ -321,8 +324,8 @@ public class BookingResponse {
 
         public MyPageListDTO(Booking booking) {
             List<BookingSeat> bookingSeats = safeBookingSeats(booking);
-
             ConcertSession concertSession = booking.getConcertSession();
+            int ticketFee = PaymentPolicy.calculateTicketFee(booking);
 
             this.id = booking.getId();
             this.bookingNumber = booking.getBookingNumber();
@@ -345,7 +348,7 @@ public class BookingResponse {
 
             this.seatName = formatSeatName(bookingSeats);
 
-            this.price = calculateTotalPrice(bookingSeats);
+            this.price = calculateTotalPrice(bookingSeats, ticketFee);
             this.priceText = formatPrice(this.price);
 
             this.statusLabel = toBookingStatusLabel(booking.getStatus());
@@ -402,6 +405,7 @@ public class BookingResponse {
 
         public PaymentDTO(Booking booking) {
             List<BookingSeat> bookingSeats = safeBookingSeats(booking);
+            int ticketFee = PaymentPolicy.calculateTicketFee(booking);
 
             this.bookingId = booking.getId();
             this.bookingNumber = booking.getBookingNumber();
@@ -426,7 +430,7 @@ public class BookingResponse {
             this.seatCount = bookingSeats.size();
             this.seatName = formatSeatName(bookingSeats);
 
-            this.totalPrice = calculateTotalPrice(bookingSeats);
+            this.totalPrice = calculateTotalPrice(bookingSeats, ticketFee);
             this.totalPriceText = formatPrice(this.totalPrice);
             this.ticketPriceText = formatPrice(this.totalPrice);
             this.feeText = formatPrice(0);
@@ -584,14 +588,16 @@ public class BookingResponse {
         return booking.getBookingSeats();
     }
 
-    private static Integer calculateTotalPrice(List<BookingSeat> bookingSeats) {
+    private static Integer calculateTotalPrice(List<BookingSeat> bookingSeats, int ticketFee) {
         if (bookingSeats == null || bookingSeats.isEmpty()) {
             return 0;
         }
 
-        return bookingSeats.stream()
+        int seatsPrice = bookingSeats.stream()
                 .mapToInt(bookingSeat -> bookingSeat.getPrice() == null ? 0 : bookingSeat.getPrice())
                 .sum();
+
+        return seatsPrice + ticketFee;
     }
 
     private static String formatSeatName(List<BookingSeat> bookingSeats) {
@@ -744,6 +750,7 @@ public class BookingResponse {
 
         public CompleteDTO(Booking booking) {
             List<BookingSeat> bookingSeats = safeBookingSeats(booking);
+            int ticketFee = PaymentPolicy.calculateTicketFee(booking);
 
             this.bookingId = booking.getId();
             this.bookingNumber = booking.getBookingNumber();
@@ -769,7 +776,7 @@ public class BookingResponse {
             this.seatCount = bookingSeats.size();
             this.seatName = formatSeatName(bookingSeats);
 
-            this.totalPrice = calculateTotalPrice(bookingSeats);
+            this.totalPrice = calculateTotalPrice(bookingSeats, ticketFee);
             this.totalPriceText = formatPrice(this.totalPrice);
 
             this.userId = booking.getUser().getId();
