@@ -169,8 +169,24 @@ VALUES
      '/images/sample/poster-music.svg', 'OPEN', 'CONCERT',
      '2026-12-31', '2026-12-31', '2026-01-01 00:00:00', '전체 관람가', '120분', 'k6', '000-0000-0000',
      '/images/sample/detail-banner.svg', 'k6 부하테스트 B', 'k6 부하 테스트 전용', 'k6 부하 테스트 전용',
-     100000, 80000, 60000, 40000, NOW(), false);
--- concert_id: 1=RedVelvet, 2=뮤지컬베토벤, 3=후지이카제, 4=워터밤, 5=사운드플래닛, 6=BIGNaughty, 7=DavidByrne, 8=나상현씨밴드, 9=정명훈클래식, 10=k6A, 11=k6B
+     100000, 80000, 60000, 40000, NOW(), false),
+
+    (5, '2026 전주얼티밋뮤직페스티벌', '다수 아티스트',
+     '전주 완산야구장에서 펼쳐지는 대한민국 대표 여름 뮤직 페스티벌. 국내외 정상급 아티스트들이 총출동하는 역대 최강 라인업.',
+     '/images/banners/banner-jeonju-festival.jpg', 'OPEN', 'FESTIVAL',
+     '2026-08-07', '2026-08-09', '2026-06-20 20:00:00', '만 14세 이상 관람가', '360분', 'JUMF 조직위원회', '1544-7766',
+     '/images/banners/banner-jeonju-festival.jpg', '전주에서 만나는 여름의 절정',
+     '국내외 정상급 아티스트들과 함께하는 3일간의 뜨거운 축제', '전주 완산야구장을 가득 채울 잊지 못할 여름 추억',
+     0, 110000, 88000, 0, NOW(), false),
+
+    (6, '2026 인천 펜타포트 락 페스티벌', '다수 아티스트',
+     '국내외 최정상 록 아티스트들이 한자리에! KB국민카드와 함께하는 인천 펜타포트 락 페스티벌 2026.',
+     '/images/banners/banner-pentaport.png', 'OPEN', 'FESTIVAL',
+     '2026-07-31', '2026-08-02', '2026-06-10 12:00:00', '전체 관람가', '480분', '펜타포트 페스티벌 조직위', '032-123-4567',
+     '/images/banners/banner-pentaport.png', '인천에서 울려 퍼지는 록의 함성',
+     '국내외 정상급 록 밴드들의 3일간 릴레이 공연', '송도달빛축제공원에서 즐기는 여름 최고의 록 페스티벌',
+     0, 132000, 99000, 0, NOW(), false);
+-- concert_id: 1=RedVelvet, 2=뮤지컬베토벤, 3=후지이카제, 4=워터밤, 5=사운드플래닛, 6=BIGNaughty, 7=DavidByrne, 8=나상현씨밴드, 9=정명훈클래식, 10=k6A, 11=k6B, 12=전주얼티밋뮤직페스티벌, 13=인천펜타포트
 
 
 -- ================
@@ -194,7 +210,13 @@ VALUES
     (8,  '2026-08-30', '20:00:00', '1회차', NOW(), false),  -- session_id 14 (나상현씨밴드)
     (9,  '2026-10-04', '17:00:00', '1회차', NOW(), false),  -- session_id 15 (정명훈클래식)
     (10, '2026-12-31', '20:00:00', '1회차', NOW(), false),  -- session_id 16 (k6A)
-    (11, '2026-12-31', '21:00:00', '1회차', NOW(), false);  -- session_id 17 (k6B)
+    (11, '2026-12-31', '21:00:00', '1회차', NOW(), false),  -- session_id 17 (k6B)
+    (12, '2026-08-07', '16:00:00', '1일차', NOW(), false),  -- session_id 18 (전주얼티밋뮤직페스티벌 1일차)
+    (12, '2026-08-08', '16:00:00', '2일차', NOW(), false),  -- session_id 19 (전주얼티밋뮤직페스티벌 2일차)
+    (12, '2026-08-09', '16:00:00', '3일차', NOW(), false),  -- session_id 20 (전주얼티밋뮤직페스티벌 3일차)
+    (13, '2026-07-31', '17:00:00', '1일차', NOW(), false),  -- session_id 21 (인천펜타포트 1일차)
+    (13, '2026-08-01', '17:00:00', '2일차', NOW(), false),  -- session_id 22 (인천펜타포트 2일차)
+    (13, '2026-08-02', '17:00:00', '3일차', NOW(), false);  -- session_id 23 (인천펜타포트 3일차)
 
 -- 후기 작성 테스트용 종료 회차
 -- sarr/ssar가 어떤 콘서트 상세에서도 후기 작성 조건을 통과할 수 있도록 모든 콘서트에 과거 회차를 추가한다.
@@ -291,6 +313,25 @@ FROM SYSTEM_RANGE(1, 1000) AS t(x);
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
 SELECT 17, 1, 'A', 'A', x, 'A A-' || x, 'A', 40000, 'AVAILABLE', NOW()
 FROM SYSTEM_RANGE(1, 1000) AS t(x);
+
+-- session 18~23 (전주얼티밋뮤직페스티벌, 인천펜타포트): each R 80 / S 120 / A 50
+INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
+SELECT sid, 1, 'R', 'A', x, 'R A-' || x, 'R', 110000,
+    CASE WHEN MOD(x * sid, 5) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
+FROM (VALUES (18),(19),(20),(21),(22),(23)) AS s(sid)
+CROSS JOIN SYSTEM_RANGE(1, 80) AS t(x);
+
+INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
+SELECT sid, 2, 'S', 'B', x, 'S B-' || x, 'S', 88000,
+    CASE WHEN MOD(x * sid, 6) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
+FROM (VALUES (18),(19),(20),(21),(22),(23)) AS s(sid)
+CROSS JOIN SYSTEM_RANGE(1, 120) AS t(x);
+
+INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
+SELECT sid, 2, 'A', 'C', x, 'A C-' || x, 'A', 0,
+    'AVAILABLE', NOW()
+FROM (VALUES (18),(19),(20),(21),(22),(23)) AS s(sid)
+CROSS JOIN SYSTEM_RANGE(1, 50) AS t(x);
 
 
 -- ================
@@ -597,13 +638,14 @@ VALUES
 
 -- ================
 --  banner_tb (image_url, display_order, is_active 필수)
+--  YES24 스타일 3종 배너 (전주얼티밋뮤직페스티벌 / 뮤지컬 베토벤 / 인천 펜타포트)
+--  show_text = false → 텍스트 오버레이/그라데이션 없이 이미지만 노출
 -- ================
-INSERT INTO banner_tb (image_url, eyebrow, title, highlight, description, button_text, link_url, display_order, is_active)
+INSERT INTO banner_tb (image_url, eyebrow, title, highlight, description, button_text, link_url, display_order, is_active, show_text)
 VALUES
-    ('/images/sample/detail-banner.svg', '2026 여름 팬콘',  'Red Velvet FAN-CON 〈A Day in Red & Velvet〉', '8월 1~2일 고려대학교 화정체육관', '레드벨벳의 공식 팬콘서트. 역대 최고의 셋리스트와 화려한 퍼포먼스.',  '예매하기', '/concerts/1', 1, true),
-    ('/images/sample/detail-banner.svg', 'WORLD TOUR',      '2027 후지이 카제 Prema 월드 투어',              '2027.01.09 고척스카이돔',        '고척돔을 매진시킨 후지이 카제의 두 번째 내한. Prema 월드투어 서울 공연.', '예매하기', '/concerts/3', 2, true),
-    ('/images/sample/detail-banner.svg', 'FESTIVAL',        '워터밤 서울 2026',                              '7월 24~26일 킨텍스',             '국내 최대 규모 물총 축제! 역대 최대 라인업과 함께하는 여름의 절정.', '예매하기', '/concerts/4', 3, true),
-    ('/images/sample/detail-banner.svg', 'MUSIC FESTIVAL',  '사운드 플래닛 페스티벌 2026',                   '9월 5~6일 인천 파라다이스시티',   '국내외 정상급 뮤지션들이 총출동하는 대규모 2일 음악 페스티벌.',     '예매하기', '/concerts/5', 4, true);
+    ('/images/banners/banner-jeonju-festival.jpg', NULL, NULL, NULL, NULL, NULL, '/concerts/12', 1, true, false),
+    ('/images/banners/banner-beethoven.jpg',        NULL, NULL, NULL, NULL, NULL, '/concerts/2',  2, true, false),
+    ('/images/banners/banner-pentaport.png',        NULL, NULL, NULL, NULL, NULL, '/concerts/13', 3, true, false);
 
 
 -- ================

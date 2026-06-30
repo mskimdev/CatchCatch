@@ -31,10 +31,13 @@ public class Banner {
     @Column(nullable = false)
     private Boolean isActive;  // 활성화 여부 토글
 
+    @Column(nullable = false)
+    private Boolean showText;  // 노출 문구(텍스트 오버레이) 표시 여부, 기본 false = 이미지만 노출
+
     @Builder
     public Banner(String imageUrl, String eyebrow, String title, String highlight,
                   String description, String buttonText, String linkUrl,
-                  Integer displayOrder, Boolean isActive) {
+                  Integer displayOrder, Boolean isActive, Boolean showText) {
         this.imageUrl = imageUrl;
         this.eyebrow = eyebrow;
         this.title = title;
@@ -44,17 +47,19 @@ public class Banner {
         this.linkUrl = linkUrl;
         this.displayOrder = displayOrder;
         this.isActive = isActive;
+        this.showText = showText != null ? showText : false;
 
     }
 
 
     public void update(BannerRequest.UpdateDTO dto, String updatedImageUrl) {
         this.imageUrl = updatedImageUrl;
-        this.eyebrow = dto.eyebrow();
-        this.title = dto.title();
-        this.highlight = dto.highlight();
-        this.description = dto.description();
-        this.buttonText = dto.buttonText();
+        this.showText = Boolean.TRUE.equals(dto.showText());
+        this.eyebrow = this.showText ? dto.eyebrow() : null;
+        this.title = this.showText ? dto.title() : null;
+        this.highlight = this.showText ? dto.highlight() : null;
+        this.description = this.showText ? dto.description() : null;
+        this.buttonText = this.showText ? dto.buttonText() : null;
         this.linkUrl = dto.linkUrl();
         this.displayOrder = dto.displayOrder();
         this.isActive = dto.isActive();

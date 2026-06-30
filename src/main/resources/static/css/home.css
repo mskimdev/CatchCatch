@@ -30,6 +30,10 @@
   background: radial-gradient(circle at 82% 18%, rgba(217,70,239,.26), transparent 30%);
   pointer-events: none;
 }
+.cc-hero__slide--image-only::before {
+  background-image: var(--hero-img, linear-gradient(135deg, #171321, #2e155d));
+}
+.cc-hero__slide--image-only::after { display: none; }
 .cc-hero__content { position: relative; z-index: 1; width: min(78%, 900px); height: 100%; box-sizing: border-box; padding: 36px 58px 48px; display: flex; flex-direction: column; justify-content: center; gap: 12px; color: #fff; min-width: 0; }
 .cc-hero__eyebrow { margin: 0; color: rgba(255,255,255,.82); font-size: 15px; line-height: 1.35; font-weight: 700; white-space: nowrap; overflow-wrap: normal; word-break: keep-all; }
 .cc-hero__title { margin: 0; font-size: clamp(24px, 3.5vw, 38px); line-height: 1.14; letter-spacing: 0; white-space: nowrap; overflow-wrap: normal; word-break: keep-all; }
