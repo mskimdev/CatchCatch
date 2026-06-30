@@ -49,6 +49,10 @@ public class PaymentController {
         model.addAttribute("payment", payment);
         model.addAttribute("pageTitle", "결제");
 
+        model.addAttribute("stepInfoDone", true);
+        model.addAttribute("stepSeatDone", true);
+        model.addAttribute("stepPayment", true);
+
         return "payment/payment-form";
     }
 
