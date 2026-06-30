@@ -68,7 +68,6 @@ public class PaymentController {
 
         List<PaymentResponse.ListDTO> payments =
                 paymentService.getPaymentList(sessionUser.getId(), keyword, status);
-
         model.addAttribute("sessionUser", sessionUser);
         model.addAttribute("payments", payments);
         model.addAttribute("paymentCount", payments.size());
