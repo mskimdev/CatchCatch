@@ -85,7 +85,6 @@ public class AdminConcertResponse {
             String contact,
             String detailTitle,
             String detailBannerUrl,
-            String detailDescription1,
             String detailDescription2,
             String posterUrl,
             LocalDate startDate,
@@ -131,7 +130,6 @@ public class AdminConcertResponse {
                     .posterUrl(concert.getPosterUrl())
                     .detailTitle(concert.getDetailTitle())
                     .detailBannerUrl(concert.getDetailBannerUrl())
-                    .detailDescription1(concert.getDetailDescription1())
                     .detailDescription2(concert.getDetailDescription2())
                     .startDate(concert.getStartDate())
                     .endDate(concert.getEndDate())

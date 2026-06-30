@@ -57,6 +57,16 @@ public class UserController {
 
 
 
+    @GetMapping("/find-id")
+    public String findIdForm() {
+        return "user/find-id";
+    }
+
+    @GetMapping("/find-password")
+    public String findPasswordForm() {
+        return "user/find-password";
+    }
+
     @GetMapping("/{provider}-redirect")
     public String oauthCallback(
             @PathVariable String provider,

@@ -22,4 +22,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     List<User> findAllByOrderByIdDesc();
 
     Optional<User> findByOauthProviderAndOauthId(OAuthProvider oauthProvider, String kakaoId);
+
+    Optional<User> findByUsernameAndPhone(String username, String phone);
 }

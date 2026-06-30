@@ -7,6 +7,7 @@ import com.catchcatch.ticket.concert.dto.AdminConcertResponse;
 import com.catchcatch.ticket.concert.enums.ConcertGenre;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.concertlike.ConcertLikeRepository;
+import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.core.util.ProfileImageUtil;
 import com.catchcatch.ticket.notification.service.NotificationDispatcher;
@@ -20,6 +21,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,6 +75,8 @@ public class AdminConcertService {
     // 공연 등록
     @Transactional
     public Integer save(AdminConcertRequest.CreateRequestDTO dto) {
+        validateSchedule(dto.ticketOpenDate(), dto.startDate(), dto.endDate(), true);
+
         Venue venue = venueRepository.findById(dto.venueId())
                 .orElseThrow(() -> new NotFoundException("해당 ID의 공연장을 찾을 수 없습니다."));
 
@@ -96,7 +101,6 @@ public class AdminConcertService {
                 .detailTitle(dto.detailTitle())
                 .detailBannerUrl(dto.detailBannerUrl())
                 .description(dto.description())
-                .detailDescription1(dto.detailDescription1())
                 .detailDescription2(dto.detailDescription2())
                 .posterUrl(posterUrl)
                 .concertStatus(ConcertStatus.valueOf(dto.concertStatus()))
@@ -152,6 +156,8 @@ public class AdminConcertService {
         Concert concert = concertRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("수정할 공연을 찾을 수 없습니다. ID: " + id));
 
+        validateSchedule(dto.ticketOpenDate(), dto.startDate(), dto.endDate(), false);
+
         Venue newVenue = venueRepository.findById(dto.venueId())
                 .orElseThrow(() -> new NotFoundException("해당 ID의 공연장을 찾을 수 없습니다."));
 
@@ -171,6 +177,32 @@ public class AdminConcertService {
 
         if (previousStatus == ConcertStatus.COMING_SOON && concert.getConcertStatus() == ConcertStatus.OPEN) {
             notificationDispatcher.dispatchConcertOpened(concert, concertLikeRepository.findUsersByConcertId(concert.getId()));
+        }
+    }
+
+    private void validateSchedule(LocalDateTime ticketOpenDate, LocalDate startDate, LocalDate endDate, boolean requireFutureTicketOpenDate) {
+        if (ticketOpenDate == null) {
+            throw new BadRequestException("티켓 오픈일을 입력해 주세요.");
+        }
+        if (startDate == null) {
+            throw new BadRequestException("공연 시작일을 입력해 주세요.");
+        }
+        if (endDate == null) {
+            throw new BadRequestException("공연 종료일을 입력해 주세요.");
+        }
+        if (requireFutureTicketOpenDate && ticketOpenDate.isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("티켓 오픈일은 현재 시간 이후로 입력해 주세요.");
+        }
+
+        LocalDate ticketOpenDay = ticketOpenDate.toLocalDate();
+        if (startDate.isBefore(ticketOpenDay)) {
+            throw new BadRequestException("공연 시작일은 티켓 오픈일보다 이전일 수 없습니다.");
+        }
+        if (endDate.isBefore(startDate)) {
+            throw new BadRequestException("공연 종료일은 공연 시작일보다 이전일 수 없습니다.");
+        }
+        if (endDate.isBefore(ticketOpenDay)) {
+            throw new BadRequestException("공연 종료일은 티켓 오픈일보다 이전일 수 없습니다.");
         }
     }
 

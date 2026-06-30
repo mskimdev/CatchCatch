@@ -82,4 +82,18 @@ public class UserApiService {
 
         return findUser;
     }
+
+    @Transactional
+    public void resetPassword(UserRequest.ResetPasswordDTO reqDTO) {
+        String verifiedEmail = (String) session.getAttribute("verified_email");
+        if (verifiedEmail == null || !verifiedEmail.equals(reqDTO.email())) {
+            throw new BadRequestException("이메일 인증을 먼저 완료해주세요.");
+        }
+
+        User user = userRepository.findByEmail(reqDTO.email())
+                .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
+
+        user.setPassword(passwordEncoder.encode(reqDTO.newPassword()));
+        session.removeAttribute("verified_email");
+    }
 }

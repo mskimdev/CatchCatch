@@ -1,7 +1,7 @@
 spring:
   profiles:
     active:
-      - local
+      - dev
   config:
     import: optional:file:.env[.properties]
 
@@ -48,4 +48,3 @@ sol:
   key: ${SOL_API_KEY}
   secret: ${SOL_API_SECRET}
   sender: ${SOL_SENDER}
-

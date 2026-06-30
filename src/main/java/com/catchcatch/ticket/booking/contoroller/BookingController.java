@@ -3,6 +3,7 @@ package com.catchcatch.ticket.booking.contoroller;
 import com.catchcatch.ticket.booking.dto.BookingRequest;
 import com.catchcatch.ticket.booking.dto.BookingResponse;
 import com.catchcatch.ticket.booking.service.BookingService;
+import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.core.util.Define;
 import com.catchcatch.ticket.core.util.Resp;
 import com.catchcatch.ticket.queue.QueueService;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import static com.catchcatch.ticket.core.util.BookingStepUtil.setBookingStep;
 
@@ -81,6 +83,21 @@ public class BookingController {
         return "booking/info";
     }
 
+    // 💡 프론트엔드에서 POST로 보낸 데이터를 여기서 은밀하게 받습니다.
+    @PostMapping("/seat/prepare")
+    public String prepareSeat(
+            Integer concertId,
+            Integer sessionId,
+            HttpSession session
+    ) {
+        // 1. 받은 데이터를 서버의 비밀 금고(세션)에 몰래 저장합니다.
+        session.setAttribute("bookingConcertId", concertId);
+        session.setAttribute("bookingSessionId", sessionId);
+
+        // 2. 주소창에 파라미터를 붙이지 않고, 아주 깔끔한 주소로 튕겨냅니다(Redirect).
+        return "redirect:/booking/seat";
+    }
+
     // 좌석 선택
     @GetMapping("/seat")
     public String seatForm(Model model, HttpSession session) {
@@ -119,7 +136,8 @@ public class BookingController {
     @PostMapping("/complete")
     public String startPayment(
             BookingRequest.SeatSelectDTO req,
-            HttpSession session
+            HttpSession session,
+            RedirectAttributes rttr
     ) {
         SessionUser sessionUser = getSessionUser(session);
 
@@ -127,19 +145,28 @@ public class BookingController {
             return "redirect:/login";
         }
 
-        req.validate();
+        try {
+            req.validate();
 
-        BookingResponse.DetailDTO booking = bookingService.save(
-                sessionUser.getId(),
-                new BookingRequest.SaveDTO(
-                        req.sessionId(),
-                        req.getSeatIdList()
-                )
-        );
+            BookingResponse.DetailDTO booking = bookingService.save(
+                    sessionUser.getId(),
+                    new BookingRequest.SaveDTO(
+                            req.sessionId(),
+                            req.getSeatIdList()
+                    )
+            );
 
-        session.setAttribute("bookingId", booking.getId());
+            session.setAttribute("bookingId", booking.getId());
 
-        return "redirect:/booking/payment?bookingId=" + booking.getId();
+            return "redirect:/booking/payment";
+
+        } catch (BadRequestException e) {
+
+            // 프론트엔드(HTML)의 {{errorMessage}}에 들어갈 글자를 세팅해 줍니다.
+            rttr.addFlashAttribute("errorMessage", e.getMessage());
+
+            return "redirect:/booking/seat";
+        }
     }
 
     // 예매 완료
@@ -182,6 +209,19 @@ public class BookingController {
         bookingService.cancelPendingBooking(id, sessionUser.getId());
 
         return Resp.ok(null);
+    }
+
+    // 결제 재개 안내 - 로그인 직후 등 전역 체크용 (만료 안 된 PENDING 예매 여부)
+    @GetMapping("/pending-payment")
+    @ResponseBody
+    public ResponseEntity<?> findPendingPayment(HttpSession session) {
+        SessionUser sessionUser = getSessionUser(session);
+
+        if (sessionUser == null) {
+            return Resp.ok(null);
+        }
+
+        return Resp.ok(bookingService.findPendingPayment(sessionUser.getId()));
     }
 
     private SessionUser getSessionUser(HttpSession session) {

@@ -58,15 +58,6 @@
                         </div>
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-12 form-group mb-4">
-                                    <label class="font-weight-bold text-danger">상세페이지 내용</label>
-                                    {{#concert.detailDescription1}}
-                                        <div class="p-3 border rounded bg-light text-dark" style="min-height: 100px;">{{{concert.detailDescription1}}}</div>
-                                    {{/concert.detailDescription1}}
-                                    {{^concert.detailDescription1}}
-                                        <div class="p-3 border rounded bg-light text-muted italic" style="min-height: 100px;">설정된 내용이 없습니다. (사용자 화면에서 숨겨짐)</div>
-                                    {{/concert.detailDescription1}}
-                                </div>
 
                                 <div class="col-md-12 form-group mb-4">
                                     <label class="font-weight-bold text-info">추가 공연정보 / 유의사항 및 안내</label>
@@ -114,9 +105,12 @@
                                         <td class="align-middle text-center">{{sessionDate}}</td>
                                         <td class="align-middle text-center">{{sessionTime}}</td>
                                         <td class="align-middle text-center">
-                                            <button class="btn btn-sm btn-outline-primary"
-                                                    onclick="openEditModal({{id}}, {{round}}, '{{sessionDate}}', '{{sessionTime}}')">수정</button>
-                                            <button class="btn btn-sm btn-outline-danger"
+                                            <button type="button" class="btn btn-sm btn-outline-primary js-edit-session"
+                                                    data-session-id="{{id}}"
+                                                    data-round="{{round}}"
+                                                    data-session-date="{{sessionDate}}"
+                                                    data-session-time="{{sessionTime}}">수정</button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
                                                     onclick="deleteSession({{id}})">삭제</button>
                                         </td>
                                     </tr>
@@ -202,11 +196,15 @@
                 <script>
                     const concertId = {{concert.id}};
 
+                    function getApiMessage(data, fallback) {
+                        return data?.msg || data?.message || data?.body || fallback;
+                    }
+
                     document.getElementById('addSessionForm').addEventListener('submit', async function (e) {
                         e.preventDefault();
                         const form = e.target;
                         const reqDTO = {
-                            round: parseInt(form.round.value),
+                            round: form.round.value,
                             sessionDate: form.sessionDate.value,
                             sessionTime: form.sessionTime.value
                         };
@@ -218,7 +216,7 @@
                                 CcUI.toast('회차가 성공적으로 추가되었습니다.', 'success');
                                 setTimeout(() => window.location.reload(), 1000);
                             } else {
-                                CcUI.alert('회차 추가에 실패했습니다: ' + (data && data.msg ? data.msg : '알 수 없는 오류'));
+                                CcUI.alert('회차 추가에 실패했습니다: ' + getApiMessage(data, '알 수 없는 오류'));
                             }
                         } catch (error) {
                             CcUI.alert('서버와 통신에 실패했습니다.');
@@ -233,11 +231,22 @@
                         $('#editSessionModal').modal('show');
                     }
 
+                    document.querySelectorAll('.js-edit-session').forEach((button) => {
+                        button.addEventListener('click', function () {
+                            openEditModal(
+                                    this.dataset.sessionId,
+                                    this.dataset.round || '',
+                                    this.dataset.sessionDate,
+                                    this.dataset.sessionTime
+                            );
+                        });
+                    });
+
                     document.getElementById('editSessionForm').addEventListener('submit', async function (e) {
                         e.preventDefault();
                         const sessionId = document.getElementById('editSessionId').value;
                         const reqDTO = {
-                            round: parseInt(document.getElementById('editRound').value),
+                            round: document.getElementById('editRound').value,
                             sessionDate: document.getElementById('editSessionDate').value,
                             sessionTime: document.getElementById('editSessionTime').value
                         };
@@ -249,7 +258,7 @@
                                 CcUI.toast('성공적으로 수정되었습니다.', 'success');
                                 setTimeout(() => window.location.reload(), 1000);
                             } else {
-                                CcUI.alert('회차 수정에 실패했습니다: ' + (data && data.msg ? data.msg : '알 수 없는 오류'));
+                                CcUI.alert('회차 수정에 실패했습니다: ' + getApiMessage(data, '알 수 없는 오류'));
                             }
                         } catch (error) {
                             CcUI.alert('서버와 통신에 실패했습니다.');
@@ -268,7 +277,7 @@
                                     CcUI.toast('성공적으로 삭제되었습니다.', 'success');
                                     setTimeout(() => window.location.reload(), 1000);
                                 } else {
-                                    CcUI.alert('삭제에 실패했습니다.');
+                                    CcUI.alert('삭제에 실패했습니다: ' + getApiMessage(data, '알 수 없는 오류'));
                                 }
                             } catch (error) {
                                 CcUI.alert('서버와 통신에 실패했습니다.');

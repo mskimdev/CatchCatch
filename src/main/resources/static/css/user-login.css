@@ -16,6 +16,9 @@
   box-shadow: var(--cc-shadow);
 }
 .cc-login-form { padding: 44px 40px 34px; text-align: center; }
+
+.cc-login-shell--single { grid-template-columns: 1fr; max-width: 480px; }
+.cc-login-shell--single .cc-login-form { padding: 44px 44px 34px; }
 .cc-login-form h1 { margin: 0 0 16px; color: var(--cc-primary-dark); font-size: 42px; letter-spacing: 0; }
 .cc-login-form__desc { margin: 0 0 28px; color: var(--cc-text); line-height: 1.5; font-weight: 800; }
 

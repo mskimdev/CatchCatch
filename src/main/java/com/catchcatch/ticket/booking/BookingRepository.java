@@ -53,6 +53,15 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
      */
     List<Booking> findByStatusAndExpiresAtBefore(Status status, Timestamp now);
 
+    /**
+     * 결제 재개 안내용 - 사용자의 아직 만료되지 않은 PENDING 예매 조회
+     */
+    Optional<Booking> findFirstByUser_IdAndStatusAndExpiresAtAfter(
+            Integer userId,
+            Status status,
+            Timestamp now
+    );
+
     Optional<Booking> findByTicketCode(String ticketCode);
     /**
      * 대시보드 - 특정 기간에 결제 완료된 예매 수

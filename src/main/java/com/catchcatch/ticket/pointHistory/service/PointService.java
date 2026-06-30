@@ -208,7 +208,7 @@ public class PointService {
     public Integer getUsablePoint(Integer userId) {
         Timestamp now = new Timestamp(System.currentTimeMillis());
 
-        return pointHistoryRepository.findUsablePointGroups(userId, now)
+        return pointHistoryRepository.findUsablePointGroupsNoLock(userId, now)
                 .stream()
                 .mapToInt(PointHistory::getBalance)
                 .sum();

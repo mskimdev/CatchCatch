@@ -87,6 +87,14 @@
         <!-- 금액 정보 -->
         <section class="price-box">
             <div class="price-row">
+                <span class="price-label">공연 금액</span>
+                <span class="price-value">{{payment.originalAmountText}}</span>
+            </div>
+            <div class="price-row">
+                <span class="price-label">예매 수수료</span>
+                <span class="price-value">{{payment.ticketFeeText}}</span>
+            </div>
+            <div class="price-row">
                 <span class="price-label">최종 결제 금액</span>
                 <span class="price-value">{{payment.amountText}}</span>
             </div>

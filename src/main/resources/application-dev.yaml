@@ -8,6 +8,12 @@ server:
       force: true
   tomcat:
     max-http-form-post-size: 100MB
+    # 부하 테스트 용도
+    threads:
+      max: 400
+      min-spare: 50
+    accept-count: 200
+    max-connections: 10000
 
 # log 설정
 logging:
@@ -44,24 +50,21 @@ spring:
 
   #데이터베이스 연결 설정 (MySQL)
   datasource:
-    #    driver-class-name: com.mysql.cj.jdbc.Driver
-    #    url: jdbc:mysql://localhost:3306/myblog?serverTimezone=Asia/Seoul
-    #    username:
-    #    password:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:file:./data/catchcatch
-    #url: jdbc:h2:mem:test
-    username: sa
-    password:
-  h2:
-    console:
-      enabled: true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${MYSQL_URL}
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+    hikari:
+      # 부하 테스트 용도
+      maximum-pool-size: 100
+      minimum-idle: 20
+      connection-timeout: 10000
 
   sql:
     init:
       mode: always  # 외부 DB(MySQL)에서도 실행되도록 설정
       data-locations:
-        - classpath:db/data.sql
+        - classpath:db/data/dummy-mysql.sql
 
   jpa:
     open-in-view: false
