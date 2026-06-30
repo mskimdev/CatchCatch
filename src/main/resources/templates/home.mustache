@@ -5,12 +5,14 @@
         <section class="cc-hero" aria-label="콘서트 광고 배너">
             <div class="cc-hero__track" data-carousel-track>
                 {{#heroBanners}}
-                    <a class="cc-hero__slide" href="{{linkUrl}}" style="--hero-img: url('{{imageUrl}}')">
-                        <div class="cc-hero__content">
-                            <p class="cc-hero__eyebrow">{{eyebrow}}</p>
-                                <h1 class="cc-hero__title">{{title}} <em>{{highlight}}</em></h1>
-                            <p class="cc-hero__desc">{{description}}</p>
-                        </div>
+                    <a class="cc-hero__slide{{^showText}} cc-hero__slide--image-only{{/showText}}" href="{{linkUrl}}" style="--hero-img: url('{{imageUrl}}')">
+                        {{#showText}}
+                            <div class="cc-hero__content">
+                                <p class="cc-hero__eyebrow">{{eyebrow}}</p>
+                                    <h1 class="cc-hero__title">{{title}} <em>{{highlight}}</em></h1>
+                                <p class="cc-hero__desc">{{description}}</p>
+                            </div>
+                        {{/showText}}
                     </a>
                 {{/heroBanners}}
                 {{^heroBanners}}

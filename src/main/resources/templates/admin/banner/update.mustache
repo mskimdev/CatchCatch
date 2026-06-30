@@ -38,34 +38,41 @@
 
                                     <section class="admin-banner-form-section">
                                         <div class="admin-banner-form-section__title mb-3"><i class="fas fa-font text-primary mr-2"></i>노출 문구</div>
-                                        <div class="row">
-                                            <div class="form-group col-md-4">
-                                                <label for="displayOrder">노출 순서 <span class="text-danger">*</span></label>
-                                                <input type="number" class="form-control" id="displayOrder" name="displayOrder" value="{{banner.displayOrder}}" min="1" required>
+                                        <div class="form-group col-md-4 pl-0">
+                                            <label for="displayOrder">노출 순서 <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" id="displayOrder" name="displayOrder" value="{{banner.displayOrder}}" min="1" required>
+                                        </div>
+                                        <div class="rounded bg-light border px-3 py-3 mb-3">
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="showText" name="showText" value="true" {{#banner.showText}}checked{{/banner.showText}}>
+                                                <label class="custom-control-label font-weight-bold" for="showText">노출 문구 설정하기</label>
                                             </div>
-                                            <div class="form-group col-md-8">
+                                            <small class="text-muted ml-4">체크하지 않으면 이미지만 노출되고, 아래 문구 입력란은 저장되지 않습니다.</small>
+                                        </div>
+                                        <div id="textFieldsGroup" class="{{^banner.showText}}d-none{{/banner.showText}}">
+                                            <div class="form-group">
                                                 <label for="eyebrow">상단 카피</label>
                                                 <input type="text" class="form-control js-preview-input" id="eyebrow" name="eyebrow" value="{{banner.eyebrow}}" data-preview="previewEyebrow">
                                             </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="title">메인 타이틀 <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control js-preview-input" id="title" name="title" value="{{banner.title}}" data-preview="previewTitle" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="highlight">강조 문구</label>
-                                            <input type="text" class="form-control js-preview-input" id="highlight" name="highlight" value="{{banner.highlight}}" data-preview="previewHighlight">
-                                        </div>
-                                        <div class="form-group mb-0">
-                                            <label for="description">상세 설명</label>
-                                            <textarea class="form-control js-preview-input" id="description" name="description" rows="3" data-preview="previewDescription">{{banner.description}}</textarea>
+                                            <div class="form-group">
+                                                <label for="title">메인 타이틀 <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control js-preview-input" id="title" name="title" value="{{banner.title}}" data-preview="previewTitle" {{#banner.showText}}required{{/banner.showText}}>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="highlight">강조 문구</label>
+                                                <input type="text" class="form-control js-preview-input" id="highlight" name="highlight" value="{{banner.highlight}}" data-preview="previewHighlight">
+                                            </div>
+                                            <div class="form-group mb-0">
+                                                <label for="description">상세 설명</label>
+                                                <textarea class="form-control js-preview-input" id="description" name="description" rows="3" data-preview="previewDescription">{{banner.description}}</textarea>
+                                            </div>
                                         </div>
                                     </section>
 
                                     <section class="admin-banner-form-section">
                                         <div class="admin-banner-form-section__title mb-3"><i class="fas fa-mouse-pointer text-primary mr-2"></i>연결 및 노출</div>
                                         <div class="row">
-                                            <div class="form-group col-md-5">
+                                            <div class="form-group col-md-5 {{^banner.showText}}d-none{{/banner.showText}}" id="buttonTextGroup">
                                                 <label for="buttonText">버튼 텍스트</label>
                                                 <input type="text" class="form-control js-preview-input" id="buttonText" name="buttonText" value="{{banner.buttonText}}" data-preview="previewButton">
                                             </div>
@@ -95,8 +102,8 @@
                             <div class="admin-banner-preview">
                                 <div class="admin-banner-preview__canvas">
                                     <img id="imagePreview" class="admin-banner-preview__image" src="{{banner.imageUrl}}" alt="{{banner.title}} 배너 이미지">
-                                    <div class="admin-banner-preview__shade"></div>
-                                    <div class="admin-banner-preview__content">
+                                    <div class="admin-banner-preview__shade {{^banner.showText}}d-none{{/banner.showText}}" id="previewShade"></div>
+                                    <div class="admin-banner-preview__content {{^banner.showText}}d-none{{/banner.showText}}" id="previewContent">
                                         <div class="admin-banner-preview__eyebrow" id="previewEyebrow">{{banner.eyebrow}}</div>
                                         <h2 class="admin-banner-preview__title"><span id="previewTitle">{{banner.title}}</span><br><span class="admin-banner-preview__highlight" id="previewHighlight">{{banner.highlight}}</span></h2>
                                         <p class="admin-banner-preview__description" id="previewDescription">{{banner.description}}</p>
@@ -141,6 +148,17 @@
         status.className = this.checked ? 'text-success font-weight-bold' : 'text-secondary font-weight-bold';
     });
 
+    const titleInput = document.getElementById('title');
+    document.getElementById('showText').addEventListener('change', function() {
+        const on = this.checked;
+        document.getElementById('textFieldsGroup').classList.toggle('d-none', !on);
+        document.getElementById('buttonTextGroup').classList.toggle('d-none', !on);
+        document.getElementById('previewShade').classList.toggle('d-none', !on);
+        document.getElementById('previewContent').classList.toggle('d-none', !on);
+        titleInput.required = on;
+        if (!on) titleInput.value = '';
+    });
+
     document.getElementById('bannerUpdateForm').addEventListener('submit', async function(event) {
         event.preventDefault();
         if (!this.checkValidity()) {
@@ -150,6 +168,7 @@
 
         const formData = new FormData(this);
         if (!document.getElementById('isActive').checked) formData.append('isActive', 'false');
+        if (!document.getElementById('showText').checked) formData.append('showText', 'false');
 
         CcUI.loading.show('변경사항을 저장하고 있습니다...');
         try {
