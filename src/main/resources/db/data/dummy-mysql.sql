@@ -100,7 +100,7 @@ VALUES
 INSERT INTO concert_tb
 (venue_id, title, artist, description, poster_url, status,
  genre, start_date, end_date, ticket_open_date, age_limit, runtime, organizer, contact,
- detail_banner_url, detail_title, detail_description1, detail_description2,
+ detail_banner_url, detail_title, detail_description2,
  price_vip, price_r, price_s, price_a, created_at, is_deleted)
 VALUES
     (2, 'Red Velvet FAN-CON 〈A Day in Red & Velvet〉', 'Red Velvet',
@@ -108,7 +108,7 @@ VALUES
      '/images/posters/poster-redvelvet.jpg', 'OPEN', 'FANMEETING',
      '2026-08-01', '2026-08-02', '2026-06-15 20:00:00', '전체 관람가', '120분', 'SM 엔터테인먼트', '1544-1111',
      '/images/details/detail-redvelvet.jpg', '레드벨벳과 함께하는 특별한 여름',
-     '팬들이 직접 만들어가는 무대, Red Velvet FAN-CON', '고려대학교 화정체육관을 가득 채울 열기와 감동',
+     '고려대학교 화정체육관을 가득 채울 열기와 감동',
      132000, 110000, 88000, 0, NOW(), false),
 
     (4, '뮤지컬 〈베토벤〉', '뮤지컬 배우 앙상블',
@@ -116,7 +116,7 @@ VALUES
      '/images/posters/poster-beethoven.jpg', 'OPEN', 'MUSICAL',
      '2026-06-09', '2026-08-11', '2026-04-15 14:00:00', '만 7세 이상 관람가', '150분 (인터미션 20분)', '신시컴퍼니', '1544-2222',
      '/images/details/detail-beethoven.jpg', '천재의 고뇌와 열정이 만들어낸 불멸의 선율',
-     '베토벤의 삶을 감동적으로 그려낸 대작 뮤지컬', '세종문화회관 대극장을 가득 채울 웅장한 무대',
+     '세종문화회관 대극장을 가득 채울 웅장한 무대',
      0, 150000, 130000, 110000, NOW(), false),
 
     (1, '2027 후지이 카제 Prema 월드 투어 - 서울', '후지이 카제',
@@ -124,7 +124,7 @@ VALUES
      '/images/posters/poster-fujiikaze.jpg', 'COMING_SOON', 'CONCERT',
      '2027-01-09', '2027-01-09', '2026-09-05 12:00:00', '전체 관람가', '120분', '현대카드', '1644-1234',
      '/images/details/detail-fujiikaze.jpg', '다시 한번 고척돔을 가득 채울 그의 목소리',
-     '일본을 넘어 전 세계를 사로잡은 후지이 카제의 Prema 월드 투어', '단 하루뿐인 서울 공연, 놓치지 마세요',
+     '단 하루뿐인 서울 공연, 놓치지 마세요',
      165000, 143000, 121000, 99000, NOW(), false),
 
     (5, '워터밤 서울 2026', '다수 아티스트',
@@ -132,7 +132,7 @@ VALUES
      '/images/posters/poster-waterbomb.jpg', 'OPEN', 'FESTIVAL',
      '2026-07-24', '2026-07-26', '2026-05-20 12:00:00', '만 18세 이상 관람가', '360분', '워터밤 컴퍼니', '1544-7755',
      '/images/details/detail-waterbomb.jpg', '2026년 여름, 가장 뜨거운 3일',
-     '역대 최강 라인업과 함께하는 대한민국 최대 물총 축제', '킨텍스를 흠뻑 적실 잊지 못할 여름 추억',
+     '킨텍스를 흠뻑 적실 잊지 못할 여름 추억',
      220000, 90000, 0, 0, NOW(), false),
 
     (6, '사운드 플래닛 페스티벌 2026', '다수 아티스트',
@@ -140,7 +140,7 @@ VALUES
      '/images/posters/poster-soundplanet.jpg', 'OPEN', 'FESTIVAL',
      '2026-09-05', '2026-09-06', '2026-05-15 20:00:00', '전체 관람가', '480분', '사운드 리퍼블리카', '1544-4455',
      '/images/details/detail-soundplanet.png', '바다와 음악이 만나는 최고의 페스티벌',
-     '국내외 정상급 아티스트들의 2일간 릴레이 공연', '인천 파라다이스시티에서 즐기는 낭만적인 음악 축제',
+     '인천 파라다이스시티에서 즐기는 낭만적인 음악 축제',
      0, 143000, 0, 0, NOW(), false),
 
     (3, 'ICN 〉 NTG : BIG Naughty Concert', 'BIG Naughty (서동현)',
@@ -148,7 +148,7 @@ VALUES
      '/images/posters/poster-bignaughty.jpg', 'CLOSED_SOON', 'CONCERT',
      '2026-07-11', '2026-07-11', '2026-06-10 20:00:00', '만 7세 이상 관람가', '120분', 'BIGHIT MUSIC', '1544-3366',
      '/images/details/detail-bignaughty.png', '힙합을 넘어선 음악적 진화',
-     'BIG Naughty의 모든 것을 담은 첫 단독 콘서트', '장충체육관을 뒤흔들 역대급 퍼포먼스',
+     '장충체육관을 뒤흔들 역대급 퍼포먼스',
      110000, 99000, 0, 0, NOW(), false),
 
     (3, 'David Byrne Who Is The Sky? Tour', 'David Byrne',
@@ -156,7 +156,7 @@ VALUES
      '/images/posters/poster-davidbyrne.png', 'OPEN', 'CONCERT',
      '2026-08-21', '2026-08-21', '2026-05-30 12:00:00', '전체 관람가', '120분', '라이브네이션코리아', '1588-7828',
      '/images/details/detail-davidbyrne.png', '살아있는 전설이 서울을 찾아옵니다',
-     'Talking Heads부터 솔로 명반까지, 데이비드 번의 50년 음악 여정', '경희대 평화의전당에서 펼쳐지는 단 하루의 공연',
+     '경희대 평화의전당에서 펼쳐지는 단 하루의 공연',
      0, 143000, 121000, 99000, NOW(), false),
 
     (2, '나상현씨밴드 클럽투어 ''여름빛 2026'' - 서울', '나상현씨밴드',
@@ -164,7 +164,7 @@ VALUES
      '/images/posters/poster-nasanghyun.jpg', 'OPEN', 'CONCERT',
      '2026-08-30', '2026-08-30', '2026-06-20 12:00:00', '전체 관람가', '100분', '인디레이블 소속', '02-1234-5678',
      '/images/details/detail-nasanghyun.jpg', '여름밤과 가장 잘 어울리는 인디의 감성',
-     '나상현씨밴드와 함께하는 여름 마지막 날의 특별한 기억', '소규모 공연장에서만 느낄 수 있는 뜨거운 라이브',
+     '소규모 공연장에서만 느낄 수 있는 뜨거운 라이브',
      0, 0, 44000, 33000, NOW(), false),
 
     (4, '정명훈x KBS교향악단x김선욱 〈베토벤+브람스〉', '정명훈, 김선욱',
@@ -172,7 +172,7 @@ VALUES
      '/images/posters/poster-myunghun.jpg', 'COMING_SOON', 'CLASSIC',
      '2026-10-04', '2026-10-04', '2026-08-20 12:00:00', '만 7세 이상 관람가', '100분 (인터미션 20분)', '세종문화회관', '02-399-1000',
      '/images/details/detail-myunghun.jpg', '두 거장이 함께하는 클래식의 밤',
-     '마에스트로 정명훈 x 피아니스트 김선욱 x KBS교향악단', '세종문화회관 대극장에서 만나는 베토벤과 브람스의 걸작',
+     '세종문화회관 대극장에서 만나는 베토벤과 브람스의 걸작',
      120000, 100000, 80000, 60000, NOW(), false),
 
     -- k6 부하테스트 전용 콘서트 2개
@@ -180,14 +180,14 @@ VALUES
      'k6 부하 테스트 전용 콘서트 데이터 A.',
      '/images/sample/poster-music.svg', 'OPEN', 'CONCERT',
      '2026-12-31', '2026-12-31', '2026-01-01 00:00:00', '전체 관람가', '120분', 'k6', '000-0000-0000',
-     '/images/sample/detail-banner.svg', 'k6 부하테스트 A', 'k6 부하 테스트 전용', 'k6 부하 테스트 전용',
+     '/images/sample/detail-banner.svg', 'k6 부하테스트 A', 'k6 부하 테스트 전용',
      100000, 80000, 60000, 40000, NOW(), false),
 
     (8, 'k6 부하테스트 콘서트 B', 'k6',
      'k6 부하 테스트 전용 콘서트 데이터 B.',
      '/images/sample/poster-music.svg', 'OPEN', 'CONCERT',
      '2026-12-31', '2026-12-31', '2026-01-01 00:00:00', '전체 관람가', '120분', 'k6', '000-0000-0000',
-     '/images/sample/detail-banner.svg', 'k6 부하테스트 B', 'k6 부하 테스트 전용', 'k6 부하 테스트 전용',
+     '/images/sample/detail-banner.svg', 'k6 부하테스트 B', 'k6 부하 테스트 전용',
      100000, 80000, 60000, 40000, NOW(), false),
 
     (5, '2026 전주얼티밋뮤직페스티벌', '다수 아티스트',
@@ -195,7 +195,7 @@ VALUES
      '/images/banners/banner-jeonju-festival.jpg', 'OPEN', 'FESTIVAL',
      '2026-08-07', '2026-08-09', '2026-06-20 20:00:00', '만 14세 이상 관람가', '360분', 'JUMF 조직위원회', '1544-7766',
      '/images/banners/banner-jeonju-festival.jpg', '전주에서 만나는 여름의 절정',
-     '국내외 정상급 아티스트들과 함께하는 3일간의 뜨거운 축제', '전주 완산야구장을 가득 채울 잊지 못할 여름 추억',
+     '전주 완산야구장을 가득 채울 잊지 못할 여름 추억',
      0, 110000, 88000, 0, NOW(), false),
 
     (6, '2026 인천 펜타포트 락 페스티벌', '다수 아티스트',
@@ -203,7 +203,7 @@ VALUES
      '/images/banners/banner-pentaport.png', 'OPEN', 'FESTIVAL',
      '2026-07-31', '2026-08-02', '2026-06-10 12:00:00', '전체 관람가', '480분', '펜타포트 페스티벌 조직위', '032-123-4567',
      '/images/banners/banner-pentaport.png', '인천에서 울려 퍼지는 록의 함성',
-     '국내외 정상급 록 밴드들의 3일간 릴레이 공연', '송도달빛축제공원에서 즐기는 여름 최고의 록 페스티벌',
+     '송도달빛축제공원에서 즐기는 여름 최고의 록 페스티벌',
      0, 132000, 99000, 0, NOW(), false);
 -- concert_id: 1=RedVelvet, 2=뮤지컬베토벤, 3=후지이카제, 4=워터밤, 5=사운드플래닛, 6=BIGNaughty, 7=DavidByrne, 8=나상현씨밴드, 9=정명훈클래식, 10=k6A, 11=k6B, 12=전주얼티밋뮤직페스티벌, 13=인천펜타포트
 
