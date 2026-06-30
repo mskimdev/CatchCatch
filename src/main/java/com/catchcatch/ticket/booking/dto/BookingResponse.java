@@ -90,6 +90,7 @@ public class BookingResponse {
 
         private String ticketToken;
         private String ticketCode;
+        private Boolean canUseTicket;
 
         private List<Integer> seatIds;
         private Integer seatCount;
@@ -141,6 +142,10 @@ public class BookingResponse {
             this.status = booking.getStatus();
             this.ticketToken = booking.getTicketToken();
             this.ticketCode = booking.getTicketCode();
+            this.canUseTicket = booking.getStatus() == Status.PAID
+                    && booking.getCanceledAt() == null
+                    && booking.getTicketToken() != null
+                    && !booking.getTicketToken().isBlank();
 
             this.totalPrice = calculateTotalPrice(bookingSeats);
             this.totalPriceText = formatPrice(this.totalPrice);

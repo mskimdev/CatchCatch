@@ -24,11 +24,17 @@ public class FaqController {
         List<Faq> faqs = faqService.findFaqs(category, keyword);
 
         model.addAttribute("navFaq", true);
+        model.addAttribute("activeQna", true);
         model.addAttribute("pageTitle", "FAQ");
         model.addAttribute("keyword", keyword == null ? "" : keyword);
         model.addAttribute("faqs", faqs);
 
-        // 탭 active 처리
+        addCategoryFlags(model, category);
+
+        return "support/faq";
+    }
+
+    private void addCategoryFlags(Model model, FaqCategory category) {
         model.addAttribute("isAll", category == null);
         model.addAttribute("isMember", category == FaqCategory.MEMBER);
         model.addAttribute("isBooking", category == FaqCategory.BOOKING);
@@ -36,8 +42,5 @@ public class FaqController {
         model.addAttribute("isCancelRefund", category == FaqCategory.CANCEL_REFUND);
         model.addAttribute("isEvent", category == FaqCategory.EVENT);
         model.addAttribute("isService", category == FaqCategory.SERVICE);
-        model.addAttribute("activeQna", true);
-
-        return "support/faq";
     }
 }
