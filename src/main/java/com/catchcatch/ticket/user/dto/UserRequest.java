@@ -82,4 +82,27 @@ public class UserRequest {
             String code){
 
     }
+
+    public record FindIdDTO(
+            @NotBlank(message = "아이디를 입력해주세요.")
+            String username,
+            @NotBlank(message = "휴대폰 번호를 입력해주세요.")
+            String phone){
+    }
+
+    public record ResetPasswordDTO(
+            @Email(message = "이메일 형식이 올바르지 않습니다.")
+            @NotBlank(message = "이메일을 입력해주세요.")
+            String email,
+            @Size(min = 8, message = "비밀번호는 8자 이상입니다.")
+            @NotBlank(message = "새 비밀번호를 입력해주세요.")
+            String newPassword,
+            @NotBlank(message = "새 비밀번호 확인을 입력해주세요.")
+            String newPasswordConfirm){
+        public void pwdValidate(){
+            if(!newPassword.equals(newPasswordConfirm)){
+                throw new BadRequestException("비밀번호가 일치하지 않습니다.");
+            }
+        }
+    }
 }

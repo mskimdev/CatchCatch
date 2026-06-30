@@ -16,6 +16,20 @@ import org.springframework.web.bind.annotation.*;
 public class UserApiController {
 
     private final UserApiService userApiService;
+    private final UserService userService;
+
+    @PostMapping("/find-id")
+    public ResponseEntity<?> findId(UserRequest.FindIdDTO reqDTO) {
+        String maskedEmail = userService.findMaskedEmailByUsernameAndPhone(reqDTO);
+        return Resp.ok(maskedEmail);
+    }
+
+    @PostMapping("/password-reset")
+    public ResponseEntity<?> resetPassword(UserRequest.ResetPasswordDTO reqDTO) {
+        reqDTO.pwdValidate();
+        userApiService.resetPassword(reqDTO);
+        return Resp.ok("비밀번호가 변경되었습니다.");
+    }
 
     @PostMapping("/email/send-code")
     public ResponseEntity<?> sendCode(

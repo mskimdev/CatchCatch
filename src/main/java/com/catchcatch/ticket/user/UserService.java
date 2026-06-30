@@ -94,6 +94,26 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("사용자 정보를 찾을 수 없습니다."));
     }
 
+    public String findMaskedEmailByUsernameAndPhone(UserRequest.FindIdDTO reqDTO) {
+        User user = userRepository.findByUsernameAndPhone(reqDTO.username(), reqDTO.phone())
+                .orElseThrow(() -> new NotFoundException("일치하는 회원 정보를 찾을 수 없습니다."));
+
+        if (user.isDeleted()) {
+            throw new NotFoundException("일치하는 회원 정보를 찾을 수 없습니다.");
+        }
+
+        return maskEmail(user.getEmail());
+    }
+
+    private String maskEmail(String email) {
+        int at = email.indexOf('@');
+        if (at <= 0) return email;
+        String local = email.substring(0, at);
+        String domain = email.substring(at);
+        String visible = local.substring(0, Math.min(2, local.length()));
+        return visible + "*".repeat(Math.max(local.length() - visible.length(), 1)) + domain;
+    }
+
     public User login(UserRequest.LoginDTO reqDTO) {
         User user = userRepository.findByEmail(reqDTO.email())
                 .orElseThrow(() -> new BadRequestException("이메일 또는 비밀번호가 올바르지 않습니다."));
