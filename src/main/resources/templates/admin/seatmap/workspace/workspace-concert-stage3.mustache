@@ -1,0 +1,131 @@
+<aside class="seatmap-side seatmap-side--left stage3-left">
+    <div class="seatmap-step-list">
+
+        <section id="part1Panel" class="seatmap-step is-active" data-step="1">
+            <button type="button" class="seatmap-step__header active" id="partBtn1">
+                <span class="seatmap-step__check" data-step="1"></span>
+                <span class="seatmap-step__text">
+                    <b>파트 1</b>
+                    <small>기준 구역 설정</small>
+                </span>
+                <span class="seatmap-step__status">진행중</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active stage3-stage-box">
+                        <h3>메인 스테이지 기준</h3>
+                        <div class="help-text">
+                            좌석은 이제 원본에서 지우는 방식이 아니라 스테이지 기준으로 새로 그립니다.
+                            먼저 미니맵에서 스테이지 위치를 맞춘 뒤 좌석을 생성하세요.
+                        </div>
+
+                        <label class="stage3-check-row">
+                            <input type="checkbox" id="stageEditMode">
+                            <span>미니맵에서 스테이지 위치 조절</span>
+                        </label>
+
+                        <div class="field-grid field-grid--two">
+                            <div>
+                                <label for="stageX">스테이지 X</label>
+                                <input type="number" id="stageX" value="0">
+                            </div>
+                            <div>
+                                <label for="stageY">스테이지 Y</label>
+                                <input type="number" id="stageY" value="0">
+                            </div>
+                        </div>
+
+                        <div class="field-grid field-grid--two">
+                            <div>
+                                <label for="stageW">스테이지 너비</label>
+                                <input type="number" id="stageW" value="360" min="20">
+                            </div>
+                            <div>
+                                <label for="stageH">스테이지 높이</label>
+                                <input type="number" id="stageH" value="54" min="10">
+                            </div>
+                        </div>
+
+                        <div class="field-grid field-grid--two">
+                            <button type="button" class="btn" id="resetStagePosition">상단 중앙 자동 배치</button>
+                            <button type="button" class="btn btn--dark" id="autoStageAngles">스테이지 기준 각도 적용</button>
+                        </div>
+                    </div>
+
+                    <div class="box active">
+                        <label for="baseSectionSelect">기준 구역</label>
+                        <select id="baseSectionSelect"></select>
+
+                        <div class="field-grid field-grid--one">
+                            <div>
+                                <label for="baseCols">기준 가로 좌석 수</label>
+                                <input type="number" id="baseCols" value="10" min="1">
+                            </div>
+                        </div>
+
+                        <div class="field-grid field-grid--two">
+                            <button type="button" class="btn btn--dark" id="applyBaseOne">선택 구역 초안 생성</button>
+                            <button type="button" class="btn btn--green" id="applyBaseAll">전체 구역 자동 추정</button>
+                        </div>
+                    </div>
+
+                    <div class="box stage3-section-list-box">
+                        <h3>구역별 좌석 수</h3>
+                        <div class="section-list" id="sectionsList1"></div>
+                    </div>
+
+                    <button type="button" class="btn btn--next-stage" id="goPart2">다음: 좌석 세부 수정</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="part2Panel" class="seatmap-step" data-step="2">
+            <button type="button" class="seatmap-step__header" id="partBtn2">
+                <span class="seatmap-step__check" data-step="2"></span>
+                <span class="seatmap-step__text">
+                    <b>파트 2</b>
+                    <small>좌석 배치 편집</small>
+                </span>
+                <span class="seatmap-step__status">대기</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active">
+                        <label for="editSectionSelect">수정할 구역</label>
+                        <select id="editSectionSelect"></select>
+
+                        <div class="field-grid field-grid--two">
+                            <div>
+                                <label for="editRows">세로 좌석 수</label>
+                                <input type="number" id="editRows" value="5" min="1">
+                            </div>
+                            <div>
+                                <label for="editCols">가로 좌석 수</label>
+                                <input type="number" id="editCols" value="10" min="1">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn--dark" id="regenSelected">선택 구역 좌석 재생성</button>
+                    </div>
+
+                    <div class="box">
+                        <h3>좌석 선택 작업</h3>
+                        <div class="help-text">
+                            좌석을 클릭하거나 드래그 박스로 선택하면 중앙에 삭제/복구/장애석 버튼이 표시됩니다.
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn--next-stage" id="toStage4">다음: 결과 확인</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="seatmap-side-guide" id="stage3Guide">
+        미니맵에서 기준 구역을 클릭하고 기준 가로 좌석 수만 입력한 뒤 전체 구역을 자동 추정하세요.
+    </div>
+</aside>

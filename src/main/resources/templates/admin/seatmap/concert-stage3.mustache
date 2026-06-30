@@ -1,21 +1,16 @@
-{{> admin/seatmap/layout/header}}
+{{> admin/seatmap/common/header}}
 
 <link href="/css/admin/seatmap-workspace.css" rel="stylesheet">
 <link href="/css/admin/seatmap-concert-stage3.css" rel="stylesheet">
 
 <body>
-<div class="app" id="stage3App" data-stage4-url="/admin/seatmap/concert/stage4">
+<div class="app" id="stage3App" data-stage4-url="{{stage4Url}}">
     <div class="seatmap-workspace seatmap-workspace--stage3">
 
-        {{> admin/seatmap/layout/workspace-concert-stage3}}
+        {{> admin/seatmap/workspace/workspace-concert-stage3}}
 
         <main class="seatmap-main stage3-main">
-            <div class="seatmap-command-bar" aria-label="작업 명령">
-                <button type="button" class="seatmap-command-btn" id="zoomOut">－ 축소</button>
-                <button type="button" class="seatmap-command-btn" id="zoomReset">100%</button>
-                <button type="button" class="seatmap-command-btn" id="zoomIn">＋ 확대</button>
-                <span class="seatmap-zoom-value" id="zoomValue">100%</span>
-            </div>
+            {{> admin/seatmap/canvas-control/workspace-control}}
 
             <div class="stage3-board">
                 <section class="stage3-map-card" id="mapCard">

@@ -1,4 +1,4 @@
-{{> admin/seatmap/layout/header}}
+{{> admin/seatmap/common/header}}
 
 <link href="/css/admin/seatmap-workspace.css" rel="stylesheet">
 <link href="/css/admin/seatmap-concert-stage4.css" rel="stylesheet">
@@ -6,31 +6,7 @@
 <body>
 <div class="app" id="stage4App">
     <div class="seatmap-workspace seatmap-workspace--stage4">
-
-        {{> admin/seatmap/layout/workspace-concert-stage4}}
-
-        <main class="seatmap-main stage4-main">
-            <section class="stage4-json-grid">
-
-                <div class="stage4-card">
-                    <div class="stage4-card__header">
-                        <strong>배치용 JSON</strong>
-                        <span>화면에서는 overviewImage base64 생략 / 저장·복사는 원본</span>
-                    </div>
-                    <textarea id="layoutJsonPreview" readonly></textarea>
-                </div>
-
-                <div class="stage4-card">
-                    <div class="stage4-card__header">
-                        <strong>예매용 JSON</strong>
-                        <span>REMOVED 제외 / AVAILABLE, OBSTRUCTED 저장</span>
-                    </div>
-                    <textarea id="bookingJsonPreview" readonly></textarea>
-                </div>
-
-            </section>
-        </main>
-
+        {{> admin/seatmap/workspace/workspace-concert-stage4}}
     </div>
 </div>
 

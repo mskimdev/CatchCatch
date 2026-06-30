@@ -12,7 +12,7 @@ import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.oauth.OAuthClientFactory;
 import com.catchcatch.ticket.oauth.OAuthUserInfo;
 import com.catchcatch.ticket.payment.Payment;
-import com.catchcatch.ticket.payment.PaymentRepository;
+import com.catchcatch.ticket.payment.repository.PaymentRepository;
 import com.catchcatch.ticket.user.dto.UserRequest;
 import com.catchcatch.ticket.user.enums.OAuthProvider;
 import com.catchcatch.ticket.user.enums.Role;

@@ -57,6 +57,12 @@
 
                 <section id="detail" class="cc-detail-content-body">
                     <div class="cc-detail-content__inner">
+                        {{#detailBannerUrl}}
+                            <div class="cc-detail-banner">
+                                <img src="{{detailBannerUrl}}" alt="{{title}} 상세 이미지" style="width:100%;display:block;">
+                            </div>
+                        {{/detailBannerUrl}}
+
                         {{#detailDescription1}}
                             <div class="cc-detail-auxiliary-desc side-box">
                                 <h4 class="desc-title" style="color: #cc0000;">상세페이지 내용</h4>
@@ -277,6 +283,15 @@
     const reviewContentCache = new Map();
     let reviewWriteEnabled = {{#concert.reviewEnabled}}true{{/concert.reviewEnabled}}{{^concert.reviewEnabled}}false{{/concert.reviewEnabled}};
     let concertVenueMapLoaded = false;
+
+    function showConcertMessage(message, type = 'warning') {
+        if (window.CcUI && typeof CcUI.alert === 'function') {
+            CcUI.alert(message, type);
+            return;
+        }
+
+        alert(message);
+    }
 
     document.addEventListener("DOMContentLoaded", function () {
         initTabsAndReviews();
@@ -514,16 +529,15 @@ function initAddressCopy() {
         const address = copyButton.dataset.copyAddress;
 
         if (!address) {
-            alert('복사할 주소가 없습니다.');
+            showConcertMessage('복사할 주소가 없습니다.', 'warning');
             return;
         }
 
         try {
             await navigator.clipboard.writeText(address);
-            alert('주소가 복사되었습니다.');
+            showConcertMessage('주소가 복사되었습니다.', 'success');
         } catch (error) {
-            console.error('주소 복사 실패:', error);
-            alert('주소 복사에 실패했습니다.');
+            showConcertMessage('주소 복사에 실패했습니다.', 'error');
         }
     });
 }
@@ -679,7 +693,6 @@ function initAddressCopy() {
                 throw new Error(getApiErrorMessage(data, '후기 응답 형식이 올바르지 않습니다.'));
             }
         } catch (error) {
-            console.error("리뷰 로드 실패:", error);
             const reviewContainer = document.getElementById('review-container');
             if (reviewContainer) reviewContainer.dataset.loaded = 'false';
             renderReviewError();
@@ -838,7 +851,6 @@ function initAddressCopy() {
                     CcUI.alert(getApiErrorMessage(data, '후기 처리에 실패했습니다.'), 'error');
                 }
             } catch (error) {
-                console.error('리뷰 처리 에러:', error);
                 CcUI.alert('후기 처리 중 오류가 발생했습니다.', 'error');
             }
         });
@@ -864,7 +876,6 @@ function initAddressCopy() {
                         CcUI.alert(getApiErrorMessage(data, '후기 삭제에 실패했습니다.'), 'error');
                     }
                 } catch (error) {
-                    console.error('리뷰 삭제 에러:', error);
                     CcUI.alert('후기 삭제 중 오류가 발생했습니다.', 'error');
                 }
             }
@@ -1063,15 +1074,13 @@ function initAddressCopy() {
 
                 if (!dateSelect || !dateSelect.value) {
                     event.preventDefault();
-                    if (window.CcUI) CcUI.alert('관람일을 선택해주세요.', 'error');
-                    else alert("관람일을 선택해주세요.");
+                    showConcertMessage('관람일을 선택해주세요.', 'error');
                     return;
                 }
 
                 if (!sessionSelect || !sessionSelect.value) {
                     event.preventDefault();
-                    if (window.CcUI) CcUI.alert('회차를 선택해주세요.', 'error');
-                    else alert("회차를 선택해주세요.");
+                    showConcertMessage('회차를 선택해주세요.', 'error');
                 }
             });
         });
@@ -1107,7 +1116,6 @@ function initAddressCopy() {
                     syncHeartButtons(concertId, isLiked);
                     CcUI.toast(isLiked ? '관심 공연으로 등록되었습니다.' : '관심 공연이 취소되었습니다.');
                 } catch (error) {
-                    console.error('관심등록 에러:', error);
                     CcUI.alert('관심 공연 처리 중 오류가 발생했습니다.', 'error');
                 } finally {
                     this.disabled = false;
@@ -1126,11 +1134,7 @@ function initAddressCopy() {
     }
 
     function showLoginRequiredMessage() {
-        if (window.CcUI) {
-            CcUI.alert('로그인 후 이용 가능합니다.', 'warning');
-        } else {
-            alert('로그인 후 이용 가능합니다.');
-        }
+        showConcertMessage('로그인 후 이용 가능합니다.', 'warning');
     }
 </script>
 

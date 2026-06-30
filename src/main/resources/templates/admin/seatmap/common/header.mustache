@@ -1,0 +1,30 @@
+<header class="seatmap-header-simple" data-step="{{seatmapStep}}" data-project-id="{{projectId}}">
+    <div class="seatmap-header-simple__brand">
+        <a class="seatmap-header-simple__home" href="/admin/seatmap/main" aria-label="좌석 도면 제작 시스템 홈">
+            <span class="seatmap-header-simple__logo">▦</span>
+            <strong class="seatmap-header-simple__name">SeatTrace</strong>
+            <span class="seatmap-header-simple__sub">좌석 도면 제작 시스템</span>
+        </a>
+    </div>
+
+    <div class="seatmap-header-simple__actions">
+        <div class="seatmap-header-simple__save-info"
+             id="seatmapSaveInfo"
+             data-save-title="{{seatmapSaveTitle}}"
+             data-save-path="{{seatmapSavePathText}}">
+            <strong id="seatmapSaveInfoTitle">{{seatmapSaveTitle}}</strong>
+            <span id="seatmapSavePathText">{{seatmapSavePathText}}</span>
+        </div>
+
+        <button type="button" class="seatmap-header-simple__save" id="seatmapHeaderSave">
+            저장하기
+        </button>
+
+        {{#prevUrl}}
+            <a class="seatmap-header-simple__button" href="{{prevUrl}}">이전</a>
+        {{/prevUrl}}
+    </div>
+</header>
+
+<link rel="stylesheet" href="/css/admin/seatmap-header.css">
+<script defer src="/js/admin/seatmap-header.js"></script>

@@ -23,13 +23,13 @@ INSERT INTO concert_tb
 VALUES
     ((SELECT id FROM venue_tb WHERE name = 'k6 부하테스트 전용 공연장 A'),
      'k6 부하테스트 콘서트 A', 'k6', 'k6 부하 테스트 전용 콘서트 데이터 A.', '/images/sample/poster-music.svg', 'OPEN',
-     'concert', '2026-12-31', '2026-12-31', '2026-01-01 00:00:00', '전체 관람가', '120분', 'k6', '000-0000-0000',
+     'CONCERT', '2026-12-31', '2026-12-31', '2026-01-01 00:00:00', '전체 관람가', '120분', 'k6', '000-0000-0000',
      '/images/sample/detail-banner.svg', 'k6 부하테스트 A', 'k6 부하 테스트 전용', 'k6 부하 테스트 전용',
      100000, 80000, 60000, 40000, NOW(), false),
 
     ((SELECT id FROM venue_tb WHERE name = 'k6 부하테스트 전용 공연장 B'),
      'k6 부하테스트 콘서트 B', 'k6', 'k6 부하 테스트 전용 콘서트 데이터 B.', '/images/sample/poster-music.svg', 'OPEN',
-     'concert', '2026-12-31', '2026-12-31', '2026-01-01 00:00:00', '전체 관람가', '120분', 'k6', '000-0000-0000',
+     'CONCERT', '2026-12-31', '2026-12-31', '2026-01-01 00:00:00', '전체 관람가', '120분', 'k6', '000-0000-0000',
      '/images/sample/detail-banner.svg', 'k6 부하테스트 B', 'k6 부하 테스트 전용', 'k6 부하 테스트 전용',
      100000, 80000, 60000, 40000, NOW(), false);
 
@@ -51,25 +51,23 @@ VALUES
 --  500석보다 많은 1000석을 생성한다. 등급은 모두 A로 단순화.
 -- ================
 INSERT INTO seat_tb
-(session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, x_label, y_label, seat_size, seat_angle, updated_at)
+(session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
 SELECT
     (SELECT cs.id FROM concert_session_tb cs
         JOIN concert_tb c ON c.id = cs.concert_id
         WHERE c.title = 'k6 부하테스트 콘서트 A'),
     1, 'A', 'A', x,
     'A구역 A열 ' || x || '번',
-    'A', 40000, 'AVAILABLE',
-    CAST(x AS DOUBLE), 100, 20, 0, NOW()
+    'A', 40000, 'AVAILABLE', NOW()
 FROM SYSTEM_RANGE(1, 1000) AS t(x);
 
 INSERT INTO seat_tb
-(session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, x_label, y_label, seat_size, seat_angle, updated_at)
+(session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
 SELECT
     (SELECT cs.id FROM concert_session_tb cs
         JOIN concert_tb c ON c.id = cs.concert_id
         WHERE c.title = 'k6 부하테스트 콘서트 B'),
     1, 'A', 'A', x,
     'A구역 A열 ' || x || '번',
-    'A', 40000, 'AVAILABLE',
-    CAST(x AS DOUBLE), 100, 20, 0, NOW()
+    'A', 40000, 'AVAILABLE', NOW()
 FROM SYSTEM_RANGE(1, 1000) AS t(x);

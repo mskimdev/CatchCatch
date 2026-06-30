@@ -1,3 +1,12 @@
+function showConcertAlert(message, type = 'warning') {
+  if (window.CcUI && typeof CcUI.alert === 'function') {
+    CcUI.alert(message, type);
+    return;
+  }
+
+  alert(message);
+}
+
 function initGenreFilter() {
   const currentGenre = (window.OPEN_SOON_DATA && window.OPEN_SOON_DATA.currentGenre) || 'all';
   document.querySelectorAll('#genre-filter button').forEach(function (button) {
@@ -57,7 +66,7 @@ function initHeartToggle() {
 
     if (res && res.status === 401) {
       const err = await res.json().catch(() => null);
-      alert(err?.message || '로그인 먼저 해주세요');
+      showConcertAlert(err?.message || '로그인 먼저 해주세요');
       location.href = '/login';
       return;
     }

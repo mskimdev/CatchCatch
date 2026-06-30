@@ -17,12 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (now < start || now > end) {
         btn.disabled = true;
         btn.innerText = "이벤트 종료 (기간 아님)";
-
-        btn.style.backgroundColor = "#cbd5e1";
-        btn.style.color = "#64748b";
-        btn.style.cursor = "not-allowed";
-        btn.style.borderColor = "#cbd5e1";
-
+        btn.classList.add('cc-btn--disabled');
         btn.removeAttribute('onclick');
     }
 });

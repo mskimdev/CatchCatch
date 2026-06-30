@@ -1,0 +1,72 @@
+<main class="seatmap-main stage4-main">
+    {{> admin/seatmap/canvas-control/workspace-control}}
+    <section class="stage4-result-page">
+
+        <div class="stage4-complete-card">
+            <strong>좌석 이미지 / JSON 생성 완료</strong>
+            <p id="summaryText">
+                Stage3 좌석 배치를 기준으로 최종 좌석 이미지, 배치용 JSON, 예매용 JSON을 새로 생성합니다.
+            </p>
+
+            <div class="stats stage4-stats">
+                <div class="stat"><b id="sumFloors">0</b><span>층</span></div>
+                <div class="stat"><b id="sumSections">0</b><span>구역</span></div>
+                <div class="stat"><b id="sumSeats">0</b><span>좌석</span></div>
+                <div class="stat"><b id="sumObstructed">0</b><span>장애석</span></div>
+            </div>
+
+            <div class="stage4-main-actions">
+                <button type="button" class="btn btn--green" id="saveAllJsonMain">
+                    배치용 + 예매용 JSON 저장
+                </button>
+                <button type="button" class="btn" id="copyLayoutJsonMain">
+                    배치용 JSON 복사
+                </button>
+                <button type="button" class="btn" id="copyBookingJsonMain">
+                    예매용 JSON 복사
+                </button>
+            </div>
+
+            <p class="help-text" id="saveResultText">아직 서버 저장 전입니다.</p>
+        </div>
+
+        <div class="stage4-file-grid">
+            <article class="stage4-file-card">
+                <h3>최종 좌석 이미지</h3>
+                <p>원본을 지우지 않고 Stage3 좌석 데이터로 새로 그린 이미지입니다.</p>
+                <div class="stage4-preview-box">
+                    <img id="generatedOverviewPreview" alt="최종 좌석 이미지 미리보기">
+                </div>
+            </article>
+
+            <article class="stage4-file-card">
+                <h3>등급 요약</h3>
+                <p>REMOVED 좌석은 제외하고 집계합니다.</p>
+                <div id="gradeSummaryList"></div>
+            </article>
+        </div>
+
+        <details class="stage4-json-debug" id="rawJsonDetails" open>
+            <summary>JSON 원문 확인하기</summary>
+
+            <div class="stage4-debug-grid">
+                <div class="stage4-card">
+                    <div class="stage4-card__header">
+                        <strong>배치용 JSON</strong>
+                        <span>좌석 위치 / 크기 / 각도 / 이미지 포함</span>
+                    </div>
+                    <textarea id="layoutJsonPreview" readonly></textarea>
+                </div>
+
+                <div class="stage4-card">
+                    <div class="stage4-card__header">
+                        <strong>예매용 JSON</strong>
+                        <span>REMOVED 제외 / AVAILABLE, OBSTRUCTED 저장</span>
+                    </div>
+                    <textarea id="bookingJsonPreview" readonly></textarea>
+                </div>
+            </div>
+        </details>
+
+    </section>
+</main>

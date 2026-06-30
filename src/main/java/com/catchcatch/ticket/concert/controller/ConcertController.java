@@ -1,7 +1,8 @@
 package com.catchcatch.ticket.concert.controller;
 
 import com.catchcatch.ticket.concert.banner.BannerResponse;
-import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.concert.enums.ConcertGenre;
+import com.catchcatch.ticket.concert.dto.ConcertRequest;
 import com.catchcatch.ticket.concert.dto.ConcertResponse;
 import com.catchcatch.ticket.concert.service.ConcertService;
 import com.catchcatch.ticket.core.util.Define;
@@ -32,7 +33,7 @@ public class ConcertController {
     @GetMapping("/")
     public String homePage(Model model) {
         List<BannerResponse.HomeBannerDTO> heroBanners = concertService.getHeroBanners();
-        List<ConcertResponse.ListDTO> recommendConcerts = concertService.getHomepageConcerts();
+        List<ConcertResponse.ListDTO> recommendConcerts = concertService.getHomeList();
         List<ConcertResponse.ListDTO> popularConcerts = concertService.getPopularConcerts();
         List<ConcertResponse.HomeOpenScheduleDTO> openSchedules = concertService.getHomeOpenSchedules();
 
@@ -46,23 +47,17 @@ public class ConcertController {
     }
 
     @GetMapping({"/concerts", "/concert/list"})
-    public String list(Concert.ConcertSearchCondition condition, Model model) {
+    public String list(ConcertRequest.SearchConditionDTO condition, Model model) {
 
-        ConcertResponse.ConcertListResponseDTO responseData = concertService.searchConcertList(condition);
+        ConcertResponse.ConcertListResponseDTO responseData = concertService.getList(condition);
 
         // [추가] 동적 검색 타이틀 생성 로직
         String searchTitle = "전체 공연"; // 기본값
         if (StringUtils.hasText(condition.getKeyword())) {
             searchTitle = "'" + condition.getKeyword() + "'";
         } else if (StringUtils.hasText(condition.getGenre()) && !"all".equals(condition.getGenre())) {
-            searchTitle = switch (condition.getGenre()) {
-                case "concert" -> "콘서트";
-                case "festival" -> "페스티벌";
-                case "musical" -> "뮤지컬";
-                case "classic" -> "클래식";
-                case "fanmeeting" -> "팬미팅";
-                default -> "기타";
-            };
+            ConcertGenre genre = ConcertGenre.fromCodeOrNull(condition.getGenre());
+            searchTitle = genre != null ? genre.getLabel() : "기타";
         } else if (StringUtils.hasText(condition.getRegion()) && !"all".equals(condition.getRegion())) {
             searchTitle = switch (condition.getRegion()) {
                 case "seoul" -> "서울";
@@ -85,6 +80,7 @@ public class ConcertController {
 
         model.addAttribute("pageTitle", "콘서트 일정");
         model.addAttribute("loginHeader", true);
+        model.addAttribute("activeSchedule", true);
 
         return "concert/list";
     }
@@ -94,7 +90,7 @@ public class ConcertController {
                          @SessionAttribute(name = Define.SESSION_USER,required = false) SessionUser sessionUser,
                          Model model) {
         Integer userId = (sessionUser != null) ? sessionUser.getId() : null;
-        ConcertResponse.DetailDTO responseDTO = concertService.getConcertDetail(id,userId);
+        ConcertResponse.DetailDTO responseDTO = concertService.getDetail(id, userId);
 
         model.addAttribute("concert", responseDTO);
         model.addAttribute("kakaoMapJsKey", kakaoMapJsKey);
@@ -104,17 +100,14 @@ public class ConcertController {
 
     // 오픈 예정 콘서트 목록 조회 API
     @GetMapping("/concerts/open-soon")
-    public String getOpenSoonPage(@RequestParam(required = false) String genre, Model model) {
-        // 서비스에서 최종 조립된 래퍼 DTO 하나만 딱 받아옵니다.
-        ConcertResponse.OpenSoonPageResponse pageData = concertService.getOpenSoonPageData(genre);
-
-        // 💡 이 코드가 콘솔 창에 출력되는지 반드시 확인하세요!
-        System.out.println(" 컨트롤러 실행됨! 현재 장르: " + pageData.currentGenre());
+    public String openSoon(@RequestParam(required = false) String genre, Model model) {
+        ConcertResponse.OpenSoonPageResponse pageData = concertService.getOpenSoonPage(genre);
 
         model.addAttribute("currentGenre", pageData.currentGenre());
         model.addAttribute("openSoonList", pageData.openSoonList());
 
         model.addAttribute("pageTitle", "오픈 예정");
+        model.addAttribute("activeOpen", true);
 
         return "concert/open-soon";
     }

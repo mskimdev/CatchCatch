@@ -1,177 +1,88 @@
 {{> layout/header-booking}}
 
-<main class="cc-main">
-    <div class="cc-container cc-seat-container">
+<main class="cc-booking-seat-main">
+    <div class="cc-seat-popup" id="bookingSeatApp" data-max-select="4" data-concert-id="{{concertId}}" data-session-id="{{sessionId}}">
+        <header class="cc-seat-topbar">
+            <div class="cc-seat-topbar__title">좌석 선택</div>
+            <div class="cc-seat-topbar__concert">{{#bookingTitle}}{{bookingTitle}}{{/bookingTitle}}{{^bookingTitle}}CatchCatch Concert{{/bookingTitle}}</div>
+            <select class="cc-seat-topbar__session" aria-label="공연 회차">
+                <option>2027.01.09 (토) 18:00</option>
+            </select>
+        </header>
 
-        <section class="cc-seat-layout cc-seat-layout--wide">
+        <section class="cc-seat-body">
+            <section class="cc-seat-map-panel">
+                <p class="cc-seat-notice">무대는 예매 편의를 위해 표기된 것으로 실제 무대와 다를 수 있습니다.</p>
 
-            <section class="cc-card cc-seat-map-card">
-                <div class="cc-seat-redesign cc-seat-redesign--wide"
-                     id="bookingSeatApp"
-                     data-max-select="4"
-                     data-concert-id="{{concertId}}"
-                     data-session-id="{{sessionId}}">
+                <div class="cc-map-stage" id="overviewStage">
+                    <div class="cc-map-image-wrap" id="mapImageWrap">
+                        <img id="seatmapImage"
+                             class="cc-map-image"
+                             src="/temp/seatmap/seat/seatmap-image.png"
+                             alt="좌석도">
+                        <svg id="zoneOverlay"
+                             class="cc-zone-overlay"
+                             aria-label="구역 선택"></svg>
+                    </div>
 
-                    <section class="cc-zone-overview cc-zone-overview--large">
-                        <div class="cc-zone-overview__head">
-                            <strong>전체 좌석도</strong>
-                            <span>등급 또는 구역을 선택하면 좌석이 표시됩니다.</span>
-                        </div>
-
-                        <div class="cc-zone-overview__image-box cc-zone-overview__image-box--large">
-                            {{#seat.overviewImageUrl}}
-                                <img src="{{seat.overviewImageUrl}}"
-                                     alt="전체 좌석도"
-                                     class="cc-zone-overview__image">
-                            {{/seat.overviewImageUrl}}
-
-                            {{^seat.overviewImageUrl}}
-                                <img src="/images/sample/seat.jpg"
-                                     alt="전체 좌석도"
-                                     class="cc-zone-overview__image">
-                            {{/seat.overviewImageUrl}}
-
-                            <div id="seatImageHoverLayer"
-                                 class="cc-seat-image-hover-layer"
-                                 aria-hidden="true"></div>
-                        </div>
-
-                        <div class="cc-zone-tabs" aria-label="좌석 등급 선택">
-                            {{#seat.gradeTabs}}
-                                <button type="button"
-                                        class="cc-zone-tab {{#active}}is-active{{/active}}"
-                                        data-grade="{{grade}}">
-                                    {{gradeName}}
-                                </button>
-                            {{/seat.gradeTabs}}
-
-                            {{^seat.gradeTabs}}
-                                <button type="button"
-                                        class="cc-zone-tab is-active"
-                                        data-grade="">
-                                    좌석 없음
-                                </button>
-                            {{/seat.gradeTabs}}
-                        </div>
-
-                        <div class="cc-zone-legend cc-zone-legend--row">
+                    <div class="cc-seat-grid-view" id="seatGridView" hidden>
+                        <div class="cc-seat-grid-head">
+                            <button type="button" class="cc-seat-grid-back" id="backToMapBtn">좌석도 보기</button>
                             <div>
-                                <i class="cc-seat-sample cc-seat-sample--available"></i>
-                                예매 가능
-                            </div>
-                            <div>
-                                <i class="cc-seat-sample cc-seat-sample--selected"></i>
-                                선택 좌석
-                            </div>
-                            <div>
-                                <i class="cc-seat-sample cc-seat-sample--sold"></i>
-                                예매 불가
+                                <strong id="seatGridTitle">구역 좌석</strong>
+                                <span id="seatGridSub">좌석을 선택해주세요.</span>
                             </div>
                         </div>
-                    </section>
+                        <div id="realSeatGrid" class="cc-real-seat-grid" aria-label="좌석 행열"></div>
+                    </div>
 
-                    <section class="cc-zone-detail">
-                        <div class="cc-zone-detail__top">
-                            <div>
-                                <h3 id="zoneTitle">좌석 등급</h3>
-                                <p id="zoneSubText">좌석을 선택해주세요.</p>
-                            </div>
-
-                            <div class="cc-zone-stage">STAGE</div>
-                        </div>
-
-                        <div id="zoneSeatGrid"
-                             class="cc-zone-seat-grid"
-                             aria-label="좌석 선택">
-                        </div>
-
-                        <div class="cc-zone-bottom">
-                            <button type="button"
-                                    class="cc-small-btn"
-                                    id="resetZoneBtn">
-                                좌석 다시 선택
-                            </button>
-
-                            <span id="seatHoverInfo">
-                                최대 4석까지 선택할 수 있습니다.
-                            </span>
-                        </div>
-                    </section>
-
+                    <div class="cc-bottom-guide" id="bottomGuide">
+                        <span id="bottomGuideText">구역을 먼저 선택해주세요 <small>(화면을 직접 선택하거나 우측 좌석등급을 선택해주세요)</small></span>
+                        <button type="button" class="cc-guide-reset-btn" id="resetSelectionBtn">초기화</button>
+                    </div>
                 </div>
             </section>
 
-            <aside class="cc-seat-side">
+            <aside class="cc-seat-side-panel">
+                <h1 class="cc-seat-brand">CatchCatch</h1>
 
-                <div class="cc-card cc-selected-card">
+                <div class="cc-mini-map-box">
+                    <div class="cc-mini-map" id="miniMapWrap">
+                        <img id="miniSeatmapImage" src="/temp/seatmap/seat/seatmap-image.png" alt="미니 좌석도">
+                        <svg id="miniZoneOverlay" class="cc-mini-zone-overlay" aria-hidden="true"></svg>
+                    </div>
+                    <button type="button" class="cc-full-map-btn" id="showFullMapBtn">좌석도 전체보기 〉</button>
+                </div>
+
+                <section class="cc-grade-panel">
+                    <div class="cc-grade-panel__head">
+                        <h2>좌석등급/잔여석 <span>ⓘ</span></h2>
+                        <button type="button" id="refreshZoneBtn">새로고침</button>
+                    </div>
+                    <div class="cc-grade-list" id="gradeList"></div>
+                </section>
+
+                <section class="cc-selected-panel">
                     <h3>선택 좌석</h3>
+                    <div id="selectedSeatList" class="cc-selected-seat-list">선택된 좌석이 없습니다.</div>
+                </section>
 
-                    <div class="cc-selected-list">
-                        <div class="cc-selected-seat">
-                            <div>
-                                <div class="cc-selected-seat__name">
-                                    선택된 좌석이 없습니다.
-                                </div>
-                                <div class="cc-selected-seat__price">
-                                    좌석을 선택하면 표시됩니다.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="cc-total">
-                        <span>총 0석</span>
-                        <strong class="cc-total__price">0원</strong>
-                    </div>
-
-                    <div class="cc-seat-actions">
-                        <a class="cc-seat-prev"
-                           href="/booking/info">
-                            이전
-                        </a>
-
-                        <form action="/booking/complete"
-                              method="post"
-                              class="cc-complete-form cc-payment-form">
-
-                            <input type="hidden"
-                                   name="seatIds"
-                                   id="selectedSeatIds">
-
-                            <div id="selectedSeatInputs"></div>
-
-                            <input type="hidden"
-                                   name="sessionId"
-                                   value="{{sessionId}}">
-
-                            <input type="hidden"
-                                   name="concertId"
-                                   value="{{concertId}}">
-
-                            <button type="submit"
-                                    class="cc-seat-complete-btn">
-                                결제하기
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="cc-card cc-notice-card">
-                    <h3>유의사항</h3>
-                    <ul>
-                        <li>보관 시간이 초과되면 선택 좌석이 해제됩니다.</li>
-                        <li>좌석은 최대 4석까지 선택할 수 있습니다.</li>
-                        <li>이미 예매된 좌석은 선택할 수 없습니다.</li>
-                    </ul>
-                </div>
-
+                <form action="/booking/complete" method="post" id="seatCompleteForm" class="cc-seat-submit-form">
+                    <input type="hidden" name="seatIds" id="selectedSeatIds">
+                    <div id="selectedSeatInputs"></div>
+                    <input type="hidden" name="sessionId" value="{{sessionId}}">
+                    <input type="hidden" name="concertId" value="{{concertId}}">
+                    <button type="submit" class="cc-seat-complete-btn" id="seatCompleteBtn" disabled>
+                        좌석 선택 완료 <span>〉</span>
+                    </button>
+                </form>
             </aside>
-
         </section>
+    </div>
 
-        <script>
-            (() => {
-                const rawSeats =
+    <script>
+        (() => {
+            const rawSeats =
             {{#seat.seatsJson}}
                 {{{seat.seatsJson}}}
             {{/seat.seatsJson}}
@@ -179,109 +90,19 @@
                 []
             {{/seat.seatsJson}};
 
-                function normalizeGrade(value) {
-                    const raw = String(value || "").trim().toUpperCase();
+            window.CATCHCATCH_SEATS = Array.isArray(rawSeats) ? rawSeats : [];
+            window.CATCHCATCH_SEAT_META = {
+                concertId: "{{concertId}}",
+                sessionId: "{{sessionId}}",
+                maxSelectCount: 4,
+                projectId: "seat",
+                seatmapImageUrl: "/temp/seatmap/seat/seatmap-image.png",
+                bookingButtonsUrl: "/temp/seatmap/seat/booking-buttons.json"
+            };
+        })();
+    </script>
 
-                    if (raw === "VIP") return "VIP";
-                    if (raw === "R" || raw === "R석") return "R";
-                    if (raw === "S" || raw === "S석") return "S";
-                    if (raw === "A" || raw === "A석") return "A";
-                    if (raw === "B" || raw === "B석") return "B";
-
-                    return raw || "A";
-                }
-
-                function gradeName(grade) {
-                    if (!grade) return "좌석";
-                    if (grade === "VIP") return "VIP석";
-                    return `${grade}석`;
-                }
-
-                function normalizeStatus(value) {
-                    const raw = String(value || "AVAILABLE").trim().toUpperCase();
-
-                    if (raw === "AVAILABLE") return "AVAILABLE";
-                    if (raw === "OBSTRUCTED") return "UNAVAILABLE";
-                    if (raw === "REMOVED") return "UNAVAILABLE";
-                    if (raw === "SOLD") return "SOLD";
-                    if (raw === "RESERVED") return "RESERVED";
-                    if (raw === "BOOKED") return "BOOKED";
-                    if (raw === "PENDING") return "PENDING";
-                    if (raw === "CONFIRMED") return "CONFIRMED";
-
-                    return raw;
-                }
-
-                function toNumber(value, fallback) {
-                    const number = Number(value);
-                    return Number.isFinite(number) ? number : fallback;
-                }
-
-                function makeSeatNumber(seat, rowName, seatNo) {
-                    return seat.seatNumber
-                        || seat.name
-                        || `${seat.floor || 1}층 ${seat.sectionName || seat.section || "A"}구역 ${rowName}열 ${seatNo}번`;
-                }
-
-                window.CATCHCATCH_SEATS = Array.isArray(rawSeats)
-                    ? rawSeats.map((seat) => {
-                        const grade = normalizeGrade(seat.grade || seat.gradeCode || seat.seatGrade);
-                        const rowName = seat.rowName || seat.row || seat.seatRow || "A";
-                        const seatNo = seat.seatNo || seat.seatNumberOnly || seat.no || seat.number || seat.seatCol || seat.col || 1;
-                        const status = normalizeStatus(seat.status || seat.seatStatus);
-
-                        return {
-                            ...seat,
-
-                            id: seat.id || seat.seatId || `${seat.floor || 1}-${seat.sectionName || seat.section || "A"}-${rowName}-${seatNo}`,
-
-                            floor: toNumber(seat.floor, 1),
-                            sectionName: seat.sectionName || seat.section || "A",
-
-                            rowName,
-                            row: rowName,
-                            seatRow: rowName,
-
-                            seatNo,
-                            number: seatNo,
-                            no: seatNo,
-                            seatCol: toNumber(seat.seatCol || seat.col || seatNo, 1),
-
-                            seatNumber: makeSeatNumber(seat, rowName, seatNo),
-
-                            grade,
-                            gradeCode: grade,
-                            gradeName: seat.gradeName || gradeName(grade),
-
-                            price: toNumber(seat.price || seat.seatPrice, 0),
-
-                            status,
-                            bookingStatus: seat.bookingStatus || seat.booking_status || "",
-
-                            x: toNumber(seat.x || seat.xLabel, 0),
-                            y: toNumber(seat.y || seat.yLabel, 0),
-                            xLabel: toNumber(seat.xLabel || seat.x, 0),
-                            yLabel: toNumber(seat.yLabel || seat.y, 0),
-
-                            size: toNumber(seat.size, 16),
-                            angle: toNumber(seat.angle, 0)
-                        };
-                    })
-                    : [];
-
-                window.CATCHCATCH_SEAT_META = {
-                    concertId: "{{concertId}}",
-                    sessionId: "{{sessionId}}",
-                    maxSelectCount: 4,
-                    defaultSeatSize: 16,
-                    defaultSeatAngle: 0
-                };
-            })();
-        </script>
-
-        <script src="/js/booking/seat.js?v=20260623"></script>
-
-    </div>
+    <script src="/js/booking/seat.js?v=2026063002"></script>
 </main>
 
 {{> layout/footer}}

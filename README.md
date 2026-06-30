@@ -136,7 +136,6 @@ cp .env.example .env
 | `SOL_API_KEY` / `SOL_API_SECRET` / `SOL_SENDER` | SMS 발송(CoolSMS) |
 | `EMAIL_SENDER` / `GOOGLE_APP_KEY` | 이메일 발송 |
 | `CATCHCATCH_KEY` | 소셜 가입자 비밀번호 암호화 키 |
-| `LOADTEST_API_KEY` | k6 부하 테스트 결제 우회 API 키 |
 
 ### 2. 애플리케이션 실행
 
@@ -176,7 +175,7 @@ k6 run loadtest/queue-test.js
 
 2000명의 가상 사용자가 두 개의 콘서트(각 1000명)에 동시에 진입하여 대기열 → 좌석 선택 → 결제 완료까지 전체 예매 플로우를 검증합니다.
 
-포트원 없이 결제를 완료하기 위해 `X-Loadtest-Key` 헤더 + 일반 유저 세션으로 인증하는 결제 우회 엔드포인트(`POST /api/queue/admin/payment/bypass`)를 사용합니다. 해당 엔드포인트는 부하 테스트 전용이며 실제 배포 시 제거 예정입니다.
+포트원 없이 결제를 완료하는 우회 엔드포인트(`POST /api/queue/admin/payment/bypass`)는 관리자 보호 경로입니다. 운영 배포 전에는 테스트 전용 우회 엔드포인트를 제거하거나 테스트 프로필에서만 노출되도록 제한해야 합니다.
 
 ### 4. 알림 발송 부하 테스트
 

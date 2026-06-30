@@ -180,6 +180,23 @@
                                 <small class="text-muted mt-2 d-block">가로 400px, 세로 600px 비율의 이미지를 권장합니다.</small>
                             </div>
 
+                            <div class="form-group mt-4">
+                                <label class="font-weight-bold text-dark">상세 배너 이미지 (긴 세로 상세 이미지)</label>
+                                {{#_csrf}}<span id="uploadCsrfMeta" data-param="{{parameterName}}" data-token="{{token}}" hidden></span>{{/_csrf}}
+                                <div class="d-flex align-items-center" style="gap:8px;">
+                                    <input type="text" id="detailBannerUrlInput" name="detailBannerUrl"
+                                           class="form-control" placeholder="이미지를 업로드하면 URL이 자동으로 채워집니다." readonly>
+                                    <label for="detailBannerFileInput" class="btn btn-outline-secondary mb-0 text-nowrap" style="cursor:pointer;">파일 선택</label>
+                                    <input type="file" id="detailBannerFileInput" accept="image/*" class="d-none">
+                                </div>
+                                <div id="detailBannerUploadStatus" class="small mt-1"></div>
+                                <div id="detailBannerPreviewWrap" class="mt-2 d-none">
+                                    <img id="detailBannerPreview" src="" alt="상세 이미지 미리보기"
+                                         style="max-width:200px; border:1px solid #dee2e6; border-radius:4px;">
+                                </div>
+                                <small class="text-muted d-block mt-1">700px 폭의 긴 세로 이미지를 권장합니다. (최대 50MB)</small>
+                            </div>
+
                             <div class="row">
                                 <div class="col-md-6 form-group">
                                     <label class="font-weight-bold text-dark">상세페이지 내용</label>
@@ -267,7 +284,6 @@
                         });
                     }
 
-                    // 커스텀 파일 레이블 네임 스위칭
                     document.getElementById('customFile').addEventListener('change', function (e) {
                         var fileName = document.getElementById("customFile").files[0].name;
                         var nextSibling = e.target.nextElementSibling;
@@ -276,7 +292,6 @@
                         }
                     });
 
-                    // 클라이언트단 동적 회차 리스트 핸들링 로직
                     let sessionIndex = 0;
 
                     function addSessionRow() {
@@ -284,11 +299,10 @@
                         const sessionDate = document.getElementById('modalSessionDate').value;
 
                         if (!round || !sessionDate) {
-                            alert('회차 번호와 공연 일시를 모두 입력해 주세요.');
+                            CcUI.alert('회차 번호와 공연 일시를 모두 입력해 주세요.', 'warning');
                             return;
                         }
 
-                        // 빈줄 숨기기
                         const emptyRow = document.getElementById('emptyRow');
                         if (emptyRow) emptyRow.style.display = 'none';
 
@@ -296,7 +310,6 @@
                         const tr = document.createElement('tr');
                         tr.className = 'text-center session-row';
 
-                        // Spring ModelAttribute List Binding 규격 적용 (sessions[index].field)
                         tr.innerHTML = `
                             <td class="align-middle">
                                 <strong>${round}회차</strong>
@@ -314,7 +327,6 @@
                         tbody.appendChild(tr);
                         sessionIndex++;
 
-                        // 모달 초기화 및 닫기
                         document.getElementById('modalRound').value = '';
                         document.getElementById('modalSessionDate').value = '';
                         $('#addSessionModal').modal('hide');
@@ -331,7 +343,6 @@
                         reindexSessions();
                     }
 
-                    // 삭제/추가 시 배열 인덱스 번호 순차 재설정 함수 (데이터 정합성 유지)
                     function reindexSessions() {
                         const rows = document.querySelectorAll('.session-row');
                         sessionIndex = 0;
@@ -344,21 +355,72 @@
                         });
                     }
 
-                    // 최종 폼 제출 트리거
+                    (function () {
+                        const fileInput = document.getElementById('detailBannerFileInput');
+                        const urlInput  = document.getElementById('detailBannerUrlInput');
+                        const status    = document.getElementById('detailBannerUploadStatus');
+                        const previewWrap = document.getElementById('detailBannerPreviewWrap');
+                        const preview   = document.getElementById('detailBannerPreview');
+                        if (!fileInput) return;
+
+                        fileInput.addEventListener('change', async function () {
+                            const file = this.files[0];
+                            if (!file) return;
+
+                            status.textContent = '업로드 중...';
+                            status.className = 'small mt-1 text-info';
+
+                            const csrfMeta = document.getElementById('uploadCsrfMeta');
+                            const headers  = {};
+                            if (csrfMeta) headers['X-CSRF-TOKEN'] = csrfMeta.dataset.token;
+
+                            const body = new FormData();
+                            body.append('file', file);
+
+                            try {
+                                const res  = await fetch('/admin/upload/image', { method: 'POST', headers, body });
+                                const data = await res.json();
+                                if (res.ok && data.status === 200) {
+                                    urlInput.value = data.body;
+                                    preview.src = data.body;
+                                    previewWrap.classList.remove('d-none');
+                                    status.textContent = '업로드 완료 ✓';
+                                    status.className = 'small mt-1 text-success';
+                                } else {
+                                    status.textContent = '업로드 실패: ' + (data.msg || '서버 오류');
+                                    status.className = 'small mt-1 text-danger';
+                                }
+                            } catch (e) {
+                                status.textContent = '업로드 중 오류가 발생했습니다.';
+                                status.className = 'small mt-1 text-danger';
+                            }
+                        });
+                    })();
+
                     const form = document.getElementById("concertForm");
                     if (form) {
                         form.addEventListener("submit", function(e) {
                             e.preventDefault();
-                            if (document.querySelectorAll('.session-row').length === 0) {
-                                if (!confirm('등록된 회차가 없습니다. 회차 없이 공연 정보만 먼저 생성하시겠습니까?')) {
-                                    return;
-                                }
-                            }
-
-                            if (confirm('입력하신 정보로 새 공연 및 회차를 등록하시겠습니까?')) {
+                            const submitForm = () => {
                                 syncSummernoteEditors();
                                 form.submit();
+                            };
+
+                            if (document.querySelectorAll('.session-row').length === 0) {
+                                CcUI.confirm({
+                                    text: '등록된 회차가 없습니다. 회차 없이 공연 정보만 먼저 생성하시겠습니까?',
+                                    onConfirm: () => CcUI.confirm({
+                                        text: '입력하신 정보로 새 공연 및 회차를 등록하시겠습니까?',
+                                        onConfirm: submitForm
+                                    })
+                                });
+                                return;
                             }
+
+                            CcUI.confirm({
+                                text: '입력하신 정보로 새 공연 및 회차를 등록하시겠습니까?',
+                                onConfirm: submitForm
+                            });
                         });
                     }
                 </script>

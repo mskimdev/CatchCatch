@@ -3,16 +3,16 @@ package com.catchcatch.ticket.booking.bookingSeat;
 import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.seat.Seat;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "booking_seat_tb")
 public class BookingSeat {
@@ -21,29 +21,50 @@ public class BookingSeat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // 어떤 예매에 포함된 좌석인지
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 
-    // 어떤 좌석인지
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seat_id", nullable = false)
     private Seat seat;
 
-    // 예매 당시 좌석 가격
     @Column(name = "price", nullable = false)
     private Integer price;
 
-    // 예매 당시 좌석 번호 스냅샷
     @Column(name = "seat_number_snapshot", nullable = false, length = 20)
     private String seatNumberSnapshot;
 
-    // 예매 당시 좌석 등급 스냅샷
     @Column(name = "seat_grade_snapshot", nullable = false, length = 20)
     private String seatGradeSnapshot;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
+
+    @Builder(access = AccessLevel.PRIVATE)
+    private BookingSeat(
+            Seat seat,
+            Integer price,
+            String seatNumberSnapshot,
+            String seatGradeSnapshot
+    ) {
+        this.seat = seat;
+        this.price = price;
+        this.seatNumberSnapshot = seatNumberSnapshot;
+        this.seatGradeSnapshot = seatGradeSnapshot;
+    }
+
+    public static BookingSeat create(Seat seat) {
+        return BookingSeat.builder()
+                .seat(seat)
+                .price(seat.getPrice())
+                .seatNumberSnapshot(seat.getSeatNumber())
+                .seatGradeSnapshot(seat.getGrade().name())
+                .build();
+    }
+
+    public void assignBooking(Booking booking) {
+        this.booking = booking;
+    }
 }

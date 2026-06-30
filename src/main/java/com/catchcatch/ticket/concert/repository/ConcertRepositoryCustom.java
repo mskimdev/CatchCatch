@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.concert.repository;
 
 import com.catchcatch.ticket.concert.core.Concert;
+import com.catchcatch.ticket.concert.dto.ConcertRequest;
 import com.catchcatch.ticket.concert.dto.ConcertResponse;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public interface ConcertRepositoryCustom {
         @param condition 화면에 넘어온 검색/필터 조건
         @return 화면 렌더링에 필요한 통합 DTO
      */
-    ConcertResponse.ConcertListResponseDTO findConcertsByFilters(Concert.ConcertSearchCondition condition);
+    ConcertResponse.ConcertListResponseDTO findConcertsByFilters(ConcertRequest.SearchConditionDTO condition);
 
     // 오픈 예정 콘서트 목록 조회 메서드 추가
     List<Concert> findOpenSoonConcerts(String genre);

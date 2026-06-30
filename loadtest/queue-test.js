@@ -2,7 +2,6 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 
 const BASE_URL = 'http://localhost:8080';
-const LOADTEST_API_KEY = '6d636376d7ef1fb6392a714f533e986103f0f19ba53c91d5';
 
 // test_mskim.sql 기준:
 //   콘서트A 회차 sessionId=10 (VU 1~1000)
@@ -48,7 +47,10 @@ function pickSeatId(jar, sessionId, vuSlot) {
         { jar, redirects: 0, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
     );
 
-    const seatRes = http.get(`${BASE_URL}/api/queue/admin/seats?sessionId=${sessionId}`, { jar });
+    const seatRes = http.get(
+        `${BASE_URL}/api/queue/admin/seats?sessionId=${sessionId}`,
+        { jar }
+    );
     if (seatRes.status !== 200) return null;
 
     // 응답 구조: { status, msg, body: [seatId, ...] }
@@ -94,7 +96,7 @@ function bypassPayment(jar, paymentId) {
     const res = http.post(
         `${BASE_URL}/api/queue/admin/payment/bypass?paymentId=${paymentId}`,
         null,
-        { jar, headers: { 'X-Loadtest-Key': LOADTEST_API_KEY } }
+        { jar }
     );
     check(res, { '결제 우회 완료(200)': (r) => r.status === 200 });
     return res.status === 200;

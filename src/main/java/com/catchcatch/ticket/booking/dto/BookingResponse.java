@@ -1,10 +1,9 @@
 package com.catchcatch.ticket.booking.dto;
 
 import com.catchcatch.ticket.booking.Booking;
-import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.booking.bookingSeat.BookingSeat;
+import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.concert.core.Concert;
-import com.catchcatch.ticket.concert.core.ConcertGenreLabel;
 import com.catchcatch.ticket.payment.Payment;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.session.ConcertSession;
@@ -60,8 +59,8 @@ public class BookingResponse {
                     .id(concert.getId())
                     .title(concert.getTitle())
                     .posterUrl(concert.getPosterUrl())
-                    .genreLabel(ConcertGenreLabel.of(concert.getGenre()))
-                    .genre(concert.getGenre())
+                    .genreLabel(concert.getGenreLabel())
+                    .genre(concert.getGenreCode())
                     .sessionId(concertSession.getId())
                     .sessionText(concertSession.getSessionDate() + " " + concertSession.getSessionTime())
                     .venueName(concert.getVenue().getName())
@@ -469,9 +468,12 @@ public class BookingResponse {
 
     @Getter
     public static class SeatFormDTO {
+        private static final String DEFAULT_SEATMAP_IMAGE_URL = "/temp/seatmap/seat/seatmap-image.png";
+
         private List<SeatDTO> seats;
         private List<SeatGradeTabDTO> gradeTabs;
         private String seatsJson;
+        private String overviewImageUrl;
 
         public SeatFormDTO(List<Seat> seats) {
             this(seats, Set.of());
@@ -496,6 +498,7 @@ public class BookingResponse {
             activateFirstGradeTab();
 
             this.seatsJson = toJson(this.seats);
+            this.overviewImageUrl = DEFAULT_SEATMAP_IMAGE_URL;
         }
 
         private void activateFirstGradeTab() {

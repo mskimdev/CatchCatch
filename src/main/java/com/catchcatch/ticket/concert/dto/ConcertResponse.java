@@ -1,7 +1,6 @@
 package com.catchcatch.ticket.concert.dto;
 
 import com.catchcatch.ticket.concert.core.Concert;
-import com.catchcatch.ticket.concert.core.ConcertGenreLabel;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.seat.SeatGrade;
 import com.catchcatch.ticket.session.ConcertSession;
@@ -17,9 +16,6 @@ import java.util.stream.Collectors;
 
 public class ConcertResponse {
 
-    // ==========================================
-    // 1. 메인/목록 페이지용 DTO
-    // ==========================================
     public record ListDTO(
             Integer id,
             String posterUrl,
@@ -33,7 +29,7 @@ public class ConcertResponse {
             String badge
     ) {
         public static ListDTO from(Concert concert) {
-            String genreLabel = ConcertGenreLabel.of(concert.getGenre());
+            String genreLabel = concert.getGenreLabel();
             String region = "미상";
             if (concert.getVenue().getAddress() != null && concert.getVenue().getAddress().length() >= 2) {
                 region = concert.getVenue().getAddress().substring(0, 2);
@@ -60,12 +56,9 @@ public class ConcertResponse {
                     "예매가능"
             );
         }
-    } // end of ListDTO
+    }
 
 
-    // ==========================================
-    // 2. 상세 페이지(Detail)용 DTO
-    // ==========================================
     @Builder
     public record DetailDTO(
 
@@ -128,8 +121,8 @@ public class ConcertResponse {
                     .id(concert.getId())
                     .title(concert.getTitle())
                     .posterUrl(concert.getPosterUrl())
-                    .genreLabel(ConcertGenreLabel.of(concert.getGenre()))
-                    .genre(concert.getGenre())
+                    .genreLabel(concert.getGenreLabel())
+                    .genre(concert.getGenreCode())
                     .dateRange(safeDateRange)
                     .venueName(safeVenueName)
                     .venueAddress(safeVenueAddress)
@@ -157,7 +150,7 @@ public class ConcertResponse {
                     .isLiked(isLiked)
                     .build();
         }
-    } // end of DetailDTO
+    }
 
 
     @Builder
@@ -179,7 +172,7 @@ public class ConcertResponse {
                     .label(label)
                     .build();
         }
-    } // end of SessionDTO
+    }
 
     @Builder
     public record DateDTO(
@@ -193,7 +186,7 @@ public class ConcertResponse {
                     .label(date.format(formatter))
                     .build();
         }
-    } // end of DateDTO
+    }
 
 
     @Builder
@@ -209,7 +202,7 @@ public class ConcertResponse {
                     .priceText(String.format("%,d원", price))
                     .build();
         }
-    } // end of PriceDTO
+    }
 
 
     // ==========================================
@@ -295,7 +288,7 @@ public class ConcertResponse {
                     .ticketOpenDate(formattedDate)
                     .venueName(concert.getVenue().getName())
                     .address(concert.getVenue().getAddress())
-                    .genreLabel(ConcertGenreLabel.of(concert.getGenre()))
+                    .genreLabel(concert.getGenreLabel())
                     .build();
         }
     } // OpenSoonConcertResponse

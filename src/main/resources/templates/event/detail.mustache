@@ -64,6 +64,12 @@
                     <div class="cc-event-detail__actions">
                         <a class="cc-btn cc-btn--line" href="/events">목록으로</a>
 
+                        {{#event.alreadyJoined}}
+                        <button class="cc-btn cc-btn--primary cc-btn--disabled" type="button" disabled>
+                            이미 참여한 이벤트입니다
+                        </button>
+                        {{/event.alreadyJoined}}
+                        {{^event.alreadyJoined}}
                         <button class="cc-btn cc-btn--primary"
                                 id="btnJoinEvent"
                                 type="button"
@@ -72,6 +78,7 @@
                                 onclick="joinEvent({{event.id}})">
                             포인트 지급받기
                         </button>
+                        {{/event.alreadyJoined}}
                     </div>
                 </div>
             </div>

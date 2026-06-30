@@ -135,6 +135,14 @@
     background: #5b2ee8;
 }
 
+.cc-btn--disabled {
+    background: #ede9fb;
+    color: #b0a0e8;
+    box-shadow: none;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 /* 썸네일 이미지 */
 .cc-event-detail__thumb {
     border-radius: 28px;
