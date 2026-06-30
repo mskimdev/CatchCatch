@@ -3,13 +3,6 @@
 
     const SAVE_URL = "/admin/seatmap/temp-save";
 
-    const TEMP_PATHS = {
-        base: "/temp/seatmap/concert-session/",
-        seats: "/temp/seatmap/concert-session/seatmap-seats.json",
-        sections: "/temp/seatmap/concert-session/seatmap-sections.json",
-        image: "/temp/seatmap/concert-session/seatmap-image.png"
-    };
-
     const STORAGE_KEYS = {
         stage1Seats: "concert_stage1_seats",
         stage1Sections: "concert_stage1_sections",
@@ -48,23 +41,10 @@
             button.textContent = "저장 중...";
             updateSaveInfoSaving();
 
-            const payload = await buildTempSavePayload();
-
-            const response = await fetch(SAVE_URL, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                credentials: "same-origin",
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                const text = await response.text();
-                throw new Error(text || "저장 실패");
-            }
-
-            const result = await response.json();
+            const customSave = getCustomStageSave();
+            const result = customSave
+                ? await customSave({ source: "header" })
+                : await postDefaultTempSave(await buildTempSavePayload());
 
             console.log("[SeatTrace] temp save result", result);
 
@@ -86,6 +66,38 @@
                 button.disabled = false;
             }, 1200);
         }
+    }
+
+    function getCustomStageSave() {
+        const page = getPageName();
+
+        if (page === "stage4" && window.SeatMapStage4 && typeof window.SeatMapStage4.save === "function") {
+            return window.SeatMapStage4.save;
+        }
+
+        if (page === "stage5" && window.SeatMapStage5 && typeof window.SeatMapStage5.save === "function") {
+            return window.SeatMapStage5.save;
+        }
+
+        return null;
+    }
+
+    async function postDefaultTempSave(payload) {
+        const response = await fetch(SAVE_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "same-origin",
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || "저장 실패");
+        }
+
+        return await response.json();
     }
 
     async function buildTempSavePayload() {
@@ -236,6 +248,13 @@
     }
 
     async function getCurrentImageDataUrl() {
+        if (window.SeatmapStage6Decorate && typeof window.SeatmapStage6Decorate.exportImage === "function") {
+            const finalImage = window.SeatmapStage6Decorate.exportImage();
+            if (finalImage && finalImage.startsWith("data:image")) {
+                return finalImage;
+            }
+        }
+
         if (window.SeatMapCrop && typeof window.SeatMapCrop.exportSelectedImage === "function") {
             const cropped = window.SeatMapCrop.exportSelectedImage();
             if (cropped && cropped.startsWith("data:image")) {
@@ -418,8 +437,9 @@
         }
 
         box.classList.remove("is-saving", "is-saved", "is-error");
+        const tempPaths = getTempPaths();
         const defaultTitle = box.dataset.saveTitle || "저장 위치: 좌석 JSON · 구역 JSON · 도형 이미지";
-        const defaultPath = box.dataset.savePath || `${TEMP_PATHS.seats} · seatmap-sections.json · seatmap-image.png`;
+        const defaultPath = box.dataset.savePath || `${tempPaths.seats} · ${tempPaths.sections} · ${tempPaths.image}`;
 
         title.textContent = defaultTitle;
         pathText.textContent = defaultPath;
@@ -436,8 +456,9 @@
 
         box.classList.remove("is-saved", "is-error");
         box.classList.add("is-saving");
+        const tempPaths = getTempPaths();
         const defaultTitle = box.dataset.saveTitle || "저장 위치: 좌석 JSON · 구역 JSON · 도형 이미지";
-        const defaultPath = box.dataset.savePath || TEMP_PATHS.base;
+        const defaultPath = box.dataset.savePath || tempPaths.base;
 
         title.textContent = "저장 중: " + defaultTitle.replace(/^저장 위치:\s*/, "");
         pathText.textContent = defaultPath;
@@ -460,12 +481,21 @@
 
         box.classList.remove("is-saving", "is-error");
         box.classList.add("is-saved");
+        const tempPaths = getTempPaths();
         const defaultTitle = box.dataset.saveTitle || "저장 위치: 좌석 JSON · 구역 JSON · 도형 이미지";
         title.textContent = `최근 저장 완료: ${time} / ${defaultTitle.replace(/^저장 위치:\s*/, "")}`;
+        if (getPageName() === "stage5") {
+            pathText.textContent = [
+                result.bookingButtonsJsonUrl || `${tempPaths.base}booking-buttons.json`,
+                result.debugImageUrl || result.imageUrl || tempPaths.image
+            ].join(" · ");
+            return;
+        }
+
         pathText.textContent = [
-            result.seatJsonUrl || TEMP_PATHS.seats,
-            result.sectionJsonUrl || TEMP_PATHS.sections,
-            result.imageUrl || TEMP_PATHS.image
+            result.seatJsonUrl || tempPaths.seats,
+            result.sectionJsonUrl || tempPaths.sections,
+            result.buttonImageUrl || result.imageUrl || tempPaths.image
         ].join(" · ");
     }
 
@@ -482,6 +512,40 @@
         box.classList.add("is-error");
         title.textContent = "저장 실패";
         pathText.textContent = message || "서버 저장 요청을 확인하세요.";
+    }
+
+
+    function getTempPaths() {
+        const projectId = cleanProjectPathPart(getCurrentProjectId());
+        const base = `/temp/seatmap/${projectId}`;
+        const page = getPageName();
+        let imageFileName = "seatmap-image.png";
+
+        if (page === "stage1") {
+            imageFileName = "cropped-image.png";
+        } else if (page === "stage2" || page === "stage3" || page === "stage4") {
+            imageFileName = "button-image.png";
+        } else if (page === "stage5") {
+            imageFileName = "debug-polygons.png";
+        }
+
+        return {
+            base: `${base}/`,
+            seats: `/temp/seatmap/seats/${projectId}-seatmap-seats.json`,
+            sections: `${base}/seatmap-sections.json`,
+            image: `${base}/${imageFileName}`
+        };
+    }
+
+    function cleanProjectPathPart(value) {
+        const cleaned = String(value || "seat")
+            .trim()
+            .replace(/\s+/g, "_")
+            .replace(/[^a-zA-Z0-9가-힣._-]/g, "_")
+            .replace(/_+/g, "_")
+            .replace(/^_+|_+$/g, "");
+
+        return cleaned || "seat";
     }
 
     function getPageName() {
@@ -501,7 +565,7 @@
         const fromQuery = new URLSearchParams(location.search).get("projectId");
         const fromDataset = document.querySelector("[data-project-id]")?.dataset?.projectId;
         const fromStorage = localStorage.getItem("seatmap_current_folder_name") || localStorage.getItem("seatmap_current_project_id");
-        return fromQuery || fromDataset || fromStorage || "seat";
+        return cleanProjectPathPart(fromQuery || fromDataset || fromStorage || "seat");
     }
 
     function cleanIdPart(value) {

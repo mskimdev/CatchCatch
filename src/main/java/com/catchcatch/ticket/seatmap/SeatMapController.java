@@ -94,19 +94,19 @@ public class SeatMapController {
                 model,
                 projectId,
                 "좌석 배치",
-                "구역별 행과 렬을 입력하고 좌석 ID를 생성합니다.",
+                "Stage 3 구역 polygon을 기준으로 구역 안에 좌석만 배치합니다.",
                 "저장 위치: 좌석 JSON",
                 seatsPath(projectId),
                 stageUrl(3, projectId)
         );
         model.addAttribute("seatmapStep", "4");
         model.addAttribute("showTempSave", true);
-        model.addAttribute("tempSaveButtonId", "saveStage2Top");
+        model.addAttribute("tempSaveButtonId", "saveSeatsBtn");
         model.addAttribute("stage3Url", stageUrl(3, projectId));
         model.addAttribute("stage5Url", stageUrl(5, projectId));
-        model.addAttribute("stage1Url", stageUrl(3, projectId));
-        model.addAttribute("stage2Url", stageUrl(5, projectId));
-        model.addAttribute("seatmapImageUrl", projectPath(projectId, "button-image.png"));
+        model.addAttribute("sectionJsonUrl", projectPath(projectId, "seatmap-sections.json"));
+        model.addAttribute("seatJsonUrl", seatsPath(projectId));
+        model.addAttribute("seatmapImageUrl", projectPath(projectId, "seatmap-image.png"));
         return "admin/seatmap/stage4";
     }
 
@@ -126,9 +126,9 @@ public class SeatMapController {
         );
         model.addAttribute("seatmapStep", "5");
         model.addAttribute("showTempSave", true);
-        model.addAttribute("tempSaveButtonId", "saveStage3Top");
+        model.addAttribute("tempSaveButtonId", "saveBookingButtonsBtn");
         model.addAttribute("stage6Url", stageUrl(6, projectId));
-        model.addAttribute("stage4Url", stageUrl(6, projectId));
+        model.addAttribute("stage4Url", stageUrl(4, projectId));
         model.addAttribute("seatmapImageUrl", projectPath(projectId, "seatmap-image.png"));
         return "admin/seatmap/stage5";
     }
@@ -145,7 +145,7 @@ public class SeatMapController {
                 "텍스트, 도형, 구역, 좌석을 직접 보정해서 예제 수준의 최종 도면으로 마무리합니다.",
                 "저장 위치: 최종 도면 · 썸네일 · 꾸미기 JSON",
                 projectPath(projectId, "seatmap-image.png") + " · " + projectPath(projectId, "thumbnail.png") + " · " + projectPath(projectId, "seatmap-decorations.json"),
-                stageUrl(5, projectId)
+                "/admin/seatmap/main"
         );
         model.addAttribute("seatmapStep", "6");
         model.addAttribute("showTempSave", true);

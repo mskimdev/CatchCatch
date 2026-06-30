@@ -1507,7 +1507,7 @@
             }, 250);
         } catch (error) {
             console.error(error);
-            toast("저장 및 나가기 실패: 콘솔을 확인하세요.");
+            toast("저장하고 나가기 실패: 콘솔을 확인하세요.");
 
             if (button) {
                 button.disabled = false;
@@ -1522,7 +1522,13 @@
             return false;
         }
 
-        const saveUrl = app?.dataset.saveUrl || "/admin/seatmap/overwrite-save";
+        const noLineResult = state.part2NoLineDataUrl || localStorage.getItem("seat_button_noLineResultImage") || "";
+        if (!noLineResult.startsWith("data:image")) {
+            toast("먼저 [선 없는 단색화 생성]을 실행한 뒤 저장하세요.");
+            return false;
+        }
+
+        const saveUrl = app?.dataset.saveUrl || "/admin/seatmap/temp-save";
         const payload = buildHeaderStyleSavePayload();
 
         try {
@@ -1541,7 +1547,7 @@
             }
 
             const result = await response.json();
-            console.log("[SeatTrace] overwrite save result", result);
+            console.log("[SeatTrace] stage2 temp save result", result);
 
             markConcertServerSaveFresh(result);
 
@@ -1552,7 +1558,7 @@
             return true;
         } catch (error) {
             console.error(error);
-            toast("서버 저장 실패: 저장 API 연결을 확인하세요.");
+            toast("서버 저장 실패: temp-save API 연결을 확인하세요.");
             return false;
         }
     }
@@ -1561,36 +1567,43 @@
     function markConcertServerSaveFresh(result) {
         const version = String(Date.now());
         const baseImageUrl =
+            result?.buttonImageUrl ||
             result?.imageUrl ||
             result?.savedImageUrl ||
             result?.output?.imageUrl ||
-            "/images/seatmap/generated/seatmap-concert-image.png";
+            `/temp/seatmap/${encodeURIComponent(getSeatmapProjectFolderName())}/button-image.png`;
         const baseJsonUrl =
+            result?.sectionJsonUrl ||
             result?.jsonUrl ||
             result?.savedJsonUrl ||
             result?.output?.jsonUrl ||
-            "/json/seatmap/seatmap-concert-session.json";
+            "";
 
         const imageUrl = appendCacheVersion(baseImageUrl, version);
-        const jsonUrl = appendCacheVersion(baseJsonUrl, version);
+        const jsonUrl = baseJsonUrl ? appendCacheVersion(baseJsonUrl, version) : "";
 
         clearConcertBuildCacheForFreshImage();
 
+        localStorage.setItem(STORAGE.result, imageUrl);
         localStorage.setItem(STORAGE.concertOriginal, imageUrl);
         localStorage.setItem(STORAGE.concertClean, imageUrl);
         localStorage.setItem(STORAGE.concertButton, imageUrl);
         localStorage.setItem(STORAGE.concertEntry, "true");
         localStorage.setItem(STORAGE.concertVersion, version);
-        localStorage.setItem(STORAGE.concertJsonUrl, jsonUrl);
+        if (jsonUrl) {
+            localStorage.setItem(STORAGE.concertJsonUrl, jsonUrl);
+        }
 
         const meta = {
             source: "button-image-save",
             savedAt: new Date().toISOString(),
             version,
             imageUrl,
-            jsonUrl
+            jsonUrl,
+            buttonImageUrl: imageUrl
         };
 
+        localStorage.setItem(STORAGE.meta, JSON.stringify(meta));
         localStorage.setItem(STORAGE.concertImageMeta, JSON.stringify(meta));
         localStorage.setItem(STORAGE.concertButtonMeta, JSON.stringify(meta));
     }
@@ -1658,19 +1671,15 @@
 
     function buildHeaderStyleSavePayload() {
         const imageDataUrl = getHeaderStyleCurrentImageDataUrl();
-        const pageState = buildButtonImageResultState(imageDataUrl);
-        const jsonText = JSON.stringify(pageState, null, 2);
-        const htmlText = buildButtonImageResultHtml(pageState);
 
         return {
-            page: "button-image",
+            page: "stage2",
             folderName: getSeatmapProjectFolderName(),
             imageDataUrl,
-            jsonText,
-            htmlText,
-            imageFileName: "seatmap-concert-image.png",
-            htmlFileName: "seatmap-concert-image.html",
-            jsonFileName: "seatmap-concert-session.json"
+            seatJsonText: "",
+            sectionJsonText: "",
+            bookingButtonJsonText: "",
+            decorationJsonText: ""
         };
     }
 
@@ -1753,6 +1762,15 @@ SeatTrace 버튼 이미지화 결과 파일
     }
 
     function getHeaderStyleCurrentImageDataUrl() {
+        if (state.part2NoLineDataUrl && state.part2NoLineDataUrl.startsWith("data:image")) {
+            return state.part2NoLineDataUrl;
+        }
+
+        const storedNoLine = localStorage.getItem("seat_button_noLineResultImage");
+        if (storedNoLine && storedNoLine.startsWith("data:image")) {
+            return storedNoLine;
+        }
+
         if (canvas && canvas.width > 0 && canvas.height > 0) {
             try {
                 return canvas.toDataURL("image/png");
@@ -10334,7 +10352,7 @@ SeatTrace 버튼 이미지화 결과 파일
         const image = sourceCtx.getImageData(0, 0, width, height);
         const buckets = new Map();
         const data = image.data;
-        const step = 16;
+        const step = 1;
 
         for (let i = 0; i < data.length; i += 4) {
             const alpha = data[i + 3];
@@ -10346,7 +10364,7 @@ SeatTrace 버튼 이미지화 결과 파일
             const r = data[i];
             const g = data[i + 1];
             const b = data[i + 2];
-            const key = `${Math.round(r / step) * step},${Math.round(g / step) * step},${Math.round(b / step) * step}`;
+            const key = `${r},${g},${b}`;
             let bucket = buckets.get(key);
 
             if (!bucket) {
@@ -10360,7 +10378,7 @@ SeatTrace 버튼 이미지화 결과 파일
             bucket.b += b;
         }
 
-        const minCount = Math.max(18, Math.floor((width * height) * 0.00004));
+        const minCount = 1;
         const colors = Array.from(buckets.values())
             .filter((bucket) => bucket.count >= minCount)
             .map((bucket, index) => {
@@ -10382,12 +10400,11 @@ SeatTrace 버튼 이미지화 결과 파일
                     saturation: hsl.s,
                     lightness: hsl.l,
                     role,
-                    selected: role === "button",
+                    selected: false,
                     previewColor: PART1_PREVIEW_COLORS_V41[index % PART1_PREVIEW_COLORS_V41.length]
                 };
             })
             .sort((a, b) => b.count - a.count)
-            .slice(0, 80)
             .map((item, index) => ({
                 ...item,
                 id: `color-${index + 1}`,
@@ -10402,7 +10419,7 @@ SeatTrace 버튼 이미지화 결과 파일
         drawPart1SelectedColorPreviewV41();
         savePart1ColorExtractStateV41();
 
-        toast(`도형 색상 후보 ${colors.length}개를 추출했습니다.`);
+        toast(`실제 RGB 색상 ${colors.length}개를 추출했습니다. 글자/숫자 픽셀도 실제 색상으로 포함됩니다.`);
     }
 
     function guessPart1ColorRoleV41(rgb, hsl, count, totalPixels) {
@@ -10442,12 +10459,17 @@ SeatTrace 버튼 이미지화 결과 파일
             return;
         }
 
+        // Stage 2 Part 1은 관리자가 직접 버튼 색상을 판단하는 단계다.
+        // 자동/추천 선택은 검은 배경, 글자, 회색 구조물까지 섞을 수 있으므로 기본 정책에서 제외한다.
         part1.colors.forEach((item) => {
-            item.selected = item.role === "button";
+            item.selected = false;
         });
+        if (part1.groups) {
+            syncPart1GroupsFromColorsV42();
+        }
 
         if (forceToast) {
-            toast("도형 후보 색상만 자동 선택했습니다.");
+            toast("자동 추천 선택은 사용하지 않습니다. 버튼으로 쓸 색상만 직접 선택하세요.");
         }
     }
 
@@ -10513,7 +10535,7 @@ SeatTrace 버튼 이미지화 결과 파일
         const selected = part1.colors.filter((item) => item.selected);
         const totalPixels = selected.reduce((sum, item) => sum + item.count, 0);
         const text = part1.colors.length === 0
-            ? "색상을 추출하면 아래에 원본 색상 목록이 표시됩니다."
+            ? "색상을 추출하면 아래에 원본 색상 목록이 표시됩니다. 기본값은 전체 미선택입니다."
             : `추출 ${part1.colors.length}개 / 선택 ${selected.length}개 / 선택 픽셀 ${totalPixels.toLocaleString()}px`;
 
         setText("part1ColorStatus", text);
@@ -10548,27 +10570,44 @@ SeatTrace 버튼 이미지화 결과 파일
         const selected = options.hoverOnly && hoverGroup
             ? getPart1GroupColorsV42(hoverGroup)
             : part1.colors.filter((item) => item.selected);
+
+        if (!hoverGroup && selected.length === 0) {
+            canvas.width = sourceCanvas.width;
+            canvas.height = sourceCanvas.height;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(sourceCanvas, 0, 0);
+            syncCanvasDisplay();
+            clearOverlay();
+            updatePart1ColorStatusV41();
+            savePart1ColorExtractStateV41();
+            drawPart1MiniMapV42();
+            return;
+        }
+
         const width = sourceCanvas.width;
         const height = sourceCanvas.height;
         const source = sourceCtx.getImageData(0, 0, width, height);
         const output = new ImageData(new Uint8ClampedArray(source.data), width, height);
         const src = source.data;
         const dst = output.data;
-        const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
+                const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
         const alpha = 0.68;
 
         for (let i = 0; i < src.length; i += 4) {
             const match = findMatchingPart1ColorV41(src[i], src[i + 1], src[i + 2], selected, tolerance);
 
             if (!match) {
-                dst[i] = Math.round(src[i] * 0.72 + 255 * 0.28);
-                dst[i + 1] = Math.round(src[i + 1] * 0.72 + 255 * 0.28);
-                dst[i + 2] = Math.round(src[i + 2] * 0.72 + 255 * 0.28);
-                dst[i + 3] = src[i + 3];
+                dst[i] = 0;
+                    dst[i + 1] = 0;
+                    dst[i + 2] = 0;
+                    dst[i + 3] = 255;
                 continue;
             }
 
-            const cover = hexToRgbV41(match.previewColor);
+            const coverHex = getPart1AssignedOutputHexV63(match) === '#ffffff'
+                ? '#ffffff'
+                : match.previewColor;
+            const cover = hexToRgbV41(coverHex);
             dst[i] = Math.round(src[i] * (1 - alpha) + cover.r * alpha);
             dst[i + 1] = Math.round(src[i + 1] * (1 - alpha) + cover.g * alpha);
             dst[i + 2] = Math.round(src[i + 2] * (1 - alpha) + cover.b * alpha);
@@ -10610,7 +10649,7 @@ SeatTrace 버튼 이미지화 결과 파일
         const output = ctx.createImageData(width, height);
         const src = source.data;
         const dst = output.data;
-        const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
+                const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
         const masks = new Map(selected.map((item) => [item.id, {
             id: item.id,
             sourceColor: item.sourceColor,
@@ -10721,12 +10760,30 @@ SeatTrace 버튼 이미지화 결과 파일
             return null;
         }
 
+        const target = { r, g, b };
+
+        // 허용범위 0에서는 선택한 실제 색상 픽셀이 1px도 빠지면 안 된다.
+        // 그래서 먼저 RGB 완전 일치를 검사한다.
+        for (const item of colors) {
+            const rgb = item.rgb || hexToRgbV41(item.sourceColor || "#000000");
+            if (rgb.r === r && rgb.g === g && rgb.b === b) {
+                return item;
+            }
+        }
+
         let best = null;
         let bestDistance = Infinity;
-        const limit = Math.max(4, tolerance) * 2.2;
+        const limit = Number(tolerance) <= 0
+            ? 0
+            : Math.max(1, Number(tolerance) || 0) * 2.2;
+
+        if (limit <= 0) {
+            return null;
+        }
 
         for (const item of colors) {
-            const distance = colorDistanceV41({ r, g, b }, item.rgb);
+            const rgb = item.rgb || hexToRgbV41(item.sourceColor || "#000000");
+            const distance = colorDistanceV41(target, rgb);
 
             if (distance <= limit && distance < bestDistance) {
                 best = item;
@@ -10919,7 +10976,7 @@ SeatTrace 버튼 이미지화 결과 파일
         const image = sourceCtx.getImageData(0, 0, width, height);
         const buckets = new Map();
         const data = image.data;
-        const step = 16;
+        const step = 1;
 
         for (let i = 0; i < data.length; i += 4) {
             const alpha = data[i + 3];
@@ -10931,7 +10988,7 @@ SeatTrace 버튼 이미지화 결과 파일
             const r = data[i];
             const g = data[i + 1];
             const b = data[i + 2];
-            const key = `${Math.round(r / step) * step},${Math.round(g / step) * step},${Math.round(b / step) * step}`;
+            const key = `${r},${g},${b}`;
             let bucket = buckets.get(key);
 
             if (!bucket) {
@@ -10945,7 +11002,7 @@ SeatTrace 버튼 이미지화 결과 파일
             bucket.b += b;
         }
 
-        const minCount = Math.max(18, Math.floor((width * height) * 0.00004));
+        const minCount = 1;
         const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
         const colors = Array.from(buckets.values())
             .filter((bucket) => bucket.count >= minCount)
@@ -10969,12 +11026,11 @@ SeatTrace 버튼 이미지화 결과 파일
                     lightness: hsl.l,
                     hue: hsl.h,
                     role,
-                    selected: role === "button",
+                    selected: false,
                     previewColor: PART1_PREVIEW_COLORS_V41[index % PART1_PREVIEW_COLORS_V41.length]
                 };
             })
             .sort((a, b) => b.count - a.count)
-            .slice(0, 96)
             .map((item, index) => ({
                 ...item,
                 id: `color-${index + 1}`,
@@ -10987,18 +11043,18 @@ SeatTrace 버튼 이미지화 결과 파일
         part1.tolerance = tolerance;
         part1.previewMode = part1.previewMode || "mask";
 
-        autoSelectPart1CandidateColorsV41(false);
         renderPart1ColorPaletteV41();
         drawPart1SelectedColorPreviewV41();
         savePart1ColorExtractStateV41();
         drawPart1MiniMapV42();
 
-        toast(`색상 ${colors.length}개를 추출하고 유사 색상 그룹 ${part1.groups.length}개로 묶었습니다.`);
+        toast(`실제 RGB 색상 ${colors.length}개를 추출했습니다. 글자/숫자 픽셀도 별도 가이드 없이 실제 색상으로 포함됩니다.`);
     }
 
     function buildPart1ColorGroupsV42(colors, tolerance) {
         const groups = [];
-        const limit = Math.max(30, 42 + (Number(tolerance) || 0) * 0.55);
+        const toleranceValue = Math.max(0, Number(tolerance) || 0);
+        const limit = toleranceValue <= 0 ? 0 : Math.max(12, 18 + toleranceValue * 0.75);
         const sorted = [...(colors || [])].sort((a, b) => b.count - a.count);
 
         sorted.forEach((color) => {
@@ -11008,7 +11064,7 @@ SeatTrace 버튼 이미지화 결과 파일
             groups.forEach((group) => {
                 const distance = colorDistanceV41(color.rgb, group.center);
                 const rolePenalty = color.role === group.role ? 0 : 12;
-                const finalDistance = distance + rolePenalty;
+                const finalDistance = toleranceValue <= 0 ? distance : distance + rolePenalty;
 
                 if (finalDistance <= limit && finalDistance < bestDistance) {
                     bestGroup = group;
@@ -11069,13 +11125,15 @@ SeatTrace 버튼 이미지화 결과 파일
             return;
         }
 
+        // Stage 2 Part 1은 관리자가 직접 버튼 색상을 판단하는 단계다.
+        // 추천/자동 선택은 검은 배경, 글자, 회색 구조물까지 섞을 수 있으므로 전부 꺼둔다.
         part1.colors.forEach((item) => {
-            item.selected = item.role === "button";
+            item.selected = false;
         });
         syncPart1GroupsFromColorsV42();
 
         if (forceToast) {
-            toast("도형 후보 그룹을 자동 선택했습니다.");
+            toast("자동 추천 선택은 사용하지 않습니다. 버튼으로 쓸 색상만 직접 선택하세요.");
         }
     }
 
@@ -11134,6 +11192,29 @@ SeatTrace 버튼 이미지화 결과 파일
         updatePart1ColorStatusV41();
     }
 
+    function shouldInvertPart1DarkColorToWhiteV63(rgbLike) {
+        if (!rgbLike) {
+            return false;
+        }
+
+        const rgb = rgbLike.r !== undefined
+            ? rgbLike
+            : hexToRgbV41(String(rgbLike || "#000000"));
+
+        if (!rgb) {
+            return false;
+        }
+
+        const hsl = rgbToHslV41(rgb.r, rgb.g, rgb.b);
+        return hsl.l <= 0.22 || (hsl.l <= 0.28 && hsl.s <= 0.20);
+    }
+
+    function getPart1AssignedOutputHexV63(colorOrGroup) {
+        const sourceHex = colorOrGroup?.sourceColor || "#000000";
+        const sourceRgb = colorOrGroup?.rgb || hexToRgbV41(sourceHex);
+        return shouldInvertPart1DarkColorToWhiteV63(sourceRgb) ? "#ffffff" : sourceHex;
+    }
+
     function renderPart1GroupTileV43(group, groupIndex) {
         const colors = getPart1GroupColorsV42(group);
         const selectedCount = colors.filter((item) => item.selected).length;
@@ -11143,14 +11224,16 @@ SeatTrace 버튼 이미지화 결과 파일
         const partialClass = anySelected && !allSelected ? "is-partial" : "";
         const groupName = getPart1GroupNameV42(group, groupIndex);
         const countText = Number(group.count || 0).toLocaleString();
-        const title = `${groupName} / ${colors.length}색 / ${selectedCount}/${colors.length} 선택 / ${countText}px`;
+        const assignedOutputHex = getPart1AssignedOutputHexV63(group);
+        const swatchHex = anySelected ? assignedOutputHex : (group.sourceColor || '#ffffff');
+        const title = `${groupName} / ${colors.length}색 / ${selectedCount}/${colors.length} 선택 / ${countText}px${assignedOutputHex === '#ffffff' ? ' / 선택 시 흰색 출력' : ''}`;
 
         return `
             <button type="button"
                     class="button-image-color-tile ${selectedClass} ${partialClass}"
                     data-group-index="${groupIndex}"
                     title="${escapeHtml(title)}">
-                <span class="button-image-color-tile__swatch" style="background:${escapeHtml(group.sourceColor || '#ffffff')}"></span>
+                <span class="button-image-color-tile__swatch" style="background:${escapeHtml(swatchHex)}"></span>
                 <span class="button-image-color-tile__check" aria-hidden="true"></span>
             </button>
         `;
@@ -11177,7 +11260,7 @@ SeatTrace 버튼 이미지화 결과 파일
         const selectedGroups = (part1.groups || []).filter((group) => getPart1GroupColorsV42(group).some((item) => item.selected));
         const totalPixels = selected.reduce((sum, item) => sum + item.count, 0);
         const text = part1.colors.length === 0
-            ? "색상을 추출하면 유사 색상 그룹이 표시됩니다."
+            ? "색상을 추출하면 유사 색상 그룹이 표시됩니다. 기본값은 전체 미선택입니다."
             : `추출 ${part1.colors.length}개 / 그룹 ${part1.groups.length}개 / 선택 그룹 ${selectedGroups.length}개 / 선택 픽셀 ${totalPixels.toLocaleString()}px`;
 
         setText("part1ColorStatus", text);
@@ -11195,6 +11278,146 @@ SeatTrace 버튼 이미지화 결과 파일
         if (!options.silent) {
             drawPart1SelectedColorPreviewV41();
         }
+    }
+
+    function buildPart1TextGuideMaskV66(src, width, height) {
+        const total = width * height;
+        const guide = new Uint8Array(total);
+        const visited = new Uint8Array(total);
+        const queue = new Int32Array(total);
+        const maxGuideArea = Math.max(80, Math.min(2600, Math.floor(total * 0.006)));
+
+        for (let start = 0; start < total; start += 1) {
+            if (visited[start]) {
+                continue;
+            }
+
+            const offset = start * 4;
+            if (!isPart1TextGuideCandidateV66(src[offset], src[offset + 1], src[offset + 2], src[offset + 3])) {
+                visited[start] = 1;
+                continue;
+            }
+
+            let head = 0;
+            let tail = 0;
+            queue[tail++] = start;
+            visited[start] = 1;
+
+            const pixels = [];
+            let minX = Infinity;
+            let minY = Infinity;
+            let maxX = -Infinity;
+            let maxY = -Infinity;
+            let touchesBorder = false;
+
+            while (head < tail) {
+                const current = queue[head++];
+                const x = current % width;
+                const y = Math.floor(current / width);
+                const currentOffset = current * 4;
+
+                if (!isPart1TextGuideCandidateV66(
+                    src[currentOffset],
+                    src[currentOffset + 1],
+                    src[currentOffset + 2],
+                    src[currentOffset + 3]
+                )) {
+                    continue;
+                }
+
+                pixels.push(current);
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
+
+                if (x === 0 || y === 0 || x === width - 1 || y === height - 1) {
+                    touchesBorder = true;
+                }
+
+                pushPart1TextGuideNeighborV66(x + 1, y, src, width, height, visited, queue, () => tail, (nextTail) => { tail = nextTail; });
+                pushPart1TextGuideNeighborV66(x - 1, y, src, width, height, visited, queue, () => tail, (nextTail) => { tail = nextTail; });
+                pushPart1TextGuideNeighborV66(x, y + 1, src, width, height, visited, queue, () => tail, (nextTail) => { tail = nextTail; });
+                pushPart1TextGuideNeighborV66(x, y - 1, src, width, height, visited, queue, () => tail, (nextTail) => { tail = nextTail; });
+            }
+
+            if (pixels.length === 0) {
+                continue;
+            }
+
+            const boxWidth = maxX - minX + 1;
+            const boxHeight = maxY - minY + 1;
+            const longSide = Math.max(boxWidth, boxHeight);
+            const shortSide = Math.max(1, Math.min(boxWidth, boxHeight));
+            const aspect = longSide / shortSide;
+
+            // 큰 검은 배경/무대 면은 제외하고, 숫자/문자/작은 기호만 흰색 가이드로 살린다.
+            const looksLikeTextOrSmallMark =
+                pixels.length <= maxGuideArea
+                && !touchesBorder
+                && longSide <= Math.max(14, Math.min(width, height) * 0.24)
+                && !(pixels.length > 700 && aspect < 1.8);
+
+            if (!looksLikeTextOrSmallMark) {
+                continue;
+            }
+
+            pixels.forEach((index) => {
+                guide[index] = 1;
+            });
+        }
+
+        return guide;
+    }
+
+    function isPart1TextGuideCandidateV66(r, g, b, a) {
+        if (a < 10) {
+            return false;
+        }
+
+        const hsl = rgbToHslV41(r, g, b);
+        const darkText = hsl.l <= 0.38 && hsl.s <= 0.62;
+        const lightText = hsl.l >= 0.68 && hsl.s <= 0.35;
+        const grayText = hsl.s <= 0.18 && hsl.l >= 0.25 && hsl.l <= 0.82;
+
+        return darkText || lightText || grayText;
+    }
+
+    function pushPart1TextGuideNeighborV66(x, y, src, width, height, visited, queue, getTail, setTail) {
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            return;
+        }
+
+        const index = y * width + x;
+        if (visited[index]) {
+            return;
+        }
+
+        const offset = index * 4;
+        if (!isPart1TextGuideCandidateV66(src[offset], src[offset + 1], src[offset + 2], src[offset + 3])) {
+            visited[index] = 1;
+            return;
+        }
+
+        visited[index] = 1;
+        const tail = getTail();
+        queue[tail] = index;
+        setTail(tail + 1);
+    }
+
+    function applyPart1BlackBaseUnmatchedPixelV66(dst, offset, guideMask, index) {
+        if (guideMask && guideMask[index]) {
+            dst[offset] = 255;
+            dst[offset + 1] = 255;
+            dst[offset + 2] = 255;
+            dst[offset + 3] = 255;
+            return;
+        }
+
+        dst[offset] = 0;
+        dst[offset + 1] = 0;
+        dst[offset + 2] = 0;
+        dst[offset + 3] = 255;
     }
 
     function drawPart1SelectedColorPreviewV41(options = {}) {
@@ -11220,13 +11443,27 @@ SeatTrace 버튼 이미지화 결과 파일
         const selected = hoverGroup
             ? getPart1GroupColorsV42(hoverGroup)
             : part1.colors.filter((item) => item.selected);
+
+        if (!hoverGroup && selected.length === 0) {
+            canvas.width = sourceCanvas.width;
+            canvas.height = sourceCanvas.height;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(sourceCanvas, 0, 0);
+            syncCanvasDisplay();
+            clearOverlay();
+            updatePart1ColorStatusV41();
+            savePart1ColorExtractStateV41();
+            drawPart1MiniMapV42();
+            return;
+        }
+
         const width = sourceCanvas.width;
         const height = sourceCanvas.height;
         const source = sourceCtx.getImageData(0, 0, width, height);
         const output = new ImageData(new Uint8ClampedArray(source.data), width, height);
         const src = source.data;
         const dst = output.data;
-        const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
+                const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
         const alpha = 0.68;
         const maskMode = part1.previewMode !== "overlay";
 
@@ -11242,22 +11479,33 @@ SeatTrace 버튼 이미지화 결과 파일
                     continue;
                 }
 
-                dst[i] = src[i];
-                dst[i + 1] = src[i + 1];
-                dst[i + 2] = src[i + 2];
-                dst[i + 3] = 255;
+                const assignedHex = getPart1AssignedOutputHexV63(match);
+                if (assignedHex === '#ffffff') {
+                    dst[i] = 255;
+                    dst[i + 1] = 255;
+                    dst[i + 2] = 255;
+                    dst[i + 3] = 255;
+                } else {
+                    dst[i] = src[i];
+                    dst[i + 1] = src[i + 1];
+                    dst[i + 2] = src[i + 2];
+                    dst[i + 3] = 255;
+                }
                 continue;
             }
 
             if (!match) {
-                dst[i] = Math.round(src[i] * 0.72 + 255 * 0.28);
-                dst[i + 1] = Math.round(src[i + 1] * 0.72 + 255 * 0.28);
-                dst[i + 2] = Math.round(src[i + 2] * 0.72 + 255 * 0.28);
-                dst[i + 3] = src[i + 3];
+                dst[i] = 0;
+                    dst[i + 1] = 0;
+                    dst[i + 2] = 0;
+                    dst[i + 3] = 255;
                 continue;
             }
 
-            const cover = hexToRgbV41(match.previewColor);
+            const coverHex = getPart1AssignedOutputHexV63(match) === '#ffffff'
+                ? '#ffffff'
+                : match.previewColor;
+            const cover = hexToRgbV41(coverHex);
             dst[i] = Math.round(src[i] * (1 - alpha) + cover.r * alpha);
             dst[i + 1] = Math.round(src[i + 1] * (1 - alpha) + cover.g * alpha);
             dst[i + 2] = Math.round(src[i + 2] * (1 - alpha) + cover.b * alpha);
@@ -11301,7 +11549,7 @@ SeatTrace 버튼 이미지화 결과 파일
         const output = ctx.createImageData(width, height);
         const src = source.data;
         const dst = output.data;
-        const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
+                const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
         const masks = new Map(selected.map((item) => [item.id, {
             id: item.id,
             groupId: item.groupId || "",
@@ -11321,6 +11569,8 @@ SeatTrace 버튼 이미지화 결과 파일
                 const match = findMatchingPart1ColorV41(src[offset], src[offset + 1], src[offset + 2], selected, tolerance);
 
                 if (!match) {
+                    // 후보 이미지는 검은 배경 위에 선택 색상만 남기되,
+                    // 숫자/문자/라벨은 판단용 흰색 가이드로 유지한다.
                     dst[offset] = 0;
                     dst[offset + 1] = 0;
                     dst[offset + 2] = 0;
@@ -11328,10 +11578,18 @@ SeatTrace 버튼 이미지화 결과 파일
                     continue;
                 }
 
-                dst[offset] = src[offset];
-                dst[offset + 1] = src[offset + 1];
-                dst[offset + 2] = src[offset + 2];
-                dst[offset + 3] = 255;
+                const assignedHex = getPart1AssignedOutputHexV63(match);
+                if (assignedHex === '#ffffff') {
+                    dst[offset] = 255;
+                    dst[offset + 1] = 255;
+                    dst[offset + 2] = 255;
+                    dst[offset + 3] = 255;
+                } else {
+                    dst[offset] = src[offset];
+                    dst[offset + 1] = src[offset + 1];
+                    dst[offset + 2] = src[offset + 2];
+                    dst[offset + 3] = 255;
+                }
 
                 const mask = masks.get(match.id);
                 if (mask) {
@@ -11393,7 +11651,7 @@ SeatTrace 버튼 이미지화 결과 파일
         const meta = {
             width,
             height,
-            mode: "button-image-color-extract-v43-selected-color-black",
+            mode: "button-image-color-extract-v67-raw-color-only",
             tolerance,
             previewMode: "mask",
             selectedGroups,
@@ -11421,7 +11679,7 @@ SeatTrace 버튼 이미지화 결과 파일
         setActionButtonsEnabled(true);
         setStep(2);
         drawPart1MiniMapV42();
-        toast("선택한 그룹/색상은 원본 색상 유지, 제외 영역은 검은색인 버튼 후보 이미지를 생성했습니다.");
+        toast("선택한 그룹/색상만 검은 배경 위에 표시했습니다. 선택 색상에 포함된 글자/숫자도 같이 남습니다.");
     }
 
     function savePart1ColorExtractStateV41() {
@@ -11732,10 +11990,12 @@ SeatTrace 버튼 이미지화 결과 파일
 
 
     // ============================================================================
-    // v47 patch: Part 2 selected-group solidify + hole fill + noise cleanup
+    // v57 patch: Part 2 fill first, absorb small pieces, then final solid render
     // ============================================================================
 
     function bindPart2SolidifyV47() {
+        replaceButtonListenerV41($("part2FillHoles"), runPart2FillHolesV58);
+        replaceButtonListenerV41($("part2AbsorbPieces"), runPart2AbsorbPiecesV58);
         replaceButtonListenerV41($("part2AutoSolidify"), runPart2SolidifySelectedGroupsV47);
 
         const holeInput = $("part2HoleThreshold");
@@ -11759,18 +12019,131 @@ SeatTrace 버튼 이미지화 결과 파일
         syncText();
     }
 
+    function runPart2FillHolesV58() {
+        const flow = createPart2FlowDataV58();
+
+        if (!flow) {
+            return;
+        }
+
+        const holeFillCount = fillBlackHolesByMajorityV47(flow.groupMap, flow.width, flow.height, flow.holeThreshold);
+        const contourFillCount = fillComponentRowSpansV54(flow.groupMap, flow.width, flow.height);
+
+        renderPart2IncrementalPreviewV58(
+            flow,
+            "part2-fill",
+            `메우기 적용 완료 · 내부 구멍 ${holeFillCount}개 · 내부 문자/틈 ${contourFillCount}px`,
+            {
+                holeFillCount,
+                contourFillCount
+            }
+        );
+        pushHistory("파트2 메우기 적용");
+        toast("메우기만 적용했습니다. 이전 도면 상태 위에 채워진 부분만 반영됩니다.");
+    }
+
+    function runPart2AbsorbPiecesV58() {
+        const flow = createPart2FlowDataV58();
+
+        if (!flow) {
+            return;
+        }
+
+        const cleanupCount = cleanupSmallColorComponentsV47(flow.groupMap, flow.width, flow.height, flow.noiseThreshold);
+        const dominantCleanupCount = cleanupMinoritySeatIslandsV53(
+            flow.groupMap,
+            flow.width,
+            flow.height,
+            Math.max(flow.noiseThreshold * 5, 120)
+        );
+
+        renderPart2IncrementalPreviewV58(
+            flow,
+            "part2-absorb",
+            `작은 조각 흡수 완료 · 작은 조각 ${cleanupCount}개 · 섞인 소구역 ${dominantCleanupCount}개`,
+            {
+                cleanupCount,
+                dominantCleanupCount
+            }
+        );
+        pushHistory("파트2 작은 조각 흡수");
+        toast("작은 조각 흡수만 적용했습니다. 이전 작업 결과는 유지됩니다.");
+    }
+
     function runPart2SolidifySelectedGroupsV47() {
+        const flow = createPart2FlowDataV58();
+
+        if (!flow) {
+            return;
+        }
+
+        const holeFillCount = fillBlackHolesByMajorityV47(flow.groupMap, flow.width, flow.height, Math.max(flow.holeThreshold, 1200));
+        const contourFillCount = fillComponentRowSpansV54(flow.groupMap, flow.width, flow.height);
+        const colorPixelsByGroup = countPixelsByGroupV58(flow.groupMap, flow.selectedGroups.length);
+        const vectorRendered = renderCleanVectorButtonImageV54(
+            flow.groupMap,
+            flow.width,
+            flow.height,
+            flow.selectedGroups,
+            flow.neutralBackground
+        );
+
+        if (!vectorRendered) {
+            renderPart2FinalFlatImageV58(flow);
+        }
+
+        clearOverlay();
+        syncCanvasDisplay();
+        syncResultFromVisible();
+
+        state.hasResult = true;
+        state.saved = false;
+        state.part2NoLineDataUrl = canvas.toDataURL("image/png");
+        state.resultBaseDataUrl = state.part2NoLineDataUrl;
+        localStorage.setItem("seat_button_noLineResultImage", state.part2NoLineDataUrl);
+        state.lastStats = {
+            seatRegions: flow.selectedGroups.length,
+            regionRoleCounts: flow.selectedGroups.map((group, index) => ({
+                role: group.role || "button",
+                count: colorPixelsByGroup[index] || 0
+            }))
+        };
+
+        savePart2FlowStateV58(
+            flow,
+            "button-image-part2-final-no-line-v61",
+            "최종 단색화 완료 · 선 없는 저장본 생성",
+            {
+                colorPixelsByGroup,
+                holeFillCount,
+                contourFillCount
+            }
+        );
+
+        setText("part2SolidifyStatus", `선 없는 단색화 완료 · 내부 포함 ${holeFillCount}개 / ${contourFillCount}px 처리 · 저장 가능`);
+        pushHistory("파트2 최종 단색화");
+        updateStats();
+        toast("선 없는 최종 단색 버튼 이미지를 생성했습니다.");
+    }
+
+    function createPart2FlowDataV58() {
         const part1 = ensurePart1ColorStateV41();
 
         if (!state.hasResult || !canvas.width || !canvas.height) {
             toast("먼저 파트 1에서 버튼 후보 이미지를 생성하세요.");
-            return;
+            return null;
         }
 
         const selectedGroups = collectPart2SelectedGroupsV47(part1);
         if (selectedGroups.length === 0) {
             toast("파트 1에서 선택된 색상 그룹이 없습니다.");
-            return;
+            return null;
+        }
+
+        const selectedColors = part1.colors.filter((item) => item.selected);
+        if (selectedColors.length === 0) {
+            toast("버튼 후보로 사용할 색상을 하나 이상 선택하세요.");
+            return null;
         }
 
         const width = canvas.width;
@@ -11779,10 +12152,10 @@ SeatTrace 버튼 이미지화 결과 파일
         const src = source.data;
         const groupMap = new Int16Array(width * height);
         groupMap.fill(-1);
+
         const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
         const holeThreshold = Math.max(1, Number($("part2HoleThreshold")?.value || 160));
         const noiseThreshold = Math.max(1, Number($("part2NoiseThreshold")?.value || 20));
-        const selectedColors = part1.colors.filter((item) => item.selected);
         const groupIndexById = new Map(selectedGroups.map((group, index) => [group.id, index]));
 
         for (let i = 0; i < width * height; i += 1) {
@@ -11792,110 +12165,215 @@ SeatTrace 버튼 이미지화 결과 파일
             const b = src[offset + 2];
             const alpha = src[offset + 3];
 
-            if (alpha < 10 || (r <= 10 && g <= 10 && b <= 10)) {
-                groupMap[i] = -1;
+            if (alpha < 10) {
                 continue;
             }
 
             const match = findMatchingPart1ColorV41(r, g, b, selectedColors, tolerance);
-            if (!match) {
-                groupMap[i] = -1;
+            if (match && groupIndexById.has(match.groupId)) {
+                groupMap[i] = groupIndexById.get(match.groupId);
                 continue;
             }
 
-            groupMap[i] = groupIndexById.has(match.groupId)
-                ? groupIndexById.get(match.groupId)
-                : -1;
+            const groupIndex = findPart2GroupIndexByColorV58(r, g, b, selectedGroups, tolerance);
+            if (groupIndex >= 0) {
+                groupMap[i] = groupIndex;
+            }
         }
 
-        const holeFillCount = fillBlackHolesByMajorityV47(groupMap, width, height, holeThreshold);
-        const cleanupCount = cleanupSmallColorComponentsV47(groupMap, width, height, noiseThreshold);
-        const output = new ImageData(width, height);
+        return {
+            width,
+            height,
+            source,
+            src,
+            groupMap,
+            selectedGroups,
+            selectedColors,
+            tolerance,
+            holeThreshold,
+            noiseThreshold,
+            neutralBackground: detectNeutralBackgroundColorV53(src, width, height)
+        };
+    }
+
+    function findPart2GroupIndexByColorV58(r, g, b, selectedGroups, tolerance) {
+        let bestIndex = -1;
+        let bestDistance = Infinity;
+        const limit = Math.max(14, tolerance + 8);
+
+        selectedGroups.forEach((group, index) => {
+            const rgb = group.rgb || hexToRgbV41(group.sourceColor || "#000000");
+            const distance = colorDistance({ r, g, b }, rgb);
+
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                bestIndex = index;
+            }
+        });
+
+        return bestDistance <= limit ? bestIndex : -1;
+    }
+
+    function renderPart2IncrementalPreviewV58(flow, mode, message, stats = {}) {
+        const output = new ImageData(new Uint8ClampedArray(flow.source.data), flow.width, flow.height);
         const dst = output.data;
-        const colorPixelsByGroup = new Array(selectedGroups.length).fill(0);
 
-        for (let i = 0; i < width * height; i += 1) {
-            const groupIndex = groupMap[i];
-            const offset = i * 4;
+        for (let i = 0; i < flow.width * flow.height; i += 1) {
+            const groupIndex = flow.groupMap[i];
 
-            if (groupIndex < 0 || !selectedGroups[groupIndex]) {
-                dst[offset] = 0;
-                dst[offset + 1] = 0;
-                dst[offset + 2] = 0;
-                dst[offset + 3] = 255;
+            if (groupIndex < 0 || !flow.selectedGroups[groupIndex]) {
                 continue;
             }
 
-            const rgb = selectedGroups[groupIndex].rgb;
+            const offset = i * 4;
+            const rgb = flow.selectedGroups[groupIndex].rgb;
             dst[offset] = rgb.r;
             dst[offset + 1] = rgb.g;
             dst[offset + 2] = rgb.b;
             dst[offset + 3] = 255;
-            colorPixelsByGroup[groupIndex] += 1;
         }
 
-        canvas.width = width;
-        canvas.height = height;
+        canvas.width = flow.width;
+        canvas.height = flow.height;
         ctx.putImageData(output, 0, 0);
         syncCanvasDisplay();
         syncResultFromVisible();
 
         state.hasResult = true;
         state.saved = false;
+        state.part2NoLineDataUrl = "";
+        localStorage.removeItem("seat_button_noLineResultImage");
         state.resultBaseDataUrl = canvas.toDataURL("image/png");
         state.lastStats = {
-            seatRegions: selectedGroups.length,
-            regionRoleCounts: selectedGroups.map((group, index) => ({
-                role: group.role || "button",
-                count: colorPixelsByGroup[index] || 0
-            })),
-            holeFillCount,
-            cleanupCount
+            seatRegions: flow.selectedGroups.length,
+            ...stats
         };
 
+        savePart2FlowStateV58(flow, mode, message, stats);
+        setText("part2SolidifyStatus", message);
+        updateStats();
+    }
+
+    function renderPart2FinalFlatImageV58(flow) {
+        const output = new ImageData(flow.width, flow.height);
+        const dst = output.data;
+
+        for (let i = 0; i < flow.width * flow.height; i += 1) {
+            const groupIndex = flow.groupMap[i];
+            const offset = i * 4;
+
+            if (groupIndex < 0 || !flow.selectedGroups[groupIndex]) {
+                const bg = isLightSeparatorPixelV53(
+                    flow.src[offset],
+                    flow.src[offset + 1],
+                    flow.src[offset + 2],
+                    flow.src[offset + 3]
+                )
+                    ? { r: 255, g: 255, b: 255 }
+                    : flow.neutralBackground;
+
+                dst[offset] = bg.r;
+                dst[offset + 1] = bg.g;
+                dst[offset + 2] = bg.b;
+                dst[offset + 3] = 255;
+                continue;
+            }
+
+            const rgb = flow.selectedGroups[groupIndex].rgb;
+            dst[offset] = rgb.r;
+            dst[offset + 1] = rgb.g;
+            dst[offset + 2] = rgb.b;
+            dst[offset + 3] = 255;
+        }
+
+        canvas.width = flow.width;
+        canvas.height = flow.height;
+        ctx.putImageData(output, 0, 0);
+    }
+
+    function countPixelsByGroupV58(groupMap, groupCount) {
+        const counts = new Array(groupCount).fill(0);
+
+        for (let i = 0; i < groupMap.length; i += 1) {
+            const groupIndex = groupMap[i];
+            if (groupIndex >= 0 && groupIndex < groupCount) {
+                counts[groupIndex] += 1;
+            }
+        }
+
+        return counts;
+    }
+
+    function savePart2FlowStateV58(flow, mode, message, stats = {}) {
+        const colorPixelsByGroup = stats.colorPixelsByGroup || countPixelsByGroupV58(flow.groupMap, flow.selectedGroups.length);
         const metaRaw = localStorage.getItem(STORAGE.meta);
         let meta = {};
+
         try {
             meta = metaRaw ? JSON.parse(metaRaw) : {};
         } catch (error) {
             meta = {};
         }
-        meta.width = width;
-        meta.height = height;
-        meta.mode = "button-image-part2-solidify-v47";
-        meta.selectedGroups = selectedGroups.map((group, index) => ({
+
+        meta.width = flow.width;
+        meta.height = flow.height;
+        meta.mode = mode;
+        meta.processOrder = [
+            "manual-color-select",
+            "fill-holes-button",
+            "absorb-small-pieces-button",
+            "manual-brush-or-eraser-if-needed",
+            "final-solid-button"
+        ];
+        meta.selectedGroups = flow.selectedGroups.map((group, index) => ({
             id: group.id,
             role: group.role,
             sourceColor: group.sourceColor,
             pixelCount: colorPixelsByGroup[index] || 0
         }));
-        meta.holeThreshold = holeThreshold;
-        meta.noiseThreshold = noiseThreshold;
-        meta.holeFillCount = holeFillCount;
-        meta.cleanupCount = cleanupCount;
+        meta.holeThreshold = flow.holeThreshold;
+        meta.noiseThreshold = flow.noiseThreshold;
+        meta.backgroundColor = rgbToHexV41(flow.neutralBackground.r, flow.neutralBackground.g, flow.neutralBackground.b);
+        meta.lastPart2Message = message;
         meta.createdAt = new Date().toISOString();
+
+        Object.assign(meta, stats);
 
         localStorage.setItem(STORAGE.result, state.resultBaseDataUrl);
         localStorage.setItem(STORAGE.concertButton, state.resultBaseDataUrl);
         localStorage.setItem(STORAGE.meta, JSON.stringify(meta));
         localStorage.setItem(STORAGE.concertButtonMeta, JSON.stringify(meta));
-
-        setText("part2SolidifyStatus", `단색화 완료 · 내부 구멍 ${holeFillCount}개 메움 · 작은 조각 ${cleanupCount}개 정리`);
-        pushHistory("파트2 버튼 네모 단색화");
-        updateStats();
-        toast("파트 1 선택 그룹 기준으로 버튼 네모 단색화를 완료했습니다.");
     }
 
     function collectPart2SelectedGroupsV47(part1) {
-        const groups = (part1.groups || []).filter((group) => getPart1GroupColorsV42(group).some((item) => item.selected));
-        return groups.map((group, index) => {
-            const rgb = hexToRgbV41(group.sourceColor || PART1_PREVIEW_COLORS_V41[index % PART1_PREVIEW_COLORS_V41.length]);
+        const groups = (part1.groups || [])
+            .map((group) => ({
+                group,
+                selectedColors: getPart1GroupColorsV42(group).filter((item) => item.selected)
+            }))
+            .filter((entry) => entry.selectedColors.length > 0);
+
+        return groups.map((entry, index) => {
+            const group = entry.group;
+            const selectedColors = entry.selectedColors;
+            const dominant = selectedColors
+                .slice()
+                .sort((a, b) => (b.count || 0) - (a.count || 0))[0];
+            const dominantSourceHex = dominant?.sourceColor || group.sourceColor || PART1_PREVIEW_COLORS_V41[index % PART1_PREVIEW_COLORS_V41.length];
+            const assignedOutputHex = getPart1AssignedOutputHexV63(dominant?.rgb ? dominant : group);
+            const rgb = hexToRgbV41(assignedOutputHex === '#ffffff' ? '#ffffff' : dominantSourceHex);
+            const sourceColor = assignedOutputHex === '#ffffff'
+                ? '#ffffff'
+                : (dominant?.sourceColor || rgbToHexV41(rgb.r, rgb.g, rgb.b));
+
             return {
                 id: group.id,
-                role: group.role,
-                sourceColor: group.sourceColor || rgbToHexV41(rgb.r, rgb.g, rgb.b),
+                role: dominant?.role || group.role,
+                sourceColor,
                 rgb,
-                colorIds: Array.isArray(group.colorIds) ? group.colorIds.slice() : []
+                colorIds: selectedColors.map((item) => item.id),
+                selectedColorCount: selectedColors.length,
+                dominantColorId: dominant?.id || ""
             };
         });
     }
@@ -11986,6 +12464,7 @@ SeatTrace 버튼 이미지화 결과 파일
     function cleanupSmallColorComponentsV47(groupMap, width, height, minSize) {
         const visited = new Uint8Array(width * height);
         const queue = new Int32Array(width * height);
+        const effectiveMinSize = Math.max(1, Math.min(Number(minSize) || 20, 180));
         let cleaned = 0;
 
         for (let start = 0; start < groupMap.length; start += 1) {
@@ -12000,12 +12479,22 @@ SeatTrace 버튼 이미지화 결과 파일
             visited[start] = 1;
             const component = [];
             const neighborCounts = new Map();
+            const bounds = { minX: width, minY: height, maxX: -1, maxY: -1 };
+            let touchesCanvasEdge = false;
 
             while (head < tail) {
                 const current = queue[head++];
                 component.push(current);
                 const x = current % width;
                 const y = Math.floor(current / width);
+                bounds.minX = Math.min(bounds.minX, x);
+                bounds.minY = Math.min(bounds.minY, y);
+                bounds.maxX = Math.max(bounds.maxX, x);
+                bounds.maxY = Math.max(bounds.maxY, y);
+                if (x === 0 || y === 0 || x === width - 1 || y === height - 1) {
+                    touchesCanvasEdge = true;
+                }
+
                 const neighbors = [];
                 if (x > 0) neighbors.push(current - 1);
                 if (x < width - 1) neighbors.push(current + 1);
@@ -12024,18 +12513,26 @@ SeatTrace 버튼 이미지화 결과 파일
                 });
             }
 
-            if (component.length >= minSize) {
+            const area = component.length;
+            if (area >= effectiveMinSize || touchesCanvasEdge || isProtectedButtonComponentV60(area, bounds, effectiveMinSize)) {
                 continue;
             }
 
             let replacement = -1;
             let bestCount = 0;
+            let totalNeighborCount = 0;
             neighborCounts.forEach((count, groupIndex) => {
+                totalNeighborCount += count;
                 if (count > bestCount) {
                     bestCount = count;
                     replacement = Number(groupIndex);
                 }
             });
+
+            const dominanceRatio = bestCount / Math.max(1, totalNeighborCount);
+            if (replacement < 0 || totalNeighborCount < 2 || dominanceRatio < 0.62) {
+                continue;
+            }
 
             component.forEach((index) => {
                 groupMap[index] = replacement;
@@ -12046,8 +12543,474 @@ SeatTrace 버튼 이미지화 결과 파일
         return cleaned;
     }
 
+    function renderCleanVectorButtonImageV54(groupMap, width, height, selectedGroups, neutralBackground) {
+        if (!canvas || !ctx || !groupMap || !width || !height || !Array.isArray(selectedGroups)) {
+            return false;
+        }
+
+        const scale = 4;
+        const offscreen = document.createElement("canvas");
+        offscreen.width = width * scale;
+        offscreen.height = height * scale;
+        const offCtx = offscreen.getContext("2d");
+
+        if (!offCtx) {
+            return false;
+        }
+
+        offCtx.imageSmoothingEnabled = true;
+        offCtx.fillStyle = rgbToCssV54(normalizeNoLineBackgroundV61(neutralBackground));
+        offCtx.fillRect(0, 0, offscreen.width, offscreen.height);
+
+        let rendered = 0;
+
+        selectedGroups.forEach((group, groupIndex) => {
+            const rgb = group?.rgb || hexToRgbV41(group?.sourceColor || "#cccccc");
+            const components = extractVectorComponentsByGroupV54(groupMap, width, height, groupIndex, 35);
+
+            offCtx.fillStyle = rgbToCssV54(rgb);
+
+            components.forEach((component) => {
+                const polygon = buildCleanComponentPolygonV54(component, groupMap, width, height, groupIndex);
+
+                if (!polygon || polygon.length < 3) {
+                    return;
+                }
+
+                drawScaledPolygonV54(offCtx, polygon, scale);
+                rendered += 1;
+            });
+        });
+
+        if (rendered <= 0) {
+            return false;
+        }
+
+        ctx.clearRect(0, 0, width, height);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(offscreen, 0, 0, width, height);
+        return true;
+    }
+
+    function extractVectorComponentsByGroupV54(groupMap, width, height, groupIndex, minArea) {
+        const visited = new Uint8Array(width * height);
+        const queue = new Int32Array(width * height);
+        const components = [];
+
+        for (let start = 0; start < groupMap.length; start += 1) {
+            if (visited[start] || groupMap[start] !== groupIndex) {
+                continue;
+            }
+
+            let head = 0;
+            let tail = 0;
+            queue[tail++] = start;
+            visited[start] = 1;
+
+            const pixels = [];
+            const bounds = {
+                minX: Infinity,
+                minY: Infinity,
+                maxX: -Infinity,
+                maxY: -Infinity
+            };
+
+            while (head < tail) {
+                const current = queue[head++];
+                const x = current % width;
+                const y = Math.floor(current / width);
+
+                pixels.push(current);
+                bounds.minX = Math.min(bounds.minX, x);
+                bounds.minY = Math.min(bounds.minY, y);
+                bounds.maxX = Math.max(bounds.maxX, x);
+                bounds.maxY = Math.max(bounds.maxY, y);
+
+                pushGroupNeighborV54(current - 1, x > 0, groupIndex, groupMap, visited, queue, tail, (nextTail) => { tail = nextTail; });
+                pushGroupNeighborV54(current + 1, x < width - 1, groupIndex, groupMap, visited, queue, tail, (nextTail) => { tail = nextTail; });
+                pushGroupNeighborV54(current - width, y > 0, groupIndex, groupMap, visited, queue, tail, (nextTail) => { tail = nextTail; });
+                pushGroupNeighborV54(current + width, y < height - 1, groupIndex, groupMap, visited, queue, tail, (nextTail) => { tail = nextTail; });
+            }
+
+            if (pixels.length < minArea) {
+                continue;
+            }
+
+            components.push({
+                groupIndex,
+                pixels,
+                area: pixels.length,
+                bounds,
+                width: bounds.maxX - bounds.minX + 1,
+                height: bounds.maxY - bounds.minY + 1
+            });
+        }
+
+        return components;
+    }
+
+    function pushGroupNeighborV54(index, inBounds, groupIndex, groupMap, visited, queue, tail, setTail) {
+        if (!inBounds || visited[index] || groupMap[index] !== groupIndex) {
+            return;
+        }
+
+        visited[index] = 1;
+        queue[tail] = index;
+        setTail(tail + 1);
+    }
+
+    function buildCleanComponentPolygonV54(component, groupMap, width, height, groupIndex) {
+        const boundary = [];
+        const pixelSet = new Set(component.pixels);
+        const sampleStep = Math.max(1, Math.floor(component.pixels.length / 1600));
+
+        for (let i = 0; i < component.pixels.length; i += sampleStep) {
+            const index = component.pixels[i];
+            const x = index % width;
+            const y = Math.floor(index / width);
+
+            if (isGroupBoundaryPixelV54(index, x, y, groupMap, width, height, groupIndex)) {
+                boundary.push({ x, y });
+                boundary.push({ x: x + 1, y });
+                boundary.push({ x, y: y + 1 });
+                boundary.push({ x: x + 1, y: y + 1 });
+            }
+        }
+
+        // 경계 샘플이 너무 적으면 bbox로라도 버튼 도형을 만든다.
+        if (boundary.length < 3) {
+            return [
+                { x: component.bounds.minX, y: component.bounds.minY },
+                { x: component.bounds.maxX + 1, y: component.bounds.minY },
+                { x: component.bounds.maxX + 1, y: component.bounds.maxY + 1 },
+                { x: component.bounds.minX, y: component.bounds.maxY + 1 }
+            ];
+        }
+
+        let polygon = convexHullV17(boundary);
+
+        // convex hull은 숫자/문자 때문에 파인 작은 흠집을 버튼 도형처럼 메우기 위한 목적이다.
+        // 너무 복잡한 외곽은 약하게 단순화하고, 거의 수평/수직인 변은 직선으로 맞춘다.
+        if (polygon.length > 8) {
+            const closed = polygon.concat([polygon[0]]);
+            const epsilon = Math.max(0.8, Math.min(2.8, Math.sqrt(component.area) * 0.035));
+            polygon = simplifyPolyline(closed, epsilon).slice(0, -1);
+        }
+
+        polygon = snapAlmostAxisAlignedEdges(polygon, 2);
+        polygon = removeDuplicatePolygonPoints(polygon);
+
+        return polygon.length >= 3 ? polygon : null;
+    }
+
+    function isGroupBoundaryPixelV54(index, x, y, groupMap, width, height, groupIndex) {
+        if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1) {
+            return true;
+        }
+
+        return groupMap[index - 1] !== groupIndex
+            || groupMap[index + 1] !== groupIndex
+            || groupMap[index - width] !== groupIndex
+            || groupMap[index + width] !== groupIndex;
+    }
+
+    function drawScaledPolygonV54(targetCtx, polygon, scale) {
+        targetCtx.beginPath();
+        targetCtx.moveTo(polygon[0].x * scale, polygon[0].y * scale);
+
+        for (let i = 1; i < polygon.length; i += 1) {
+            targetCtx.lineTo(polygon[i].x * scale, polygon[i].y * scale);
+        }
+
+        targetCtx.closePath();
+        targetCtx.fill();
+    }
+
+    function normalizeNoLineBackgroundV61(rgb) {
+        const fallback = { r: 242, g: 242, b: 242 };
+        if (!rgb) {
+            return fallback;
+        }
+
+        const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+        if (hsl.l < 0.78 || hsl.s > 0.18) {
+            return fallback;
+        }
+
+        return {
+            r: Math.max(235, clamp(Math.round(rgb.r), 0, 255)),
+            g: Math.max(235, clamp(Math.round(rgb.g), 0, 255)),
+            b: Math.max(235, clamp(Math.round(rgb.b), 0, 255))
+        };
+    }
+
+    function rgbToCssV54(rgb) {
+        return `rgb(${clamp(Math.round(rgb.r), 0, 255)}, ${clamp(Math.round(rgb.g), 0, 255)}, ${clamp(Math.round(rgb.b), 0, 255)})`;
+    }
+
+    function cleanupMinoritySeatIslandsV53(groupMap, width, height, maxIslandSize) {
+        const visited = new Uint8Array(width * height);
+        const queue = new Int32Array(width * height);
+        const effectiveMaxIslandSize = Math.max(1, Math.min(Number(maxIslandSize) || 120, 220));
+        let cleaned = 0;
+
+        for (let start = 0; start < groupMap.length; start += 1) {
+            const targetGroup = groupMap[start];
+            if (targetGroup < 0 || visited[start]) {
+                continue;
+            }
+
+            let head = 0;
+            let tail = 0;
+            queue[tail++] = start;
+            visited[start] = 1;
+            const component = [];
+            const neighborCounts = new Map();
+            const bounds = { minX: width, minY: height, maxX: -1, maxY: -1 };
+            let touchesEdge = false;
+
+            while (head < tail) {
+                const current = queue[head++];
+                component.push(current);
+                const x = current % width;
+                const y = Math.floor(current / width);
+                bounds.minX = Math.min(bounds.minX, x);
+                bounds.minY = Math.min(bounds.minY, y);
+                bounds.maxX = Math.max(bounds.maxX, x);
+                bounds.maxY = Math.max(bounds.maxY, y);
+                if (x === 0 || y === 0 || x === width - 1 || y === height - 1) {
+                    touchesEdge = true;
+                }
+                const neighbors = [];
+                if (x > 0) neighbors.push(current - 1);
+                if (x < width - 1) neighbors.push(current + 1);
+                if (y > 0) neighbors.push(current - width);
+                if (y < height - 1) neighbors.push(current + width);
+
+                neighbors.forEach((next) => {
+                    if (groupMap[next] === targetGroup) {
+                        if (!visited[next]) {
+                            visited[next] = 1;
+                            queue[tail++] = next;
+                        }
+                    } else if (groupMap[next] >= 0) {
+                        neighborCounts.set(groupMap[next], (neighborCounts.get(groupMap[next]) || 0) + 1);
+                    }
+                });
+            }
+
+            const area = component.length;
+            if (
+                touchesEdge
+                || area > effectiveMaxIslandSize
+                || neighborCounts.size === 0
+                || isProtectedButtonComponentV60(area, bounds, effectiveMaxIslandSize)
+            ) {
+                continue;
+            }
+
+            let replacement = -1;
+            let bestCount = 0;
+            let totalNeighborCount = 0;
+            neighborCounts.forEach((count, groupIndex) => {
+                totalNeighborCount += count;
+                if (count > bestCount) {
+                    bestCount = count;
+                    replacement = Number(groupIndex);
+                }
+            });
+
+            if (replacement < 0) {
+                continue;
+            }
+
+            const dominanceRatio = bestCount / Math.max(1, totalNeighborCount);
+            if (dominanceRatio < 0.68) {
+                continue;
+            }
+
+            component.forEach((index) => {
+                groupMap[index] = replacement;
+            });
+            cleaned += 1;
+        }
+
+        return cleaned;
+    }
+
+    function isProtectedButtonComponentV60(area, bounds, configuredSize) {
+        if (!bounds || bounds.maxX < bounds.minX || bounds.maxY < bounds.minY) {
+            return false;
+        }
+
+        const width = bounds.maxX - bounds.minX + 1;
+        const height = bounds.maxY - bounds.minY + 1;
+        const longSide = Math.max(width, height);
+        const shortSide = Math.max(1, Math.min(width, height));
+
+        // 버튼 한 칸/구역 한 덩어리는 작은 조각 흡수 대상이 아니다.
+        // 슬라이더를 크게 올려도 정상 구역이 주변 색으로 먹히지 않도록 보호한다.
+        if (area >= 80 && width >= 7 && height >= 7) {
+            return true;
+        }
+
+        if (area >= Math.max(45, configuredSize * 0.70) && width >= 6 && height >= 6) {
+            return true;
+        }
+
+        if (longSide >= 22 && shortSide >= 5) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function fillComponentRowSpansV54(groupMap, width, height) {
+        const visited = new Uint8Array(width * height);
+        const queue = new Int32Array(width * height);
+        let filled = 0;
+
+        for (let start = 0; start < groupMap.length; start += 1) {
+            const targetGroup = groupMap[start];
+            if (targetGroup < 0 || visited[start]) {
+                continue;
+            }
+
+            let head = 0;
+            let tail = 0;
+            queue[tail++] = start;
+            visited[start] = 1;
+            const rows = new Map();
+            let area = 0;
+            let minX = width;
+            let maxX = -1;
+            let minY = height;
+            let maxY = -1;
+
+            while (head < tail) {
+                const current = queue[head++];
+                const x = current % width;
+                const y = Math.floor(current / width);
+                area += 1;
+                minX = Math.min(minX, x);
+                maxX = Math.max(maxX, x);
+                minY = Math.min(minY, y);
+                maxY = Math.max(maxY, y);
+
+                const row = rows.get(y) || { min: width, max: -1 };
+                row.min = Math.min(row.min, x);
+                row.max = Math.max(row.max, x);
+                rows.set(y, row);
+
+                if (x > 0) {
+                    tail = pushSameGroupForRowSpanV54(current - 1, targetGroup, groupMap, visited, queue, tail);
+                }
+                if (x < width - 1) {
+                    tail = pushSameGroupForRowSpanV54(current + 1, targetGroup, groupMap, visited, queue, tail);
+                }
+                if (y > 0) {
+                    tail = pushSameGroupForRowSpanV54(current - width, targetGroup, groupMap, visited, queue, tail);
+                }
+                if (y < height - 1) {
+                    tail = pushSameGroupForRowSpanV54(current + width, targetGroup, groupMap, visited, queue, tail);
+                }
+            }
+
+            if (area < 18 || maxX < minX || maxY < minY) {
+                continue;
+            }
+
+            rows.forEach((row, y) => {
+                if (row.max <= row.min) {
+                    return;
+                }
+
+                for (let x = row.min; x <= row.max; x += 1) {
+                    const index = y * width + x;
+                    if (groupMap[index] < 0) {
+                        groupMap[index] = targetGroup;
+                        filled += 1;
+                    }
+                }
+            });
+        }
+
+        return filled;
+    }
+
+    function pushSameGroupForRowSpanV54(index, targetGroup, groupMap, visited, queue, tail) {
+        if (visited[index] || groupMap[index] !== targetGroup) {
+            return tail;
+        }
+        visited[index] = 1;
+        queue[tail] = index;
+        return tail + 1;
+    }
+
+    function detectNeutralBackgroundColorV53(src, width, height) {
+        const sampleStep = Math.max(1, Math.floor(Math.min(width, height) / 120));
+        const counts = new Map();
+
+        for (let y = 0; y < height; y += sampleStep) {
+            for (let x = 0; x < width; x += sampleStep) {
+                const offset = (y * width + x) * 4;
+                const a = src[offset + 3];
+                if (a < 10) {
+                    continue;
+                }
+                const r = src[offset];
+                const g = src[offset + 1];
+                const b = src[offset + 2];
+                const hsl = rgbToHsl(r, g, b);
+                const isNeutral = hsl.s <= 0.12 && hsl.l >= 0.72;
+                if (!isNeutral) {
+                    continue;
+                }
+                const key = `${Math.round(r / 8) * 8},${Math.round(g / 8) * 8},${Math.round(b / 8) * 8}`;
+                counts.set(key, (counts.get(key) || 0) + 1);
+            }
+        }
+
+        let bestKey = null;
+        let bestCount = -1;
+        counts.forEach((count, key) => {
+            if (count > bestCount) {
+                bestCount = count;
+                bestKey = key;
+            }
+        });
+
+        if (!bestKey) {
+            return { r: 236, g: 236, b: 236 };
+        }
+
+        const [r, g, b] = bestKey.split(",").map((value) => Number(value) || 236);
+        return { r, g, b };
+    }
+
+    function isLightSeparatorPixelV53(r, g, b, a) {
+        if (a < 10) {
+            return true;
+        }
+        const hsl = rgbToHsl(r, g, b);
+        return hsl.l >= 0.92 && hsl.s <= 0.18;
+    }
+
+    function bindStage2HeaderSaveV53() {
+        const headerSave = document.getElementById("seatmapHeaderSave");
+        if (!headerSave) {
+            return;
+        }
+
+        replaceButtonListenerV41(headerSave, () => {
+            saveButtonImageToServer();
+        });
+    }
+
     setTimeout(bindPart1ColorExtractV41, 0);
     setTimeout(bindPart2SolidifyV47, 0);
+    setTimeout(bindStage2HeaderSaveV53, 0);
 
 })();
 

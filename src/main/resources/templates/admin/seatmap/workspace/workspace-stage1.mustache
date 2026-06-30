@@ -2,16 +2,16 @@
     <aside class="crop-side-panel crop-side-panel--left">
         <section class="crop-tool-intro">
             <h1>도면 정리</h1>
-            <p>원본 PNG를 그대로 두고, 실제 제작에 사용할 영역만 자릅니다.</p>
+            <p>자르기 적용 시 이후 단계의 기준 도면이 선택 영역으로 변경됩니다.</p>
         </section>
 
         <div class="crop-step-list crop-step-list--unified">
-            <section class="crop-step is-active">
-                <button type="button" class="crop-step__header" aria-expanded="true">
+            <section class="crop-step is-active" id="cropSelectStep">
+                <button type="button" class="crop-step__header" id="cropSelectStepHeader" aria-expanded="true">
                     <span class="crop-step__number">1</span>
                     <span class="crop-step__title">
                         <strong>자를 영역 선택</strong>
-                        <em>원본 유지 · 선택 영역만 저장</em>
+                        <em>기준 도면 변경 · 이후 단계 반영</em>
                     </span>
                     <span class="crop-step__status">진행중</span>
                     <span class="crop-step__arrow">⌃</span>
@@ -21,8 +21,13 @@
                     <div class="crop-info-box crop-info-box--blue">
                         <strong>작업 방식</strong>
                         <p>
-                            도면은 흐리게 처리하지 않습니다. 이미지 위에서 드래그하면 빨간 점선으로 자를 영역만 표시됩니다.
+                            도면은 흐리게 처리하지 않습니다. 이미지 위에서 드래그하면 빨간 점선으로 자를 영역만 표시되고, 자르기 적용 시 실제 기준 도면이 해당 영역으로 교체됩니다.
                         </p>
+                    </div>
+
+                    <div class="crop-info-box crop-info-box--warning">
+                        <strong>주의</strong>
+                        <p>자르기 적용은 기준 도면을 바꾸는 작업입니다. 버튼 이미지화, 구역, 좌석 배치는 변경된 도면 기준으로 다시 진행됩니다.</p>
                     </div>
 
                     <div class="crop-current-card">
@@ -39,74 +44,52 @@
                     <div class="crop-control-note">
                         <b>선택 조작</b>
                         <span>영역 내부 드래그 = 이동</span>
-                        <span>우측 하단 핸들 드래그 = 크기 조절</span>
+                        <span>모서리 드래그 = 선택 영역 크기 조절</span>
                     </div>
 
-                    <button type="button" class="crop-primary-btn crop-primary-btn--next" id="cropSave">
-                        자르기 적용
+                    <button type="button" class="crop-primary-btn crop-primary-btn--next" id="cropApply">
+                        자르기
                     </button>
                 </div>
             </section>
 
-            <section class="crop-step is-disabled">
-                <button type="button" class="crop-step__header" disabled>
+            <section class="crop-step crop-step--transform is-disabled" id="transformStep">
+                <button type="button" class="crop-step__header" id="transformStepHeader" aria-expanded="false" disabled>
                     <span class="crop-step__number">2</span>
                     <span class="crop-step__title">
-                        <strong>버튼 이미지화</strong>
-                        <em>색상 추출 · 버튼 도형 생성</em>
+                        <strong>도면 방향 보정</strong>
+                        <em>회전 · 좌우/상하 뒤집기</em>
                     </span>
                     <span class="crop-step__status">대기</span>
                     <span class="crop-step__arrow">⌄</span>
                 </button>
+
+                <div class="crop-step__body">
+                    <div class="crop-info-box crop-info-box--blue">
+                        <strong>적용 기준</strong>
+                        <p>
+                            도면 방향을 확인한 뒤 저장하고 나가기를 누르면 Stage 1 결과를 저장하고 메인 화면으로 돌아갑니다.
+                        </p>
+                    </div>
+
+                    <div class="crop-transform-grid">
+                        <button type="button" class="crop-transform-btn" id="stage1RotateLeft" disabled>↺ 왼쪽 회전</button>
+                        <button type="button" class="crop-transform-btn" id="stage1RotateRight" disabled>↻ 오른쪽 회전</button>
+                        <button type="button" class="crop-transform-btn" id="stage1FlipX" disabled>⇋ 좌우 뒤집기</button>
+                        <button type="button" class="crop-transform-btn" id="stage1FlipY" disabled>⇅ 상하 뒤집기</button>
+                    </div>
+
+                    <div class="crop-transform-status">
+                        <span>현재 방향</span>
+                        <b id="cropTransformSummary">회전 0° · 뒤집기 없음</b>
+                    </div>
+
+                    <button type="button" class="crop-primary-btn crop-primary-btn--next" id="transformApply" disabled>
+                        저장하고 나가기
+                    </button>
+                </div>
             </section>
 
-            <section class="crop-step is-disabled">
-                <button type="button" class="crop-step__header" disabled>
-                    <span class="crop-step__number">3</span>
-                    <span class="crop-step__title">
-                        <strong>구역 추출</strong>
-                        <em>구역명 · 등급 지정</em>
-                    </span>
-                    <span class="crop-step__status">대기</span>
-                    <span class="crop-step__arrow">⌄</span>
-                </button>
-            </section>
-
-            <section class="crop-step is-disabled">
-                <button type="button" class="crop-step__header" disabled>
-                    <span class="crop-step__number">4</span>
-                    <span class="crop-step__title">
-                        <strong>구역 보정</strong>
-                        <em>polygon 정리</em>
-                    </span>
-                    <span class="crop-step__status">대기</span>
-                    <span class="crop-step__arrow">⌄</span>
-                </button>
-            </section>
-
-            <section class="crop-step is-disabled">
-                <button type="button" class="crop-step__header" disabled>
-                    <span class="crop-step__number">5</span>
-                    <span class="crop-step__title">
-                        <strong>좌석 배치</strong>
-                        <em>행 · 열 좌석 생성</em>
-                    </span>
-                    <span class="crop-step__status">대기</span>
-                    <span class="crop-step__arrow">⌄</span>
-                </button>
-            </section>
-
-            <section class="crop-step is-disabled">
-                <button type="button" class="crop-step__header" disabled>
-                    <span class="crop-step__number">6</span>
-                    <span class="crop-step__title">
-                        <strong>최종 꾸미기</strong>
-                        <em>예매 화면 최종 확인</em>
-                    </span>
-                    <span class="crop-step__status">대기</span>
-                    <span class="crop-step__arrow">⌄</span>
-                </button>
-            </section>
         </div>
     </aside>
 
@@ -131,7 +114,7 @@
             </div>
 
             <div class="crop-mini-help">
-                미니맵은 원본 확인용입니다. 실제 자르기는 중앙 도면에서 진행합니다.
+                미니맵은 현재 기준 도면 확인용입니다. 자르기 적용 후에는 이 기준 도면도 함께 갱신됩니다.
             </div>
         </section>
 
@@ -147,7 +130,7 @@
             </div>
 
             <div class="crop-result-path">
-                <label>저장 위치</label>
+                <label>갱신 위치</label>
                 <code id="cropSavePath">/temp/seatmap/도면명/seatmap-image.png</code>
             </div>
         </section>

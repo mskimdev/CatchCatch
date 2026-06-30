@@ -15,11 +15,15 @@
 {{> admin/seatmap/common/work-toolbar}}
 
 <div class="seatmap-workspace seatmap-workspace--stage4"
-     id="stage2App"
-     data-stage1-url="{{stage3Url}}"
-     data-stage3-url="{{stage5Url}}"
+     id="stage4App"
+     data-project-id="{{projectId}}"
+     data-stage3-url="{{stage3Url}}"
+     data-stage5-url="{{stage5Url}}"
      data-prev-stage-url="{{stage3Url}}"
-     data-next-stage-url="{{stage5Url}}">
+     data-next-stage-url="{{stage5Url}}"
+     data-seatmap-image-url="{{seatmapImageUrl}}"
+     data-sections-url="{{projectPath}}/seatmap-sections.json"
+     data-seats-url="/temp/seatmap/seats/{{projectId}}-seatmap-seats.json">
 
     {{> admin/seatmap/workspace/workspace-stage4}}
 

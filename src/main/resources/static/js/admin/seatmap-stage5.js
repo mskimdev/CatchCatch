@@ -1,2568 +1,1343 @@
 (() => {
     "use strict";
 
-    const STORAGE_KEYS = {
-        sections: "concert_sections",
-        overviewImage: "concert_overviewImage",
-        imageMeta: "concert_imageMeta",
-        stage3Seats: "concert_stage3_seats",
-        stage3Layouts: "concert_stage3_layouts",
-        stage3Data: "concert_stage3Data",
-        layoutJson: "concert_layout_json",
-        bookingJson: "concert_booking_seats",
-        finalJson: "concert_final_seats",
-        stage: "concert_stage",
-        generatedOverviewImage: "concert_generated_overviewImage"
+    const STORAGE = {
+        projectId: "seatmap_current_project_id",
+        folderName: "seatmap_current_folder_name",
+        sections: "seatmap_stage3_sections",
+        sectionsCompat: "concert_sections",
+        sectionsHeader: "concert_stage1_sections",
+        seats: "seatmap_stage4_seats",
+        seatsCompat: "concert_final_seats",
+        bookingButtons: "seatmap_stage5_booking_buttons",
+        bookingButtonsCompat: "concert_booking_buttons",
+        bookingButtonsCompat2: "concert_stage5_booking_buttons",
+        bookingButtonsUrl: "seatmap_booking_buttons_url"
     };
 
-    const PART = {
-        BASE: 1,
-        EDIT: 2
-    };
-
-    const STATUS = {
-        AVAILABLE: "AVAILABLE",
-        REMOVED: "REMOVED",
-        OBSTRUCTED: "OBSTRUCTED"
-    };
-
-    const COLORS = {
-        bg: "#f8fafc",
-        stage: "#c9c9c9",
-        sectionStroke: "#ffffff",
-        selected: "#ef4444",
-        sectionFallback: "#8b5cf6",
-        seat: "#dedede",
-        seatLine: "#ffffff",
-        selectedSeat: "#2563eb",
-        obstructed: "#f59e0b",
-        removed: "rgba(148,163,184,.22)",
-        guide: "rgba(100,116,139,.45)",
-        rotate: "#ef4444",
-        stageFill: "#111827",
-        stageText: "#ffffff",
-        stageGuide: "#7c3aed"
-    };
+    const SAVE_URL = "/admin/seatmap/temp-save";
+    const DEFAULT_COLOR = "#8b5cf6";
+    const AVAILABLE = "AVAILABLE";
 
     const dom = {};
-
     const state = {
-        part: PART.BASE,
-        sections: readJson(STORAGE_KEYS.sections, []),
-        overviewImageUrl: findInitialOverviewImageUrl(),
-        overviewImage: null,
-        seatsBySection: readJson(STORAGE_KEYS.stage3Seats, {}),
-        layoutsBySection: readJson(STORAGE_KEYS.stage3Layouts, {}),
-        selectedId: null,
-        completedParts: new Set(),
-        stage: readJson(STORAGE_KEYS.stage, null),
-        stageEditMode: false,
-        stageDragging: false,
-        stageDragOffsetX: 0,
-        stageDragOffsetY: 0,
+        projectId: "seat",
+        stage4Url: "",
+        stage6Url: "",
+        seatmapImageUrl: "",
+        croppedImageUrl: "",
+        sectionsUrl: "",
+        seatsUrl: "",
+        bookingButtonsUrl: "",
+        saveUrl: SAVE_URL,
 
-        mapZoom: 1,
-        mapPanX: 0,
-        mapPanY: 0,
-        mapDragging: false,
-        mapMoved: false,
-        mapStartX: 0,
-        mapStartY: 0,
-        mapStartPanX: 0,
-        mapStartPanY: 0,
-        mapTransform: { scale: 1, x: 0, y: 0 },
+        sections: [],
+        seats: [],
+        buttons: [],
+        warnings: [],
+        selectedId: "",
+        hoverId: "",
 
-        editorTransform: { scale: 1, x: 0, y: 0 },
-        width: 980,
-        height: 660,
+        image: null,
+        baseImageLoaded: false,
+        baseImageUrl: "",
+        width: 1000,
+        height: 700,
+        zoom: 1,
 
-        selectedSeatIds: new Set(),
-        hoverSeatId: null,
-
-        draggingBox: false,
-        movingSeats: false,
-        pointerDown: false,
-        dragStart: null,
-        dragCurrent: null,
-        moveOrigin: null,
-        movedSeatSnapshot: null,
-
-        rotationDragging: false,
-        rotationStartAngle: 0,
-        rotationBaseAngle: 0,
-        rotationHandleHitRadius: 16
+        showSectionPolygon: true,
+        showButtonPolygon: true,
+        showSeats: true,
+        showLabels: true,
+        draggingLabelId: "",
+        labelDragOffset: { x: 0, y: 0 },
+        completedParts: new Set()
     };
 
-    init();
+    document.addEventListener("DOMContentLoaded", init);
 
-    function init() {
+    async function init() {
         cacheDom();
-        normalizeSections();
-        normalizeStageState();
-        setInitialSelection();
-        setupCanvasSizes();
+        readRouteState();
         bindEvents();
-        loadOverviewImage();
-        syncSelects();
-        ensureAllLayoutsHaveAngle();
-        renderAll();
-        setPart(PART.BASE, false);
+        setupCanvases(state.width, state.height);
+        await loadAllData();
+        await loadBaseImage();
+        await tryLoadSavedButtons(false);
+        if (!state.buttons.length) {
+            generateButtons({ silent: true });
+        }
+        setPart(1, false);
+        syncAll();
+
+        window.SeatMapStage5 = {
+            save: saveBookingButtonsToServer,
+            getButtons: () => createBookingButtonsJson(),
+            exportDebugImage: exportDebugImageDataUrl
+        };
     }
 
     function cacheDom() {
-        dom.app = $("stage3App");
-        dom.toast = $("toast");
+        [
+            "stage5App", "toast", "part1Panel", "part2Panel", "part3Panel", "part4Panel",
+            "partBtn1", "partBtn2", "partBtn3", "partBtn4", "part1Status", "part2Status", "part3Status", "part4Status",
+            "sectionCountText", "seatCountText", "matchFailCountText", "missingNameCountText", "warningList",
+            "reloadDataBtn", "generateButtonsBtn", "loadSavedButtonsBtn", "showSectionPolygon", "showButtonPolygon",
+            "showSeats", "showLabels", "labelXInput", "labelYInput", "colorInput", "strokeInput", "visibleInput",
+            "clickableInput", "applySelectedBtn", "buttonList", "saveSummary", "saveBookingButtonsBtn", "toStage6Btn",
+            "canvasScroll", "canvasBox", "stage5BaseCanvas", "stage5OverlayCanvas", "canvasSize", "canvasTitle", "stage5Tooltip",
+            "miniImg", "previewCanvas", "infoSectionId", "infoSectionName", "infoFloorGrade", "infoPrice", "infoSeatCount",
+            "infoAvailableCount", "infoLabelPoint", "infoFlags", "jsonPreview", "zoomIn", "zoomOut", "zoomReset", "zoomFit",
+            "resetView", "zoomValue", "zoomTool"
+        ].forEach((id) => {
+            dom[id] = document.getElementById(id);
+        });
 
-        dom.miniCanvas = $("miniCanvas");
-        dom.miniCtx = dom.miniCanvas?.getContext("2d");
-        dom.miniFrame = $("miniFrame");
-
-        dom.seatBase = $("seatBase");
-        dom.seatOverlay = $("seatOverlay");
-        dom.seatBaseCtx = dom.seatBase?.getContext("2d");
-        dom.seatOverlayCtx = dom.seatOverlay?.getContext("2d");
-        dom.seatCanvasBox = $("seatCanvasBox");
-
-        dom.popover = $("seatActionPopover");
-        dom.canvasTitle = $("canvasTitle");
-        dom.sizeText = $("sizeText");
-
-        dom.zoomIn = $("zoomIn");
-        dom.zoomOut = $("zoomOut");
-        dom.zoomReset = $("zoomReset");
-        dom.zoomValue = $("zoomValue");
-
-        dom.stageEditMode = $("stageEditMode");
-        dom.stageX = $("stageX");
-        dom.stageY = $("stageY");
-        dom.stageW = $("stageW");
-        dom.stageH = $("stageH");
-        dom.resetStagePosition = $("resetStagePosition");
-        dom.autoStageAngles = $("autoStageAngles");
-
-        dom.partBtn1 = $("partBtn1");
-        dom.partBtn2 = $("partBtn2");
-        dom.part1Panel = $("part1Panel");
-        dom.part2Panel = $("part2Panel");
-        dom.stage3Guide = $("stage3Guide");
-
-        dom.baseSectionSelect = $("baseSectionSelect");
-        dom.editSectionSelect = $("editSectionSelect");
-        dom.baseRows = $("baseRows");
-        dom.baseCols = $("baseCols");
-        dom.editRows = $("editRows");
-        dom.editCols = $("editCols");
-
-        dom.applyBaseOne = $("applyBaseOne");
-        dom.applyBaseAll = $("applyBaseAll");
-        dom.regenSelected = $("regenSelected");
-        dom.sectionsList1 = $("sectionsList1");
-        dom.goPart2 = $("goPart2");
-        dom.toStage4 = $("toStage4");
-
-        dom.selName = $("selName");
-        dom.selCount = $("selCount");
-        dom.selectedCount = $("selectedCount");
-        dom.selObstructed = $("selObstructed");
-
-        dom.seatWidthRange = $("seatWidthRange");
-        dom.seatHeightRange = $("seatHeightRange");
-        dom.gapXRange = $("gapXRange");
-        dom.gapYRange = $("gapYRange");
-        dom.paddingXRange = $("paddingXRange");
-        dom.paddingYRange = $("paddingYRange");
-        dom.offsetXRange = $("offsetXRange");
-        dom.offsetYRange = $("offsetYRange");
-
-        dom.seatWidthValue = $("seatWidthValue");
-        dom.seatHeightValue = $("seatHeightValue");
-        dom.gapXValue = $("gapXValue");
-        dom.gapYValue = $("gapYValue");
-        dom.paddingXValue = $("paddingXValue");
-        dom.paddingYValue = $("paddingYValue");
-        dom.offsetXValue = $("offsetXValue");
-        dom.offsetYValue = $("offsetYValue");
-
-        dom.resetLayoutBtn = $("resetLayoutBtn");
-        dom.saveLayoutBtn = $("saveLayoutBtn");
-
-        dom.applyRemove = $("applyRemove");
-        dom.applyAvailable = $("applyAvailable");
-        dom.applyObstructed = $("applyObstructed");
-        dom.clearSelection = $("clearSelection");
+        dom.baseCtx = dom.stage5BaseCanvas?.getContext("2d", { willReadFrequently: true });
+        dom.overlayCtx = dom.stage5OverlayCanvas?.getContext("2d", { willReadFrequently: true });
+        dom.previewCtx = dom.previewCanvas?.getContext("2d", { willReadFrequently: true });
     }
 
-    function $(id) {
-        return document.getElementById(id);
+    function readRouteState() {
+        const root = dom.stage5App;
+        const params = new URLSearchParams(location.search);
+        state.projectId = sanitizeProjectId(
+            params.get("projectId")
+            || root?.dataset.projectId
+            || localStorage.getItem(STORAGE.folderName)
+            || localStorage.getItem(STORAGE.projectId)
+            || "seat"
+        );
+        state.stage4Url = root?.dataset.stage4Url || `/admin/seatmap/stage/4?projectId=${encodeURIComponent(state.projectId)}`;
+        state.stage6Url = root?.dataset.stage6Url || `/admin/seatmap/stage/6?projectId=${encodeURIComponent(state.projectId)}`;
+        state.seatmapImageUrl = root?.dataset.seatmapImageUrl || projectFileUrl("seatmap-image.png");
+        state.croppedImageUrl = root?.dataset.croppedImageUrl || projectFileUrl("cropped-image.png");
+        state.sectionsUrl = root?.dataset.sectionsUrl || projectFileUrl("seatmap-sections.json");
+        state.seatsUrl = root?.dataset.seatsUrl || `/temp/seatmap/seats/${encodeURIComponent(state.projectId)}-seatmap-seats.json`;
+        state.bookingButtonsUrl = root?.dataset.bookingButtonsUrl || projectFileUrl("booking-buttons.json");
+        state.saveUrl = root?.dataset.saveUrl || SAVE_URL;
+
+        localStorage.setItem(STORAGE.projectId, state.projectId);
+        localStorage.setItem(STORAGE.folderName, state.projectId);
+    }
+
+    function bindEvents() {
+        bind(dom.partBtn1, "click", () => setPart(1));
+        bind(dom.partBtn2, "click", () => setPart(2));
+        bind(dom.partBtn3, "click", () => setPart(3));
+        bind(dom.partBtn4, "click", () => setPart(4));
+
+        bind(dom.reloadDataBtn, "click", async () => {
+            await loadAllData({ forceServer: true });
+            if (!state.buttons.length) generateButtons({ silent: true });
+            syncAll();
+            toast("입력 데이터 다시 읽기 완료");
+        });
+        bind(dom.generateButtonsBtn, "click", () => generateButtons());
+        bind(dom.loadSavedButtonsBtn, "click", () => tryLoadSavedButtons(true));
+        bind(dom.saveBookingButtonsBtn, "click", () => saveBookingButtonsToServer());
+        bind(dom.toStage6Btn, "click", goStage6);
+        bind(dom.applySelectedBtn, "click", applySelectedControls);
+
+        [dom.showSectionPolygon, dom.showButtonPolygon, dom.showSeats, dom.showLabels].forEach((input) => {
+            bind(input, "change", () => {
+                state.showSectionPolygon = Boolean(dom.showSectionPolygon?.checked);
+                state.showButtonPolygon = Boolean(dom.showButtonPolygon?.checked);
+                state.showSeats = Boolean(dom.showSeats?.checked);
+                state.showLabels = Boolean(dom.showLabels?.checked);
+                drawAll();
+            });
+        });
+
+        [dom.labelXInput, dom.labelYInput, dom.colorInput, dom.strokeInput, dom.visibleInput, dom.clickableInput].forEach((input) => {
+            bind(input, "change", applySelectedControls);
+            bind(input, "input", applySelectedControls);
+        });
+
+        bind(dom.stage5OverlayCanvas, "pointerdown", handlePointerDown);
+        bind(dom.stage5OverlayCanvas, "pointermove", handlePointerMove);
+        bind(dom.stage5OverlayCanvas, "pointerup", endPointerDrag);
+        bind(dom.stage5OverlayCanvas, "pointerleave", () => {
+            state.hoverId = "";
+            hideTooltip();
+            endPointerDrag();
+            drawOverlay();
+        });
+        bind(dom.stage5OverlayCanvas, "click", handleCanvasClick);
+
+        bind(dom.zoomIn, "click", () => setZoom(state.zoom + 0.1));
+        bind(dom.zoomOut, "click", () => setZoom(state.zoom - 0.1));
+        bind(dom.zoomReset, "click", () => setZoom(1));
+        bind(dom.zoomFit, "click", fitZoom);
+        bind(dom.resetView, "click", () => {
+            setZoom(1);
+            if (dom.canvasScroll) {
+                dom.canvasScroll.scrollLeft = 0;
+                dom.canvasScroll.scrollTop = 0;
+            }
+        });
+        bind(dom.zoomTool, "click", () => toast("도면은 스크롤과 휠로 확인하고, label은 드래그해서 수정합니다."));
+    }
+
+    function bind(element, eventName, handler) {
+        if (element) element.addEventListener(eventName, handler);
+    }
+
+    async function loadAllData(options = {}) {
+        state.warnings = [];
+        await Promise.all([
+            loadSections(options),
+            loadSeats(options)
+        ]);
+        validateMatches();
+        setPartDone(1, state.sections.length > 0 && state.seats.length > 0);
+    }
+
+    async function loadSections(options = {}) {
+        const server = options.forceServer ? null : null;
+        try {
+            const json = await fetchJson(state.sectionsUrl);
+            const source = normalizeArray(json.sections || json.items || json);
+            state.sections = source.map(normalizeSection).filter((section) => section.sectionId || section.sectionName || section.polygon.length);
+            persistJson(STORAGE.sections, state.sections);
+            persistJson(STORAGE.sectionsCompat, state.sections);
+            return;
+        } catch (error) {
+            console.warn("[SeatTrace Stage5] seatmap-sections.json 로드 실패", error);
+        }
+
+        const local = readJson(STORAGE.sections, null) || readJson(STORAGE.sectionsCompat, null) || readJson(STORAGE.sectionsHeader, null) || server;
+        if (Array.isArray(local) && local.length) {
+            state.sections = local.map(normalizeSection).filter((section) => section.sectionId || section.sectionName || section.polygon.length);
+            state.warnings.push("seatmap-sections.json 서버 파일을 읽지 못해 localStorage 구역 데이터를 사용했습니다.");
+        } else {
+            state.sections = [];
+            state.warnings.push("seatmap-sections.json을 찾지 못했습니다. Stage 3 저장을 먼저 확인하세요.");
+        }
+    }
+
+    async function loadSeats(options = {}) {
+        try {
+            const json = await fetchJson(state.seatsUrl);
+            const source = normalizeArray(json.seats || json.items || json);
+            state.seats = source.map(normalizeSeat).filter((seat) => seat.sectionId || seat.id);
+            persistJson(STORAGE.seats, state.seats);
+            persistJson(STORAGE.seatsCompat, state.seats);
+            return;
+        } catch (error) {
+            console.warn("[SeatTrace Stage5] seatmap-seats.json 로드 실패", error);
+        }
+
+        const local = readJson(STORAGE.seats, null) || readJson(STORAGE.seatsCompat, null);
+        if (Array.isArray(local) && local.length) {
+            state.seats = local.map(normalizeSeat).filter((seat) => seat.sectionId || seat.id);
+            state.warnings.push("좌석 JSON 서버 파일을 읽지 못해 localStorage 좌석 데이터를 사용했습니다.");
+        } else if (local && typeof local === "object") {
+            state.seats = Object.values(local).flat().map(normalizeSeat).filter((seat) => seat.sectionId || seat.id);
+            state.warnings.push("좌석 JSON 서버 파일을 읽지 못해 localStorage 좌석 데이터를 사용했습니다.");
+        } else {
+            state.seats = [];
+            state.warnings.push("seats/{projectId}-seatmap-seats.json을 찾지 못했습니다. Stage 4 저장을 먼저 확인하세요.");
+        }
+    }
+
+    async function loadBaseImage() {
+        const candidates = unique([
+            state.seatmapImageUrl,
+            projectFileUrl("seatmap-image.png"),
+            state.croppedImageUrl,
+            projectFileUrl("cropped-image.png")
+        ]).filter(Boolean);
+
+        for (const url of candidates) {
+            try {
+                const image = await loadImage(noCache(url));
+                state.image = image;
+                state.baseImageLoaded = true;
+                state.baseImageUrl = url;
+                setupCanvases(image.naturalWidth || image.width, image.naturalHeight || image.height);
+                drawBase();
+                if (dom.miniImg) dom.miniImg.src = noCache(url);
+                return;
+            } catch (error) {
+                console.warn("[SeatTrace Stage5] 기준 도면 로드 실패", url, error);
+            }
+        }
+
+        state.image = null;
+        state.baseImageLoaded = false;
+        setupCanvases(1000, 700);
+        drawBase();
+        state.warnings.push("seatmap-image.png와 cropped-image.png를 읽지 못했습니다. 배경 없이 polygon만 표시합니다.");
+    }
+
+    async function tryLoadSavedButtons(showMessage) {
+        let loaded = [];
+        try {
+            const json = await fetchJson(state.bookingButtonsUrl);
+            loaded = normalizeArray(json.buttons || json.areas || json);
+        } catch (error) {
+            const local = readJson(STORAGE.bookingButtons, null)
+                || readJson(STORAGE.bookingButtonsCompat, null)
+                || readJson(STORAGE.bookingButtonsCompat2, null);
+            loaded = normalizeArray(local);
+        }
+
+        if (!loaded.length) {
+            if (showMessage) toast("저장된 booking-buttons.json이 없습니다.");
+            return false;
+        }
+
+        const bySection = new Map(state.sections.map((section) => [section.sectionId, section]));
+        state.buttons = loaded.map((button, index) => normalizeBookingButton(button, bySection.get(String(button.sectionId || "")), index)).filter((button) => button.sectionId && button.sectionName && button.polygon.length >= 3);
+        persistButtonsLocal();
+        setPartDone(2, state.buttons.length > 0);
+        setPartDone(3, state.buttons.length > 0);
+        if (!state.selectedId && state.buttons.length) state.selectedId = state.buttons[0].id;
+        syncAll();
+        if (showMessage) toast(`booking button ${state.buttons.length}개 불러오기 완료`);
+        return true;
+    }
+
+    function normalizeSection(raw, index = 0) {
+        const polygons = getPolygons(raw);
+        const polygon = polygons[0] || [];
+        const bbox = normalizeBbox(raw.bbox) || getBbox(polygon);
+        const sectionName = firstText(raw.sectionName, raw.name, raw.section, raw.label);
+        const sectionId = firstText(raw.sectionId, raw.id);
+
+        return {
+            raw,
+            id: firstText(raw.id, sectionId),
+            sectionId,
+            sectionName,
+            name: sectionName,
+            section: sectionName,
+            label: firstText(raw.label, sectionName),
+            groupKey: raw.groupKey ?? raw.group ?? raw.groupName ?? "",
+            groupIndex: raw.groupIndex ?? raw.index ?? index + 1,
+            floor: raw.floor ?? "",
+            grade: raw.grade ?? raw.gradeName ?? "",
+            price: numberOrBlank(raw.price ?? raw.seatPrice),
+            color: normalizeColor(raw.color || raw.renderColor || raw.fillColor || colorByIndex(index)),
+            renderColor: normalizeColor(raw.renderColor || raw.color || raw.fillColor || colorByIndex(index)),
+            polygon,
+            polygons: polygons.length ? polygons : (polygon.length ? [polygon] : []),
+            bbox,
+            angle: Number(raw.angle || 0)
+        };
+    }
+
+    function normalizeSeat(raw) {
+        const sectionId = firstText(raw.sectionId, raw.section_id, raw.sectionKey);
+        const sectionName = firstText(raw.sectionName, raw.section, raw.name, raw.label);
+        return {
+            ...raw,
+            id: raw.id || raw.seatId || "",
+            sectionId,
+            sectionName,
+            section: firstText(raw.section, sectionName),
+            groupKey: raw.groupKey ?? "",
+            groupIndex: raw.groupIndex ?? "",
+            floor: raw.floor ?? "",
+            grade: raw.grade ?? raw.gradeName ?? "",
+            price: numberOrBlank(raw.price ?? raw.seatPrice),
+            row: raw.row ?? raw.rowName ?? raw.seatRow ?? "",
+            col: raw.col ?? raw.no ?? raw.seatNo ?? raw.seatCol ?? "",
+            status: String(raw.status || AVAILABLE).toUpperCase(),
+            x: Number(raw.x || 0),
+            y: Number(raw.y || 0),
+            size: Number(raw.size || raw.w || raw.width || 6),
+            angle: Number(raw.angle || 0)
+        };
+    }
+
+    function normalizeBookingButton(raw, section, index = 0) {
+        const polygon = normalizePoints(raw.polygon || raw.points || section?.polygon || []);
+        const sectionId = firstText(raw.sectionId, section?.sectionId);
+        const sectionName = firstText(raw.sectionName, raw.name, raw.section, raw.label, section?.sectionName);
+        const sectionSeats = state.seats.filter((seat) => seat.sectionId === sectionId);
+        const labelPoint = normalizePoint(raw.labelPoint) || normalizePoint({ x: raw.x, y: raw.y }) || getSafeLabelPoint(polygon);
+        const color = normalizeColor(raw.color || section?.color || section?.renderColor || colorByIndex(index));
+        const strokeColor = normalizeColor(raw.strokeColor || color);
+
+        return {
+            id: firstText(raw.id, raw.buttonId, `button-${sectionId || index + 1}`),
+            sectionId,
+            sectionName,
+            section: firstText(raw.section, sectionName),
+            name: firstText(raw.name, sectionName),
+            label: firstText(raw.label, sectionName),
+            groupKey: raw.groupKey ?? section?.groupKey ?? "",
+            groupIndex: raw.groupIndex ?? section?.groupIndex ?? index + 1,
+            floor: raw.floor ?? section?.floor ?? "",
+            grade: raw.grade ?? section?.grade ?? "",
+            price: numberOrBlank(raw.price ?? section?.price),
+            polygon,
+            labelPoint,
+            x: round(labelPoint.x),
+            y: round(labelPoint.y),
+            seatCount: Number(raw.seatCount ?? sectionSeats.length),
+            availableSeatCount: Number(raw.availableSeatCount ?? sectionSeats.filter(isAvailableSeat).length),
+            color,
+            hoverColor: raw.hoverColor || toHoverColor(color),
+            strokeColor,
+            visible: raw.visible !== false,
+            clickable: raw.clickable !== false
+        };
+    }
+
+    function validateMatches() {
+        const sectionIds = new Set(state.sections.map((section) => section.sectionId).filter(Boolean));
+        const seatSectionIds = new Set(state.seats.map((seat) => seat.sectionId).filter(Boolean));
+
+        const missingName = state.sections.filter((section) => !section.sectionName).length;
+        const missingSectionId = state.sections.filter((section) => !section.sectionId).length;
+        const missingPolygon = state.sections.filter((section) => section.polygon.length < 3).length;
+        const unmatchedSeats = state.seats.filter((seat) => seat.sectionId && !sectionIds.has(seat.sectionId)).length;
+        const sectionsWithoutSeats = state.sections.filter((section) => section.sectionId && !seatSectionIds.has(section.sectionId)).length;
+        const missingMeta = state.sections.filter((section) => !section.floor || !section.grade || section.price === "").length;
+
+        state.matchFailCount = unmatchedSeats;
+        state.missingNameCount = missingName;
+
+        const list = [];
+        if (missingSectionId) list.push(`sectionId가 없는 구역 ${missingSectionId}개: 저장 대상에서 제외됩니다.`);
+        if (missingName) list.push(`sectionName/name/section/label이 없는 구역 ${missingName}개: 임시명 생성 없이 저장을 막습니다.`);
+        if (missingPolygon) list.push(`polygon이 없는 구역 ${missingPolygon}개: bbox만으로 버튼을 만들지 않으므로 제외됩니다.`);
+        if (unmatchedSeats) list.push(`좌석 JSON에는 있으나 section JSON에 없는 sectionId 좌석 ${unmatchedSeats}개가 있습니다.`);
+        if (sectionsWithoutSeats) list.push(`section은 있으나 좌석이 없는 구역 ${sectionsWithoutSeats}개가 있습니다.`);
+        if (missingMeta) list.push(`floor/grade/price 중 누락된 구역 ${missingMeta}개가 있습니다. section 값 우선, 없으면 좌석 값으로 보정합니다.`);
+        state.warnings = unique([...state.warnings, ...list]);
+    }
+
+    function generateButtons(options = {}) {
+        const previousBySection = new Map(state.buttons.map((button) => [button.sectionId, button]));
+        const seatsBySection = groupBy(state.seats, (seat) => seat.sectionId || "");
+        const generated = [];
+        const blocked = [];
+
+        state.sections.forEach((section, index) => {
+            if (!section.sectionId || !section.sectionName || section.polygon.length < 3) {
+                blocked.push(section.sectionId || section.sectionName || `index-${index + 1}`);
+                return;
+            }
+
+            const sectionSeats = seatsBySection[section.sectionId] || [];
+            const firstSeat = sectionSeats[0] || {};
+            const previous = previousBySection.get(section.sectionId);
+            const color = normalizeColor(previous?.color || section.color || section.renderColor || colorByIndex(index));
+            const strokeColor = normalizeColor(previous?.strokeColor || color);
+            const labelPoint = previous?.labelPoint ? copyPoint(previous.labelPoint) : getSafeLabelPoint(section.polygon);
+            const floor = firstText(section.floor, firstSeat.floor);
+            const grade = firstText(section.grade, firstSeat.grade);
+            const price = numberOrBlank(section.price !== "" ? section.price : firstSeat.price);
+
+            generated.push({
+                id: previous?.id || `button-${section.sectionId}`,
+                sectionId: section.sectionId,
+                sectionName: section.sectionName,
+                section: section.sectionName,
+                name: section.sectionName,
+                label: section.sectionName,
+                groupKey: section.groupKey,
+                groupIndex: section.groupIndex,
+                floor,
+                grade,
+                price,
+                polygon: section.polygon.map(copyPoint),
+                labelPoint,
+                x: round(labelPoint.x),
+                y: round(labelPoint.y),
+                seatCount: sectionSeats.length,
+                availableSeatCount: sectionSeats.filter(isAvailableSeat).length,
+                color,
+                hoverColor: toHoverColor(color),
+                strokeColor,
+                visible: previous?.visible !== false,
+                clickable: previous?.clickable !== false
+            });
+        });
+
+        state.buttons = generated;
+        if (!state.selectedId || !state.buttons.some((button) => button.id === state.selectedId)) {
+            state.selectedId = state.buttons[0]?.id || "";
+        }
+        persistButtonsLocal();
+        setPartDone(2, state.buttons.length > 0);
+        setPartDone(3, state.buttons.length > 0);
+        syncAll();
+
+        if (blocked.length) {
+            state.warnings = unique([...state.warnings, `저장 제외 구역 ${blocked.length}개: sectionId/sectionName/polygon 중 하나가 없습니다.`]);
+            renderWarnings();
+        }
+        if (!options.silent) toast(`booking button ${state.buttons.length}개 생성 완료`);
+    }
+
+    function syncAll() {
+        syncStats();
+        renderWarnings();
+        renderButtonList();
+        syncSelectedPanel();
+        syncSaveSummary();
+        renderJsonPreview();
+        drawAll();
+    }
+
+    function syncStats() {
+        setText(dom.sectionCountText, state.sections.length);
+        setText(dom.seatCountText, state.seats.length);
+        setText(dom.matchFailCountText, state.matchFailCount || 0);
+        setText(dom.missingNameCountText, state.missingNameCount || 0);
+    }
+
+    function renderWarnings() {
+        if (!dom.warningList) return;
+        if (!state.warnings.length) {
+            dom.warningList.innerHTML = `<div class="stage5-warning is-ok">입력 데이터 검증 완료: 저장 가능한 상태입니다.</div>`;
+            return;
+        }
+        dom.warningList.innerHTML = state.warnings.map((message) => `<div class="stage5-warning">${escapeHtml(message)}</div>`).join("");
+    }
+
+    function renderButtonList() {
+        if (!dom.buttonList) return;
+        if (!state.buttons.length) {
+            dom.buttonList.innerHTML = `<div class="help-text">생성된 booking button이 없습니다.</div>`;
+            return;
+        }
+
+        dom.buttonList.innerHTML = state.buttons.map((button) => {
+            const active = button.id === state.selectedId ? " active" : "";
+            const flag = [button.visible ? "표시" : "숨김", button.clickable ? "클릭" : "비활성"].join(" · ");
+            return `
+                <button type="button" class="section-item stage5-button-item${active}" data-button-id="${escapeHtml(button.id)}">
+                    <i class="section-item__color" style="background:${escapeHtml(button.color)}"></i>
+                    <span class="stage5-button-item__meta">
+                        <strong>${escapeHtml(button.sectionName)}</strong>
+                        <span>${escapeHtml(button.sectionId)} · ${escapeHtml(button.grade || "등급 누락")} · ${formatPrice(button.price)} · ${escapeHtml(flag)}</span>
+                    </span>
+                    <em class="stage5-button-item__count">${button.availableSeatCount}/${button.seatCount}</em>
+                </button>
+            `;
+        }).join("");
+
+        dom.buttonList.querySelectorAll("[data-button-id]").forEach((item) => {
+            item.addEventListener("click", () => selectButton(item.dataset.buttonId));
+        });
+    }
+
+    function syncSelectedPanel() {
+        const button = getSelectedButton();
+        if (!button) {
+            setText(dom.infoSectionId, "-");
+            setText(dom.infoSectionName, "-");
+            setText(dom.infoFloorGrade, "-");
+            setText(dom.infoPrice, "-");
+            setText(dom.infoSeatCount, "-");
+            setText(dom.infoAvailableCount, "-");
+            setText(dom.infoLabelPoint, "-");
+            setText(dom.infoFlags, "-");
+            setInputValue(dom.labelXInput, "");
+            setInputValue(dom.labelYInput, "");
+            return;
+        }
+
+        setText(dom.infoSectionId, button.sectionId);
+        setText(dom.infoSectionName, button.sectionName);
+        setText(dom.infoFloorGrade, `${button.floor || "층 누락"} / ${button.grade || "등급 누락"}`);
+        setText(dom.infoPrice, formatPrice(button.price));
+        setText(dom.infoSeatCount, button.seatCount);
+        setText(dom.infoAvailableCount, button.availableSeatCount);
+        setText(dom.infoLabelPoint, `${round(button.labelPoint.x)}, ${round(button.labelPoint.y)}`);
+        setText(dom.infoFlags, `${button.visible ? "visible" : "hidden"} / ${button.clickable ? "clickable" : "disabled"}`);
+
+        setInputValue(dom.labelXInput, round(button.labelPoint.x));
+        setInputValue(dom.labelYInput, round(button.labelPoint.y));
+        setInputValue(dom.colorInput, colorToHex(button.color));
+        setInputValue(dom.strokeInput, colorToHex(button.strokeColor || button.color));
+        if (dom.visibleInput) dom.visibleInput.checked = button.visible !== false;
+        if (dom.clickableInput) dom.clickableInput.checked = button.clickable !== false;
+    }
+
+    function syncSaveSummary() {
+        const blocked = state.buttons.filter((button) => !button.sectionId || !button.sectionName || button.polygon.length < 3).length;
+        const missingMeta = state.buttons.filter((button) => !button.floor || !button.grade || button.price === "").length;
+        const text = `저장할 버튼 ${state.buttons.length}개 / 저장 불가 ${blocked}개 / 메타 누락 ${missingMeta}개`;
+        setText(dom.saveSummary, text);
+    }
+
+    function renderJsonPreview() {
+        if (!dom.jsonPreview) return;
+        const json = createBookingButtonsJson();
+        dom.jsonPreview.textContent = JSON.stringify(json.slice(0, 3), null, 2) + (json.length > 3 ? `\n... ${json.length - 3}개 더 있음` : "");
+    }
+
+    function setPart(part, userAction = true) {
+        [1, 2, 3, 4].forEach((no) => {
+            const panel = dom[`part${no}Panel`];
+            const button = dom[`partBtn${no}`];
+            const status = dom[`part${no}Status`];
+            const active = no === part;
+            panel?.classList.toggle("is-active", active);
+            panel?.classList.toggle("is-done", state.completedParts.has(no));
+            button?.classList.toggle("active", active);
+            if (status) {
+                if (active) status.textContent = "진행중";
+                else if (state.completedParts.has(no)) status.textContent = "완료";
+                else status.textContent = "대기";
+            }
+        });
+        if (userAction) syncAll();
+    }
+
+    function setPartDone(part, done) {
+        if (done) state.completedParts.add(part);
+        else state.completedParts.delete(part);
+    }
+
+    function selectButton(id) {
+        if (!id) return;
+        state.selectedId = id;
+        syncAll();
+    }
+
+    function applySelectedControls() {
+        const button = getSelectedButton();
+        if (!button) return;
+
+        const x = Number(dom.labelXInput?.value);
+        const y = Number(dom.labelYInput?.value);
+        if (Number.isFinite(x)) button.labelPoint.x = x;
+        if (Number.isFinite(y)) button.labelPoint.y = y;
+        button.x = round(button.labelPoint.x);
+        button.y = round(button.labelPoint.y);
+
+        if (dom.colorInput?.value) {
+            button.color = dom.colorInput.value;
+            button.hoverColor = toHoverColor(button.color);
+        }
+        if (dom.strokeInput?.value) button.strokeColor = dom.strokeInput.value;
+        if (dom.visibleInput) button.visible = dom.visibleInput.checked;
+        if (dom.clickableInput) button.clickable = dom.clickableInput.checked;
+        persistButtonsLocal();
+        syncSaveSummary();
+        renderButtonList();
+        renderJsonPreview();
+        drawAll();
+        syncSelectedPanel();
+    }
+
+    function getSelectedButton() {
+        return state.buttons.find((button) => button.id === state.selectedId) || null;
+    }
+
+    function setupCanvases(width, height) {
+        state.width = Math.max(1, Math.round(Number(width || 1000)));
+        state.height = Math.max(1, Math.round(Number(height || 700)));
+        [dom.stage5BaseCanvas, dom.stage5OverlayCanvas].forEach((canvas) => {
+            if (!canvas) return;
+            canvas.width = state.width;
+            canvas.height = state.height;
+            canvas.style.width = `${state.width * state.zoom}px`;
+            canvas.style.height = `${state.height * state.zoom}px`;
+        });
+        if (dom.canvasBox) {
+            dom.canvasBox.style.width = `${state.width * state.zoom}px`;
+            dom.canvasBox.style.height = `${state.height * state.zoom}px`;
+        }
+        setText(dom.canvasSize, `${state.width} × ${state.height}px / ${Math.round(state.zoom * 100)}%`);
+    }
+
+    function setZoom(value) {
+        state.zoom = Math.min(3, Math.max(0.25, Math.round(Number(value || 1) * 100) / 100));
+        setupCanvases(state.width, state.height);
+        drawAll();
+        if (dom.zoomValue) dom.zoomValue.textContent = `${Math.round(state.zoom * 100)}%`;
+    }
+
+    function fitZoom() {
+        const frame = dom.canvasScroll;
+        if (!frame || !state.width || !state.height) return;
+        const usableW = Math.max(320, frame.clientWidth - 90);
+        const usableH = Math.max(260, frame.clientHeight - 110);
+        setZoom(Math.min(usableW / state.width, usableH / state.height, 1.5));
+    }
+
+    function drawAll() {
+        drawBase();
+        drawOverlay();
+        drawPreview();
+    }
+
+    function drawBase() {
+        if (!dom.baseCtx) return;
+        const ctx = dom.baseCtx;
+        ctx.clearRect(0, 0, state.width, state.height);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, state.width, state.height);
+        if (state.image) {
+            ctx.drawImage(state.image, 0, 0, state.width, state.height);
+        } else {
+            ctx.fillStyle = "#f8fafc";
+            ctx.fillRect(0, 0, state.width, state.height);
+            ctx.fillStyle = "#64748b";
+            ctx.font = "bold 22px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("seatmap-image.png 없음", state.width / 2, state.height / 2);
+        }
+    }
+
+    function drawOverlay(targetCtx, options = {}) {
+        const ctx = targetCtx || dom.overlayCtx;
+        if (!ctx) return;
+        if (!options.noClear) ctx.clearRect(0, 0, state.width, state.height);
+
+        if (state.showSectionPolygon || options.forceSections) {
+            drawSections(ctx);
+        }
+        if (state.showSeats || options.forceSeats) {
+            drawSeats(ctx);
+        }
+        if (state.showButtonPolygon || options.forceButtons) {
+            drawButtons(ctx, options);
+        }
+        if (state.showLabels || options.forceLabels) {
+            drawLabels(ctx);
+        }
+    }
+
+    function drawSections(ctx) {
+        ctx.save();
+        state.sections.forEach((section) => {
+            if (section.polygon.length < 3) return;
+            ctx.beginPath();
+            pathPolygon(ctx, section.polygon);
+            ctx.setLineDash([8, 5]);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "rgba(15, 23, 42, 0.42)";
+            ctx.stroke();
+        });
+        ctx.restore();
+    }
+
+    function drawSeats(ctx) {
+        if (!state.seats.length) return;
+        ctx.save();
+        state.seats.forEach((seat) => {
+            if (!Number.isFinite(seat.x) || !Number.isFinite(seat.y)) return;
+            const size = Math.max(2, Number(seat.size || 5));
+            ctx.save();
+            ctx.translate(seat.x, seat.y);
+            ctx.rotate((Number(seat.angle || 0) * Math.PI) / 180);
+            ctx.fillStyle = isAvailableSeat(seat) ? "rgba(30, 64, 175, 0.28)" : "rgba(148, 163, 184, 0.30)";
+            ctx.strokeStyle = "rgba(255,255,255,0.78)";
+            ctx.lineWidth = 1;
+            ctx.fillRect(-size / 2, -size / 2, size, size);
+            ctx.strokeRect(-size / 2, -size / 2, size, size);
+            ctx.restore();
+        });
+        ctx.restore();
+    }
+
+    function drawButtons(ctx, options = {}) {
+        ctx.save();
+        state.buttons.forEach((button) => {
+            if (button.polygon.length < 3 || button.visible === false) return;
+            const selected = button.id === state.selectedId;
+            const hovered = button.id === state.hoverId;
+            ctx.beginPath();
+            pathPolygon(ctx, button.polygon);
+            ctx.fillStyle = selected || hovered ? (button.hoverColor || toHoverColor(button.color)) : hexToRgba(button.color, 0.12);
+            ctx.strokeStyle = selected ? "#ef4444" : (button.strokeColor || button.color || DEFAULT_COLOR);
+            ctx.lineWidth = selected ? 4 : 2;
+            ctx.setLineDash(button.clickable === false ? [5, 4] : []);
+            ctx.fill();
+            ctx.stroke();
+            if (button.clickable === false) {
+                ctx.save();
+                ctx.globalAlpha = 0.28;
+                ctx.fillStyle = "#64748b";
+                ctx.fill();
+                ctx.restore();
+            }
+        });
+        ctx.restore();
+    }
+
+    function drawLabels(ctx) {
+        ctx.save();
+        state.buttons.forEach((button) => {
+            if (button.visible === false || !button.labelPoint) return;
+            const selected = button.id === state.selectedId;
+            const x = Number(button.labelPoint.x || 0);
+            const y = Number(button.labelPoint.y || 0);
+            ctx.beginPath();
+            ctx.arc(x, y, selected ? 8 : 6, 0, Math.PI * 2);
+            ctx.fillStyle = selected ? "#ef4444" : "#111827";
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "#ffffff";
+            ctx.stroke();
+
+            ctx.font = `900 ${selected ? 18 : 16}px Arial, sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = "rgba(255,255,255,0.9)";
+            ctx.strokeText(button.label || button.sectionName, x, y - 18);
+            ctx.fillStyle = selected ? "#ef4444" : "#0f172a";
+            ctx.fillText(button.label || button.sectionName, x, y - 18);
+        });
+        ctx.restore();
+    }
+
+    function drawPreview() {
+        const canvas = dom.previewCanvas;
+        const ctx = dom.previewCtx;
+        if (!canvas || !ctx) return;
+        const maxW = 300;
+        const scale = Math.min(1, maxW / state.width);
+        canvas.width = Math.max(1, Math.round(state.width * scale));
+        canvas.height = Math.max(1, Math.round(state.height * scale));
+        ctx.save();
+        ctx.scale(scale, scale);
+        ctx.clearRect(0, 0, state.width, state.height);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, state.width, state.height);
+        if (state.image) ctx.drawImage(state.image, 0, 0, state.width, state.height);
+        drawButtons(ctx, { forceButtons: true });
+        drawLabels(ctx);
+        ctx.restore();
+    }
+
+    function handlePointerDown(event) {
+        const point = getCanvasPoint(event);
+        const labelHit = findLabelAt(point);
+        if (labelHit) {
+            state.draggingLabelId = labelHit.id;
+            state.selectedId = labelHit.id;
+            state.labelDragOffset = {
+                x: point.x - labelHit.labelPoint.x,
+                y: point.y - labelHit.labelPoint.y
+            };
+            dom.stage5OverlayCanvas?.setPointerCapture?.(event.pointerId);
+            syncSelectedPanel();
+            drawAll();
+        }
+    }
+
+    function handlePointerMove(event) {
+        const point = getCanvasPoint(event);
+        if (state.draggingLabelId) {
+            const button = state.buttons.find((item) => item.id === state.draggingLabelId);
+            if (button) {
+                button.labelPoint = {
+                    x: clamp(point.x - state.labelDragOffset.x, 0, state.width),
+                    y: clamp(point.y - state.labelDragOffset.y, 0, state.height)
+                };
+                button.x = round(button.labelPoint.x);
+                button.y = round(button.labelPoint.y);
+                syncSelectedPanel();
+                persistButtonsLocal();
+                drawAll();
+            }
+            return;
+        }
+
+        const hover = findTopButtonAt(point);
+        const nextHoverId = hover?.id || "";
+        if (state.hoverId !== nextHoverId) {
+            state.hoverId = nextHoverId;
+            drawOverlay();
+        }
+
+        if (hover) showTooltip(event, hover);
+        else hideTooltip();
+    }
+
+    function endPointerDrag() {
+        if (!state.draggingLabelId) return;
+        state.draggingLabelId = "";
+        persistButtonsLocal();
+        renderJsonPreview();
+        syncSaveSummary();
+        drawAll();
+    }
+
+    function handleCanvasClick(event) {
+        if (state.draggingLabelId) return;
+        const point = getCanvasPoint(event);
+        const labelHit = findLabelAt(point);
+        const button = labelHit || findTopButtonAt(point);
+        if (button) selectButton(button.id);
+    }
+
+    function findTopButtonAt(point) {
+        for (let i = state.buttons.length - 1; i >= 0; i -= 1) {
+            const button = state.buttons[i];
+            if (button.visible === false) continue;
+            if (pointInPolygon(point, button.polygon)) return button;
+        }
+        return null;
+    }
+
+    function findLabelAt(point) {
+        for (let i = state.buttons.length - 1; i >= 0; i -= 1) {
+            const button = state.buttons[i];
+            const label = button.labelPoint;
+            if (!label) continue;
+            if (distance(point, label) <= 14) return button;
+        }
+        return null;
+    }
+
+    function getCanvasPoint(event) {
+        const rect = dom.stage5OverlayCanvas.getBoundingClientRect();
+        const scaleX = state.width / Math.max(1, rect.width);
+        const scaleY = state.height / Math.max(1, rect.height);
+        return {
+            x: clamp((event.clientX - rect.left) * scaleX, 0, state.width),
+            y: clamp((event.clientY - rect.top) * scaleY, 0, state.height)
+        };
+    }
+
+    function showTooltip(event, button) {
+        if (!dom.stage5Tooltip) return;
+        dom.stage5Tooltip.style.display = "block";
+        dom.stage5Tooltip.style.left = `${event.clientX + 14}px`;
+        dom.stage5Tooltip.style.top = `${event.clientY + 14}px`;
+        dom.stage5Tooltip.innerHTML = `
+            <strong>${escapeHtml(button.sectionName)}</strong><br>
+            ${escapeHtml(button.grade || "등급 누락")} · ${formatPrice(button.price)}<br>
+            좌석 ${button.availableSeatCount}/${button.seatCount} · ${escapeHtml(button.sectionId)}
+        `;
+    }
+
+    function hideTooltip() {
+        if (dom.stage5Tooltip) dom.stage5Tooltip.style.display = "none";
+    }
+
+    async function saveBookingButtonsToServer(options = {}) {
+        validateBeforeSave();
+        const finalButtons = createBookingButtonsJson();
+        const button = options.source === "header" ? null : dom.saveBookingButtonsBtn;
+        const before = button?.textContent || "";
+
+        try {
+            if (button) {
+                button.disabled = true;
+                button.textContent = "저장 중...";
+            }
+
+            const payload = {
+                page: "stage5",
+                folderName: state.projectId,
+                bookingButtonJsonText: JSON.stringify(finalButtons, null, 2),
+                imageDataUrl: exportDebugImageDataUrl(),
+                sectionCount: state.sections.length,
+                seatCount: state.seats.length,
+                bookingButtonCount: finalButtons.length,
+                stage5Saved: true
+            };
+
+            const response = await fetch(state.saveUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "same-origin",
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(text || "booking-buttons.json 저장 실패");
+            }
+
+            const result = await response.json();
+            localStorage.setItem(STORAGE.bookingButtonsUrl, result.bookingButtonsJsonUrl || state.bookingButtonsUrl);
+            persistButtonsLocal();
+            setPartDone(4, true);
+            setPart(4, false);
+            toast(`booking-buttons.json 저장 완료: ${finalButtons.length}개`);
+            return result;
+        } catch (error) {
+            console.error(error);
+            toast("저장 실패: " + error.message);
+            if (options.source !== "header") alert("booking-buttons.json 저장 실패: " + error.message);
+            throw error;
+        } finally {
+            if (button) {
+                button.disabled = false;
+                button.textContent = before;
+            }
+        }
+    }
+
+    function validateBeforeSave() {
+        const invalid = state.buttons.filter((button) => !button.sectionId || !button.sectionName || button.polygon.length < 3);
+        if (invalid.length) {
+            throw new Error(`sectionId/sectionName/polygon이 없는 버튼 ${invalid.length}개가 있어 저장할 수 없습니다.`);
+        }
+        if (!state.buttons.length) {
+            throw new Error("저장할 booking button이 없습니다.");
+        }
+    }
+
+    function createBookingButtonsJson() {
+        return state.buttons.map((button) => ({
+            id: button.id,
+            sectionId: button.sectionId,
+            sectionName: button.sectionName,
+            section: button.sectionName,
+            name: button.sectionName,
+            label: button.label || button.sectionName,
+            groupKey: button.groupKey,
+            groupIndex: button.groupIndex,
+            floor: button.floor,
+            grade: button.grade,
+            price: button.price === "" ? "" : Number(button.price),
+            polygon: button.polygon.map(copyRoundedPoint),
+            labelPoint: copyRoundedPoint(button.labelPoint),
+            x: round(button.labelPoint.x),
+            y: round(button.labelPoint.y),
+            seatCount: Number(button.seatCount || 0),
+            availableSeatCount: Number(button.availableSeatCount || 0),
+            color: button.color,
+            hoverColor: button.hoverColor || toHoverColor(button.color),
+            strokeColor: button.strokeColor || button.color,
+            visible: button.visible !== false,
+            clickable: button.clickable !== false
+        }));
+    }
+
+    function exportDebugImageDataUrl() {
+        try {
+            const out = document.createElement("canvas");
+            const outCtx = out.getContext("2d");
+            out.width = state.width;
+            out.height = state.height;
+            outCtx.fillStyle = "#ffffff";
+            outCtx.fillRect(0, 0, state.width, state.height);
+            if (state.image) outCtx.drawImage(state.image, 0, 0, state.width, state.height);
+            drawSections(outCtx);
+            drawSeats(outCtx);
+            drawButtons(outCtx, { forceButtons: true });
+            drawLabels(outCtx);
+            return out.toDataURL("image/png");
+        } catch (error) {
+            console.warn("[SeatTrace Stage5] debug image export failed", error);
+            return "";
+        }
+    }
+
+    function goStage6() {
+        saveBookingButtonsToServer()
+            .then(() => {
+                window.location.href = state.stage6Url || `/admin/seatmap/stage/6?projectId=${encodeURIComponent(state.projectId)}`;
+            })
+            .catch(() => {});
+    }
+
+    function persistButtonsLocal() {
+        const json = createBookingButtonsJson();
+        persistJson(STORAGE.bookingButtons, json);
+        persistJson(STORAGE.bookingButtonsCompat, json);
+        persistJson(STORAGE.bookingButtonsCompat2, json);
+    }
+
+    function fetchJson(url) {
+        return fetch(noCache(url), { cache: "no-store", credentials: "same-origin" }).then(async (response) => {
+            if (!response.ok) throw new Error(`${url} ${response.status}`);
+            return await response.json();
+        });
+    }
+
+    function loadImage(url) {
+        return new Promise((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => resolve(image);
+            image.onerror = reject;
+            image.src = url;
+        });
+    }
+
+    function noCache(url) {
+        if (!url) return "";
+        const join = url.includes("?") ? "&" : "?";
+        return `${url}${join}t=${Date.now()}`;
+    }
+
+    function projectFileUrl(fileName) {
+        return `/temp/seatmap/${encodeURIComponent(state.projectId)}/${fileName}`;
+    }
+
+    function getPolygons(raw) {
+        if (Array.isArray(raw.polygons) && raw.polygons.length) {
+            return raw.polygons
+                .map(normalizePoints)
+                .filter((polygon) => polygon.length >= 3);
+        }
+        const polygon = normalizePoints(raw.polygon || raw.points || []);
+        return polygon.length >= 3 ? [polygon] : [];
+    }
+
+    function normalizePoints(value) {
+        if (!Array.isArray(value)) return [];
+        return value
+            .map((point) => ({ x: Number(point.x), y: Number(point.y) }))
+            .filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y));
+    }
+
+    function normalizePoint(point) {
+        if (!point) return null;
+        const x = Number(point.x);
+        const y = Number(point.y);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+        return { x, y };
+    }
+
+    function normalizeBbox(bbox) {
+        if (!bbox) return null;
+        const x = Number(bbox.x ?? bbox.left);
+        const y = Number(bbox.y ?? bbox.top);
+        const w = Number(bbox.w ?? bbox.width ?? ((bbox.right ?? 0) - x));
+        const h = Number(bbox.h ?? bbox.height ?? ((bbox.bottom ?? 0) - y));
+        if (![x, y, w, h].every(Number.isFinite)) return null;
+        return { x, y, w, h };
+    }
+
+    function getBbox(points) {
+        if (!points.length) return { x: 0, y: 0, w: 0, h: 0 };
+        const xs = points.map((point) => point.x);
+        const ys = points.map((point) => point.y);
+        const minX = Math.min(...xs);
+        const maxX = Math.max(...xs);
+        const minY = Math.min(...ys);
+        const maxY = Math.max(...ys);
+        return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+    }
+
+    function getSafeLabelPoint(polygon) {
+        if (!polygon.length) return { x: 0, y: 0 };
+        const centroid = polygonCentroid(polygon);
+        if (pointInPolygon(centroid, polygon)) return centroid;
+
+        const bbox = getBbox(polygon);
+        const center = { x: bbox.x + bbox.w / 2, y: bbox.y + bbox.h / 2 };
+        if (pointInPolygon(center, polygon)) return center;
+
+        const steps = 8;
+        for (let y = 0; y <= steps; y += 1) {
+            for (let x = 0; x <= steps; x += 1) {
+                const point = {
+                    x: bbox.x + (bbox.w * x) / steps,
+                    y: bbox.y + (bbox.h * y) / steps
+                };
+                if (pointInPolygon(point, polygon)) return point;
+            }
+        }
+
+        return polygon[0] ? copyPoint(polygon[0]) : { x: 0, y: 0 };
+    }
+
+    function polygonCentroid(points) {
+        let twiceArea = 0;
+        let x = 0;
+        let y = 0;
+        for (let i = 0; i < points.length; i += 1) {
+            const p1 = points[i];
+            const p2 = points[(i + 1) % points.length];
+            const cross = p1.x * p2.y - p2.x * p1.y;
+            twiceArea += cross;
+            x += (p1.x + p2.x) * cross;
+            y += (p1.y + p2.y) * cross;
+        }
+        if (Math.abs(twiceArea) < 0.0001) {
+            const sum = points.reduce((acc, point) => ({ x: acc.x + point.x, y: acc.y + point.y }), { x: 0, y: 0 });
+            return { x: sum.x / points.length, y: sum.y / points.length };
+        }
+        const area = twiceArea * 0.5;
+        return { x: x / (6 * area), y: y / (6 * area) };
+    }
+
+    function pointInPolygon(point, polygon) {
+        if (!polygon || polygon.length < 3) return false;
+        let inside = false;
+        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+            const xi = polygon[i].x;
+            const yi = polygon[i].y;
+            const xj = polygon[j].x;
+            const yj = polygon[j].y;
+            const intersect = ((yi > point.y) !== (yj > point.y))
+                && (point.x < ((xj - xi) * (point.y - yi)) / ((yj - yi) || 0.000001) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
+    }
+
+    function pathPolygon(ctx, polygon) {
+        polygon.forEach((point, index) => {
+            if (index === 0) ctx.moveTo(point.x, point.y);
+            else ctx.lineTo(point.x, point.y);
+        });
+        ctx.closePath();
+    }
+
+    function isAvailableSeat(seat) {
+        return String(seat.status || AVAILABLE).toUpperCase() === AVAILABLE || seat.available === true;
+    }
+
+    function groupBy(items, getter) {
+        return normalizeArray(items).reduce((acc, item) => {
+            const key = String(getter(item) || "");
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(item);
+            return acc;
+        }, {});
+    }
+
+    function firstText(...values) {
+        for (const value of values) {
+            if (value == null) continue;
+            const text = String(value).trim();
+            if (text) return text;
+        }
+        return "";
+    }
+
+    function numberOrBlank(value) {
+        if (value == null || value === "") return "";
+        const number = Number(value);
+        return Number.isFinite(number) ? number : "";
+    }
+
+    function normalizeArray(value) {
+        if (Array.isArray(value)) return value;
+        if (value && typeof value === "object") {
+            if (Array.isArray(value.data)) return value.data;
+            if (Array.isArray(value.items)) return value.items;
+        }
+        return [];
     }
 
     function readJson(key, fallback) {
         try {
-            return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+            const raw = localStorage.getItem(key);
+            if (!raw) return fallback;
+            return JSON.parse(raw);
         } catch (error) {
             return fallback;
         }
     }
 
-    function findInitialOverviewImageUrl() {
-        return localStorage.getItem(STORAGE_KEYS.overviewImage)
-            || localStorage.getItem(STORAGE_KEYS.generatedOverviewImage)
-            || localStorage.getItem("seatmap_final_image_url")
-            || getProjectImageUrl("seatmap-image.png")
-            || localStorage.getItem("concert_buttonImage")
-            || localStorage.getItem("seatmap_button_image_url")
-            || getProjectImageUrl("button-image.png")
-            || localStorage.getItem("concert_cleanImage")
-            || localStorage.getItem("concert_originalImage")
-            || getProjectImageUrl("cropped-image.png")
-            || "";
-    }
-
-    function getProjectFolderName() {
-        const query = new URLSearchParams(location.search);
-        return query.get("projectId")
-            || localStorage.getItem("seatmap_current_folder_name")
-            || localStorage.getItem("seatmap_current_project_id")
-            || "seat";
-    }
-
-    function getProjectImageUrl(fileName) {
-        const folderName = getProjectFolderName();
-        return `/temp/seatmap/${encodeURIComponent(folderName)}/${fileName}`;
-    }
-
-    function writeJson(key, value) {
+    function persistJson(key, value) {
         try {
             localStorage.setItem(key, JSON.stringify(value));
             return true;
         } catch (error) {
-            console.error(`[Stage3 저장 실패] ${key}`, error);
-
-            if (isQuotaExceeded(error)) {
-                toast("브라우저 저장 공간이 부족합니다. 임시 데이터를 정리한 뒤 다시 시도합니다.");
-            } else {
-                toast("Stage3 저장 중 오류가 발생했습니다. 콘솔을 확인하세요.");
-            }
-
+            console.warn(`[SeatTrace Stage5] localStorage 저장 실패: ${key}`, error);
             return false;
         }
     }
 
-    function isQuotaExceeded(error) {
-        return error && (
-            error.name === "QuotaExceededError" ||
-            error.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
-            error.code === 22 ||
-            error.code === 1014
-        );
+    function sanitizeProjectId(value) {
+        const cleaned = String(value || "seat")
+            .trim()
+            .replace(/\s+/g, "_")
+            .replace(/[^a-zA-Z0-9가-힣._-]/g, "_")
+            .replace(/_+/g, "_")
+            .replace(/^_+|_+$/g, "");
+        return cleaned || "seat";
     }
 
-    function toast(message) {
-        if (!dom.toast) return;
-
-        dom.toast.textContent = message;
-        dom.toast.classList.add("show");
-
-        clearTimeout(toast.timer);
-        toast.timer = setTimeout(() => dom.toast.classList.remove("show"), 1900);
-    }
-
-    function loadOverviewImage() {
-        if (!state.overviewImageUrl) return;
-
-        const image = new Image();
-
-        image.onload = () => {
-            state.overviewImage = image;
-
-            if (!readJson(STORAGE_KEYS.imageMeta, {}).width) {
-                state.width = image.naturalWidth || state.width;
-                state.height = image.naturalHeight || state.height;
-            }
-
-            renderAll();
-        };
-
-        image.src = state.overviewImageUrl;
-    }
-
-    function normalizeSections() {
-        if (!Array.isArray(state.sections)) {
-            state.sections = [];
+    function normalizeColor(value) {
+        const text = String(value || "").trim();
+        if (/^#[0-9a-f]{6}$/i.test(text)) return text;
+        if (/^#[0-9a-f]{3}$/i.test(text)) {
+            return `#${text[1]}${text[1]}${text[2]}${text[2]}${text[3]}${text[3]}`;
         }
-
-        state.sections.forEach((section, index) => {
-            section.id = section.id || `sec${index + 1}`;
-            section.name = section.name || `구역 ${index + 1}`;
-            section.label = section.label || String(index + 1);
-            section.floor = section.floor || "1층";
-            section.grade = section.grade || "일반석";
-            section.price = section.price || 0;
-            section.renderColor = section.renderColor || COLORS.sectionFallback;
-            section.seatShape = cleanupSeatShape(section);
-            section.seatRows = section.seatRows || getLayout(section).rows || 0;
-            section.seatCols = section.seatCols || getLayout(section).cols || 0;
-        });
-
-        const meta = readJson(STORAGE_KEYS.imageMeta, {});
-        const points = state.sections.flatMap(section => getSeatShape(section));
-
-        state.width = meta.width || Math.max(980, Math.ceil(Math.max(0, ...points.map(point => point.x)) + 60));
-        state.height = meta.height || Math.max(660, Math.ceil(Math.max(0, ...points.map(point => point.y)) + 60));
+        return DEFAULT_COLOR;
     }
 
-    function ensureAllLayoutsHaveAngle() {
-        state.sections.forEach(section => {
-            const layout = getLayout(section);
-
-            if (!Number.isFinite(Number(layout.angle))) {
-                layout.angle = 0;
-            }
-        });
+    function colorToHex(value) {
+        return normalizeColor(value);
     }
 
-    function setInitialSelection() {
-        state.selectedId = state.sections[0]?.id || null;
+    function hexToRgba(hex, alpha) {
+        const normalized = normalizeColor(hex).replace("#", "");
+        const r = parseInt(normalized.slice(0, 2), 16);
+        const g = parseInt(normalized.slice(2, 4), 16);
+        const b = parseInt(normalized.slice(4, 6), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
-    function setupCanvasSizes() {
-        resizeCanvasToBox(dom.miniCanvas, dom.miniFrame);
-        resizeCanvasToBox(dom.seatBase, dom.seatCanvasBox);
-        resizeCanvasToBox(dom.seatOverlay, dom.seatCanvasBox);
-
-        window.addEventListener("resize", () => {
-            resizeCanvasToBox(dom.miniCanvas, dom.miniFrame);
-            resizeCanvasToBox(dom.seatBase, dom.seatCanvasBox);
-            resizeCanvasToBox(dom.seatOverlay, dom.seatCanvasBox);
-            renderAll();
-        });
+    function toHoverColor(hex) {
+        return hexToRgba(hex, 0.35);
     }
 
-    function resizeCanvasToBox(canvas, box) {
-        if (!canvas || !box) return;
-
-        const rect = box.getBoundingClientRect();
-        const ratio = window.devicePixelRatio || 1;
-
-        canvas.width = Math.max(1, Math.floor(rect.width * ratio));
-        canvas.height = Math.max(1, Math.floor(rect.height * ratio));
-        canvas.style.width = `${rect.width}px`;
-        canvas.style.height = `${rect.height}px`;
-
-        const ctx = canvas.getContext("2d");
-        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    function colorByIndex(index) {
+        const palette = ["#ff78aa", "#63c7d9", "#b7e645", "#8b72f6", "#bbaa8b", "#ffc45c", "#4ade80", "#38bdf8"];
+        return palette[Math.abs(index) % palette.length];
     }
 
-    function bindEvents() {
-        on(dom.partBtn1, "click", () => setPart(PART.BASE));
-        on(dom.partBtn2, "click", () => setPart(PART.EDIT));
-        on(dom.goPart2, "click", () => setPart(PART.EDIT));
-
-        on(dom.applyBaseOne, "click", applyBaseOne);
-        on(dom.applyBaseAll, "click", applyBaseAll);
-        on(dom.regenSelected, "click", regenerateSelected);
-
-        on(dom.baseSectionSelect, "change", event => selectSection(event.target.value));
-        on(dom.editSectionSelect, "change", event => selectSection(event.target.value));
-
-        on(dom.stageEditMode, "change", () => {
-            state.stageEditMode = Boolean(dom.stageEditMode.checked);
-            renderAll();
-            toast(state.stageEditMode ? "미니맵에서 스테이지를 클릭/드래그해서 위치를 조절하세요." : "스테이지 위치 조절 모드를 껐습니다.");
-        });
-        [dom.stageX, dom.stageY, dom.stageW, dom.stageH].forEach(input => {
-            on(input, "input", updateStageFromControls);
-            on(input, "change", updateStageFromControls);
-        });
-        on(dom.resetStagePosition, "click", resetStagePosition);
-        on(dom.autoStageAngles, "click", applyStageAnglesToAll);
-
-        on(dom.zoomIn, "click", () => setMapZoom(state.mapZoom * 1.15));
-        on(dom.zoomOut, "click", () => setMapZoom(state.mapZoom / 1.15));
-        on(dom.zoomReset, "click", resetMapView);
-
-        on(dom.miniCanvas, "wheel", handleMiniWheel, { passive: false });
-        on(dom.miniCanvas, "pointerdown", handleMiniPointerDown);
-
-        on(window, "pointermove", handleWindowPointerMove);
-        on(window, "pointerup", handleWindowPointerUp);
-
-        on(dom.seatOverlay, "pointerdown", handleSeatPointerDown);
-        on(dom.seatOverlay, "pointermove", handleSeatPointerMove);
-        on(dom.seatOverlay, "pointerleave", () => {
-            state.hoverSeatId = null;
-            renderSeatOverlay();
-        });
-
-        on(dom.applyRemove, "click", () => applyStatusToSelection(STATUS.REMOVED));
-        on(dom.applyAvailable, "click", () => applyStatusToSelection(STATUS.AVAILABLE));
-        on(dom.applyObstructed, "click", () => applyStatusToSelection(STATUS.OBSTRUCTED));
-        on(dom.clearSelection, "click", clearSelection);
-
-        on(dom.resetLayoutBtn, "click", resetSelectedLayout);
-
-        on(dom.saveLayoutBtn, "click", () => {
-            if (saveWorkData()) {
-                toast("Stage3 작업 저장 완료");
-            }
-        });
-
-        on(dom.toStage4, "click", goStage4);
-
-        getRangeControls().forEach(item => {
-            on(item.input, "input", () => updateSelectedLayoutFromControls(true));
-            on(item.input, "change", () => updateSelectedLayoutFromControls(true));
-        });
+    function unique(values) {
+        return [...new Set(values.filter((value) => value !== null && value !== undefined && value !== ""))];
     }
 
-    function on(target, eventName, handler, options) {
-        if (!target) return;
-        target.addEventListener(eventName, handler, options);
+    function round(value) {
+        return Math.round(Number(value || 0) * 100) / 100;
     }
 
-    function setPart(nextPart, completePrevious = true) {
-        if (completePrevious) {
-            for (let i = 1; i < nextPart; i += 1) {
-                state.completedParts.add(i);
-            }
-        }
-
-        state.part = nextPart;
-        syncPartUi();
-        syncGuide();
-        renderAll();
+    function copyPoint(point) {
+        return { x: Number(point.x), y: Number(point.y) };
     }
 
-    function syncPartUi() {
-        [PART.BASE, PART.EDIT].forEach(number => {
-            const panel = number === PART.BASE ? dom.part1Panel : dom.part2Panel;
-            const button = number === PART.BASE ? dom.partBtn1 : dom.partBtn2;
-
-            if (!panel || !button) return;
-
-            const active = state.part === number;
-            const done = state.completedParts.has(number) && !active;
-
-            panel.classList.toggle("is-active", active);
-            panel.classList.toggle("is-done", done);
-            button.classList.toggle("active", active);
-
-            const status = panel.querySelector(".seatmap-step__status");
-            if (status) {
-                status.textContent = active ? "진행중" : done ? "완료" : "대기";
-            }
-        });
+    function copyRoundedPoint(point) {
+        return { x: round(point?.x), y: round(point?.y) };
     }
 
-    function syncGuide() {
-        if (!dom.stage3Guide) return;
-
-        dom.stage3Guide.textContent = state.part === PART.BASE
-            ? "먼저 스테이지 위치를 맞춘 뒤 기준 구역과 기준 가로 좌석 수를 입력하세요. 좌석 각도는 스테이지 방향으로 자동 적용됩니다."
-            : "Part2에서는 좌석을 클릭/드래그로 수정할 수 있고, 빨간 회전 핸들로 선택 구역 각도를 최종 보정할 수 있습니다.";
+    function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, Number(value || 0)));
     }
 
-    function syncSelects() {
-        const html = state.sections.map(section => {
-            const count = getSeatCount(section);
-            const rows = section.seatRows || getLayout(section).rows || 0;
-            const cols = section.seatCols || getLayout(section).cols || 0;
-            const angle = normalizeAngle(getLayout(section).angle || 0);
+    function distance(a, b) {
+        const dx = Number(a.x || 0) - Number(b.x || 0);
+        const dy = Number(a.y || 0) - Number(b.y || 0);
+        return Math.sqrt(dx * dx + dy * dy);
+    }
 
-            return `<option value="${escapeHtml(section.id)}">${escapeHtml(section.name)} · ${escapeHtml(section.floor)} · ${escapeHtml(section.grade)} · ${rows}×${cols} · ${count}석 · ${angle}°</option>`;
-        }).join("");
+    function formatPrice(value) {
+        const number = Number(value || 0);
+        if (!Number.isFinite(number) || number <= 0) return "가격 누락";
+        return `${number.toLocaleString("ko-KR")}원`;
+    }
 
-        if (dom.baseSectionSelect) {
-            dom.baseSectionSelect.innerHTML = html;
-        }
+    function setText(element, value) {
+        if (element) element.textContent = String(value ?? "");
+    }
 
-        if (dom.editSectionSelect) {
-            dom.editSectionSelect.innerHTML = html;
-        }
-
-        if (state.selectedId) {
-            if (dom.baseSectionSelect) {
-                dom.baseSectionSelect.value = state.selectedId;
-            }
-
-            if (dom.editSectionSelect) {
-                dom.editSectionSelect.value = state.selectedId;
-            }
-        }
-
-        const section = getSelectedSection();
-
-        if (section) {
-            const layout = getLayout(section);
-
-            if (dom.editRows) {
-                dom.editRows.value = section.seatRows || layout.rows || 5;
-            }
-
-            if (dom.editCols) {
-                dom.editCols.value = section.seatCols || layout.cols || 10;
-            }
-
-            syncLayoutControls(layout);
-        }
+    function setInputValue(input, value) {
+        if (input && document.activeElement !== input) input.value = value;
     }
 
     function escapeHtml(value) {
         return String(value ?? "")
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;");
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
     }
 
-    function renderAll() {
-        syncStageControls();
-        syncSelects();
-        renderSectionList();
-        renderMiniMap();
-        renderSeatEditor();
-        updateInfoPanel();
-    }
-
-    function renderSectionList() {
-        if (!dom.sectionsList1) return;
-
-        if (!state.sections.length) {
-            dom.sectionsList1.innerHTML = `<div class="help-text">Stage2에서 구역을 먼저 저장하세요.</div>`;
+    function toast(message) {
+        if (!dom.toast) {
+            console.log(message);
             return;
         }
-
-        dom.sectionsList1.innerHTML = state.sections.map(section => {
-            const active = section.id === state.selectedId ? " active" : "";
-            const rows = section.seatRows || getLayout(section).rows || 0;
-            const cols = section.seatCols || getLayout(section).cols || 0;
-            const count = getSeatCount(section);
-            const angle = normalizeAngle(getLayout(section).angle || 0);
-
-            return `
-                <div class="section-item${active}" data-id="${escapeHtml(section.id)}">
-                    <i class="section-item__color" style="background:${escapeHtml(section.renderColor || COLORS.sectionFallback)}"></i>
-                    <div>
-                        <strong>${escapeHtml(section.name)}</strong>
-                        <span>${escapeHtml(section.floor)} · ${escapeHtml(section.grade)} · ${rows}×${cols} · ${count}석 · ${angle}°</span>
-                    </div>
-                </div>
-            `;
-        }).join("");
-
-        dom.sectionsList1.querySelectorAll(".section-item").forEach(item => {
-            item.addEventListener("click", () => selectSection(item.dataset.id));
-        });
-    }
-
-    function renderMiniMap() {
-        const canvas = dom.miniCanvas;
-        const ctx = dom.miniCtx;
-
-        if (!canvas || !ctx) return;
-
-        const rect = canvas.getBoundingClientRect();
-
-        ctx.clearRect(0, 0, rect.width, rect.height);
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, rect.width, rect.height);
-
-        const fit = Math.min(rect.width / state.width, rect.height / state.height) * 0.92;
-        const scale = fit * state.mapZoom;
-        const x = rect.width / 2 - state.width * scale / 2 + state.mapPanX;
-        const y = rect.height / 2 - state.height * scale / 2 + state.mapPanY;
-
-        state.mapTransform = { scale, x, y };
-
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.scale(scale, scale);
-
-        if (state.overviewImage) {
-            ctx.drawImage(state.overviewImage, 0, 0, state.width, state.height);
-        } else {
-            state.sections.forEach(section => drawMapSectionFill(ctx, section, scale));
-        }
-
-        drawStageOnMap(ctx, scale);
-        state.sections.forEach(section => drawMapSectionOutline(ctx, section, scale));
-
-        const selected = getSelectedSection();
-        if (selected) {
-            drawMapRotationArrow(ctx, selected, scale);
-        }
-
-        ctx.restore();
-        updateZoomText();
-    }
-
-    function drawStageOnMap(ctx, scale = 1) {
-        const stage = getStage();
-        const selected = state.stageEditMode;
-
-        ctx.save();
-        ctx.fillStyle = COLORS.stageFill;
-        ctx.strokeStyle = selected ? COLORS.stageGuide : "rgba(255,255,255,.9)";
-        ctx.lineWidth = selected ? 5 / scale : 2 / scale;
-        ctx.lineJoin = "round";
-
-        roundRect(ctx, stage.x, stage.y, stage.w, stage.h, Math.max(4, Math.min(stage.w, stage.h) * 0.08));
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = COLORS.stageText;
-        ctx.font = `bold ${Math.max(13, stage.h * 0.34)}px Arial`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("STAGE", stage.x + stage.w / 2, stage.y + stage.h / 2);
-
-        if (selected) {
-            ctx.fillStyle = COLORS.stageGuide;
-            ctx.font = `bold ${Math.max(10, 12 / scale)}px Arial`;
-            ctx.fillText("드래그 이동", stage.x + stage.w / 2, stage.y + stage.h + 18 / scale);
-        }
-
-        ctx.restore();
-    }
-
-    function drawMapSectionFill(ctx, section, scale) {
-        const paths = getMapPaths(section);
-        if (!paths.length) return;
-
-        ctx.save();
-        ctx.beginPath();
-
-        paths.forEach(path => {
-            if (!path || path.length < 3) return;
-            drawPoly(ctx, path);
-            ctx.closePath();
-        });
-
-        ctx.fillStyle = hexToRgba(section.renderColor || COLORS.sectionFallback, 0.72);
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 3 / scale;
-        ctx.lineJoin = "round";
-        ctx.fill("evenodd");
-        ctx.stroke();
-        ctx.restore();
-    }
-
-    function drawMapSectionOutline(ctx, section, scale) {
-        const paths = getMapPaths(section);
-        if (!paths.length) return;
-
-        const selected = section.id === state.selectedId;
-
-        ctx.save();
-        ctx.beginPath();
-
-        paths.forEach(path => {
-            if (!path || path.length < 3) return;
-            drawPoly(ctx, path);
-            ctx.closePath();
-        });
-
-        ctx.strokeStyle = selected ? COLORS.selected : "rgba(15,23,42,.14)";
-        ctx.lineWidth = selected ? 4 / scale : 1.1 / scale;
-        ctx.lineJoin = "round";
-        ctx.stroke();
-        ctx.restore();
-    }
-
-    function drawMapRotationArrow(ctx, section, scale) {
-        const pivot = getSectionPivot(section);
-        const layout = getLayout(section);
-        const bbox = bboxOf(getSeatShape(section));
-        const length = Math.max(bbox.w, bbox.h) * 0.8;
-        const tip = rotatePoint(
-            { x: pivot.x, y: pivot.y - length },
-            pivot,
-            layout.angle || 0
-        );
-
-        ctx.save();
-        ctx.strokeStyle = COLORS.rotate;
-        ctx.fillStyle = COLORS.rotate;
-        ctx.lineWidth = 4 / scale;
-        ctx.beginPath();
-        ctx.moveTo(pivot.x, pivot.y);
-        ctx.lineTo(tip.x, tip.y);
-        ctx.stroke();
-
-        const arrowSize = 16 / scale;
-        const headBase = pointOnLine(tip, pivot, arrowSize);
-        const left = rotatePoint(headBase, tip, 28);
-        const right = rotatePoint(headBase, tip, -28);
-
-        ctx.beginPath();
-        ctx.moveTo(tip.x, tip.y);
-        ctx.lineTo(left.x, left.y);
-        ctx.lineTo(right.x, right.y);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-    }
-
-    function renderSeatEditor() {
-        const base = dom.seatBase;
-        const overlay = dom.seatOverlay;
-        const ctx = dom.seatBaseCtx;
-
-        if (!base || !overlay || !ctx) return;
-
-        const rect = base.getBoundingClientRect();
-
-        ctx.clearRect(0, 0, rect.width, rect.height);
-        ctx.fillStyle = COLORS.bg;
-        ctx.fillRect(0, 0, rect.width, rect.height);
-
-        const section = getSelectedSection();
-
-        if (!section) {
-            ctx.fillStyle = "#64748b";
-            ctx.font = "bold 16px Arial";
-            ctx.textAlign = "center";
-            ctx.fillText("Stage2 구역 데이터가 없습니다.", rect.width / 2, rect.height / 2);
-            renderSeatOverlay();
-            return;
-        }
-
-        if (dom.canvasTitle) {
-            dom.canvasTitle.textContent = state.part === PART.BASE ? "파트1 · 기준 구역 선택" : "파트2 · 좌석 배치 편집";
-        }
-
-        if (dom.sizeText) {
-            dom.sizeText.textContent = `${Math.round(rect.width)} × ${Math.round(rect.height)}`;
-        }
-
-        const transform = computeEditorTransform(section, rect.width, rect.height);
-        state.editorTransform = transform;
-
-        drawSeatEditorStage(ctx, rect.width);
-        drawSectionGuide(ctx, section, transform);
-        drawSeats(ctx, section, transform);
-        renderSeatOverlay();
-    }
-
-    function drawSeatEditorStage(ctx, width) {
-        ctx.save();
-        ctx.fillStyle = COLORS.stageFill;
-        ctx.strokeStyle = "rgba(255,255,255,.9)";
-        ctx.lineWidth = 2;
-
-        const stageW = Math.min(width - 180, 660);
-        const x = (width - stageW) / 2;
-
-        roundRect(ctx, x, 34, stageW, 54, 8);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = COLORS.stageText;
-        ctx.font = "bold 18px Arial";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("메인 스테이지 기준", width / 2, 61);
-        ctx.restore();
-    }
-
-    function drawSectionGuide(ctx, section, transform) {
-        const layout = getLayout(section);
-        const shape = getRotatedSeatShape(section, layout.angle || 0);
-
-        ctx.save();
-        ctx.translate(transform.x, transform.y);
-        ctx.scale(transform.scale, transform.scale);
-
-        ctx.beginPath();
-        drawPoly(ctx, shape);
-        ctx.closePath();
-
-        ctx.fillStyle = "rgba(148,163,184,.08)";
-        ctx.strokeStyle = COLORS.guide;
-        ctx.lineWidth = 2 / transform.scale;
-        ctx.setLineDash([8 / transform.scale, 6 / transform.scale]);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.restore();
-
-        ctx.save();
-        ctx.fillStyle = "#64748b";
-        ctx.font = "13px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText(`현재 보고 계신 구역은 ${section.floor} ${section.name} 구역입니다.`, ctx.canvas.getBoundingClientRect().width / 2, 115);
-        ctx.fillText(`현재 좌석 각도: ${normalizeAngle(layout.angle || 0)}°`, ctx.canvas.getBoundingClientRect().width / 2, 136);
-        ctx.restore();
-    }
-
-    function drawSeats(ctx, section, transform) {
-        const seats = getSeats(section);
-
-        ctx.save();
-        ctx.translate(transform.x, transform.y);
-        ctx.scale(transform.scale, transform.scale);
-
-        seats.forEach(seat => {
-            const selected = state.selectedSeatIds.has(seat.id);
-            const hover = state.hoverSeatId === seat.id;
-
-            ctx.save();
-            ctx.translate(seat.x, seat.y);
-            ctx.rotate(toRad(seat.angle || 0));
-
-            roundRect(
-                ctx,
-                -seat.w / 2,
-                -seat.h / 2,
-                seat.w,
-                seat.h,
-                Math.max(1.5, Math.min(seat.w, seat.h) * 0.10)
-            );
-
-            if (seat.status === STATUS.REMOVED) {
-                ctx.strokeStyle = COLORS.removed;
-                ctx.setLineDash([3 / transform.scale, 3 / transform.scale]);
-                ctx.lineWidth = 1.4 / transform.scale;
-                ctx.stroke();
-            } else {
-                ctx.fillStyle = seat.status === STATUS.OBSTRUCTED ? COLORS.obstructed : COLORS.seat;
-                ctx.strokeStyle = selected ? COLORS.selectedSeat : hover ? COLORS.selected : COLORS.seatLine;
-                ctx.lineWidth = selected ? 3 / transform.scale : hover ? 2.4 / transform.scale : 1 / transform.scale;
-                ctx.fill();
-                ctx.stroke();
-            }
-
-            ctx.restore();
-        });
-
-        ctx.restore();
-    }
-
-    function renderSeatOverlay() {
-        const canvas = dom.seatOverlay;
-        const ctx = dom.seatOverlayCtx;
-
-        if (!canvas || !ctx) return;
-
-        const rect = canvas.getBoundingClientRect();
-
-        ctx.clearRect(0, 0, rect.width, rect.height);
-
-        if (state.draggingBox && state.dragStart && state.dragCurrent) {
-            const box = rectFromPoints(state.dragStart, state.dragCurrent);
-
-            ctx.save();
-            ctx.fillStyle = "rgba(37,99,235,.10)";
-            ctx.strokeStyle = "#2563eb";
-            ctx.setLineDash([6, 4]);
-            ctx.lineWidth = 1.5;
-            ctx.fillRect(box.x, box.y, box.w, box.h);
-            ctx.strokeRect(box.x, box.y, box.w, box.h);
-            ctx.restore();
-        }
-
-        drawRotationOverlay(ctx);
-        placePopover();
-    }
-
-    function drawRotationOverlay(ctx) {
-        if (state.part !== PART.EDIT) return;
-
-        const section = getSelectedSection();
-        if (!section) return;
-
-        const info = getRotationOverlayInfo(section);
-        if (!info) return;
-
-        ctx.save();
-        ctx.strokeStyle = COLORS.rotate;
-        ctx.fillStyle = COLORS.rotate;
-        ctx.lineWidth = 3;
-
-        ctx.beginPath();
-        ctx.moveTo(info.center.x, info.center.y);
-        ctx.lineTo(info.handle.x, info.handle.y);
-        ctx.stroke();
-
-        const arrowSize = 14;
-        const headBase = pointOnLine(info.handle, info.center, arrowSize);
-        const left = rotatePoint(headBase, info.handle, 28);
-        const right = rotatePoint(headBase, info.handle, -28);
-
-        ctx.beginPath();
-        ctx.moveTo(info.handle.x, info.handle.y);
-        ctx.lineTo(left.x, left.y);
-        ctx.lineTo(right.x, right.y);
-        ctx.closePath();
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(info.handle.x, info.handle.y, 8, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(info.center.x, info.center.y, 4, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = "#0f172a";
-        ctx.font = "bold 13px Arial";
-        ctx.textAlign = "left";
-        ctx.fillText(`${normalizeAngle(getLayout(section).angle || 0)}°`, info.handle.x + 14, info.handle.y - 8);
-
-        ctx.restore();
-    }
-
-    function computeEditorTransform(section, canvasW, canvasH) {
-        const layout = getLayout(section);
-        const shape = getRotatedSeatShape(section, layout.angle || 0);
-        const bbox = bboxOf(shape);
-        const maxW = canvasW - 160;
-        const maxH = canvasH - 190;
-        const scale = Math.min(maxW / Math.max(1, bbox.w), maxH / Math.max(1, bbox.h));
-        const x = canvasW / 2 - (bbox.x + bbox.w / 2) * scale;
-        const y = 150 + maxH / 2 - (bbox.y + bbox.h / 2) * scale;
-
-        return { scale, x, y };
-    }
-
-    function selectSection(sectionId) {
-        if (!sectionId) return;
-
-        state.selectedId = sectionId;
-        state.selectedSeatIds.clear();
-
-        const section = getSelectedSection();
-
-        if (section) {
-            const layout = getLayout(section);
-
-            if (dom.baseSectionSelect) {
-                dom.baseSectionSelect.value = section.id;
-            }
-
-            if (dom.editSectionSelect) {
-                dom.editSectionSelect.value = section.id;
-            }
-
-            if (dom.editRows) {
-                dom.editRows.value = section.seatRows || layout.rows || 5;
-            }
-
-            if (dom.editCols) {
-                dom.editCols.value = section.seatCols || layout.cols || 10;
-            }
-
-            syncLayoutControls(layout);
-        }
-
-        hidePopover();
-        renderAll();
-    }
-
-    function applyBaseOne() {
-        const section = getSelectedOrBaseSection();
-
-        if (!section) {
-            toast("기준 구역을 선택하세요.");
-            return;
-        }
-
-        const baseCols = positiveInt(dom.baseCols?.value, 10);
-        const baseBbox = bboxOf(getSeatShape(section));
-        const seatSize = Math.max(2, baseBbox.w / baseCols);
-        const rows = Math.max(1, Math.round(baseBbox.h / seatSize));
-
-        state.selectedId = section.id;
-
-        generateSectionSeats(section, rows, baseCols, true, seatSize);
-
-        if (dom.editRows) {
-            dom.editRows.value = rows;
-        }
-
-        if (dom.editCols) {
-            dom.editCols.value = baseCols;
-        }
-
-        saveWorkData();
-        renderAll();
-        toast(`${section.name} 좌석 초안을 생성했습니다.`);
-    }
-
-    function applyBaseAll() {
-        const baseSection = getSelectedOrBaseSection();
-
-        if (!baseSection) {
-            toast("기준 구역을 선택하세요.");
-            return;
-        }
-
-        const baseCols = positiveInt(dom.baseCols?.value, 10);
-        const baseBbox = bboxOf(getSeatShape(baseSection));
-        const seatSize = Math.max(2, baseBbox.w / baseCols);
-
-        state.selectedId = baseSection.id;
-        state.seatsBySection = {};
-        state.layoutsBySection = {};
-        state.selectedSeatIds.clear();
-
-        state.sections.forEach(section => {
-            section.seatShape = cleanupSeatShape(section);
-
-            const bbox = bboxOf(getSeatShape(section));
-            const cols = Math.max(1, Math.round(bbox.w / seatSize));
-            const rows = Math.max(1, Math.round(bbox.h / seatSize));
-
-            generateSectionSeats(section, rows, cols, true, seatSize);
-        });
-
-        const selectedLayout = getLayout(baseSection);
-
-        if (dom.editRows) {
-            dom.editRows.value = selectedLayout.rows;
-        }
-
-        if (dom.editCols) {
-            dom.editCols.value = selectedLayout.cols;
-        }
-
-        saveWorkData();
-        renderAll();
-        toast("기준 좌석 크기로 모든 구역 좌석을 다시 생성했습니다.");
-    }
-
-    function regenerateSelected() {
-        const section = getSelectedSection();
-        if (!section) return;
-
-        const rows = positiveInt(dom.editRows?.value, section.seatRows || 5);
-        const cols = positiveInt(dom.editCols?.value, section.seatCols || 10);
-
-        generateSectionSeats(section, rows, cols, true);
-        state.selectedSeatIds.clear();
-
-        saveWorkData();
-        renderAll();
-        toast("선택 구역 좌석을 재생성했습니다.");
-    }
-
-    function generateSectionSeats(section, rows, cols, resetLayout, preferredSeatSize) {
-        section.seatRows = rows;
-        section.seatCols = cols;
-
-        const current = getLayout(section);
-        const layout = resetLayout
-            ? defaultLayoutFor(section, rows, cols, preferredSeatSize)
-            : { ...current, rows, cols, angle: normalizeAngle(current.angle || 0) };
-
-        state.layoutsBySection[section.id] = layout;
-        state.seatsBySection[section.id] = buildSeats(section, layout);
-    }
-
-    function rebuildSelectedSectionSeats() {
-        const section = getSelectedSection();
-        if (!section) return;
-
-        const layout = getLayout(section);
-        const previous = getSeats(section);
-        const statusMap = new Map(previous.map(seat => [seat.id, seat.status]));
-        const movedMap = new Map(previous.map(seat => [seat.id, { x: seat.x, y: seat.y, angle: seat.angle }]));
-
-        const rebuilt = buildSeats(section, layout).map(seat => {
-            const prevStatus = statusMap.get(seat.id);
-            const prevMoved = movedMap.get(seat.id);
-
-            return {
-                ...seat,
-                status: prevStatus || seat.status,
-                angle: prevMoved?.angle ?? seat.angle
-            };
-        });
-
-        state.seatsBySection[section.id] = rebuilt;
-    }
-
-    function buildSeats(section, layout) {
-        const bbox = bboxOf(getSeatShape(section));
-        const rows = Math.max(1, layout.rows || section.seatRows || 1);
-        const cols = Math.max(1, layout.cols || section.seatCols || 1);
-
-        const seatW = Math.max(1, Number(layout.seatW) || 1);
-        const seatH = Math.max(1, Number(layout.seatH) || seatW);
-        const gapX = Math.max(0, Number(layout.gapX) || 0);
-        const gapY = Math.max(0, Number(layout.gapY) || 0);
-        const paddingX = Math.max(0, Number(layout.paddingX) || 0);
-        const paddingY = Math.max(0, Number(layout.paddingY) || 0);
-        const offsetX = Number(layout.offsetX) || 0;
-        const offsetY = Number(layout.offsetY) || 0;
-        const angle = normalizeAngle(layout.angle || 0);
-
-        const usableW = Math.max(1, bbox.w - paddingX * 2);
-        const usableH = Math.max(1, bbox.h - paddingY * 2);
-        const gridW = cols * seatW + Math.max(0, cols - 1) * gapX;
-        const gridH = rows * seatH + Math.max(0, rows - 1) * gapY;
-
-        const startX = bbox.x + paddingX + (usableW - gridW) / 2 + offsetX;
-        const startY = bbox.y + paddingY + (usableH - gridH) / 2 + offsetY;
-
-        const pivot = getSectionPivot(section);
-        const rotatedShape = getRotatedSeatShape(section, angle);
-        const seats = [];
-
-        for (let row = 0; row < rows; row += 1) {
-            for (let col = 0; col < cols; col += 1) {
-                const baseCenter = {
-                    x: startX + col * (seatW + gapX) + seatW / 2,
-                    y: startY + row * (seatH + gapY) + seatH / 2
-                };
-
-                const rotatedCenter = rotatePoint(baseCenter, pivot, angle);
-
-                if (!seatFitsRotatedShape(rotatedCenter, rotatedShape, Math.max(seatW, seatH) * 0.45)) {
-                    continue;
-                }
-
-                seats.push({
-                    id: `${section.id}-${rowName(row)}-${col + 1}`,
-                    sectionId: section.id,
-                    rowIndex: row,
-                    colIndex: col,
-                    row: rowName(row),
-                    col: col + 1,
-                    x: rotatedCenter.x,
-                    y: rotatedCenter.y,
-                    w: seatW,
-                    h: seatH,
-                    angle,
-                    status: STATUS.AVAILABLE,
-                    color: section.renderColor || COLORS.seat
-                });
-            }
-        }
-
-        return seats;
-    }
-
-    function seatFitsRotatedShape(center, shape, tolerance) {
-        if (pointInPoly(center, shape)) {
-            return true;
-        }
-
-        return distanceToPolygon(center, shape) <= tolerance;
-    }
-
-    function defaultLayoutFor(section, rows, cols, preferredSeatSize) {
-        const bbox = bboxOf(getSeatShape(section));
-        const cellW = bbox.w / Math.max(1, cols);
-        const cellH = bbox.h / Math.max(1, rows);
-        const seatSize = Math.max(2, Math.floor(Math.min(preferredSeatSize || cellW, cellW, cellH)));
-
-        return {
-            rows,
-            cols,
-            seatW: seatSize,
-            seatH: seatSize,
-            gapX: 0,
-            gapY: 0,
-            paddingX: 0,
-            paddingY: 0,
-            offsetX: 0,
-            offsetY: 0,
-            angle: getAutoAngleForSection(section)
-        };
-    }
-
-    function getLayout(section) {
-        if (!section) return defaultBlankLayout();
-
-        if (!state.layoutsBySection[section.id]) {
-            state.layoutsBySection[section.id] = defaultLayoutFor(section, section.seatRows || 5, section.seatCols || 10);
-        }
-
-        if (!Number.isFinite(Number(state.layoutsBySection[section.id].angle))) {
-            state.layoutsBySection[section.id].angle = 0;
-        }
-
-        return state.layoutsBySection[section.id];
-    }
-
-    function defaultBlankLayout() {
-        return {
-            rows: 5,
-            cols: 10,
-            seatW: 18,
-            seatH: 18,
-            gapX: 4,
-            gapY: 4,
-            paddingX: 14,
-            paddingY: 14,
-            offsetX: 0,
-            offsetY: 0,
-            angle: 0
-        };
-    }
-
-    function syncLayoutControls(layout) {
-        setRange(dom.seatWidthRange, layout.seatW);
-        setRange(dom.seatHeightRange, layout.seatH);
-        setRange(dom.gapXRange, layout.gapX);
-        setRange(dom.gapYRange, layout.gapY);
-        setRange(dom.paddingXRange, layout.paddingX);
-        setRange(dom.paddingYRange, layout.paddingY);
-        setRange(dom.offsetXRange, layout.offsetX);
-        setRange(dom.offsetYRange, layout.offsetY);
-        syncRangeLabels();
-    }
-
-    function setRange(input, value) {
-        if (!input) return;
-        input.value = String(Math.round(value || 0));
-    }
-
-    function updateSelectedLayoutFromControls(redraw) {
-        const section = getSelectedSection();
-        if (!section) return;
-
-        const layout = getLayout(section);
-
-        layout.seatW = numberValue(dom.seatWidthRange, layout.seatW);
-        layout.seatH = numberValue(dom.seatHeightRange, layout.seatH);
-        layout.gapX = numberValue(dom.gapXRange, layout.gapX);
-        layout.gapY = numberValue(dom.gapYRange, layout.gapY);
-        layout.paddingX = numberValue(dom.paddingXRange, layout.paddingX);
-        layout.paddingY = numberValue(dom.paddingYRange, layout.paddingY);
-        layout.offsetX = numberValue(dom.offsetXRange, layout.offsetX);
-        layout.offsetY = numberValue(dom.offsetYRange, layout.offsetY);
-        layout.rows = positiveInt(dom.editRows?.value, section.seatRows || layout.rows || 5);
-        layout.cols = positiveInt(dom.editCols?.value, section.seatCols || layout.cols || 10);
-        layout.angle = normalizeAngle(layout.angle || 0);
-
-        section.seatRows = layout.rows;
-        section.seatCols = layout.cols;
-
-        rebuildSelectedSectionSeats();
-        syncRangeLabels();
-        saveWorkData();
-
-        if (redraw) {
-            renderAll();
-        }
-    }
-
-    function syncRangeLabels() {
-        const pairs = [
-            [dom.seatWidthRange, dom.seatWidthValue],
-            [dom.seatHeightRange, dom.seatHeightValue],
-            [dom.gapXRange, dom.gapXValue],
-            [dom.gapYRange, dom.gapYValue],
-            [dom.paddingXRange, dom.paddingXValue],
-            [dom.paddingYRange, dom.paddingYValue],
-            [dom.offsetXRange, dom.offsetXValue],
-            [dom.offsetYRange, dom.offsetYValue]
-        ];
-
-        pairs.forEach(([input, label]) => {
-            if (input && label) {
-                label.textContent = `${input.value}px`;
-            }
-        });
-    }
-
-    function getRangeControls() {
-        return [
-            { input: dom.seatWidthRange },
-            { input: dom.seatHeightRange },
-            { input: dom.gapXRange },
-            { input: dom.gapYRange },
-            { input: dom.paddingXRange },
-            { input: dom.paddingYRange },
-            { input: dom.offsetXRange },
-            { input: dom.offsetYRange }
-        ];
-    }
-
-    function numberValue(input, fallback) {
-        return input ? Number(input.value) || 0 : fallback;
-    }
-
-    function positiveInt(value, fallback) {
-        return Math.max(1, parseInt(value, 10) || fallback || 1);
-    }
-
-    function resetSelectedLayout() {
-        const section = getSelectedSection();
-        if (!section) return;
-
-        const rows = section.seatRows || positiveInt(dom.editRows?.value, 5);
-        const cols = section.seatCols || positiveInt(dom.editCols?.value, 10);
-
-        generateSectionSeats(section, rows, cols, true);
-        syncLayoutControls(getLayout(section));
-        saveWorkData();
-        renderAll();
-        toast("선택 구역 배치값을 초기화했습니다.");
-    }
-
-    function normalizeStageState() {
-        state.stage = normalizeStage(state.stage);
-        saveStage(false);
-    }
-
-    function normalizeStage(stage) {
-        const fallback = createDefaultStage();
-        const next = stage && typeof stage === "object" ? { ...fallback, ...stage } : fallback;
-
-        next.x = Number(next.x);
-        next.y = Number(next.y);
-        next.w = Number(next.w);
-        next.h = Number(next.h);
-
-        if (!Number.isFinite(next.x)) next.x = fallback.x;
-        if (!Number.isFinite(next.y)) next.y = fallback.y;
-        if (!Number.isFinite(next.w) || next.w < 20) next.w = fallback.w;
-        if (!Number.isFinite(next.h) || next.h < 10) next.h = fallback.h;
-
-        next.angle = Number.isFinite(Number(next.angle)) ? Number(next.angle) : 0;
-        clampStage(next);
-
-        return next;
-    }
-
-    function createDefaultStage() {
-        const w = Math.max(160, Math.min(420, state.width * 0.36));
-        const h = Math.max(34, Math.min(70, state.height * 0.07));
-
-        return {
-            x: Math.round((state.width - w) / 2),
-            y: Math.round(Math.max(18, state.height * 0.06)),
-            w: Math.round(w),
-            h: Math.round(h),
-            angle: 0,
-            label: "STAGE"
-        };
-    }
-
-    function getStage() {
-        if (!state.stage) {
-            state.stage = createDefaultStage();
-        }
-
-        return state.stage;
-    }
-
-    function getStageCenter() {
-        const stage = getStage();
-
-        return {
-            x: stage.x + stage.w / 2,
-            y: stage.y + stage.h / 2
-        };
-    }
-
-    function clampStage(stage) {
-        stage.w = Math.max(20, Math.min(Math.round(stage.w), Math.max(20, state.width)));
-        stage.h = Math.max(10, Math.min(Math.round(stage.h), Math.max(10, state.height)));
-        stage.x = Math.round(Math.max(0, Math.min(stage.x, state.width - stage.w)));
-        stage.y = Math.round(Math.max(0, Math.min(stage.y, state.height - stage.h)));
-    }
-
-    function saveStage(shouldSync = true) {
-        writeJson(STORAGE_KEYS.stage, getStage());
-
-        if (shouldSync) {
-            syncStageControls();
-        }
-    }
-
-    function syncStageControls() {
-        const stage = getStage();
-
-        if (dom.stageEditMode) {
-            dom.stageEditMode.checked = state.stageEditMode;
-        }
-
-        setNumberInput(dom.stageX, stage.x);
-        setNumberInput(dom.stageY, stage.y);
-        setNumberInput(dom.stageW, stage.w);
-        setNumberInput(dom.stageH, stage.h);
-    }
-
-    function setNumberInput(input, value) {
-        if (!input || document.activeElement === input) return;
-        input.value = String(Math.round(Number(value) || 0));
-    }
-
-    function updateStageFromControls() {
-        const stage = getStage();
-
-        stage.x = Number(dom.stageX?.value) || 0;
-        stage.y = Number(dom.stageY?.value) || 0;
-        stage.w = Math.max(20, Number(dom.stageW?.value) || stage.w);
-        stage.h = Math.max(10, Number(dom.stageH?.value) || stage.h);
-
-        clampStage(stage);
-        saveStage(false);
-        renderAll();
-    }
-
-    function resetStagePosition() {
-        state.stage = createDefaultStage();
-        saveStage();
-        renderAll();
-        toast("스테이지를 상단 중앙에 다시 배치했습니다.");
-    }
-
-    function pointInStage(point, stage) {
-        return point.x >= stage.x &&
-            point.x <= stage.x + stage.w &&
-            point.y >= stage.y &&
-            point.y <= stage.y + stage.h;
-    }
-
-    function getAutoAngleForSection(section) {
-        const center = getSectionPivot(section);
-        const stage = getStageCenter();
-        const angle = Math.atan2(stage.y - center.y, stage.x - center.x) * 180 / Math.PI + 90;
-
-        return normalizeAngle(angle);
-    }
-
-    function applyStageAnglesToAll() {
-        if (!state.sections.length) {
-            toast("먼저 구역을 생성하세요.");
-            return;
-        }
-
-        state.sections.forEach(section => {
-            const layout = getLayout(section);
-            layout.angle = getAutoAngleForSection(section);
-            state.layoutsBySection[section.id] = layout;
-
-            if (getSeats(section).length) {
-                state.seatsBySection[section.id] = buildSeats(section, layout).map(seat => ({
-                    ...seat,
-                    status: getSeatStatusById(section, seat.id) || seat.status
-                }));
-            }
-        });
-
-        saveWorkData();
-        renderAll();
-        toast("모든 구역 좌석 각도를 스테이지 방향으로 적용했습니다.");
-    }
-
-    function getSeatStatusById(section, id) {
-        const previous = getSeats(section).find(seat => seat.id === id);
-        return previous?.status || null;
-    }
-
-    function handleMiniWheel(event) {
-        event.preventDefault();
-
-        const before = screenToWorld(event, dom.miniCanvas, state.mapTransform);
-        const nextZoom = event.deltaY < 0 ? state.mapZoom * 1.12 : state.mapZoom / 1.12;
-
-        setMapZoom(nextZoom, false);
-        renderMiniMap();
-
-        const after = worldToScreen(before, state.mapTransform);
-        const rect = dom.miniCanvas.getBoundingClientRect();
-
-        state.mapPanX += event.clientX - rect.left - after.x;
-        state.mapPanY += event.clientY - rect.top - after.y;
-
-        renderMiniMap();
-    }
-
-    function handleMiniPointerDown(event) {
-        if (!dom.miniCanvas) return;
-
-        if (state.stageEditMode) {
-            const point = screenToWorld(event, dom.miniCanvas, state.mapTransform);
-            const stage = getStage();
-
-            if (pointInStage(point, stage)) {
-                state.stageDragging = true;
-                state.stageDragOffsetX = point.x - stage.x;
-                state.stageDragOffsetY = point.y - stage.y;
-            } else {
-                stage.x = Math.round(point.x - stage.w / 2);
-                stage.y = Math.round(point.y - stage.h / 2);
-                clampStage(stage);
-                saveStage();
-            }
-
-            dom.miniCanvas.setPointerCapture?.(event.pointerId);
-            renderAll();
-            return;
-        }
-
-        state.mapDragging = true;
-        state.mapMoved = false;
-        state.mapStartX = event.clientX;
-        state.mapStartY = event.clientY;
-        state.mapStartPanX = state.mapPanX;
-        state.mapStartPanY = state.mapPanY;
-
-        dom.miniCanvas.setPointerCapture?.(event.pointerId);
-    }
-
-    function handleWindowPointerMove(event) {
-        if (state.stageDragging) {
-            const point = screenToWorld(event, dom.miniCanvas, state.mapTransform);
-            const stage = getStage();
-            stage.x = Math.round(point.x - state.stageDragOffsetX);
-            stage.y = Math.round(point.y - state.stageDragOffsetY);
-            clampStage(stage);
-            renderAll();
-            return;
-        }
-
-        if (state.mapDragging) {
-            const dx = event.clientX - state.mapStartX;
-            const dy = event.clientY - state.mapStartY;
-
-            if (Math.abs(dx) + Math.abs(dy) > 3) {
-                state.mapMoved = true;
-            }
-
-            state.mapPanX = state.mapStartPanX + dx;
-            state.mapPanY = state.mapStartPanY + dy;
-
-            renderMiniMap();
-            return;
-        }
-
-        if (state.rotationDragging) {
-            handleRotationDrag(event);
-            return;
-        }
-
-        if (state.pointerDown) {
-            handleSeatDrag(event);
-        }
-    }
-
-    function handleWindowPointerUp(event) {
-        if (state.stageDragging) {
-            state.stageDragging = false;
-            saveStage();
-            renderAll();
-            return;
-        }
-
-        if (state.mapDragging) {
-            if (!state.mapMoved) {
-                const point = screenToWorld(event, dom.miniCanvas, state.mapTransform);
-                const hit = findSectionAt(point);
-
-                if (hit) {
-                    selectSection(hit.id);
-                }
-            }
-
-            state.mapDragging = false;
-            return;
-        }
-
-        if (state.rotationDragging) {
-            finishRotationDrag();
-            return;
-        }
-
-        if (state.pointerDown) {
-            finishSeatPointer(event);
-        }
-    }
-
-    function setMapZoom(value, shouldRender = true) {
-        state.mapZoom = Math.max(0.35, Math.min(5, value));
-
-        if (shouldRender) {
-            renderMiniMap();
-        }
-    }
-
-    function resetMapView() {
-        state.mapZoom = 1;
-        state.mapPanX = 0;
-        state.mapPanY = 0;
-        renderMiniMap();
-    }
-
-    function updateZoomText() {
-        if (dom.zoomValue) {
-            dom.zoomValue.textContent = `${Math.round(state.mapZoom * 100)}%`;
-        }
-    }
-
-    function handleSeatPointerDown(event) {
-        const point = pointerInCanvas(event, dom.seatOverlay);
-
-        if (state.part === PART.EDIT && isOnRotationHandle(point)) {
-            startRotationDrag(point);
-            return;
-        }
-
-        const world = editorScreenToWorld(point);
-        const seat = findSeatAtWorld(world);
-
-        state.pointerDown = true;
-        state.dragStart = point;
-        state.dragCurrent = point;
-
-        if (seat && state.selectedSeatIds.has(seat.id)) {
-            state.movingSeats = true;
-            state.moveOrigin = world;
-            state.movedSeatSnapshot = Array.from(state.selectedSeatIds).map(id => {
-                const found = getSelectedSeats().find(item => item.id === id);
-                return found ? { id, x: found.x, y: found.y, angle: found.angle } : null;
-            }).filter(Boolean);
-
-            hidePopover();
-            return;
-        }
-
-        if (seat) {
-            state.selectedSeatIds.clear();
-            state.selectedSeatIds.add(seat.id);
-            hidePopover();
-            renderAll();
-            return;
-        }
-
-        state.draggingBox = true;
-        state.selectedSeatIds.clear();
-
-        hidePopover();
-        renderSeatOverlay();
-    }
-
-    function handleSeatPointerMove(event) {
-        if (state.rotationDragging) {
-            return;
-        }
-
-        if (!state.pointerDown) {
-            const point = pointerInCanvas(event, dom.seatOverlay);
-
-            if (state.part === PART.EDIT && isOnRotationHandle(point)) {
-                dom.seatOverlay.style.cursor = "grab";
-                return;
-            }
-
-            dom.seatOverlay.style.cursor = "default";
-
-            const world = editorScreenToWorld(point);
-            const seat = findSeatAtWorld(world);
-
-            state.hoverSeatId = seat?.id || null;
-            renderSeatOverlay();
-        }
-    }
-
-    function handleSeatDrag(event) {
-        const point = pointerInCanvas(event, dom.seatOverlay);
-        state.dragCurrent = point;
-
-        if (state.movingSeats) {
-            const world = editorScreenToWorld(point);
-            const dx = world.x - state.moveOrigin.x;
-            const dy = world.y - state.moveOrigin.y;
-            const seats = getSelectedSeats();
-
-            state.movedSeatSnapshot.forEach(snapshot => {
-                const seat = seats.find(item => item.id === snapshot.id);
-
-                if (seat) {
-                    seat.x = snapshot.x + dx;
-                    seat.y = snapshot.y + dy;
-                    seat.angle = snapshot.angle;
-                }
-            });
-
-            renderSeatEditor();
-            return;
-        }
-
-        if (state.draggingBox) {
-            const box = rectFromPoints(state.dragStart, state.dragCurrent);
-            const selected = getSeats(getSelectedSection()).filter(seat => {
-                if (seat.status === STATUS.REMOVED) return false;
-
-                const screen = editorWorldToScreen({ x: seat.x, y: seat.y });
-
-                return screen.x >= box.x &&
-                    screen.x <= box.x + box.w &&
-                    screen.y >= box.y &&
-                    screen.y <= box.y + box.h;
-            });
-
-            state.selectedSeatIds = new Set(selected.map(seat => seat.id));
-
-            renderSeatOverlay();
-            updateInfoPanel();
-        }
-    }
-
-    function finishSeatPointer() {
-        state.pointerDown = false;
-
-        if (state.movingSeats) {
-            state.movingSeats = false;
-            state.moveOrigin = null;
-            state.movedSeatSnapshot = null;
-
-            saveWorkData();
-            renderAll();
-            return;
-        }
-
-        if (state.draggingBox) {
-            state.draggingBox = false;
-            renderAll();
-            return;
-        }
-    }
-
-    function startRotationDrag(point) {
-        const section = getSelectedSection();
-        if (!section) return;
-
-        const info = getRotationOverlayInfo(section);
-        if (!info) return;
-
-        const layout = getLayout(section);
-        const center = info.center;
-
-        state.rotationDragging = true;
-        state.rotationBaseAngle = normalizeAngle(layout.angle || 0);
-        state.rotationStartAngle = screenAngleFromCenter(point, center);
-        state.pointerDown = false;
-        state.draggingBox = false;
-        state.movingSeats = false;
-
-        hidePopover();
-        dom.seatOverlay.style.cursor = "grabbing";
-    }
-
-    function handleRotationDrag(event) {
-        const section = getSelectedSection();
-        if (!section) return;
-
-        const point = pointerInCanvas(event, dom.seatOverlay);
-        const info = getRotationOverlayInfo(section);
-        if (!info) return;
-
-        const current = screenAngleFromCenter(point, info.center);
-        const delta = current - state.rotationStartAngle;
-
-        const layout = getLayout(section);
-        layout.angle = normalizeAngle(state.rotationBaseAngle + delta);
-
-        rebuildSelectedSectionSeats();
-        renderAll();
-    }
-
-    function finishRotationDrag() {
-        state.rotationDragging = false;
-        dom.seatOverlay.style.cursor = "grab";
-        saveWorkData();
-        renderAll();
-    }
-
-    function getRotationOverlayInfo(section) {
-        const layout = getLayout(section);
-        const shape = getRotatedSeatShape(section, layout.angle || 0);
-        if (!shape.length) return null;
-
-        const bbox = bboxOf(shape);
-        const centerWorld = {
-            x: bbox.x + bbox.w / 2,
-            y: bbox.y + bbox.h / 2
-        };
-        const center = editorWorldToScreen(centerWorld);
-
-        const handleWorld = {
-            x: centerWorld.x,
-            y: bbox.y - Math.max(26, bbox.h * 0.10) - 18
-        };
-
-        const handle = editorWorldToScreen(handleWorld);
-
-        return { center, handle };
-    }
-
-    function isOnRotationHandle(screenPoint) {
-        const section = getSelectedSection();
-        if (!section) return false;
-
-        const info = getRotationOverlayInfo(section);
-        if (!info) return false;
-
-        return distance(screenPoint, info.handle) <= state.rotationHandleHitRadius;
-    }
-
-    function screenAngleFromCenter(point, center) {
-        return Math.atan2(point.y - center.y, point.x - center.x) * 180 / Math.PI + 90;
-    }
-
-    function findSeatAtWorld(point) {
-        const section = getSelectedSection();
-        if (!section) return null;
-
-        const seats = getSeats(section).slice().reverse();
-
-        return seats.find(seat => {
-            if (seat.status === STATUS.REMOVED) return false;
-            return pointInRotatedRect(point, seat);
-        }) || null;
-    }
-
-    function pointInRotatedRect(point, seat) {
-        const local = inverseRotatePoint(point, { x: seat.x, y: seat.y }, seat.angle || 0);
-
-        return local.x >= seat.x - seat.w / 2 &&
-            local.x <= seat.x + seat.w / 2 &&
-            local.y >= seat.y - seat.h / 2 &&
-            local.y <= seat.y + seat.h / 2;
-    }
-
-    function getSelectedSeats() {
-        const section = getSelectedSection();
-        if (!section) return [];
-
-        return getSeats(section).filter(seat => state.selectedSeatIds.has(seat.id));
-    }
-
-    function applyStatusToSelection(status) {
-        const seats = getSelectedSeats();
-        if (!seats.length) return;
-
-        seats.forEach(seat => {
-            seat.status = status;
-        });
-
-        saveWorkData();
-        renderAll();
-
-        toast(
-            status === STATUS.REMOVED
-                ? "선택 좌석 삭제 완료"
-                : status === STATUS.OBSTRUCTED
-                    ? "선택 좌석 장애석 처리 완료"
-                    : "선택 좌석 복구 완료"
-        );
-    }
-
-    function clearSelection() {
-        state.selectedSeatIds.clear();
-        hidePopover();
-        renderAll();
-    }
-
-    function placePopover() {
-        if (!dom.popover) return;
-
-        const seats = getSelectedSeats().filter(seat => seat.status !== STATUS.REMOVED);
-
-        if (!seats.length || state.rotationDragging) {
-            hidePopover();
-            return;
-        }
-
-        const points = seats.map(seat => editorWorldToScreen({ x: seat.x, y: seat.y }));
-        const xs = points.map(point => point.x);
-        const ys = points.map(point => point.y);
-        const x = (Math.min(...xs) + Math.max(...xs)) / 2;
-        const y = Math.min(...ys) - 12;
-
-        dom.popover.style.left = `${x}px`;
-        dom.popover.style.top = `${Math.max(42, y)}px`;
-        dom.popover.classList.add("is-show");
-        dom.popover.setAttribute("aria-hidden", "false");
-    }
-
-    function hidePopover() {
-        if (!dom.popover) return;
-
-        dom.popover.classList.remove("is-show");
-        dom.popover.setAttribute("aria-hidden", "true");
-    }
-
-    function updateInfoPanel() {
-        const section = getSelectedSection();
-        const seats = section ? getSeats(section) : [];
-        const visible = seats.filter(seat => seat.status !== STATUS.REMOVED);
-        const obstructed = visible.filter(seat => seat.status === STATUS.OBSTRUCTED);
-        const angle = section ? normalizeAngle(getLayout(section).angle || 0) : 0;
-
-        if (dom.selName) {
-            dom.selName.textContent = section?.name || "-";
-        }
-
-        if (dom.selCount) {
-            dom.selCount.textContent = visible.length;
-        }
-
-        if (dom.selectedCount) {
-            dom.selectedCount.textContent = state.selectedSeatIds.size;
-        }
-
-        if (dom.selObstructed) {
-            dom.selObstructed.textContent = obstructed.length;
-        }
-
-        const title = dom.selName?.parentElement?.parentElement?.parentElement?.querySelector("h3");
-        if (title && section) {
-            title.textContent = `선택 구역 · ${angle}°`;
-        }
-    }
-
-    function saveWorkData(finalSave = false) {
-        if (finalSave) {
-            return saveFinalSeatJson();
-        }
-
-        const results = [
-            writeJson(STORAGE_KEYS.sections, state.sections),
-            writeJson(STORAGE_KEYS.stage3Seats, state.seatsBySection),
-            writeJson(STORAGE_KEYS.stage3Layouts, state.layoutsBySection),
-            writeJson(STORAGE_KEYS.stage, getStage())
-        ];
-
-        return results.every(Boolean);
-    }
-
-    function saveFinalSeatJson() {
-        const finalSeats = createFinalSeatJson();
-        const generatedOverviewImage = createGeneratedOverviewImage();
-
-        clearHeavyStorageBeforeStage4();
-
-        let saved = writeJson(STORAGE_KEYS.finalJson, finalSeats);
-        saved = writeJson(STORAGE_KEYS.bookingJson, finalSeats) && saved;
-        saved = writeJson(STORAGE_KEYS.sections, state.sections) && saved;
-        saved = writeJson(STORAGE_KEYS.stage3Seats, state.seatsBySection) && saved;
-        saved = writeJson(STORAGE_KEYS.stage3Layouts, state.layoutsBySection) && saved;
-        saved = writeJson(STORAGE_KEYS.stage, getStage()) && saved;
-
-        if (generatedOverviewImage) {
-            try {
-                localStorage.setItem(STORAGE_KEYS.generatedOverviewImage, generatedOverviewImage);
-            } catch (error) {
-                console.warn("[Stage3] generated overview image save skipped", error);
-            }
-        }
-
-        if (saved) {
-            return true;
-        }
-
-        clearEmergencyStage3WorkStorage();
-
-        saved = writeJson(STORAGE_KEYS.finalJson, finalSeats);
-        saved = writeJson(STORAGE_KEYS.bookingJson, finalSeats) && saved;
-
-        return saved;
-    }
-
-    function clearHeavyStorageBeforeStage4() {
-        const removeKeys = [
-            STORAGE_KEYS.stage3Data,
-            STORAGE_KEYS.overviewImage,
-            STORAGE_KEYS.layoutJson,
-            STORAGE_KEYS.bookingJson,
-            STORAGE_KEYS.finalJson,
-            STORAGE_KEYS.generatedOverviewImage
-        ];
-
-        removeKeys.forEach(key => {
-            try {
-                localStorage.removeItem(key);
-            } catch (error) {
-                console.warn(`[Stage3 정리 실패] ${key}`, error);
-            }
-        });
-    }
-
-    function clearEmergencyStage3WorkStorage() {
-        const removeKeys = [
-            STORAGE_KEYS.stage3Seats,
-            STORAGE_KEYS.stage3Layouts,
-            STORAGE_KEYS.sections
-        ];
-
-        removeKeys.forEach(key => {
-            try {
-                localStorage.removeItem(key);
-            } catch (error) {
-                console.warn(`[Stage3 긴급 정리 실패] ${key}`, error);
-            }
-        });
-    }
-
-    function createGeneratedOverviewImage() {
-        try {
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
-            canvas.width = Math.max(1, Math.round(state.width));
-            canvas.height = Math.max(1, Math.round(state.height));
-
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            state.sections.forEach(section => {
-                const paths = getMapPaths(section);
-                if (!paths.length) return;
-
-                ctx.save();
-                ctx.beginPath();
-                paths.forEach(path => {
-                    if (!path || path.length < 3) return;
-                    drawPoly(ctx, path);
-                    ctx.closePath();
-                });
-                ctx.fillStyle = hexToRgba(section.renderColor || COLORS.sectionFallback, 0.16);
-                ctx.strokeStyle = "rgba(15,23,42,.18)";
-                ctx.lineWidth = 1.5;
-                ctx.fill("evenodd");
-                ctx.stroke();
-                ctx.restore();
-            });
-
-            drawStageOnMap(ctx, 1);
-
-            state.sections.forEach(section => {
-                getSeats(section).forEach(seat => {
-                    if (seat.status === STATUS.REMOVED) return;
-
-                    ctx.save();
-                    ctx.translate(seat.x, seat.y);
-                    ctx.rotate(toRad(seat.angle || 0));
-                    roundRect(ctx, -seat.w / 2, -seat.h / 2, seat.w, seat.h, Math.max(1, Math.min(seat.w, seat.h) * 0.12));
-                    ctx.fillStyle = seat.status === STATUS.OBSTRUCTED ? COLORS.obstructed : (section.renderColor || seat.color || COLORS.seat);
-                    ctx.strokeStyle = "#ffffff";
-                    ctx.lineWidth = 1;
-                    ctx.fill();
-                    ctx.stroke();
-                    ctx.restore();
-                });
-            });
-
-            return canvas.toDataURL("image/png");
-        } catch (error) {
-            console.warn("[Stage3] generated overview image failed", error);
-            return "";
-        }
-    }
-
-    function createFinalSeatJson() {
-        const finalSeats = [];
-
-        state.sections.forEach(section => {
-            getSeats(section).forEach(seat => {
-                if (seat.status === STATUS.REMOVED) {
-                    return;
-                }
-
-                finalSeats.push({
-                    id: makeFinalSeatId(section, seat)
-                });
-            });
-        });
-
-        return finalSeats;
-    }
-
-    function makeFinalSeatId(section, seat) {
-        return [
-            floorCode(section),
-            sectionCode(section),
-            seat.row,
-            seat.col,
-            seatCoordinate(seat.x),
-            seatCoordinate(seat.y),
-            seatAngle(seat, section)
-        ].join("---");
-    }
-
-    function seatCoordinate(value) {
-        return String(Math.round(Number(value) || 0));
-    }
-
-    function seatAngle(seat, section) {
-        const layout = getLayout(section);
-        return normalizeAngle(seat.angle ?? layout.angle ?? 0);
-    }
-
-    function goStage4(event) {
-        event?.preventDefault?.();
-        event?.stopPropagation?.();
-
-        if (!state.sections.length) {
-            toast("Stage2에서 구역을 먼저 생성하세요.");
-            return;
-        }
-
-        if (!hasGeneratedSeats()) {
-            toast("좌석을 먼저 생성한 뒤 결과 확인으로 이동하세요.");
-            return;
-        }
-
-        if (!saveWorkData(true)) {
-            toast("최종 좌석 JSON 저장 실패입니다. 브라우저 저장공간을 비우고 다시 시도하세요.");
-            return;
-        }
-
-        const url = dom.app?.dataset.stage4Url || "/admin/seatmap/stage/6";
-        window.location.href = url;
-    }
-
-    function hasGeneratedSeats() {
-        return state.sections.some(section => getSeats(section).length > 0);
-    }
-
-    function getSelectedOrBaseSection() {
-        const id = dom.baseSectionSelect?.value || state.selectedId;
-        return state.sections.find(section => section.id === id) || getSelectedSection();
-    }
-
-    function getSelectedSection() {
-        return state.sections.find(section => section.id === state.selectedId) || state.sections[0] || null;
-    }
-
-    function getSeats(section) {
-        if (!section) return [];
-        return state.seatsBySection[section.id] || [];
-    }
-
-    function getSeatCount(section) {
-        return getSeats(section).filter(seat => seat.status !== STATUS.REMOVED).length;
-    }
-
-    function getSeatShape(section) {
-        if (!section) return [];
-        return section.seatShape && section.seatShape.length >= 3 ? section.seatShape : cleanupSeatShape(section);
-    }
-
-    function getRotatedSeatShape(section, angle) {
-        const shape = getSeatShape(section);
-        const pivot = getSectionPivot(section);
-        return rotatePolygon(shape, pivot, angle || 0);
-    }
-
-    function getSectionPivot(section) {
-        const bbox = bboxOf(getSeatShape(section));
-        return {
-            x: bbox.x + bbox.w / 2,
-            y: bbox.y + bbox.h / 2
-        };
-    }
-
-    function getMapPaths(section) {
-        if (section.buttonShape?.paths?.length) {
-            return section.buttonShape.paths;
-        }
-
-        if (section.buttonPolygon?.length) {
-            return [section.buttonPolygon];
-        }
-
-        if (section.polygon?.length) {
-            return [section.polygon];
-        }
-
-        return [];
-    }
-
-    function getMapShape(section) {
-        const paths = getMapPaths(section);
-        return paths[0] || [];
-    }
-
-    function cleanupSeatShape(section) {
-        const raw = getMapShape(section);
-        if (!raw.length) return [];
-
-        const bbox = bboxOf(raw);
-        const hull = convexHull(raw);
-        const source = hull.length >= 3 ? hull : raw;
-        const simplified = simplifyPolygon(source, Math.max(6, Math.min(bbox.w, bbox.h) * 0.045));
-        const snapped = snapStrongAxis(simplified, Math.max(6, Math.min(bbox.w, bbox.h) * 0.06));
-        const reduced = removeTinySteps(snapped, Math.max(5, Math.min(bbox.w, bbox.h) * 0.035));
-        const finalPoly = reduced.length >= 3 ? reduced : rectFromBBox(bbox);
-
-        return finalPoly.map(point => ({
-            x: round(point.x),
-            y: round(point.y)
-        }));
-    }
-
-    function snapStrongAxis(poly, tolerance) {
-        if (!poly || poly.length < 3) return poly || [];
-
-        const out = poly.map(point => ({ x: point.x, y: point.y }));
-
-        for (let i = 0; i < out.length; i += 1) {
-            const a = out[i];
-            const b = out[(i + 1) % out.length];
-
-            if (Math.abs(a.x - b.x) <= tolerance) {
-                const x = (a.x + b.x) / 2;
-                a.x = x;
-                b.x = x;
-            }
-
-            if (Math.abs(a.y - b.y) <= tolerance) {
-                const y = (a.y + b.y) / 2;
-                a.y = y;
-                b.y = y;
-            }
-        }
-
-        return out;
-    }
-
-    function removeTinySteps(poly, minLen) {
-        if (!poly || poly.length < 3) return poly || [];
-
-        const filtered = [];
-
-        for (let i = 0; i < poly.length; i += 1) {
-            const prev = poly[(i - 1 + poly.length) % poly.length];
-            const curr = poly[i];
-
-            if (distance(prev, curr) >= minLen || filtered.length < 3) {
-                filtered.push(curr);
-            }
-        }
-
-        return filtered.length >= 3 ? filtered : poly;
-    }
-
-    function rectFromBBox(bbox) {
-        return [
-            { x: bbox.x, y: bbox.y },
-            { x: bbox.x + bbox.w, y: bbox.y },
-            { x: bbox.x + bbox.w, y: bbox.y + bbox.h },
-            { x: bbox.x, y: bbox.y + bbox.h }
-        ];
-    }
-
-    function findSectionAt(point) {
-        return state.sections.slice().reverse().find(section => {
-            const paths = getMapPaths(section);
-            return paths.some(path => pointInPoly(point, path));
-        }) || null;
-    }
-
-    function pointerInCanvas(event, canvas) {
-        const rect = canvas.getBoundingClientRect();
-        return {
-            x: event.clientX - rect.left,
-            y: event.clientY - rect.top
-        };
-    }
-
-    function screenToWorld(event, canvas, transform) {
-        const rect = canvas.getBoundingClientRect();
-
-        return {
-            x: (event.clientX - rect.left - transform.x) / transform.scale,
-            y: (event.clientY - rect.top - transform.y) / transform.scale
-        };
-    }
-
-    function worldToScreen(point, transform) {
-        return {
-            x: point.x * transform.scale + transform.x,
-            y: point.y * transform.scale + transform.y
-        };
-    }
-
-    function editorWorldToScreen(point) {
-        return worldToScreen(point, state.editorTransform);
-    }
-
-    function editorScreenToWorld(point) {
-        return {
-            x: (point.x - state.editorTransform.x) / state.editorTransform.scale,
-            y: (point.y - state.editorTransform.y) / state.editorTransform.scale
-        };
-    }
-
-    function rectFromPoints(a, b) {
-        const x = Math.min(a.x, b.x);
-        const y = Math.min(a.y, b.y);
-
-        return {
-            x,
-            y,
-            w: Math.abs(a.x - b.x),
-            h: Math.abs(a.y - b.y)
-        };
-    }
-
-    function drawPoly(ctx, poly) {
-        poly.forEach((point, index) => {
-            if (index === 0) {
-                ctx.moveTo(point.x, point.y);
-            } else {
-                ctx.lineTo(point.x, point.y);
-            }
-        });
-    }
-
-    function roundRect(ctx, x, y, w, h, r) {
-        const radius = Math.min(r, w / 2, h / 2);
-
-        ctx.beginPath();
-        ctx.moveTo(x + radius, y);
-        ctx.lineTo(x + w - radius, y);
-        ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
-        ctx.lineTo(x + w, y + h - radius);
-        ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
-        ctx.lineTo(x + radius, y + h);
-        ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
-        ctx.lineTo(x, y + radius);
-        ctx.quadraticCurveTo(x, y, x + radius, y);
-        ctx.closePath();
-    }
-
-    function bboxOf(poly) {
-        if (!poly || !poly.length) {
-            return { x: 0, y: 0, w: 1, h: 1 };
-        }
-
-        const xs = poly.map(point => point.x);
-        const ys = poly.map(point => point.y);
-
-        return {
-            x: Math.min(...xs),
-            y: Math.min(...ys),
-            w: Math.max(...xs) - Math.min(...xs),
-            h: Math.max(...ys) - Math.min(...ys)
-        };
-    }
-
-    function pointInPoly(point, poly) {
-        let inside = false;
-
-        for (let i = 0, j = poly.length - 1; i < poly.length; j = i, i += 1) {
-            const a = poly[i];
-            const b = poly[j];
-            const intersect = (a.y > point.y) !== (b.y > point.y) &&
-                point.x < ((b.x - a.x) * (point.y - a.y)) / ((b.y - a.y) || 1) + a.x;
-
-            if (intersect) {
-                inside = !inside;
-            }
-        }
-
-        return inside;
-    }
-
-    function distanceToPolygon(point, poly) {
-        if (!poly || poly.length < 2) {
-            return Number.MAX_SAFE_INTEGER;
-        }
-
-        let min = Number.MAX_SAFE_INTEGER;
-
-        for (let i = 0; i < poly.length; i += 1) {
-            const a = poly[i];
-            const b = poly[(i + 1) % poly.length];
-            min = Math.min(min, distancePointToSegment(point, a, b));
-        }
-
-        return min;
-    }
-
-    function distancePointToSegment(p, a, b) {
-        const l2 = (b.x - a.x) ** 2 + (b.y - a.y) ** 2;
-        if (l2 === 0) return distance(p, a);
-
-        let t = ((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / l2;
-        t = Math.max(0, Math.min(1, t));
-
-        const proj = {
-            x: a.x + t * (b.x - a.x),
-            y: a.y + t * (b.y - a.y)
-        };
-
-        return distance(p, proj);
-    }
-
-    function convexHull(points) {
-        const sorted = points
-            .map(point => ({ x: point.x, y: point.y }))
-            .sort((a, b) => a.x - b.x || a.y - b.y);
-
-        const unique = [];
-
-        sorted.forEach(point => {
-            const last = unique[unique.length - 1];
-            if (!last || last.x !== point.x || last.y !== point.y) {
-                unique.push(point);
-            }
-        });
-
-        if (unique.length <= 2) {
-            return unique;
-        }
-
-        const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
-        const lower = [];
-
-        unique.forEach(point => {
-            while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], point) <= 0) {
-                lower.pop();
-            }
-            lower.push(point);
-        });
-
-        const upper = [];
-
-        unique.slice().reverse().forEach(point => {
-            while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], point) <= 0) {
-                upper.pop();
-            }
-            upper.push(point);
-        });
-
-        return lower.slice(0, -1).concat(upper.slice(0, -1));
-    }
-
-    function simplifyPolygon(points, epsilon) {
-        if (!points || points.length <= 3) {
-            return points || [];
-        }
-
-        const closed = points.concat([points[0]]);
-        return rdp(closed, epsilon).slice(0, -1);
-    }
-
-    function rdp(points, epsilon) {
-        if (points.length <= 2) {
-            return points.slice();
-        }
-
-        const start = points[0];
-        const end = points[points.length - 1];
-        const len = Math.hypot(end.x - start.x, end.y - start.y) || 1;
-
-        let maxDist = 0;
-        let index = 0;
-
-        for (let i = 1; i < points.length - 1; i += 1) {
-            const p = points[i];
-            const dist = Math.abs((end.y - start.y) * p.x - (end.x - start.x) * p.y + end.x * start.y - end.y * start.x) / len;
-
-            if (dist > maxDist) {
-                index = i;
-                maxDist = dist;
-            }
-        }
-
-        if (maxDist > epsilon) {
-            const left = rdp(points.slice(0, index + 1), epsilon);
-            const right = rdp(points.slice(index), epsilon);
-            return left.slice(0, -1).concat(right);
-        }
-
-        return [start, end];
-    }
-
-    function rotatePolygon(points, pivot, angle) {
-        return points.map(point => rotatePoint(point, pivot, angle));
-    }
-
-    function rotatePoint(point, pivot, angle) {
-        const rad = toRad(angle || 0);
-        const cos = Math.cos(rad);
-        const sin = Math.sin(rad);
-        const dx = point.x - pivot.x;
-        const dy = point.y - pivot.y;
-
-        return {
-            x: pivot.x + dx * cos - dy * sin,
-            y: pivot.y + dx * sin + dy * cos
-        };
-    }
-
-    function inverseRotatePoint(point, pivot, angle) {
-        return rotatePoint(point, pivot, -(angle || 0));
-    }
-
-    function pointOnLine(from, to, distanceValue) {
-        const dx = to.x - from.x;
-        const dy = to.y - from.y;
-        const len = Math.hypot(dx, dy) || 1;
-
-        return {
-            x: from.x + (dx / len) * distanceValue,
-            y: from.y + (dy / len) * distanceValue
-        };
-    }
-
-    function distance(a, b) {
-        return Math.hypot((a.x || 0) - (b.x || 0), (a.y || 0) - (b.y || 0));
-    }
-
-    function toRad(deg) {
-        return deg * Math.PI / 180;
-    }
-
-    function round(value) {
-        return Math.round(value * 100) / 100;
-    }
-
-    function normalizeAngle(value) {
-        const angle = Number(value);
-
-        if (!Number.isFinite(angle)) {
-            return 0;
-        }
-
-        return Math.round(angle * 100) / 100;
-    }
-
-    function rowName(index) {
-        let n = index + 1;
-        let name = "";
-
-        while (n > 0) {
-            n -= 1;
-            name = String.fromCharCode(97 + n % 26) + name;
-            n = Math.floor(n / 26);
-        }
-
-        return name;
-    }
-
-    function floorCode(section) {
-        const match = String(section.floor || "1층").match(/\d+/);
-        return match ? match[0] : String(section.floor || "1");
-    }
-
-    function sectionCode(section) {
-        return String(section.label || section.name || section.id)
-            .replace(/^구역\s*/, "")
-            .replace(/\s+/g, "");
-    }
-
-    function hexToRgba(hex, alpha) {
-        const cleaned = String(hex || "#8b5cf6").replace("#", "");
-
-        if (cleaned.length !== 6) {
-            return `rgba(139,92,246,${alpha})`;
-        }
-
-        const r = parseInt(cleaned.slice(0, 2), 16);
-        const g = parseInt(cleaned.slice(2, 4), 16);
-        const b = parseInt(cleaned.slice(4, 6), 16);
-
-        return `rgba(${r},${g},${b},${alpha})`;
+        dom.toast.textContent = message;
+        dom.toast.classList.add("show");
+        window.clearTimeout(toast._timer);
+        toast._timer = window.setTimeout(() => dom.toast.classList.remove("show"), 1800);
     }
 })();

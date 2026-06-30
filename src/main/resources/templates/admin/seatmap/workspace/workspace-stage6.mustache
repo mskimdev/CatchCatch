@@ -1,122 +1,93 @@
-<aside class="seatmap-side seatmap-side--left stage4-tool-side">
-    <div class="stage4-side-title">
-        <span class="stage4-step-badge">STEP 06</span>
+<aside class="seatmap-side seatmap-side--left stage6-tool-side">
+    <div class="stage6-side-title">
+        <span class="stage6-step-badge">STEP 06</span>
         <strong>최종 꾸미기</strong>
-        <small>포토샵처럼 도면 위에 요소를 올려 최종 이미지를 보정합니다.</small>
+        <small>왼쪽은 도구만, 세부 편집은 오른쪽 선택 요소에서 처리합니다.</small>
     </div>
 
-    <section class="stage4-panel stage4-panel--tools">
+    <section class="stage6-panel stage6-panel--tools">
         <h3>도구</h3>
-        <div class="stage4-tool-grid" id="stage4ToolGrid">
-            <button type="button" class="stage4-tool is-active" data-tool="move" title="이동 / 선택">
+        <div class="stage6-tool-grid" id="stage6ToolGrid">
+            <button type="button" class="stage6-tool is-active" data-tool="move" title="선택 / 이동 / 구역 라벨 이동">
                 <span>↕</span><b>이동</b>
             </button>
-            <button type="button" class="stage4-tool" data-tool="text" title="텍스트">
+            <button type="button" class="stage6-tool" data-tool="text" title="텍스트 추가">
                 <span>T</span><b>텍스트</b>
             </button>
-            <button type="button" class="stage4-tool" data-tool="rect" title="사각형">
+            <button type="button" class="stage6-tool" data-tool="rect" title="사각형 추가">
                 <span>▭</span><b>박스</b>
             </button>
-            <button type="button" class="stage4-tool" data-tool="ellipse" title="원형">
+            <button type="button" class="stage6-tool" data-tool="ellipse" title="원형 추가">
                 <span>◯</span><b>원형</b>
             </button>
-            <button type="button" class="stage4-tool" data-tool="line" title="선">
+            <button type="button" class="stage6-tool" data-tool="line" title="선 추가">
                 <span>╱</span><b>선</b>
             </button>
-            <button type="button" class="stage4-tool" data-tool="seat" title="좌석 표시">
-                <span>▦</span><b>좌석</b>
-            </button>
-            <button type="button" class="stage4-tool" data-tool="stage" title="무대 박스">
-                <span>ST</span><b>무대</b>
-            </button>
-            <button type="button" class="stage4-tool" data-tool="erase" title="지우개">
+            <button type="button" class="stage6-tool" data-tool="erase" title="선택 요소 삭제">
                 <span>⌫</span><b>지우개</b>
             </button>
         </div>
     </section>
 
-    <section class="stage4-panel">
-        <h3>빠른 추가</h3>
-        <div class="stage4-quick-list">
-            <button type="button" class="stage4-quick" id="addStageLabel">STAGE 라벨</button>
-            <button type="button" class="stage4-quick" id="addEntranceLabel">입구 표시</button>
-            <button type="button" class="stage4-quick" id="addGuideBox">안내 박스</button>
-        </div>
+    <section class="stage6-panel stage6-panel--compact">
+        <h3>자동</h3>
+        <button type="button" class="stage6-quick stage6-quick--single" id="importSectionLabels">구역 라벨 생성</button>
     </section>
 
-    <section class="stage4-panel">
-        <h3>브러쉬 / 도형 설정</h3>
-        <div class="stage4-field-grid">
-            <label>
-                <span>채우기</span>
-                <input type="color" id="fillColor" value="#8b5cf6">
-            </label>
-            <label>
-                <span>선 색상</span>
-                <input type="color" id="strokeColor" value="#111827">
-            </label>
-            <label>
-                <span>글자색</span>
-                <input type="color" id="textColor" value="#ffffff">
-            </label>
-            <label>
-                <span>글자 크기</span>
-                <input type="number" id="fontSize" value="22" min="8" max="96">
-            </label>
+    <section class="stage6-panel stage6-panel--compact">
+        <h3>보기</h3>
+        <div class="stage6-view-strip">
+            <label class="stage6-view-chip"><input type="checkbox" id="toggleSections" checked><span>구역</span></label>
+            <label class="stage6-view-chip"><input type="checkbox" id="toggleLabels" checked><span>라벨</span></label>
+            <label class="stage6-view-chip"><input type="checkbox" id="toggleSeats"><span>좌석</span></label>
+            <label class="stage6-view-chip"><input type="checkbox" id="toggleBooking"><span>버튼</span></label>
+            <label class="stage6-view-chip"><input type="checkbox" id="toggleCompare"><span>원본</span></label>
         </div>
-    </section>
-
-    <section class="stage4-panel">
-        <h3>작업</h3>
-        <div class="stage4-action-list">
-            <button type="button" class="stage4-action stage4-action--dark" id="undoDecorate">되돌리기</button>
-            <button type="button" class="stage4-action" id="clearDecorations">꾸미기 초기화</button>
-            <button type="button" class="stage4-action stage4-action--green" id="saveDecoratedImage">도면 임시 저장</button>
-        </div>
-        <p class="stage4-help">상단 저장하기를 누르면 현재 캔버스 이미지가 함께 저장됩니다. 이 화면은 JSON 검수가 아니라 최종 이미지 보정용입니다.</p>
     </section>
 </aside>
 
-<main class="seatmap-main stage4-canvas-main">
-    <div class="stage4-canvas-head">
+<main class="seatmap-main stage6-canvas-main">
+    <div class="stage6-canvas-head">
         <div>
             <strong>최종 도면 캔버스</strong>
-            <span id="stage4CanvasInfo">도면을 불러오는 중...</span>
+            <span id="stage6CanvasInfo">도면을 불러오는 중...</span>
         </div>
-        <div class="stage4-canvas-head__tools">
-            <button type="button" id="fitCanvasView">화면 맞춤</button>
+        <div class="stage6-canvas-head__tools">
             <button type="button" id="resetCanvasView">100%</button>
+            <button type="button" id="fitCanvasViewInline">화면 맞춤</button>
         </div>
     </div>
 
-    <div class="stage4-canvas-viewport" id="stage4CanvasViewport">
-        <div class="stage4-canvas-board" id="stage4CanvasBoard">
+    <div class="stage6-canvas-viewport" id="stage6CanvasViewport">
+        <div class="stage6-canvas-board" id="stage6CanvasBoard">
             <canvas id="canvas"></canvas>
-            <canvas id="decorateOverlay"></canvas>
         </div>
     </div>
 </main>
 
-<aside class="seatmap-side seatmap-side--right stage4-right-side">
-    <section class="stage4-panel">
+<aside class="seatmap-side seatmap-side--right stage6-right-side">
+    <section class="stage6-panel">
         <h3>선택 요소</h3>
-        <div class="stage4-selected-box" id="selectedObjectInfo">
+        <div class="stage6-selected-box" id="selectedObjectInfo">
             아직 선택된 요소가 없습니다.
         </div>
     </section>
 
-    <section class="stage4-panel">
-        <h3>레이어</h3>
-        <div class="stage4-layer-list" id="layerList">
-            <div class="stage4-empty-layer">추가된 꾸미기 요소가 없습니다.</div>
+    <section class="stage6-panel">
+        <div class="stage6-panel-head">
+            <h3>레이어</h3>
+            <button type="button" class="stage6-inline-btn" id="clearSelection">선택 해제</button>
+        </div>
+        <div class="stage6-layer-list" id="layerList">
+            <div class="stage6-empty-layer">추가된 꾸미기 요소가 없습니다.</div>
         </div>
     </section>
 
-    <section class="stage4-panel">
+    <section class="stage6-panel">
         <h3>미니맵</h3>
-        <div class="stage4-minimap-wrap">
-            <canvas id="stage4MiniMap" width="260" height="170"></canvas>
+        <div class="stage6-minimap-wrap">
+            <canvas id="stage6MiniMap" width="260" height="170"></canvas>
         </div>
-        <p class="stage4-help">좌측 도구를 고른 뒤 도면을 클릭하면 임시 요소가 추가됩니다.</p>
+        <p class="stage6-help">구역은 이동 도구 상태에서 바로 클릭하면 선택됩니다. 상단 저장/작업취소/다시실행/확대·축소 버튼과 연동됩니다.</p>
     </section>
 </aside>

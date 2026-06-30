@@ -1,80 +1,44 @@
 (() => {
     "use strict";
 
-    const STORAGE_KEYS = {
-        originalImage: "concert_originalImage",
-        cleanImage: "concert_cleanImage",
-        imageMeta: "concert_imageMeta",
-        colorRegions: "concert_stage1_colorRegions",
-        angleRegions: "concert_stage1_angleRegions",
-        selectedAngleRegions: "concert_stage1_selectedAngleRegions",
-        baseLayoutsByGroup: "concert_stage1_baseLayoutsByGroup",
-        visualGroups: "concert_stage1_visualGroups",
-        selectedVisualGroupId: "concert_stage1_selectedVisualGroupId",
-        seatSections: "concert_stage1_sections",
-        seats: "concert_stage1_seats",
-        layouts: "concert_stage1_layouts",
-        generatedImage: "concert_stage1_generatedImage",
-        concertSections: "concert_sections",
-        concertStage3Seats: "concert_stage3_seats",
-        concertStage3Layouts: "concert_stage3_layouts"
+    const SAVE_URL = "/admin/seatmap/temp-save";
+    const STORAGE = {
+        sections: "seatmap_stage3_sections",
+        sectionsCompat: "concert_sections",
+        sectionsHeader: "concert_stage1_sections",
+        visualGroupsHeader: "concert_stage1_visualGroups",
+        stageData: "seatmap_stage3_data",
+        legacyStageData: "concert_stage2Data",
+        buttonImage: "concert_buttonImage",
+        projectId: "seatmap_current_project_id",
+        folderName: "seatmap_current_folder_name"
     };
 
-    const CONCERT_JSON_URL = "/json/seatmap/seatmap-concert-session.json";
-    const DEFAULT_IMAGE_URL = "/images/seatmap/generated/seatmap-concert-image.png";
-    const DEFAULT_BACKGROUND = "#f7f7f7";
-
-    const ROLE = {
-        UNKNOWN: 0,
-        BACKGROUND: 1,
-        WHITE: 2,
-        GRAY: 3,
-        BLACK: 4,
-        SEAT_PINK: 20,
-        SEAT_GREEN: 21,
-        SEAT_ORANGE: 22,
-        SEAT_PURPLE: 23,
-        SEAT_BLUE: 24,
-        SEAT_BROWN: 25,
-        SEAT_RED: 26
-    };
-
-    const ROLE_NAME = {
-        [ROLE.SEAT_PINK]: "핑크",
-        [ROLE.SEAT_GREEN]: "초록",
-        [ROLE.SEAT_ORANGE]: "오렌지",
-        [ROLE.SEAT_PURPLE]: "보라",
-        [ROLE.SEAT_BLUE]: "하늘",
-        [ROLE.SEAT_BROWN]: "갈색",
-        [ROLE.SEAT_RED]: "레드"
-    };
+    const PALETTE = [
+        "#2563eb", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4",
+        "#f97316", "#84cc16", "#ec4899", "#64748b", "#14b8a6", "#a855f7"
+    ];
+    const GROUP_KEYS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
     const state = {
+        projectId: "seat",
+        stage2Url: "/admin/seatmap/stage/2",
+        stage4Url: "/admin/seatmap/stage/4",
+        buttonImageUrl: "",
+        referenceImageUrl: "",
         width: 0,
         height: 0,
-        part: 1,
-        completedParts: new Set(),
-        originalUrl: "",
-        generatedUrl: "",
-        colorRegions: [],
-        selectedRegionId: null,
-        selectedAngleRegionIds: [],
-        angleRegions: {},
-        baseRegionId: null,
-        baseLayoutsByGroup: {},
-        visualGroups: [],
-        selectedVisualGroupId: null,
-        seatSections: [],
-        seatsBySection: {},
-        layoutsBySection: {},
-        roleMap: null,
-        imageData: null,
-        dragMode: null,
+        sections: [],
+        selectedIds: [],
+        nextId: 1,
+        activePart: 1,
+        tool: "select",
+        dragging: false,
         dragStart: null,
         dragRect: null,
-        angleSelectRect: null,
-        pointerDown: false,
-        previewMode: "original"
+        baseImageLoaded: false,
+        backgroundColor: { r: 255, g: 255, b: 255, a: 255 },
+        zoom: 1
     };
 
     const dom = {};
@@ -82,110 +46,120 @@
     let overlay;
     let ctx;
     let overlayCtx;
+    let previewCanvas;
+    let previewCtx;
 
-    const sourceCanvas = document.createElement("canvas");
-    const sourceCtx = sourceCanvas.getContext("2d", { willReadFrequently: true });
-
-    const solidCanvas = document.createElement("canvas");
-    const solidCtx = solidCanvas.getContext("2d", { willReadFrequently: true });
+    const debugCanvas = document.createElement("canvas");
+    const debugCtx = debugCanvas.getContext("2d", { willReadFrequently: true });
 
     document.addEventListener("DOMContentLoaded", init);
 
     async function init() {
         cacheDom();
-        ensureAngleModePanel();
-        ensurePart4InfoPanel();
-        injectStage1DynamicStyle();
+        if (!canvas || !overlay) {
+            console.error("[SeatTrace Stage3] canvas 연결 실패");
+            return;
+        }
+
+        readRouteState();
         bindEvents();
-        loadSavedState();
-        await loadInitialImage();
+        await loadBaseImage();
+        await loadSavedSections();
+        setPart(1);
+        syncAll();
+        toast("Stage 3 구역 나누기 준비 완료");
     }
 
     function cacheDom() {
         canvas = document.getElementById("canvas");
         overlay = document.getElementById("overlay");
+        previewCanvas = document.getElementById("previewCanvas");
 
-        if (!canvas || !overlay) {
-            console.error("[Stage1] canvas 또는 overlay를 찾지 못했습니다.");
-            return;
-        }
-
-        ctx = canvas.getContext("2d", { willReadFrequently: true });
-        overlayCtx = overlay.getContext("2d", { willReadFrequently: true });
+        if (canvas) ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (overlay) overlayCtx = overlay.getContext("2d", { willReadFrequently: true });
+        if (previewCanvas) previewCtx = previewCanvas.getContext("2d", { willReadFrequently: true });
 
         [
-            "concertStage1App",
-            "box",
-            "toast",
-            "stage1Title",
-            "stage1Size",
-            "stage1Guide",
-            "part1",
-            "part2",
-            "part3",
-            "part4",
-            "tab1",
-            "tab2",
-            "tab3",
-            "tab4",
-            "colorMinArea",
-            "colorTolerance",
-            "extractColorRegions",
-            "clearColorRegions",
-            "colorRegionList",
-            "goPart2",
-            "angleDragStart",
-            "angleClearSelected",
-            "angleRegionName",
-            "angleValue",
-            "angleRegionList",
-            "goPart3",
-            "baseFloor",
-            "baseSectionName",
-            "baseGrade",
-            "baseColor",
-            "baseRows",
-            "baseCols",
-            "applyBaseRegion",
-            "estimateAllSeats",
-            "clearEstimatedSeats",
-            "seatEstimateList",
-            "goPart4",
-            "solidGap",
-            "solidBackground",
-            "renderSolidSections",
-            "showOriginalImage",
-            "saveStage1Result",
-            "toStage2"
+            "stage3App", "canvasBox", "canvasScroll", "toast", "canvasTitle", "canvasSize", "canvasGuide",
+            "part1Panel", "part2Panel", "part3Panel", "partBtn1", "partBtn2", "partBtn3",
+            "minArea", "bgTolerance", "simplifyTolerance", "snapSize", "autoExtractBtn", "clearSectionsBtn", "goPart2Btn",
+            "manualAddBtn", "cancelToolBtn", "mergeSectionsBtn", "deleteSectionsBtn", "selectionSummary", "goPart3Btn",
+            "sectionNameInput", "groupKeyInput", "groupIndexInput", "floorInput", "gradeInput", "priceInput", "sectionColorInput", "labelInput",
+            "groupTolerance", "autoGroupBtn", "renumberGroupsBtn", "groupBatchSelect", "groupRenameInput",
+            "groupColorInput", "groupFloorInput", "groupGradeInput", "groupPriceInput", "applyGroupBatchBtn", "selectGroupBtn",
+            "nameBatchInput", "applyNameBatchBtn", "sampleNameTemplateBtn",
+            "applyInfoBtn", "autoNameBtn", "saveSectionsBtn", "toStage4Btn",
+            "miniImg", "totalCount", "selectedCount", "selectedArea", "selectedName", "sectionList", "sortSectionsBtn"
         ].forEach((id) => {
             dom[id] = document.getElementById(id);
         });
     }
 
+    function readRouteState() {
+        const root = dom.stage3App;
+        const params = new URLSearchParams(location.search);
+        state.projectId = sanitizeProjectId(
+            params.get("projectId")
+            || root?.dataset.projectId
+            || localStorage.getItem(STORAGE.folderName)
+            || localStorage.getItem(STORAGE.projectId)
+            || "seat"
+        );
+        state.stage2Url = root?.dataset.stage2Url || `/admin/seatmap/stage/2?projectId=${encodeURIComponent(state.projectId)}`;
+        state.stage4Url = root?.dataset.stage4Url || `/admin/seatmap/stage/4?projectId=${encodeURIComponent(state.projectId)}`;
+        state.buttonImageUrl = root?.dataset.buttonImageUrl || projectFileUrl("button-image.png");
+        state.referenceImageUrl = projectFileUrl("cropped-image.png");
+
+        localStorage.setItem(STORAGE.projectId, state.projectId);
+        localStorage.setItem(STORAGE.folderName, state.projectId);
+    }
+
     function bindEvents() {
-        bind(dom.tab1, "click", () => showPart(1));
-        bind(dom.tab2, "click", () => showPart(2));
-        bind(dom.tab3, "click", () => showPart(3));
-        bind(dom.tab4, "click", () => showPart(4));
+        bind(dom.partBtn1, "click", () => setPart(1));
+        bind(dom.partBtn2, "click", () => setPart(2));
+        bind(dom.partBtn3, "click", () => setPart(3));
 
-        bind(dom.extractColorRegions, "click", extractColorRegions);
-        bind(dom.clearColorRegions, "click", clearColorRegions);
-        bind(dom.goPart2, "click", () => showPart(2));
+        bind(dom.autoExtractBtn, "click", autoExtractSections);
+        bind(dom.clearSectionsBtn, "click", clearSections);
+        bind(dom.goPart2Btn, "click", () => {
+            if (!state.sections.length) {
+                toast("먼저 구역을 추출하세요.");
+                return;
+            }
+            setPart(2);
+        });
 
-        bind(dom.angleGlobalStart, "click", startGlobalAnglePick);
-        bind(dom.angleDragStart, "click", startAngleDrag);
-        bind(dom.angleClearSelected, "click", clearSelectedAngles);
-        bind(dom.goPart3, "click", () => showPart(3));
+        bind(dom.manualAddBtn, "click", toggleManualAdd);
+        bind(dom.cancelToolBtn, "click", clearSelectionAndTool);
+        bind(dom.mergeSectionsBtn, "click", mergeSelectedSections);
+        bind(dom.deleteSectionsBtn, "click", deleteSelectedSections);
+        bind(dom.goPart3Btn, "click", () => setPart(3));
 
-        bind(dom.applyBaseRegion, "click", applyBaseRegion);
-        bind(dom.estimateAllSeats, "click", estimateAllSeats);
-        bind(dom.clearEstimatedSeats, "click", clearEstimatedSeats);
-        bind(dom.goPart4, "click", () => showPart(4));
+        bind(dom.applyInfoBtn, "click", applyInfoToSelected);
+        bind(dom.autoNameBtn, "click", () => renumberGroups(true));
+        bind(dom.applyNameBatchBtn, "click", applyNameBatchToSections);
+        bind(dom.sampleNameTemplateBtn, "click", fillSampleNameTemplate);
+        bind(dom.saveSectionsBtn, "click", saveSectionsToServer);
+        bind(dom.toStage4Btn, "click", moveToStage4);
+        bind(dom.sortSectionsBtn, "click", sortSections);
+        bind(dom.autoGroupBtn, "click", () => autoGroupSectionsByColor(true));
+        bind(dom.renumberGroupsBtn, "click", () => renumberGroups(true));
+        bind(dom.applyGroupBatchBtn, "click", applyGroupBatchToSections);
+        bind(dom.selectGroupBtn, "click", selectCurrentGroup);
+        bind(dom.groupBatchSelect, "change", fillGroupBatchForm);
 
-        bind(dom.renderSolidSections, "click", renderSolidSections);
-        bind(dom.showOriginalImage, "click", showOriginalImage);
-        bind(dom.saveStage1Result, "click", saveStage1Result);
-        bind(dom.toStage2, "click", moveToStage2);
+        ["groupKeyInput", "groupIndexInput"].forEach((id) => {
+            bind(dom[id], "input", syncNamePreviewFromGroupInput);
+        });
+
+        ["groupKeyInput", "groupIndexInput", "floorInput", "gradeInput", "priceInput", "sectionColorInput", "labelInput"].forEach((id) => {
+            bind(dom[id], "keydown", (event) => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    applyInfoToSelected();
+                }
+            });
+        });
 
         if (overlay) {
             overlay.addEventListener("pointerdown", handlePointerDown);
@@ -193,2792 +167,1836 @@
             overlay.addEventListener("pointerup", handlePointerUp);
             overlay.addEventListener("pointerleave", handlePointerLeave);
             overlay.addEventListener("click", handleCanvasClick);
+            overlay.addEventListener("dblclick", handleCanvasDoubleClick);
         }
+
+        bindToolbar();
+
+        window.SeatMapStage3 = {
+            save: saveSectionsToServer,
+            getSections: () => normalizeSectionsForSave(),
+            exportDebugImage: () => exportDebugImageDataUrl()
+        };
     }
 
     function bind(element, eventName, handler) {
-        if (element) {
-            element.addEventListener(eventName, handler);
-        }
+        if (element) element.addEventListener(eventName, handler);
     }
 
-    function loadSavedState() {
-        state.colorRegions = readJson(STORAGE_KEYS.colorRegions, []);
-        state.angleRegions = readJson(STORAGE_KEYS.angleRegions, {});
-        state.selectedAngleRegionIds = readJson(STORAGE_KEYS.selectedAngleRegions, []);
-        state.baseLayoutsByGroup = readJson(STORAGE_KEYS.baseLayoutsByGroup, {});
-        state.visualGroups = readJson(STORAGE_KEYS.visualGroups, []);
-        state.selectedVisualGroupId = localStorage.getItem(STORAGE_KEYS.selectedVisualGroupId) || null;
-        state.seatSections = readJson(STORAGE_KEYS.seatSections, []);
-        state.seatsBySection = readJson(STORAGE_KEYS.seats, {});
-        state.layoutsBySection = readJson(STORAGE_KEYS.layouts, {});
-        state.generatedUrl = localStorage.getItem(STORAGE_KEYS.generatedImage) || "";
-
-        if (state.colorRegions.length > 0) {
-            state.selectedRegionId = state.colorRegions[0].id;
-        }
-    }
-
-    function getProjectFolderName() {
-        const query = new URLSearchParams(location.search);
-        return query.get("projectId")
-            || localStorage.getItem("seatmap_current_folder_name")
-            || localStorage.getItem("seatmap_current_project_id")
-            || "seat";
-    }
-
-    function getProjectImageUrl(fileName) {
-        const folderName = getProjectFolderName();
-        return `/temp/seatmap/${encodeURIComponent(folderName)}/${fileName}`;
-    }
-
-    async function loadInitialImage() {
-        clearBrokenImageCache();
-
-        let url = await readImageUrlFromJson();
-
-        if (!url) {
-            url = localStorage.getItem("concert_buttonImage")
-                || localStorage.getItem("seatmap_button_image_url")
-                || getProjectImageUrl("button-image.png")
-                || localStorage.getItem(STORAGE_KEYS.originalImage)
-                || localStorage.getItem("seatmap_cropped_image_url")
-                || getProjectImageUrl("cropped-image.png")
-                || DEFAULT_IMAGE_URL;
-        }
-
-        state.originalUrl = appendNoCache(url);
-
-        loadImage(state.originalUrl, (image) => {
-            setupCanvas(image.naturalWidth, image.naturalHeight);
-            sourceCtx.clearRect(0, 0, state.width, state.height);
-            sourceCtx.drawImage(image, 0, 0, state.width, state.height);
-            state.imageData = sourceCtx.getImageData(0, 0, state.width, state.height);
-            state.roleMap = buildRoleMap(state.imageData, state.width, state.height);
-
-            localStorage.setItem(STORAGE_KEYS.originalImage, url);
-            localStorage.setItem("concert_buttonImage", url);
-
-            render();
-            syncAllPanels();
-            showPart(state.part);
-        });
-    }
-
-    function clearBrokenImageCache() {
-        [
-            STORAGE_KEYS.cleanImage,
-            STORAGE_KEYS.generatedImage,
-            "concert_stage1_generatedImage",
-            "concert_generated_overviewImage"
-        ].forEach((key) => {
-            const value = localStorage.getItem(key);
-            if (value && value.startsWith("data:image")) {
-                localStorage.removeItem(key);
+    function bindToolbar() {
+        bind(document.getElementById("zoomIn"), "click", () => setZoom(state.zoom + 0.1));
+        bind(document.getElementById("zoomOut"), "click", () => setZoom(state.zoom - 0.1));
+        bind(document.getElementById("zoomReset"), "click", () => setZoom(1));
+        bind(document.getElementById("zoomFit"), "click", fitZoom);
+        bind(document.getElementById("resetView"), "click", () => {
+            setZoom(1);
+            if (dom.canvasScroll) {
+                dom.canvasScroll.scrollLeft = 0;
+                dom.canvasScroll.scrollTop = 0;
             }
         });
     }
 
-    async function readImageUrlFromJson() {
+    async function loadBaseImage() {
+        const candidates = unique([
+            localStorage.getItem(STORAGE.buttonImage),
+            state.buttonImageUrl,
+            projectFileUrl("button-image.png"),
+            projectFileUrl("cropped-image.png")
+        ]).filter(Boolean);
+
+        let loaded = null;
+        let loadedUrl = "";
+
+        for (const url of candidates) {
+            try {
+                const image = await loadImage(noCache(url));
+                loaded = image;
+                loadedUrl = url;
+                break;
+            } catch (error) {
+                console.warn("[SeatTrace Stage3] 이미지 로드 실패", url, error);
+            }
+        }
+
+        if (!loaded) {
+            toast("button-image.png를 읽지 못했습니다. Stage 2 저장을 먼저 확인하세요.");
+            return;
+        }
+
+        setupCanvas(loaded.naturalWidth, loaded.naturalHeight);
+        ctx.clearRect(0, 0, state.width, state.height);
+        ctx.drawImage(loaded, 0, 0, state.width, state.height);
+        state.baseImageLoaded = true;
+        state.buttonImageUrl = loadedUrl;
+        localStorage.setItem(STORAGE.buttonImage, loadedUrl);
+        state.backgroundColor = detectBackgroundColor();
+
+        if (dom.canvasSize) dom.canvasSize.textContent = `${state.width} × ${state.height}`;
+        await loadMiniMap();
+        fitZoom();
+    }
+
+    async function loadMiniMap() {
+        const candidates = unique([
+            projectFileUrl("cropped-image.png"),
+            projectFileUrl("seatmap-image.png"),
+            state.buttonImageUrl
+        ]).filter(Boolean);
+
+        for (const url of candidates) {
+            try {
+                await loadImage(noCache(url));
+                if (dom.miniImg) dom.miniImg.src = noCache(url);
+                return;
+            } catch (error) {
+                // 다음 후보 확인
+            }
+        }
+    }
+
+    async function loadSavedSections() {
+        const stageData = readJson(STORAGE.stageData, null);
+        if (stageData?.projectId === state.projectId && Array.isArray(stageData.sections) && stageData.sections.some(hasUsablePolygon)) {
+            useLoadedSections(stageData.sections);
+            return;
+        }
+
         try {
-            const response = await fetch(CONCERT_JSON_URL, { method: "GET", cache: "no-store" });
-
-            if (!response.ok) {
-                return "";
+            const response = await fetch(noCache(projectFileUrl("seatmap-sections.json")), { credentials: "same-origin" });
+            if (response.ok) {
+                const data = await response.json();
+                if (Array.isArray(data) && data.some(hasUsablePolygon)) {
+                    useLoadedSections(data);
+                    return;
+                }
             }
-
-            const json = await response.json();
-            const output = json.output || {};
-            const imageUrl =
-                output.imageUrl ||
-                output.buttonImageUrl ||
-                output.resultImageUrl ||
-                output.resultImage ||
-                json.imageUrl ||
-                json.buttonImageUrl ||
-                json.resultImageUrl ||
-                json.concert_buttonImage ||
-                json.buttonImage ||
-                json.resultImage ||
-                json.seat_button_resultImage ||
-                "";
-
-            if (imageUrl) {
-                localStorage.setItem(STORAGE_KEYS.originalImage, imageUrl);
-                localStorage.setItem("concert_buttonImage", imageUrl);
-            }
-
-            return imageUrl;
         } catch (error) {
-            console.warn("[Stage1] JSON 이미지 경로 로드 실패", error);
-            return "";
+            console.warn("[SeatTrace Stage3] 저장된 구역 JSON 없음", error);
         }
+
+        const local = readJson(STORAGE.sectionsCompat, null)
+            || readJson(STORAGE.sectionsHeader, null);
+
+        if (Array.isArray(local) && local.some(hasUsablePolygon)) {
+            useLoadedSections(local);
+        }
+    }
+
+    function useLoadedSections(source) {
+        state.sections = source.map(normalizeLoadedSection).filter(hasUsablePolygon);
+        ensureGroupsAfterLoad();
+        updateNextId();
+        state.selectedIds = state.sections[0] ? [state.sections[0].id] : [];
     }
 
     function setupCanvas(width, height) {
         state.width = width;
         state.height = height;
-
         canvas.width = width;
         canvas.height = height;
         overlay.width = width;
         overlay.height = height;
-        sourceCanvas.width = width;
-        sourceCanvas.height = height;
-        solidCanvas.width = width;
-        solidCanvas.height = height;
+        debugCanvas.width = width;
+        debugCanvas.height = height;
 
-        const scale = Math.min(1, 1120 / width, 760 / height);
-        const displayWidth = `${width * scale}px`;
-        const displayHeight = `${height * scale}px`;
-
-        canvas.style.width = displayWidth;
-        canvas.style.height = displayHeight;
-        overlay.style.width = displayWidth;
-        overlay.style.height = displayHeight;
-
-        if (dom.box) {
-            dom.box.style.width = displayWidth;
-            dom.box.style.height = displayHeight;
+        if (previewCanvas) {
+            const maxWidth = 300;
+            const scale = width > 0 ? Math.min(1, maxWidth / width) : 1;
+            previewCanvas.width = Math.max(1, Math.round(width * scale));
+            previewCanvas.height = Math.max(1, Math.round(height * scale));
         }
 
-        if (dom.stage1Size) {
-            dom.stage1Size.textContent = `${width} × ${height}`;
+        if (dom.canvasBox) {
+            dom.canvasBox.style.width = `${width}px`;
+            dom.canvasBox.style.height = `${height}px`;
         }
     }
 
-    function showPart(partNumber) {
-        state.part = partNumber;
-
-        if (dom.concertStage1App) {
-            dom.concertStage1App.dataset.part = String(partNumber);
-        }
-
-        clearTransientSelectionForPart(partNumber);
-
-        for (let i = 1; i < partNumber; i += 1) {
-            state.completedParts.add(i);
-        }
-
-        [1, 2, 3, 4].forEach((number) => {
-            const part = dom[`part${number}`];
-            const tab = dom[`tab${number}`];
-
-            if (!part || !tab) {
-                return;
-            }
-
-            const active = number === partNumber;
-            const done = state.completedParts.has(number);
-
-            part.classList.toggle("is-active", active);
-            part.classList.toggle("is-done", done);
-            tab.classList.toggle("active", active);
-
-            const status = part.querySelector(".seatmap-step__status");
-
-            if (status) {
-                status.textContent = active ? "진행중" : done ? "완료" : "대기";
-            }
-        });
-
-        updateGuideText();
-        render();
-        syncAllPanels();
-        renderSelectedVisualGroupInfo(partNumber === 4 ? getSelectedVisualGroup() : null);
-    }
-
-    function clearTransientSelectionForPart(partNumber) {
-        state.pointerDown = false;
-        state.dragMode = null;
-        state.dragStart = null;
-        state.dragRect = null;
-
-        if (partNumber !== 2) {
-            state.angleSelectRect = null;
-            state.selectedAngleRegionIds = [];
-        }
-    }
-
-    function updateGuideText() {
-        const titles = {
-            1: "색상 추출",
-            2: "각도 계산",
-            3: "전체 좌석 추정",
-            4: "깔끔화 / 저장"
-        };
-
-        const guides = {
-            1: "좌석 색상을 추출해서 구역 후보를 생성하세요.",
-            2: "2-1 전체 계산은 STAGE를 한 번 클릭하고, 2-2 보정은 구역을 드래그한 뒤 시선점을 클릭하세요.",
-            3: "구역 하나를 클릭해 기준을 잡고, 같은 색상/역할 그룹끼리 좌석을 추정하세요.",
-            4: "원본 구조는 유지하고, 한글/좌석선/테두리 없이 도형만 표시하세요."
-        };
-
-        if (dom.stage1Title) {
-            dom.stage1Title.textContent = titles[state.part] || "";
-        }
-
-        if (dom.stage1Guide) {
-            dom.stage1Guide.textContent = guides[state.part] || "";
-        }
-
-        if (dom.estimateAllSeats) {
-            dom.estimateAllSeats.textContent = state.part === 3 ? "선택 색상 그룹 좌석 추정" : dom.estimateAllSeats.textContent;
-        }
-    }
-
-    function render() {
-        if (!ctx || !overlayCtx) {
+    function autoExtractSections() {
+        if (!state.baseImageLoaded) {
+            toast("button-image.png를 먼저 불러와야 합니다.");
             return;
         }
 
-        ctx.clearRect(0, 0, state.width, state.height);
-        overlayCtx.clearRect(0, 0, state.width, state.height);
+        const imageData = ctx.getImageData(0, 0, state.width, state.height);
+        const data = imageData.data;
+        const seen = new Uint8Array(state.width * state.height);
+        const minArea = positiveNumber(dom.minArea?.value, 120);
+        const components = [];
 
-        if (state.previewMode === "solid" && state.generatedUrl) {
-            loadImage(state.generatedUrl, (image) => {
-                ctx.clearRect(0, 0, state.width, state.height);
-                overlayCtx.clearRect(0, 0, state.width, state.height);
-                ctx.drawImage(image, 0, 0, state.width, state.height);
-                if (state.part === 4) {
-                    drawSelectedVisualGroupOutline();
+        state.backgroundColor = detectBackgroundColor();
+
+        for (let y = 0; y < state.height; y += 1) {
+            for (let x = 0; x < state.width; x += 1) {
+                const index = y * state.width + x;
+                if (seen[index] || !isShapePixel(data, index)) continue;
+
+                const component = floodFillComponent(data, seen, x, y);
+                if (component.area >= minArea && component.bbox.w >= 3 && component.bbox.h >= 3) {
+                    components.push(component);
                 }
-            });
-            return;
-        }
-
-        ctx.drawImage(sourceCanvas, 0, 0, state.width, state.height);
-        drawOverlay();
-    }
-
-    function drawOverlay() {
-        overlayCtx.clearRect(0, 0, state.width, state.height);
-
-        if (state.part === 4) {
-            return;
-        }
-
-        drawRegionOverlay();
-
-        if (state.part >= 3) {
-            drawSeatOverlay();
-        }
-
-        if (state.dragRect) {
-            drawRect(state.dragRect, "#1d4ed8", "rgba(37, 99, 235, 0.08)", 3);
-        }
-
-        if (state.angleSelectRect) {
-            drawRect(state.angleSelectRect, "#1d4ed8", "rgba(37, 99, 235, 0.06)", 3);
-        }
-    }
-
-    function drawRegionOverlay() {
-        if (state.part === 3) {
-            drawPart3SelectionOverlay();
-            return;
-        }
-
-        state.colorRegions.forEach((region) => {
-            const selected = region.id === state.selectedRegionId;
-            const angleSelected = state.selectedAngleRegionIds.includes(region.id);
-            const checked = Boolean(state.angleRegions[region.id]?.checked);
-            const stroke = checked ? "#22c55e" : angleSelected ? "#1d4ed8" : selected ? "#7c3aed" : "#64748b";
-            const fill = checked ? "rgba(34,197,94,0.08)" : angleSelected ? "rgba(37,99,235,0.08)" : selected ? "rgba(124,58,237,0.08)" : "rgba(100,116,139,0.04)";
-
-            drawPolygon(region.polygon, stroke, fill, selected || angleSelected || checked ? 2.5 : 1.5);
-
-            const center = getPolygonCenter(region.polygon);
-            overlayCtx.save();
-            overlayCtx.font = "bold 13px Arial";
-            overlayCtx.textAlign = "center";
-            overlayCtx.textBaseline = "middle";
-            overlayCtx.fillStyle = checked ? "#15803d" : angleSelected ? "#1d4ed8" : "#475569";
-            overlayCtx.fillText(checked ? "✓" : region.name, center.x, center.y);
-            overlayCtx.restore();
-        });
-    }
-
-    function drawPart3SelectionOverlay() {
-        const selected = getSelectedRegion();
-
-        if (!selected) {
-            return;
-        }
-
-        const groupKey = getRegionGroupKey(selected);
-        const sameGroupRegions = state.colorRegions.filter((region) => getRegionGroupKey(region) === groupKey);
-
-        sameGroupRegions.forEach((region) => {
-            if (region.id === selected.id) {
-                return;
             }
+        }
 
-            overlayCtx.save();
-            overlayCtx.globalAlpha = 0.18;
-            drawPolygon(region.polygon, "#64748b", "rgba(100,116,139,0.00)", 1);
-            overlayCtx.restore();
+        components.sort((a, b) => {
+            const rowGap = Math.abs(a.bbox.y - b.bbox.y);
+            if (rowGap > Math.max(12, state.height * 0.02)) return a.bbox.y - b.bbox.y;
+            return a.bbox.x - b.bbox.x;
         });
 
-        overlayCtx.save();
-        overlayCtx.shadowColor = "rgba(124,58,237,0.32)";
-        overlayCtx.shadowBlur = 10;
-        drawPolygon(selected.polygon, "#7c3aed", "rgba(124,58,237,0.06)", 4);
-        overlayCtx.restore();
+        state.sections = components.map((component, index) => makeSectionFromComponent(component, index));
+        state.nextId = state.sections.length + 1;
+        state.selectedIds = state.sections[0] ? [state.sections[0].id] : [];
+        state.tool = "select";
+        autoGroupSectionsByColor(false);
+        saveLocalState();
+        setPart(2);
+        syncAll();
+        toast(`구역 ${state.sections.length}개를 나누고 색상별 그룹을 붙였습니다.`);
     }
 
-    function drawSeatOverlay() {
-        Object.values(state.seatsBySection).forEach((seats) => {
-            seats.forEach((seat) => {
-                overlayCtx.save();
-                overlayCtx.translate(seat.x, seat.y);
-                overlayCtx.rotate(degToRad(seat.angle || 0));
-                overlayCtx.fillStyle = "rgba(15, 23, 42, 0.62)";
-                overlayCtx.fillRect(-seat.size / 2, -seat.size / 2, seat.size, seat.size);
-                overlayCtx.restore();
-            });
-        });
-    }
+    function floodFillComponent(data, seen, startX, startY) {
+        const width = state.width;
+        const height = state.height;
+        const queue = [startY * width + startX];
+        const cells = [];
+        let head = 0;
+        let minX = startX;
+        let maxX = startX;
+        let minY = startY;
+        let maxY = startY;
+        const colorSum = { r: 0, g: 0, b: 0, count: 0 };
 
-    function drawRect(rect, stroke, fill, lineWidth) {
-        overlayCtx.save();
-        overlayCtx.fillStyle = fill;
-        overlayCtx.strokeStyle = stroke;
-        overlayCtx.lineWidth = lineWidth;
-        overlayCtx.setLineDash([8, 5]);
-        overlayCtx.fillRect(rect.x, rect.y, rect.w, rect.h);
-        overlayCtx.strokeRect(rect.x, rect.y, rect.w, rect.h);
-        overlayCtx.restore();
-    }
+        seen[startY * width + startX] = 1;
 
-    function drawPolygon(points, stroke, fill, lineWidth) {
-        if (!points || points.length < 3) {
-            return;
-        }
+        while (head < queue.length) {
+            const current = queue[head++];
+            const x = current % width;
+            const y = Math.floor(current / width);
+            cells.push(current);
 
-        overlayCtx.save();
-        overlayCtx.beginPath();
-        overlayCtx.moveTo(points[0].x, points[0].y);
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
 
-        for (let i = 1; i < points.length; i += 1) {
-            overlayCtx.lineTo(points[i].x, points[i].y);
-        }
+            const color = pixelAt(data, current);
+            colorSum.r += color.r;
+            colorSum.g += color.g;
+            colorSum.b += color.b;
+            colorSum.count += 1;
 
-        overlayCtx.closePath();
-        overlayCtx.fillStyle = fill;
-        overlayCtx.fill();
-        overlayCtx.strokeStyle = stroke;
-        overlayCtx.lineWidth = lineWidth;
-        overlayCtx.stroke();
-        overlayCtx.restore();
-    }
-
-    function extractColorRegions() {
-        if (!state.imageData) {
-            toast("이미지를 먼저 불러와야 합니다.");
-            return;
-        }
-
-        const minArea = positiveNumber(dom.colorMinArea?.value, 120);
-        state.roleMap = buildRoleMap(state.imageData, state.width, state.height);
-        cleanupRoleMap(state.roleMap, state.width, state.height);
-
-        const components = extractComponents(state.roleMap, state.width, state.height, (role) => isSeatRole(role));
-        const regions = [];
-
-        components.forEach((component) => {
-            if (component.area < minArea) {
-                return;
+            const neighbors = [current - 1, current + 1, current - width, current + width];
+            for (const next of neighbors) {
+                if (next < 0 || next >= width * height || seen[next]) continue;
+                const nx = next % width;
+                const ny = Math.floor(next / width);
+                if ((next === current - 1 || next === current + 1) && ny !== y) continue;
+                if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+                if (!isShapePixel(data, next)) continue;
+                seen[next] = 1;
+                queue.push(next);
             }
-
-            regions.push(createRegionFromComponent(component));
-        });
-
-        regions.sort((a, b) => Math.abs(a.bbox.y - b.bbox.y) > 20 ? a.bbox.y - b.bbox.y : a.bbox.x - b.bbox.x);
-
-        regions.forEach((region, index) => {
-            region.id = `region-${index + 1}`;
-            region.name = `구역 ${index + 1}`;
-            region.label = region.name;
-        });
-
-        state.colorRegions = regions;
-        state.selectedRegionId = regions[0]?.id || null;
-        state.selectedAngleRegionIds = [];
-        state.angleRegions = {};
-        state.seatSections = [];
-        state.seatsBySection = {};
-        state.layoutsBySection = {};
-        state.visualGroups = [];
-        state.selectedVisualGroupId = null;
-        state.previewMode = "original";
-
-        saveWorkState();
-        syncAllPanels();
-        render();
-        toast(`구역 후보 ${regions.length}개를 생성했습니다.`);
-    }
-
-    function clearColorRegions() {
-        state.colorRegions = [];
-        state.selectedRegionId = null;
-        state.selectedAngleRegionIds = [];
-        state.angleRegions = {};
-        state.seatSections = [];
-        state.seatsBySection = {};
-        state.layoutsBySection = {};
-        state.previewMode = "original";
-        saveWorkState();
-        syncAllPanels();
-        render();
-        toast("구역 후보를 초기화했습니다.");
-    }
-
-    function startGlobalAnglePick() {
-        if (state.colorRegions.length <= 0) {
-            toast("먼저 파트 1에서 구역 후보를 생성하세요.");
-            return;
         }
 
-        state.dragMode = "globalAngleTarget";
-        state.dragStart = null;
-        state.dragRect = null;
-        state.angleSelectRect = null;
-        state.selectedAngleRegionIds = [];
-        saveWorkState();
-        syncAllPanels();
-        render();
-        toast("전체 구역이 바라볼 STAGE/중앙 지점을 클릭하세요.");
-    }
-
-    function startAngleDrag() {
-        if (state.colorRegions.length <= 0) {
-            toast("먼저 파트 1에서 구역 후보를 생성하세요.");
-            return;
-        }
-
-        state.dragMode = "angleSelect";
-        state.dragStart = null;
-        state.dragRect = null;
-        state.angleSelectRect = null;
-        state.selectedAngleRegionIds = [];
-        saveWorkState();
-        syncAllPanels();
-        render();
-        toast("보정할 구역들을 파란 박스로 드래그하세요.");
-    }
-
-    function applyGlobalAngleTargetPoint(point) {
-        if (state.colorRegions.length <= 0) {
-            toast("각도를 적용할 구역 후보가 없습니다.");
-            return;
-        }
-
-        state.colorRegions.forEach((region) => {
-            const result = calculateFacingAndGridAngle(region, point);
-            state.angleRegions[region.id] = {
-                checked: true,
-                mode: "global",
-                targetPoint: { x: round(point.x), y: round(point.y) },
-                targetFacingAngle: round(result.targetFacingAngle),
-                sideAngle: round(result.sideAngle),
-                facingAngle: round(result.facingAngle),
-                gridAngle: round(result.gridAngle),
-                angle: round(result.gridAngle),
-                rect: null
-            };
-        });
-
-        state.dragMode = null;
-        state.dragStart = null;
-        state.dragRect = null;
-        state.angleSelectRect = null;
-        state.selectedAngleRegionIds = [];
-
-        saveWorkState();
-        syncAllPanels();
-        render();
-        toast(`전체 ${state.colorRegions.length}개 구역 각도를 계산했습니다.`);
-    }
-
-    function clearSelectedAngles() {
-        const ids = state.selectedAngleRegionIds.length > 0 ? state.selectedAngleRegionIds : [state.selectedRegionId].filter(Boolean);
-
-        ids.forEach((id) => {
-            delete state.angleRegions[id];
-        });
-
-        saveWorkState();
-        syncAllPanels();
-        render();
-        toast("선택 구역의 각도를 삭제했습니다.");
-    }
-
-    function applyAngleTargetPoint(point) {
-        const targetRegions = getAngleTargetRegions();
-
-        if (targetRegions.length <= 0) {
-            toast("드래그 박스 안에 선택된 구역이 없습니다.");
-            return;
-        }
-
-        targetRegions.forEach((region) => {
-            const result = calculateFacingAndGridAngle(region, point);
-            state.angleRegions[region.id] = {
-                checked: true,
-                mode: "manual",
-                targetPoint: { x: round(point.x), y: round(point.y) },
-                targetFacingAngle: round(result.targetFacingAngle),
-                sideAngle: round(result.sideAngle),
-                facingAngle: round(result.facingAngle),
-                gridAngle: round(result.gridAngle),
-                angle: round(result.gridAngle),
-                rect: state.angleSelectRect ? { ...state.angleSelectRect } : null
-            };
-        });
-
-        state.selectedRegionId = targetRegions[0].id;
-        state.dragMode = null;
-        state.dragRect = null;
-        state.angleSelectRect = null;
-        state.selectedAngleRegionIds = [];
-
-        saveWorkState();
-        syncAllPanels();
-        render();
-        toast(`${targetRegions.length}개 구역 시선 각도를 저장했습니다.`);
-    }
-
-    function getAngleTargetRegions() {
-        if (state.selectedAngleRegionIds.length > 0) {
-            return state.colorRegions.filter((region) => state.selectedAngleRegionIds.includes(region.id));
-        }
-
-        const selected = getSelectedRegion();
-        return selected ? [selected] : [];
-    }
-
-    function calculateFacingAndGridAngle(region, targetPoint) {
-        const center = getPolygonCenter(region.polygon);
-        const targetFacingAngle = normalizeAngle(radToDeg(Math.atan2(targetPoint.y - center.y, targetPoint.x - center.x)));
-        const sideAngle = getRegionSideAxisAngle(region);
-        const picked = chooseAnglesBySideAndTarget(sideAngle, targetFacingAngle);
+        const dominant = colorSum.count > 0
+            ? {
+                r: colorSum.r / colorSum.count,
+                g: colorSum.g / colorSum.count,
+                b: colorSum.b / colorSum.count
+            }
+            : { r: 217, g: 217, b: 217 };
 
         return {
-            targetFacingAngle,
-            sideAngle: picked.sideAngle,
-            facingAngle: picked.facingAngle,
-            gridAngle: picked.gridAngle
+            cells,
+            area: cells.length,
+            bbox: { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 },
+            color: rgbToHex(dominant)
         };
     }
 
-    function chooseAnglesBySideAndTarget(sideAngle, targetFacingAngle) {
-        const axisA = snapSideAxisAngle(sideAngle);
-        const axisB = normalizeAngle(axisA + 90);
-        const facingCandidates = [
-            axisA,
-            normalizeAngle(axisA + 180),
-            axisB,
-            normalizeAngle(axisB + 180)
-        ];
+    function isShapePixel(data, index) {
+        const color = pixelAt(data, index);
+        if (color.a < 20) return false;
 
-        let bestFacing = facingCandidates[0];
-        let bestDiff = Math.abs(angleDiff(targetFacingAngle, bestFacing));
+        const tolerance = positiveNumber(dom.bgTolerance?.value, 34);
+        const bgDistance = colorDistance(color, state.backgroundColor);
+        if (bgDistance <= tolerance) return false;
 
-        facingCandidates.forEach((candidate) => {
-            const diff = Math.abs(angleDiff(targetFacingAngle, candidate));
+        const avg = (color.r + color.g + color.b) / 3;
+        const max = Math.max(color.r, color.g, color.b);
+        const min = Math.min(color.r, color.g, color.b);
+        if (avg > 246 && max - min < 10) return false;
 
-            if (diff < bestDiff) {
-                bestFacing = candidate;
-                bestDiff = diff;
-            }
-        });
+        return true;
+    }
+
+    function makeSectionFromComponent(component, index) {
+        let polygon = polygonFromCells(component.cells, component.bbox);
+        polygon = cleanupPolygon(polygon, readSimplify(), positiveNumber(dom.snapSize?.value, 0));
+        if (!polygon || polygon.length < 3) polygon = rectPolygon(component.bbox);
+
+        const id = `sec-${index + 1}`;
+        const bbox = bboxOf(polygonsPoints([polygon]));
+        const color = normalizeHex(component.color || PALETTE[index % PALETTE.length], PALETTE[index % PALETTE.length]);
+        const groupKey = "A";
+        const groupIndex = index + 1;
+        const sectionName = `${groupKey}${groupIndex}`;
+        const label = sectionName;
 
         return {
-            sideAngle: axisA,
-            facingAngle: normalizeAngle(bestFacing),
-            gridAngle: normalizeAngle(bestFacing - 90)
-        };
-    }
-
-    function snapSideAxisAngle(angle) {
-        const targets = [-180, -135, -90, -45, 0, 45, 90, 135, 180];
-        let best = normalizeAngle(angle);
-        let bestDiff = Infinity;
-
-        targets.forEach((target) => {
-            const diff = Math.abs(angleDiff(angle, target));
-
-            if (diff < bestDiff) {
-                best = target;
-                bestDiff = diff;
-            }
-        });
-
-        if (bestDiff <= 10) {
-            return normalizeAngle(best);
-        }
-
-        return normalizeAngle(Math.round(angle / 2.5) * 2.5);
-    }
-
-    function getRegionSideAxisAngle(region) {
-        const points = region?.polygon || [];
-
-        if (points.length < 2) {
-            return 0;
-        }
-
-        let bestAngle = 0;
-        let bestLength = 0;
-
-        for (let i = 0; i < points.length; i += 1) {
-            const a = points[i];
-            const b = points[(i + 1) % points.length];
-            const dx = b.x - a.x;
-            const dy = b.y - a.y;
-            const length = Math.hypot(dx, dy);
-
-            if (length > bestLength) {
-                bestLength = length;
-                bestAngle = radToDeg(Math.atan2(dy, dx));
-            }
-        }
-
-        return normalizeAngle(bestAngle);
-    }
-
-    function getBoundaryAngleNearGrid(points, gridAngle) {
-        if (!points || points.length < 2) {
-            return gridAngle;
-        }
-
-        const candidates = [];
-
-        for (let i = 0; i < points.length; i += 1) {
-            const a = points[i];
-            const b = points[(i + 1) % points.length];
-            const dx = b.x - a.x;
-            const dy = b.y - a.y;
-            const length = Math.hypot(dx, dy);
-
-            if (length < 8) {
-                continue;
-            }
-
-            const edgeAngle = normalizeAngleToParallel(radToDeg(Math.atan2(dy, dx)), gridAngle);
-            const diff = Math.abs(angleDiff(edgeAngle, gridAngle));
-            candidates.push({ angle: edgeAngle, diff, length });
-        }
-
-        candidates.sort((a, b) => {
-            if (Math.abs(a.diff - b.diff) > 0.1) {
-                return a.diff - b.diff;
-            }
-            return b.length - a.length;
-        });
-
-        if (candidates.length <= 0) {
-            return gridAngle;
-        }
-
-        const usable = candidates.filter((item) => item.diff <= 35).slice(0, 3);
-
-        if (usable.length <= 0) {
-            return gridAngle;
-        }
-
-        let x = 0;
-        let y = 0;
-
-        usable.forEach((item) => {
-            const weight = Math.max(1, item.length);
-            const rad = degToRad(item.angle);
-            x += Math.cos(rad) * weight;
-            y += Math.sin(rad) * weight;
-        });
-
-        return normalizeAngle(radToDeg(Math.atan2(y, x)));
-    }
-
-    function stabilizeGridAngle(rawGridAngle, boundaryAngle) {
-        const diff = Math.abs(angleDiff(boundaryAngle, rawGridAngle));
-
-        if (diff <= 28) {
-            return blendAngles(rawGridAngle, boundaryAngle, 0.35, 0.65);
-        }
-
-        return rawGridAngle;
-    }
-
-    function snapGridAngle(angle) {
-        const snapTargets = [-180, -135, -90, -45, 0, 45, 90, 135, 180];
-        let best = normalizeAngle(angle);
-        let bestDiff = Infinity;
-
-        snapTargets.forEach((target) => {
-            const diff = Math.abs(angleDiff(angle, target));
-
-            if (diff < bestDiff) {
-                best = target;
-                bestDiff = diff;
-            }
-        });
-
-        if (bestDiff <= 8) {
-            return normalizeAngle(best);
-        }
-
-        return normalizeAngle(Math.round(angle / 2.5) * 2.5);
-    }
-
-    function applyBaseRegion() {
-        const region = getSelectedRegion();
-
-        if (!region) {
-            toast("기준 구역을 선택하세요.");
-            return;
-        }
-
-        const rows = positiveInt(dom.baseRows?.value, 5);
-        const cols = positiveInt(dom.baseCols?.value, 10);
-        const floor = safeValue(dom.baseFloor?.value, "1");
-        const name = safeValue(dom.baseSectionName?.value, region.name);
-        const color = safeValue(dom.baseColor?.value, region.color || "#f77bab");
-        const gridAngle = getRegionGridAngle(region);
-        const facingAngle = getRegionFacingAngle(region);
-        const usable = getRegionUsableLocalBox(region, gridAngle);
-
-        // 기준 구역에서 한 번 계산한 좌석 간격을 같은 색상/역할 그룹 전체에 고정한다.
-        // 이후 다른 구역은 이 pitchX/pitchY 안에 들어갈 수 있는 좌석 개수만 계산한다.
-        const pitchX = Math.max(1, usable.w / cols);
-        const pitchY = Math.max(1, usable.h / rows);
-        const seatSize = Math.max(2, Math.floor(Math.min(pitchX, pitchY) * getSeatScaleForRegion(region)));
-        const groupKey = getRegionGroupKey(region);
-
-        state.baseRegionId = region.id;
-        region.floor = floor;
-        region.name = name;
-        region.label = name;
-        region.color = color;
-
-        const baseLayout = {
+            id,
+            sectionId: id,
             groupKey,
-            rows,
-            cols,
-            cellW: pitchX,
-            cellH: pitchY,
-            pitchX,
-            pitchY,
-            seatSize,
-            seatW: seatSize,
-            seatH: seatSize,
-            gridAngle,
-            facingAngle,
-            angle: gridAngle,
-            savedAt: new Date().toISOString()
-        };
-
-        state.baseLayoutsByGroup[groupKey] = baseLayout;
-        state.baseLayoutsByGroup.__last = baseLayout;
-
-        const section = createSeatSection(region, rows, cols, seatSize, gridAngle, facingAngle, baseLayout);
-        const seats = buildSeatsForRegionWithCoverage(region, section.layout);
-
-        upsertSeatSection(section);
-        state.seatsBySection[section.id] = seats;
-        state.layoutsBySection[section.id] = section.layout;
-
-        saveWorkState();
-        syncAllPanels();
-        render();
-        toast(`${region.name} 기준을 ${getGroupLabel(region)} 그룹에 저장했습니다.`);
-    }
-
-    function estimateAllSeats() {
-        const baseRegion = getSelectedRegion() || state.colorRegions.find((region) => region.id === state.baseRegionId);
-
-        if (!baseRegion) {
-            toast("좌석 기준을 잡을 구역을 먼저 클릭하세요.");
-            return;
-        }
-
-        const groupKey = getRegionGroupKey(baseRegion);
-
-        if (!state.baseLayoutsByGroup[groupKey]) {
-            applyBaseRegion();
-        }
-
-        const baseLayout = state.baseLayoutsByGroup[groupKey];
-
-        if (!baseLayout) {
-            toast("선택 구역 기준 설정에 실패했습니다.");
-            return;
-        }
-
-        ensureRoleMap();
-
-        const floor = safeValue(dom.baseFloor?.value, "1");
-        const targetRegions = state.colorRegions.filter((region) => getRegionGroupKey(region) === groupKey);
-
-        // 같은 색상/역할 그룹만 새로 추정한다. 다른 그룹 좌석은 유지한다.
-        const targetIdSet = new Set(targetRegions.map((region) => region.id));
-        state.seatSections = state.seatSections.filter((section) => !targetIdSet.has(section.id));
-
-        targetRegions.forEach((region) => {
-            delete state.seatsBySection[region.id];
-            delete state.layoutsBySection[region.id];
-        });
-
-        let estimatedCount = 0;
-
-        targetRegions.forEach((region, index) => {
-            const gridAngle = getRegionGridAngle(region);
-            const facingAngle = getRegionFacingAngle(region);
-            const usable = getRegionUsableLocalBox(region, gridAngle);
-            const pitchX = Math.max(2, Number(baseLayout.pitchX || baseLayout.cellW || baseLayout.seatSize || 8));
-            const pitchY = Math.max(2, Number(baseLayout.pitchY || baseLayout.cellH || baseLayout.seatSize || 8));
-
-            // 같은 그룹은 좌석 간격을 절대 다시 줄이지 않는다.
-            // 구역이 좁으면 좌석 크기/간격을 줄이는 대신 들어갈 수 있는 행/열 개수만 줄인다.
-            const rows = Math.max(1, Math.floor((usable.h + pitchY * 0.04) / pitchY));
-            const cols = Math.max(1, Math.floor((usable.w + pitchX * 0.04) / pitchX));
-
-            if (!region.name || /^구역\s*\d+$/.test(region.name)) {
-                region.name = region.id === baseRegion.id
-                    ? safeValue(dom.baseSectionName?.value, "A1")
-                    : `구역${index + 1}`;
-                region.label = region.name;
-            }
-
-            region.floor = region.floor || floor;
-
-            const seatSize = Math.max(2, Math.floor(baseLayout.seatSize));
-            const fixedLayout = {
-                ...baseLayout,
-                pitchX,
-                pitchY,
-                cellW: pitchX,
-                cellH: pitchY,
-                seatSize
-            };
-            const section = createSeatSection(region, rows, cols, seatSize, gridAngle, facingAngle, fixedLayout);
-            const seats = buildSeatsForRegionWithCoverage(region, section.layout);
-
-            upsertSeatSection(section);
-            state.seatsBySection[section.id] = seats;
-            state.layoutsBySection[section.id] = section.layout;
-            estimatedCount += seats.length;
-        });
-
-        state.baseRegionId = baseRegion.id;
-        state.visualGroups = [];
-        state.selectedVisualGroupId = null;
-
-        saveWorkState();
-        syncAllPanels();
-        render();
-        toast(`${getGroupLabel(baseRegion)} 그룹 ${targetRegions.length}개 구역 / ${estimatedCount}석을 추정했습니다.`);
-    }
-
-    function clearEstimatedSeats() {
-        state.seatSections = [];
-        state.seatsBySection = {};
-        state.layoutsBySection = {};
-        state.visualGroups = [];
-        state.selectedVisualGroupId = null;
-        state.baseRegionId = null;
-        saveWorkState();
-        syncAllPanels();
-        render();
-        toast("좌석 추정 결과를 초기화했습니다.");
-    }
-
-    function createSeatSection(region, rows, cols, seatSize, gridAngle, facingAngle, presetLayout = null) {
-        // presetLayout이 있으면 기준 구역에서 저장한 pitch를 그대로 사용한다.
-        // 이 값이 같은 등급/색상 그룹의 좌석 간격을 결정한다.
-        const fixedSeatSize = Math.max(2, Math.floor(Number(seatSize || presetLayout?.seatSize || 8)));
-        const fixedPitchX = Math.max(fixedSeatSize, Number(presetLayout?.pitchX || presetLayout?.cellW || fixedSeatSize));
-        const fixedPitchY = Math.max(fixedSeatSize, Number(presetLayout?.pitchY || presetLayout?.cellH || fixedSeatSize));
-        const gridBox = getFixedPitchGridBox(region, gridAngle, rows, cols, fixedPitchX, fixedPitchY);
-        const cellW = fixedPitchX;
-        const cellH = fixedPitchY;
-
-        const layout = {
-            rows,
-            cols,
-            seatSize: fixedSeatSize,
-            seatW: fixedSeatSize,
-            seatH: fixedSeatSize,
-            gapX: Math.max(0, cellW - fixedSeatSize),
-            gapY: Math.max(0, cellH - fixedSeatSize),
-            cellW,
-            cellH,
-            pitchX: cellW,
-            pitchY: cellH,
-            gridBox,
-            gridAngle,
-            facingAngle,
-            angle: gridAngle,
-            coverageThreshold: 0.34,
-            centerRequired: true
-        };
-
-        return {
-            id: region.id,
-            name: region.name || region.label || region.id,
-            label: region.label || region.name || region.id,
-            floor: region.floor || "1",
-            color: region.color || "#d9d9d9",
-            role: region.role,
-            groupKey: getRegionGroupKey(region),
-            polygon: clonePoints(region.polygon),
-            bbox: { ...region.bbox },
-            angle: facingAngle,
-            gridAngle,
-            facingAngle,
-            rows,
-            cols,
-            seatRows: rows,
-            seatCols: cols,
-            seatSize: fixedSeatSize,
-            layout
-        };
-    }
-
-    function getFlexibleGridBox(region, gridAngle, rows, cols, seatSize) {
-        // 구버전 호출 호환용. 실제 좌석 추정은 getFixedPitchGridBox를 사용한다.
-        const pitch = Math.max(2, Number(seatSize || 8));
-        return getFixedPitchGridBox(region, gridAngle, rows, cols, pitch, pitch);
-    }
-
-    function getRegionUsableLocalBox(region, gridAngle) {
-        const center = getPolygonCenter(region.polygon);
-        const localPoints = region.polygon.map((point) => rotatePoint(point, center, -gridAngle));
-        const polygonBbox = getBbox(localPoints);
-        const colorBbox = getAllowedLocalBbox(region, center, gridAngle, polygonBbox);
-        const source = colorBbox || polygonBbox;
-
-        return {
-            x: source.x,
-            y: source.y,
-            w: Math.max(1, source.w),
-            h: Math.max(1, source.h),
-            polygonBbox
-        };
-    }
-
-    function getFixedPitchGridBox(region, gridAngle, rows, cols, pitchX, pitchY) {
-        const usable = getRegionUsableLocalBox(region, gridAngle);
-        const polygonBbox = usable.polygonBbox || usable;
-        const targetW = Math.max(1, pitchX * Math.max(1, cols));
-        const targetH = Math.max(1, pitchY * Math.max(1, rows));
-
-        // rows/cols는 이미 usable/pitch 기준 floor로 계산되므로 보통 targetW/H는 usable보다 작다.
-        // 혹시 기준 구역처럼 직접 N×M이 입력된 경우에도 pitch 자체를 줄이지 않고 중앙 배치한다.
-        const w = Math.min(targetW, polygonBbox.w);
-        const h = Math.min(targetH, polygonBbox.h);
-
-        const x = clamp(usable.x + (usable.w - w) / 2, polygonBbox.x, polygonBbox.x + polygonBbox.w - w);
-        const y = clamp(usable.y + (usable.h - h) / 2, polygonBbox.y, polygonBbox.y + polygonBbox.h - h);
-
-        return {
-            x,
-            y,
-            w: Math.max(1, w),
-            h: Math.max(1, h)
-        };
-    }
-
-    function getAllowedLocalBbox(region, center, gridAngle, fallbackBbox) {
-        ensureRoleMap();
-
-        const localXs = [];
-        const localYs = [];
-        const step = Math.max(2, Math.round(Math.min(fallbackBbox.w, fallbackBbox.h) / 48));
-        const minX = Math.floor(fallbackBbox.x);
-        const maxX = Math.ceil(fallbackBbox.x + fallbackBbox.w);
-        const minY = Math.floor(fallbackBbox.y);
-        const maxY = Math.ceil(fallbackBbox.y + fallbackBbox.h);
-
-        for (let y = minY; y <= maxY; y += step) {
-            for (let x = minX; x <= maxX; x += step) {
-                const world = rotatePoint({ x, y }, center, gridAngle);
-
-                if (isPointAllowedInRegionLoose(region, world)) {
-                    localXs.push(x);
-                    localYs.push(y);
-                }
-            }
-        }
-
-        if (localXs.length < 12) {
-            return null;
-        }
-
-        localXs.sort((a, b) => a - b);
-        localYs.sort((a, b) => a - b);
-
-        const qx1 = quantile(localXs, 0.02);
-        const qx2 = quantile(localXs, 0.98);
-        const qy1 = quantile(localYs, 0.02);
-        const qy2 = quantile(localYs, 0.98);
-
-        return {
-            x: qx1,
-            y: qy1,
-            w: Math.max(1, qx2 - qx1),
-            h: Math.max(1, qy2 - qy1)
-        };
-    }
-
-    function buildSeatsForRegionWithCoverage(region, layout) {
-        const center = getPolygonCenter(region.polygon);
-        const gridBox = layout.gridBox || getFixedPitchGridBox(region, layout.angle, layout.rows, layout.cols, layout.pitchX || layout.seatSize, layout.pitchY || layout.seatSize);
-        const cellW = Math.max(1, Number(layout.pitchX || layout.cellW || (gridBox.w / Math.max(1, layout.cols))));
-        const cellH = Math.max(1, Number(layout.pitchY || layout.cellH || (gridBox.h / Math.max(1, layout.rows))));
-        const seats = [];
-
-        for (let row = 1; row <= layout.rows; row += 1) {
-            for (let col = 1; col <= layout.cols; col += 1) {
-                const localX = gridBox.x + (col - 0.5) * cellW;
-                const localY = gridBox.y + (row - 0.5) * cellH;
-                const rotated = rotatePoint({ x: localX, y: localY }, center, layout.angle);
-                const centerAllowed = isPointAllowedInRegionLoose(region, rotated);
-                const coverage = getSeatCoverage(region, rotated, layout.seatSize, layout.angle);
-
-                if (!centerAllowed && coverage < layout.coverageThreshold) {
-                    continue;
-                }
-
-                if (coverage < 0.22) {
-                    continue;
-                }
-
-                const seat = {
-                    sectionId: region.id,
-                    row,
-                    col,
-                    status: "AVAILABLE",
-                    x: round(rotated.x),
-                    y: round(rotated.y),
-                    size: round(layout.seatSize),
-                    angle: round(layout.facingAngle ?? normalizeAngle(layout.angle + 90)),
-                    gridAngle: round(layout.angle)
-                };
-
-                seat.id = makeSeatId(region, seat);
-                seats.push(seat);
-            }
-        }
-
-        return seats;
-    }
-
-    function getSeatCoverage(region, seatCenter, seatSize, angle) {
-        const half = seatSize / 2;
-        const samples = [];
-
-        for (let sy = -2; sy <= 2; sy += 1) {
-            for (let sx = -2; sx <= 2; sx += 1) {
-                samples.push({
-                    x: sx * half / 2,
-                    y: sy * half / 2
-                });
-            }
-        }
-
-        let allowed = 0;
-
-        samples.forEach((sample) => {
-            const point = rotatePoint({ x: seatCenter.x + sample.x, y: seatCenter.y + sample.y }, seatCenter, angle);
-
-            if (isPointAllowedInRegionLoose(region, point)) {
-                allowed += 1;
-            }
-        });
-
-        return allowed / samples.length;
-    }
-
-    function isPointAllowedInRegionLoose(region, point) {
-        if (!pointInPolygon(point, region.polygon)) {
-            return false;
-        }
-
-        const x = Math.round(point.x);
-        const y = Math.round(point.y);
-
-        if (x < 0 || y < 0 || x >= state.width || y >= state.height) {
-            return false;
-        }
-
-        ensureRoleMap();
-        const role = state.roleMap[y * state.width + x];
-
-        if (role === region.role) {
-            return true;
-        }
-
-        const offset = (y * state.width + x) * 4;
-        const data = state.imageData.data;
-        const target = hexToRgb(region.color || "#999999");
-        const pixel = { r: data[offset], g: data[offset + 1], b: data[offset + 2] };
-
-        return colorDistance(pixel, target) <= 90;
-    }
-
-    function isPointAllowedInRegion(region, point) {
-        return isPointAllowedInRegionLoose(region, point);
-    }
-
-    function renderSolidSections() {
-        if (state.seatSections.length <= 0) {
-            toast("먼저 파트 3에서 좌석을 추정하세요.");
-            return;
-        }
-
-        const gap = positiveNumber(dom.solidGap?.value, 0);
-
-        state.visualGroups = buildVisualGroups();
-
-        solidCanvas.width = state.width;
-        solidCanvas.height = state.height;
-        solidCtx.clearRect(0, 0, state.width, state.height);
-        solidCtx.drawImage(sourceCanvas, 0, 0, state.width, state.height);
-
-        state.visualGroups.forEach((group) => {
-            drawVisualGroupOnly(group, gap);
-        });
-
-        state.generatedUrl = solidCanvas.toDataURL("image/png");
-        state.previewMode = "solid";
-        state.selectedVisualGroupId = null;
-
-        saveWorkState();
-        render();
-        syncAllPanels();
-        renderSelectedVisualGroupInfo(null);
-        toast("도형만 표시되는 최종 미리보기를 생성했습니다.");
-    }
-
-    function buildVisualGroups() {
-        const sections = state.seatSections.map((section) => {
-            const region = state.colorRegions.find((item) => item.id === section.id);
-            return {
-                section,
-                region: region || section,
-                groupKey: getRegionGroupKey(region || section),
-                bbox: getBbox((region || section).polygon || section.polygon),
-                polygon: clonePoints((region || section).polygon || section.polygon),
-                color: (region || section).color || section.color || "#d9d9d9",
-                angle: section.gridAngle ?? section.layout?.gridAngle ?? 0
-            };
-        });
-
-        const visited = new Set();
-        const groups = [];
-
-        sections.forEach((item) => {
-            if (visited.has(item.section.id)) {
-                return;
-            }
-
-            const queue = [item];
-            const members = [];
-            visited.add(item.section.id);
-
-            while (queue.length > 0) {
-                const current = queue.shift();
-                members.push(current);
-
-                sections.forEach((candidate) => {
-                    if (visited.has(candidate.section.id)) {
-                        return;
-                    }
-
-                    if (!canMergeVisualSection(current, candidate)) {
-                        return;
-                    }
-
-                    visited.add(candidate.section.id);
-                    queue.push(candidate);
-                });
-            }
-
-            const sectionIds = members.map((member) => member.section.id);
-            const seatIds = [];
-            const polygons = [];
-            const points = [];
-
-            members.forEach((member) => {
-                polygons.push(clonePoints(member.polygon));
-                points.push(...member.polygon);
-                (state.seatsBySection[member.section.id] || []).forEach((seat) => seatIds.push(seat.id));
-            });
-
-            const bbox = getBbox(points);
-            const color = getDominantMemberColor(members);
-
-            groups.push({
-                id: `vg-${groups.length + 1}`,
-                label: `도형 ${groups.length + 1}`,
-                groupKey: members[0]?.groupKey || "group",
-                color,
-                sectionIds,
-                seatIds,
-                polygons,
-                bbox,
-                button: {
-                    x: round(bbox.x + bbox.w / 2),
-                    y: round(bbox.y + bbox.h / 2),
-                    w: round(bbox.w),
-                    h: round(bbox.h),
-                    label: `도형 ${groups.length + 1}`,
-                    color
-                }
-            });
-        });
-
-        return groups;
-    }
-
-    function canMergeVisualSection(a, b) {
-        if (a.groupKey !== b.groupKey) {
-            return false;
-        }
-
-        if (Math.abs(angleDiff(a.angle, b.angle)) > 22) {
-            return false;
-        }
-
-        const gap = rectGap(a.bbox, b.bbox);
-        const nearLimit = Math.max(14, Math.min(80, Math.max(Math.min(a.bbox.w, a.bbox.h), Math.min(b.bbox.w, b.bbox.h)) * 0.75));
-
-        return gap <= nearLimit;
-    }
-
-    function drawVisualGroupOnly(group, gap) {
-        solidCtx.save();
-
-        group.polygons.forEach((polygon) => {
-            if (!polygon || polygon.length < 3) {
-                return;
-            }
-
-            solidCtx.beginPath();
-            solidCtx.moveTo(polygon[0].x, polygon[0].y);
-
-            for (let i = 1; i < polygon.length; i += 1) {
-                solidCtx.lineTo(polygon[i].x, polygon[i].y);
-            }
-
-            solidCtx.closePath();
-            solidCtx.fillStyle = group.color || "#d9d9d9";
-            solidCtx.fill();
-
-            if (gap > 0) {
-                solidCtx.lineWidth = gap;
-                solidCtx.strokeStyle = "rgba(247, 247, 247, 0.92)";
-                solidCtx.stroke();
-            }
-        });
-
-        solidCtx.restore();
-    }
-
-    function buildCleanPolygonFromSeats(seats, angle, seatSize, limitPolygon) {
-        if (!Array.isArray(seats) || seats.length <= 0) {
-            return [];
-        }
-
-        const center = getPointsCenter(seats);
-        const localPoints = [];
-
-        seats.forEach((seat) => {
-            const half = (seat.size || seatSize || 8) / 2;
-            [
-                { x: seat.x - half, y: seat.y - half },
-                { x: seat.x + half, y: seat.y - half },
-                { x: seat.x + half, y: seat.y + half },
-                { x: seat.x - half, y: seat.y + half }
-            ].forEach((point) => {
-                localPoints.push(rotatePoint(point, center, -angle));
-            });
-        });
-
-        let bbox = getBbox(localPoints);
-        const padding = Math.max(1, (seatSize || 8) * 0.20);
-
-        if (Array.isArray(limitPolygon) && limitPolygon.length >= 3) {
-            const limitLocalPoints = limitPolygon.map((point) => rotatePoint(point, center, -angle));
-            const limitBbox = getBbox(limitLocalPoints);
-            const minX = Math.max(bbox.x - padding, limitBbox.x);
-            const minY = Math.max(bbox.y - padding, limitBbox.y);
-            const maxX = Math.min(bbox.x + bbox.w + padding, limitBbox.x + limitBbox.w);
-            const maxY = Math.min(bbox.y + bbox.h + padding, limitBbox.y + limitBbox.h);
-
-            bbox = {
-                x: minX,
-                y: minY,
-                w: Math.max(0, maxX - minX),
-                h: Math.max(0, maxY - minY)
-            };
-        } else {
-            bbox = {
-                x: bbox.x - padding,
-                y: bbox.y - padding,
-                w: bbox.w + padding * 2,
-                h: bbox.h + padding * 2
-            };
-        }
-
-        const localPolygon = [
-            { x: bbox.x, y: bbox.y },
-            { x: bbox.x + bbox.w, y: bbox.y },
-            { x: bbox.x + bbox.w, y: bbox.y + bbox.h },
-            { x: bbox.x, y: bbox.y + bbox.h }
-        ];
-
-        return localPolygon.map((point) => {
-            const rotated = rotatePoint(point, center, angle);
-            return { x: round(rotated.x), y: round(rotated.y) };
-        });
-    }
-
-    function showOriginalImage() {
-        state.previewMode = "original";
-        render();
-        toast("원본 보기로 전환했습니다.");
-    }
-
-    async function saveStage1Result() {
-        if (!state.generatedUrl) {
-            renderSolidSections();
-        }
-
-        const image = state.generatedUrl || sourceCanvas.toDataURL("image/png");
-        const tempSeats = buildTempSeatJson();
-        const tempSections = buildTempSectionJson();
-
-        localStorage.setItem(STORAGE_KEYS.cleanImage, image);
-        localStorage.setItem(STORAGE_KEYS.generatedImage, image);
-        localStorage.setItem(STORAGE_KEYS.colorRegions, JSON.stringify(state.colorRegions));
-        localStorage.setItem(STORAGE_KEYS.angleRegions, JSON.stringify(state.angleRegions));
-        localStorage.setItem(STORAGE_KEYS.selectedAngleRegions, JSON.stringify(state.selectedAngleRegionIds));
-        localStorage.setItem(STORAGE_KEYS.baseLayoutsByGroup, JSON.stringify(state.baseLayoutsByGroup));
-        localStorage.setItem(STORAGE_KEYS.visualGroups, JSON.stringify(state.visualGroups));
-
-        if (state.selectedVisualGroupId) {
-            localStorage.setItem(STORAGE_KEYS.selectedVisualGroupId, state.selectedVisualGroupId);
-        }
-
-        localStorage.setItem(STORAGE_KEYS.seatSections, JSON.stringify(state.seatSections));
-        localStorage.setItem(STORAGE_KEYS.seats, JSON.stringify(state.seatsBySection));
-        localStorage.setItem(STORAGE_KEYS.layouts, JSON.stringify(state.layoutsBySection));
-        localStorage.setItem(STORAGE_KEYS.concertSections, JSON.stringify(tempSections));
-        localStorage.setItem(STORAGE_KEYS.concertStage3Seats, JSON.stringify(state.seatsBySection));
-        localStorage.setItem(STORAGE_KEYS.concertStage3Layouts, JSON.stringify(state.layoutsBySection));
-        localStorage.setItem(STORAGE_KEYS.imageMeta, JSON.stringify({
-            width: state.width,
-            height: state.height,
-            mode: "stage1-flexible-seat-grid-v6",
-            savedAt: new Date().toISOString()
-        }));
-
-        const ok = await saveTempSeatmapToServer(tempSeats, tempSections, image);
-
-        if (ok) {
-            toast("Stage1 결과를 서버 임시 폴더에 저장했습니다.");
-        } else {
-            toast("브라우저 저장은 완료. 서버 저장은 실패했습니다. 콘솔/엔드포인트를 확인하세요.");
-        }
-    }
-
-    function buildTempSeatJson() {
-    const result = [];
-    const visualGroups = state.visualGroups && state.visualGroups.length > 0
-        ? state.visualGroups
-        : buildVisualGroups();
-    const visualGroupBySourceId = buildVisualGroupIdMap(visualGroups);
-
-    Object.entries(state.seatsBySection || {}).forEach(([sourceSectionId, seats]) => {
-        const section = state.seatSections.find((item) => item.id === sourceSectionId) || {};
-        const region = state.colorRegions.find((item) => item.id === sourceSectionId) || section;
-        const finalSectionId = visualGroupBySourceId.get(String(sourceSectionId)) || String(sourceSectionId);
-        const floor = safeSeatPart(region.floor || section.floor || "1");
-        const sectionName = safeSeatPart(region.label || region.name || section.label || section.name || sourceSectionId);
-        const grade = safeSeatPart(region.grade || section.grade || "UNASSIGNED");
-
-        (seats || []).forEach((seat) => {
-            if (String(seat.status || "").toUpperCase() === "REMOVED") {
-                return;
-            }
-
-            const row = safeSeatPart(seat.row || 1);
-            const col = safeSeatPart(seat.col || 1);
-            const status = safeSeatPart(seat.status || "AVAILABLE");
-            const x = round(seat.x || 0);
-            const y = round(seat.y || 0);
-            const size = round(seat.size || section.seatSize || Math.min(seat.w || 0, seat.h || 0) || 10);
-            const angle = round(seat.angle ?? section.angle ?? section.gridAngle ?? 0);
-            const id = `${floor}-${sectionName}-${row}-${col}-${grade}-${status}-${x}-${y}-${size}-${angle}`;
-
-            result.push({
-                id,
-                sectionId: finalSectionId,
-                sourceSectionId: String(sourceSectionId),
-                floor,
-                section: sectionName,
-                row,
-                col,
-                grade,
-                status,
-                x,
-                y,
-                size,
-                angle,
-                w: round(seat.w || seat.width || size),
-                h: round(seat.h || seat.height || size)
-            });
-        });
-    });
-
-    return result;
-}
-
-    function buildTempSectionJson() {
-    const sourceGroups = state.visualGroups && state.visualGroups.length > 0
-        ? state.visualGroups
-        : buildVisualGroups();
-
-    return sourceGroups.map((group, index) => {
-        const polygons = normalizeGroupPolygons(group);
-        const points = polygons.flat();
-        const bbox = group.bbox || getBbox(points);
-        const label = group.label || `도형 ${index + 1}`;
-        const sectionIds = (group.sectionIds || group.sourceRegionIds || []).map((id) => String(id));
-        const seatCount = sectionIds.reduce((sum, sectionId) => {
-            return sum + ((state.seatsBySection && state.seatsBySection[sectionId]) || []).length;
-        }, 0);
-        const polygon = getRepresentativeGroupPolygon({ ...group, polygons, bbox });
-
-        return {
-            id: group.id || `vg-${index + 1}`,
-            name: label,
-            label,
+            groupName: groupKey,
+            groupIndex,
             floor: "1",
-            grade: group.grade || "TEMP",
-            color: group.color || "#d9d9d9",
-            sectionIds,
-            sourceRegionIds: sectionIds,
-            seatCount,
+            section: sectionName,
+            name: sectionName,
+            sectionName,
+            label,
+            grade: "일반석",
+            price: 132000,
+            color,
+            renderColor: color,
+            sourceColor: color,
             polygon,
-            polygons,
+            polygons: [polygon],
             bbox,
-            button: {
-                x: round(bbox.x + bbox.w / 2),
-                y: round(bbox.y + bbox.h / 2),
-                w: round(bbox.w),
-                h: round(bbox.h),
-                xPercent: round(((bbox.x + bbox.w / 2) / Math.max(1, state.width)) * 100),
-                yPercent: round(((bbox.y + bbox.h / 2) / Math.max(1, state.height)) * 100),
-                wPercent: round((bbox.w / Math.max(1, state.width)) * 100),
-                hPercent: round((bbox.h / Math.max(1, state.height)) * 100),
-                angle: round(group.angle || 0),
-                label,
-                color: group.color || "#d9d9d9"
-            }
+            area: Math.round(Math.abs(polygonArea(polygon))),
+            sourceRegionIds: [id],
+            sectionIds: [id],
+            button: buildButtonInfo(bbox, label, color, 0)
         };
-    });
-}
-
-    function getRepresentativeGroupPolygon(group) {
-    const polygons = normalizeGroupPolygons(group);
-
-    if (polygons.length <= 0) {
-        const bbox = group.bbox || { x: 0, y: 0, w: 0, h: 0 };
-        return [
-            { x: round(bbox.x), y: round(bbox.y) },
-            { x: round(bbox.x + bbox.w), y: round(bbox.y) },
-            { x: round(bbox.x + bbox.w), y: round(bbox.y + bbox.h) },
-            { x: round(bbox.x), y: round(bbox.y + bbox.h) }
-        ];
     }
 
-    // polygon은 대표 1개만 넣는다. 여러 조각은 polygons에 따로 보관한다.
-    // bbox 사각형으로 만들면 예매 화면에서 괴랄한 직사각형이 나오므로 금지.
-    return clonePoints(polygons.slice().sort((a, b) => polygonAreaAbs(b) - polygonAreaAbs(a))[0]);
-}
+    function polygonFromCells(cells, bbox) {
+        if (!cells || !cells.length) return rectPolygon(bbox);
 
-function buildVisualGroupIdMap(visualGroups) {
-    const map = new Map();
+        const cellSet = new Set(cells);
+        const edges = [];
+        const width = state.width;
 
-    (visualGroups || []).forEach((group, index) => {
-        const groupId = String(group.id || `vg-${index + 1}`);
-        const ids = group.sectionIds || group.sourceRegionIds || group.regionIds || [];
+        cells.forEach((index) => {
+            const x = index % width;
+            const y = Math.floor(index / width);
 
-        ids.forEach((id) => {
-            map.set(String(id), groupId);
+            if (!cellSet.has(index - 1) || x === 0) edges.push(edge(x, y + 1, x, y));
+            if (!cellSet.has(index - width) || y === 0) edges.push(edge(x, y, x + 1, y));
+            if (!cellSet.has(index + 1) || x === width - 1) edges.push(edge(x + 1, y, x + 1, y + 1));
+            if (!cellSet.has(index + width) || y === state.height - 1) edges.push(edge(x + 1, y + 1, x, y + 1));
         });
 
-        map.set(groupId, groupId);
-    });
+        const loops = traceLoops(edges);
+        if (!loops.length) return convexHullFromCells(cells);
 
-    return map;
-}
-
-function normalizeGroupPolygons(group) {
-    if (!group) {
-        return [];
+        loops.sort((a, b) => Math.abs(polygonArea(b)) - Math.abs(polygonArea(a)));
+        const best = loops[0];
+        return best && best.length >= 3 ? best : convexHullFromCells(cells);
     }
 
-    if (Array.isArray(group.polygons) && group.polygons.length > 0) {
-        return group.polygons
-            .filter((polygon) => Array.isArray(polygon) && polygon.length >= 3)
-            .map((polygon) => polygon.map((point) => ({ x: round(point.x), y: round(point.y) })));
+    function edge(x1, y1, x2, y2) {
+        return { start: `${x1},${y1}`, end: `${x2},${y2}`, p1: { x: x1, y: y1 }, p2: { x: x2, y: y2 } };
     }
 
-    if (Array.isArray(group.polygon) && group.polygon.length >= 3) {
-        return [clonePoints(group.polygon)];
-    }
+    function traceLoops(edges) {
+        const startMap = new Map();
+        edges.forEach((item, index) => {
+            if (!startMap.has(item.start)) startMap.set(item.start, []);
+            startMap.get(item.start).push(index);
+        });
 
-    return [];
-}
+        const used = new Uint8Array(edges.length);
+        const loops = [];
 
-function polygonAreaAbs(points) {
-    if (!Array.isArray(points) || points.length < 3) {
-        return 0;
-    }
+        for (let i = 0; i < edges.length; i += 1) {
+            if (used[i]) continue;
 
-    let sum = 0;
+            const loop = [];
+            let currentIndex = i;
+            let guard = 0;
 
-    for (let i = 0; i < points.length; i += 1) {
-        const a = points[i];
-        const b = points[(i + 1) % points.length];
-        sum += (a.x * b.y) - (b.x * a.y);
-    }
+            while (currentIndex != null && !used[currentIndex] && guard < edges.length + 8) {
+                guard += 1;
+                const current = edges[currentIndex];
+                used[currentIndex] = 1;
+                loop.push(current.p1);
 
-    return Math.abs(sum / 2);
-}
-
-function buildComponentContourPolygon(component, fallbackBbox) {
-    const pixels = component.pixels || [];
-
-    if (pixels.length < 12) {
-        return bboxToPolygon(fallbackBbox);
-    }
-
-    const pixelSet = new Set(pixels);
-    const boundary = [];
-
-    pixels.forEach((index) => {
-        const x = index % state.width;
-        const y = Math.floor(index / state.width);
-        const left = x <= 0 || !pixelSet.has(index - 1);
-        const right = x >= state.width - 1 || !pixelSet.has(index + 1);
-        const top = y <= 0 || !pixelSet.has(index - state.width);
-        const bottom = y >= state.height - 1 || !pixelSet.has(index + state.width);
-
-        if (!(left || right || top || bottom)) {
-            return;
-        }
-
-        if (left || top) boundary.push({ x, y });
-        if (right || top) boundary.push({ x: x + 1, y });
-        if (right || bottom) boundary.push({ x: x + 1, y: y + 1 });
-        if (left || bottom) boundary.push({ x, y: y + 1 });
-    });
-
-    if (boundary.length < 3) {
-        return bboxToPolygon(fallbackBbox);
-    }
-
-    const hull = buildConvexHull(boundary);
-    const tolerance = Math.max(1.2, Math.min(4, Math.max(fallbackBbox.w, fallbackBbox.h) / 80));
-    const simplified = simplifyClosedPolygon(hull, tolerance);
-    const polygon = simplified.length >= 3 ? simplified : hull;
-    const area = polygonAreaAbs(polygon);
-    const bboxArea = Math.max(1, fallbackBbox.w * fallbackBbox.h);
-
-    if (area <= 1 || area > bboxArea * 1.35) {
-        return buildComponentOrientedPolygon(component, fallbackBbox);
-    }
-
-    return polygon.map((point) => ({ x: round(point.x), y: round(point.y) }));
-}
-
-function buildConvexHull(points) {
-    const unique = Array.from(new Map(points.map((point) => [`${round(point.x)}:${round(point.y)}`, { x: round(point.x), y: round(point.y) }])).values())
-        .sort((a, b) => a.x === b.x ? a.y - b.y : a.x - b.x);
-
-    if (unique.length <= 3) {
-        return unique;
-    }
-
-    const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
-    const lower = [];
-    const upper = [];
-
-    unique.forEach((point) => {
-        while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], point) <= 0) {
-            lower.pop();
-        }
-        lower.push(point);
-    });
-
-    for (let i = unique.length - 1; i >= 0; i -= 1) {
-        const point = unique[i];
-        while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], point) <= 0) {
-            upper.pop();
-        }
-        upper.push(point);
-    }
-
-    lower.pop();
-    upper.pop();
-
-    return lower.concat(upper);
-}
-
-function simplifyClosedPolygon(points, tolerance) {
-    if (!Array.isArray(points) || points.length <= 8) {
-        return points || [];
-    }
-
-    const closed = points.concat([points[0]]);
-    const simplified = simplifyRdp(closed, tolerance).slice(0, -1);
-    return simplified.length >= 3 ? simplified : points;
-}
-
-function simplifyRdp(points, epsilon) {
-    if (points.length <= 2) {
-        return points;
-    }
-
-    let maxDistance = 0;
-    let index = 0;
-    const first = points[0];
-    const last = points[points.length - 1];
-
-    for (let i = 1; i < points.length - 1; i += 1) {
-        const distance = pointLineDistance(points[i], first, last);
-
-        if (distance > maxDistance) {
-            index = i;
-            maxDistance = distance;
-        }
-    }
-
-    if (maxDistance > epsilon) {
-        const left = simplifyRdp(points.slice(0, index + 1), epsilon);
-        const right = simplifyRdp(points.slice(index), epsilon);
-        return left.slice(0, -1).concat(right);
-    }
-
-    return [first, last];
-}
-
-function pointLineDistance(point, start, end) {
-    const dx = end.x - start.x;
-    const dy = end.y - start.y;
-
-    if (dx === 0 && dy === 0) {
-        return Math.hypot(point.x - start.x, point.y - start.y);
-    }
-
-    return Math.abs(dy * point.x - dx * point.y + end.x * start.y - end.y * start.x) / Math.hypot(dx, dy);
-}
-
-    async function saveTempSeatmapToServer(seats, sections, imageDataUrl) {
-        try {
-            const response = await fetch("/admin/seatmap/temp-save", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                credentials: "same-origin",
-                body: JSON.stringify({
-                    page: "stage3",
-                    seatJsonText: JSON.stringify(seats, null, 2),
-                    sectionJsonText: JSON.stringify(sections, null, 2),
-                    imageDataUrl
-                })
-            });
-
-            if (!response.ok) {
-                const text = await response.text();
-                console.warn("[Stage1] temp save failed", response.status, text);
-                return false;
+                const candidates = startMap.get(current.end) || [];
+                currentIndex = candidates.find((candidate) => !used[candidate]);
             }
 
-            const result = await response.json().catch(() => ({}));
-            console.log("[Stage1] temp save result", result);
-            return true;
-        } catch (error) {
-            console.warn("[Stage1] temp save error", error);
-            return false;
+            const cleaned = removeDuplicatePoints(loop);
+            if (cleaned.length >= 3) loops.push(cleaned);
         }
+
+        return loops;
     }
 
-    async function moveToStage2() {
-        await saveStage1Result();
-        const nextUrl = (dom.concertStage1App || document.getElementById("stage3App"))?.dataset?.nextUrl || "/admin/seatmap/stage/4";
-        window.location.href = nextUrl;
+    function convexHullFromCells(cells) {
+        const points = [];
+        const width = state.width;
+        const step = Math.max(1, Math.floor(cells.length / 2200));
+
+        for (let i = 0; i < cells.length; i += step) {
+            const index = cells[i];
+            const x = index % width;
+            const y = Math.floor(index / width);
+            points.push({ x, y }, { x: x + 1, y }, { x: x + 1, y: y + 1 }, { x, y: y + 1 });
+        }
+
+        return convexHull(points);
     }
 
     function handlePointerDown(event) {
-        const point = getCanvasPoint(event);
+        if (!state.baseImageLoaded) return;
+        const point = canvasPointFromEvent(event);
 
-        if (!point) {
-            return;
-        }
-
-        state.pointerDown = true;
-
-        if (state.dragMode === "angleSelect") {
+        if (state.tool === "manual") {
+            state.dragging = true;
             state.dragStart = point;
             state.dragRect = { x: point.x, y: point.y, w: 0, h: 0 };
+            overlay.setPointerCapture?.(event.pointerId);
+            renderOverlay();
         }
     }
 
     function handlePointerMove(event) {
-        if (!state.pointerDown || !state.dragStart || state.dragMode !== "angleSelect") {
-            return;
-        }
-
-        const point = getCanvasPoint(event);
-
-        if (!point) {
-            return;
-        }
-
+        if (!state.dragging || state.tool !== "manual") return;
+        const point = canvasPointFromEvent(event);
         state.dragRect = normalizeRect({
             x: state.dragStart.x,
             y: state.dragStart.y,
             w: point.x - state.dragStart.x,
             h: point.y - state.dragStart.y
         });
-
-        render();
+        renderOverlay();
     }
 
-    function handlePointerUp() {
-        if (state.dragMode === "angleSelect" && state.dragRect && state.dragRect.w > 5 && state.dragRect.h > 5) {
-            state.angleSelectRect = state.dragRect;
-            state.selectedAngleRegionIds = findRegionsByRect(state.angleSelectRect).map((region) => region.id);
-            state.dragMode = null;
-            state.dragStart = null;
-            state.dragRect = null;
+    function handlePointerUp(event) {
+        if (!state.dragging || state.tool !== "manual") return;
+        const rect = state.dragRect;
+        state.dragging = false;
+        state.dragStart = null;
+        state.dragRect = null;
+        overlay.releasePointerCapture?.(event.pointerId);
 
-            if (state.selectedAngleRegionIds.length > 0) {
-                state.selectedRegionId = state.selectedAngleRegionIds[0];
-            }
-
-            saveWorkState();
-            syncAllPanels();
-            render();
-            toast(`${state.selectedAngleRegionIds.length}개 구역 선택됨. 이제 STAGE/중앙 방향을 클릭하세요.`);
+        if (rect && Math.abs(rect.w) >= 6 && Math.abs(rect.h) >= 6) {
+            addManualSection(rect);
+        } else {
+            renderOverlay();
         }
-
-        state.pointerDown = false;
     }
 
     function handlePointerLeave() {
-        state.pointerDown = false;
+        if (!state.dragging) return;
+        state.dragging = false;
+        state.dragStart = null;
+        state.dragRect = null;
+        renderOverlay();
     }
 
     function handleCanvasClick(event) {
-        const point = getCanvasPoint(event);
+        if (state.tool === "manual" || state.dragging) return;
+        const point = canvasPointFromEvent(event);
+        const section = findSectionAt(point);
 
-        if (!point) {
+        if (!section) {
+            if (!event.shiftKey && !event.ctrlKey && !event.metaKey) {
+                state.selectedIds = [];
+                fillForm(null);
+                syncAll();
+            }
             return;
         }
 
-        if (state.part === 4 && state.visualGroups.length > 0) {
-            selectVisualGroupAtPoint(point);
+        if (event.shiftKey || event.ctrlKey || event.metaKey) {
+            toggleSelected(section.id);
+        } else {
+            state.selectedIds = [section.id];
+        }
+
+        fillForm(getPrimarySelected());
+        syncAll();
+    }
+
+    function handleCanvasDoubleClick(event) {
+        if (!state.baseImageLoaded) return;
+        const section = findSectionAt(canvasPointFromEvent(event));
+        if (!section) return;
+
+        state.selectedIds = [section.id];
+        const current = sectionDisplayName(section);
+        const next = window.prompt("구역명을 입력하세요. 예: A1, B12", current);
+        if (next === null) {
+            syncAll();
             return;
         }
 
-        if (state.part === 2 && state.dragMode === "globalAngleTarget") {
-            applyGlobalAngleTargetPoint(point);
+        const parsed = parseSectionCode(next);
+        if (!parsed) {
+            toast("A1, B12처럼 그룹명+번호 형식으로 입력하세요.");
+            syncAll();
             return;
         }
 
-        if (state.part === 2 && state.selectedAngleRegionIds.length > 0 && !state.dragMode) {
-            applyAngleTargetPoint(point);
+        section.groupKey = parsed.groupKey;
+        section.groupName = parsed.groupKey;
+        section.groupIndex = parsed.groupIndex;
+        applyDerivedName(section);
+        fillForm(section);
+        saveLocalState();
+        syncAll();
+        toast(`${section.sectionName} 구역명으로 지정했습니다.`);
+    }
+
+    function addManualSection(rect) {
+        const polygon = rectPolygon(rect);
+        const id = `sec-${state.nextId++}`;
+        const index = state.sections.length;
+        const color = PALETTE[index % PALETTE.length];
+        const groupKey = normalizeGroupKey(dom.groupKeyInput?.value, "A");
+        const groupIndex = nextGroupIndex(groupKey);
+        const name = `${groupKey}${groupIndex}`;
+        const label = name;
+        const bbox = bboxOf(polygon);
+
+        const section = {
+            id,
+            sectionId: id,
+            groupKey,
+            groupName: groupKey,
+            groupIndex,
+            floor: "1",
+            section: name,
+            name,
+            sectionName: name,
+            label,
+            grade: "일반석",
+            price: 132000,
+            color,
+            renderColor: color,
+            sourceColor: color,
+            polygon,
+            polygons: [polygon],
+            bbox,
+            area: Math.round(Math.abs(polygonArea(polygon))),
+            manual: true,
+            sourceRegionIds: [id],
+            sectionIds: [id],
+            button: buildButtonInfo(bbox, label, color, 0)
+        };
+
+        state.sections.push(section);
+        state.selectedIds = [id];
+        fillForm(section);
+        state.tool = "select";
+        if (dom.manualAddBtn) dom.manualAddBtn.classList.remove("is-active");
+        saveLocalState();
+        syncAll();
+        toast("수동 구역을 추가했습니다. 구역명을 입력하세요.");
+    }
+
+    function toggleManualAdd() {
+        state.tool = state.tool === "manual" ? "select" : "manual";
+        if (dom.manualAddBtn) dom.manualAddBtn.classList.toggle("is-active", state.tool === "manual");
+        if (dom.canvasGuide) {
+            dom.canvasGuide.textContent = state.tool === "manual"
+                ? "수동 추가 모드: 빈 영역을 드래그해서 새 구역만 만드세요."
+                : "구역을 클릭해 선택하거나 더블클릭해 이름을 입력하세요.";
+        }
+        renderOverlay();
+        toast(state.tool === "manual" ? "수동 추가 모드 ON" : "수동 추가 모드 OFF");
+    }
+
+    function clearSelectionAndTool() {
+        state.selectedIds = [];
+        state.tool = "select";
+        state.dragging = false;
+        state.dragStart = null;
+        state.dragRect = null;
+        if (dom.manualAddBtn) dom.manualAddBtn.classList.remove("is-active");
+        fillForm(null);
+        syncAll();
+        toast("선택과 도구를 해제했습니다.");
+    }
+
+    function mergeSelectedSections() {
+        const targets = getSelectedSections();
+        if (targets.length < 2) {
+            toast("병합할 구역을 2개 이상 선택하세요.");
             return;
         }
 
-        const region = findRegionAtPoint(point);
+        const first = targets[0];
+        const allPolygons = targets.flatMap((section) => getPolygons(section));
+        const allPoints = polygonsPoints(allPolygons);
+        const hull = cleanupPolygon(convexHull(allPoints), 2, 0);
+        const bbox = bboxOf(allPoints);
+        const mergedIds = targets.map((section) => section.id);
+        const mergedKey = normalizeGroupKey(first.groupKey || first.groupName || first.sectionName, "A");
+        const mergedIndex = Number(first.groupIndex) || nextGroupIndex(mergedKey);
+        const mergedName = `${mergedKey}${mergedIndex}`;
 
-        if (region) {
-            state.selectedRegionId = region.id;
+        const merged = {
+            ...first,
+            id: `sec-${state.nextId++}`,
+            sectionId: `sec-${state.nextId - 1}`,
+            groupKey: mergedKey,
+            groupName: mergedKey,
+            groupIndex: mergedIndex,
+            name: mergedName,
+            sectionName: mergedName,
+            section: mergedName,
+            label: mergedName,
+            polygon: hull.length >= 3 ? hull : rectPolygon(bbox),
+            polygons: allPolygons.map((polygon) => polygon.map(copyPoint)),
+            bbox,
+            area: Math.round(allPolygons.reduce((sum, polygon) => sum + Math.abs(polygonArea(polygon)), 0)),
+            merged: true,
+            sourceRegionIds: unique(targets.flatMap((section) => normalizeArray(section.sourceRegionIds || section.sectionIds || section.id))).map(String),
+            sectionIds: mergedIds,
+            button: buildButtonInfo(bbox, mergedName, first.color || first.renderColor || PALETTE[0], 0)
+        };
 
-            if (state.part === 3) {
-                if (dom.baseSectionName) dom.baseSectionName.value = region.label || region.name || region.id;
-                if (dom.baseColor) dom.baseColor.value = normalizeHex(region.color || "#f77bab");
+        state.sections = state.sections.filter((section) => !mergedIds.includes(section.id));
+        state.sections.push(merged);
+        sortSections(false);
+        state.selectedIds = [merged.id];
+        renumberGroups(false);
+        fillForm(merged);
+        saveLocalState();
+        syncAll();
+        toast(`${targets.length}개 구역을 병합했습니다.`);
+    }
+
+    function deleteSelectedSections() {
+        if (!state.selectedIds.length) {
+            toast("삭제할 구역을 선택하세요.");
+            return;
+        }
+
+        const count = state.selectedIds.length;
+        state.sections = state.sections.filter((section) => !state.selectedIds.includes(section.id));
+        state.selectedIds = state.sections[0] ? [state.sections[0].id] : [];
+        renumberGroups(false);
+        fillForm(getPrimarySelected());
+        saveLocalState();
+        syncAll();
+        toast(`${count}개 구역을 삭제했습니다.`);
+    }
+
+    function clearSections() {
+        if (state.sections.length && !confirm("Stage 3 구역 데이터를 초기화할까요?")) return;
+        state.sections = [];
+        state.selectedIds = [];
+        state.nextId = 1;
+        state.tool = "select";
+        state.dragging = false;
+        state.dragRect = null;
+        localStorage.removeItem(STORAGE.sections);
+        localStorage.removeItem(STORAGE.sectionsCompat);
+        localStorage.removeItem(STORAGE.sectionsHeader);
+        localStorage.removeItem(STORAGE.stageData);
+        localStorage.removeItem(STORAGE.legacyStageData);
+        fillForm(null);
+        syncAll();
+        toast("구역 데이터를 초기화했습니다.");
+    }
+
+    function applyInfoToSelected() {
+        const selected = getSelectedSections();
+        if (!selected.length) {
+            toast("그룹을 적용할 구역을 선택하세요.");
+            return;
+        }
+
+        const groupKey = normalizeGroupKey(dom.groupKeyInput?.value, selected[0].groupKey || "A");
+        const requestedIndex = Math.max(1, parseInt(dom.groupIndexInput?.value, 10) || 1);
+        const floor = cleanText(dom.floorInput?.value, "1");
+        const grade = cleanText(dom.gradeInput?.value, "일반석");
+        const price = parseInt(dom.priceInput?.value, 10) || 0;
+        const color = normalizeHex(dom.sectionColorInput?.value, selected[0].color || "#d9d9d9");
+
+        const ordered = sortSectionsByPosition(selected);
+        ordered.forEach((section, offset) => {
+            section.groupKey = groupKey;
+            section.groupName = groupKey;
+            section.groupIndex = selected.length === 1 ? requestedIndex : requestedIndex + offset;
+            section.floor = floor;
+            section.grade = grade;
+            section.price = price;
+            section.color = color;
+            section.renderColor = color;
+            applyDerivedName(section, cleanText(dom.labelInput?.value, ""));
+        });
+
+        renumberGroups(false);
+        fillForm(getPrimarySelected());
+        saveLocalState();
+        syncAll();
+        toast(`${selected.length}개 구역을 ${groupKey} 그룹으로 묶었습니다.`);
+    }
+
+    function autoFillNames() {
+        renumberGroups(true);
+    }
+
+    function fillSampleNameTemplate() {
+        if (!dom.nameBatchInput) return;
+        dom.nameBatchInput.value = [
+            "A", "A", "A", "A",
+            "B", "B", "B", "B",
+            "C", "C", "C",
+            "D", "D"
+        ].join("\n");
+        toast("A/B/C 그룹 예시를 넣었습니다. 정렬 순서에 맞게 수정 후 적용하세요.");
+    }
+
+    function applyNameBatchToSections() {
+        if (!state.sections.length) {
+            toast("구역이 없습니다.");
+            return;
+        }
+
+        const names = parseBatchNames(dom.nameBatchInput?.value);
+        if (!names.length) {
+            toast("적용할 그룹명을 입력하세요.");
+            return;
+        }
+
+        const ordered = sortSectionsByPosition(state.sections);
+        const groupCounters = new Map();
+        ordered.forEach((section, index) => {
+            const raw = names[index];
+            if (!raw) return;
+
+            const parsed = parseSectionCode(raw);
+            const groupKey = parsed ? parsed.groupKey : normalizeGroupKey(raw, section.groupKey || "A");
+            const nextIndex = parsed
+                ? parsed.groupIndex
+                : (groupCounters.get(groupKey) || 0) + 1;
+
+            section.groupKey = groupKey;
+            section.groupName = groupKey;
+            section.groupIndex = nextIndex;
+            groupCounters.set(groupKey, Math.max(groupCounters.get(groupKey) || 0, nextIndex));
+            applyDerivedName(section);
+            section.floor = cleanText(section.floor, "1");
+            section.grade = cleanText(section.grade, "일반석");
+            section.price = parseInt(section.price, 10) || 132000;
+            section.button = buildButtonInfo(section.bbox || bboxOf(section.polygon), section.label || section.sectionName, section.color || section.renderColor || PALETTE[index % PALETTE.length], 0);
+        });
+
+        renumberGroups(false);
+        fillForm(getPrimarySelected());
+        saveLocalState();
+        syncAll();
+        toast(`${Math.min(names.length, state.sections.length)}개 구역에 그룹을 적용했습니다.`);
+    }
+
+    function parseBatchNames(value) {
+        return String(value || "")
+            .split(/[\n,]+/)
+            .map((item) => item.trim())
+            .filter(Boolean);
+    }
+
+    function autoGroupSectionsByColor(showToast = true) {
+        if (!state.sections.length) {
+            if (showToast) toast("구역이 없습니다.");
+            return;
+        }
+
+        const tolerance = positiveNumber(dom.groupTolerance?.value, 42);
+        const ordered = sortSectionsByPosition(state.sections);
+        const clusters = [];
+
+        ordered.forEach((section) => {
+            const rgb = hexToRgb(section.sourceColor || section.color || section.renderColor || "#d9d9d9");
+            let best = null;
+            let bestDistance = Infinity;
+
+            clusters.forEach((cluster) => {
+                const currentDistance = colorDistance(rgb, cluster.color);
+                if (currentDistance < bestDistance) {
+                    bestDistance = currentDistance;
+                    best = cluster;
+                }
+            });
+
+            if (!best || bestDistance > tolerance) {
+                best = { color: { ...rgb }, items: [] };
+                clusters.push(best);
             }
 
-            syncAllPanels();
-            render();
-        }
+            best.items.push(section);
+            const count = best.items.length;
+            best.color.r = (best.color.r * (count - 1) + rgb.r) / count;
+            best.color.g = (best.color.g * (count - 1) + rgb.g) / count;
+            best.color.b = (best.color.b * (count - 1) + rgb.b) / count;
+        });
+
+        clusters.sort((a, b) => {
+            const ca = averageCenter(a.items);
+            const cb = averageCenter(b.items);
+            const rowTolerance = Math.max(16, state.height * 0.035);
+            if (Math.abs(ca.y - cb.y) > rowTolerance) return ca.y - cb.y;
+            return ca.x - cb.x;
+        });
+
+        clusters.forEach((cluster, clusterIndex) => {
+            const groupKey = groupKeyFromIndex(clusterIndex);
+            const groupColor = rgbToHex(cluster.color);
+            sortSectionsByPosition(cluster.items).forEach((section, index) => {
+                section.groupKey = groupKey;
+                section.groupName = groupKey;
+                section.groupIndex = index + 1;
+                section.color = groupColor;
+                section.renderColor = groupColor;
+                section.floor = cleanText(section.floor, "1");
+                section.grade = cleanText(section.grade, "일반석");
+                section.price = parseInt(section.price, 10) || 132000;
+                applyDerivedName(section);
+            });
+        });
+
+        fillForm(getPrimarySelected());
+        saveLocalState();
+        syncAll();
+        if (showToast) toast(`${clusters.length}개 색상 그룹으로 자동 묶었습니다.`);
     }
 
-    function findRegionsByRect(rect) {
-        return state.colorRegions.filter((region) => rectOverlapArea(rect, region.bbox) > 0 || polygonIntersectsRect(region.polygon, rect));
-    }
-
-    function polygonIntersectsRect(polygon, rect) {
-        if (!polygon || polygon.length <= 0) {
-            return false;
-        }
-
-        return polygon.some((point) => point.x >= rect.x && point.x <= rect.x + rect.w && point.y >= rect.y && point.y <= rect.y + rect.h)
-            || pointInPolygon({ x: rect.x + rect.w / 2, y: rect.y + rect.h / 2 }, polygon);
-    }
-
-    function syncAllPanels() {
-        renderColorRegionList();
-        renderAngleRegionList();
-        renderSeatEstimateList();
-        updateSelectedInfo();
-    }
-
-    function renderColorRegionList() {
-        if (!dom.colorRegionList) {
+    function applyGroupBatchToSections() {
+        const selectedGroup = normalizeGroupKey(dom.groupBatchSelect?.value, "A");
+        const targets = state.sections.filter((section) => normalizeGroupKey(section.groupKey || section.groupName, "A") === selectedGroup);
+        if (!targets.length) {
+            toast("수정할 그룹이 없습니다.");
             return;
         }
 
-        if (state.colorRegions.length <= 0) {
-            dom.colorRegionList.innerHTML = `<div class="stage1-empty">아직 추출된 구역 후보가 없습니다.</div>`;
+        const nextGroupKey = normalizeGroupKey(dom.groupRenameInput?.value, selectedGroup);
+        const color = normalizeHex(dom.groupColorInput?.value, targets[0].color || "#d9d9d9");
+        const floor = cleanText(dom.groupFloorInput?.value, targets[0].floor || "1");
+        const grade = cleanText(dom.groupGradeInput?.value, targets[0].grade || "일반석");
+        const price = parseInt(dom.groupPriceInput?.value, 10) || targets[0].price || 0;
+
+        targets.forEach((section) => {
+            section.groupKey = nextGroupKey;
+            section.groupName = nextGroupKey;
+            section.color = color;
+            section.renderColor = color;
+            section.floor = floor;
+            section.grade = grade;
+            section.price = price;
+            applyDerivedName(section);
+        });
+
+        renumberGroups(false);
+        state.selectedIds = targets.map((section) => section.id);
+        fillForm(getPrimarySelected());
+        saveLocalState();
+        syncAll();
+        toast(`${nextGroupKey} 그룹 ${targets.length}개 구역을 단체 수정했습니다.`);
+    }
+
+    function selectCurrentGroup() {
+        const groupKey = normalizeGroupKey(dom.groupBatchSelect?.value || dom.groupKeyInput?.value, "A");
+        const targets = state.sections.filter((section) => normalizeGroupKey(section.groupKey || section.groupName, "A") === groupKey);
+        if (!targets.length) {
+            toast("선택할 그룹이 없습니다.");
+            return;
+        }
+        state.selectedIds = targets.map((section) => section.id);
+        fillForm(targets[0]);
+        syncAll();
+        toast(`${groupKey} 그룹 전체를 선택했습니다.`);
+    }
+
+    async function saveSectionsToServer() {
+        if (getPrimarySelected()) applyInfoToSelectedSilent();
+        renumberGroups(false);
+
+        const sections = normalizeSectionsForSave();
+        if (!sections.length) {
+            toast("저장할 구역이 없습니다.");
+            return null;
+        }
+
+        saveLocalState();
+        const imageDataUrl = exportDebugImageDataUrl();
+
+        const payload = {
+            page: "stage3",
+            folderName: state.projectId,
+            seatJsonText: "",
+            sectionJsonText: JSON.stringify(sections, null, 2),
+            bookingButtonJsonText: "",
+            decorationJsonText: "",
+            imageDataUrl
+        };
+
+        const button = dom.saveSectionsBtn;
+        const before = button?.textContent;
+
+        try {
+            if (button) {
+                button.disabled = true;
+                button.textContent = "저장 중...";
+            }
+
+            const response = await fetch(SAVE_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "same-origin",
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(text || "구역 JSON 저장 실패");
+            }
+
+            const result = await response.json();
+            toast("seatmap-sections.json 저장 완료");
+            return result;
+        } catch (error) {
+            console.error(error);
+            toast("저장 실패: " + error.message);
+            alert("구역 JSON 저장 실패: " + error.message);
+            return null;
+        } finally {
+            if (button) {
+                button.disabled = false;
+                button.textContent = before;
+            }
+        }
+    }
+
+    function applyInfoToSelectedSilent() {
+        const section = getPrimarySelected();
+        if (!section) return;
+
+        const groupKey = normalizeGroupKey(dom.groupKeyInput?.value, section.groupKey || "A");
+        const groupIndex = Math.max(1, parseInt(dom.groupIndexInput?.value, 10) || section.groupIndex || 1);
+        section.groupKey = groupKey;
+        section.groupName = groupKey;
+        section.groupIndex = groupIndex;
+        section.floor = cleanText(dom.floorInput?.value, section.floor || "1");
+        section.grade = cleanText(dom.gradeInput?.value, section.grade || "일반석");
+        section.price = parseInt(dom.priceInput?.value, 10) || section.price || 0;
+        section.color = normalizeHex(dom.sectionColorInput?.value, section.color || section.renderColor || "#d9d9d9");
+        section.renderColor = section.color;
+        applyDerivedName(section, cleanText(dom.labelInput?.value, ""));
+    }
+
+    async function moveToStage4() {
+        const result = await saveSectionsToServer();
+        if (!result) return;
+        window.location.href = state.stage4Url;
+    }
+
+    function saveLocalState() {
+        const sections = normalizeSectionsForSave();
+        const stageData = {
+            stage: 3,
+            projectId: state.projectId,
+            width: state.width,
+            height: state.height,
+            updatedAt: new Date().toISOString(),
+            sections
+        };
+
+        localStorage.setItem(STORAGE.sections, JSON.stringify(sections));
+        localStorage.setItem(STORAGE.sectionsCompat, JSON.stringify(sections));
+        localStorage.setItem(STORAGE.sectionsHeader, JSON.stringify(sections));
+        localStorage.removeItem(STORAGE.visualGroupsHeader);
+        localStorage.setItem(STORAGE.stageData, JSON.stringify(stageData));
+        localStorage.setItem(STORAGE.legacyStageData, JSON.stringify({ sections }));
+    }
+
+    function normalizeSectionsForSave() {
+        return state.sections.map((section, index) => {
+            const polygons = getPolygons(section)
+                .filter((polygon) => Array.isArray(polygon) && polygon.length >= 3)
+                .map((polygon) => polygon.map((point) => ({ x: round(point.x), y: round(point.y) })));
+            const polygon = polygons[0] || getPolygon(section).map((point) => ({ x: round(point.x), y: round(point.y) }));
+            const bbox = bboxOf(polygonsPoints(polygons.length ? polygons : [polygon]));
+            const groupKey = normalizeGroupKey(section.groupKey || section.groupName || section.sectionName, groupKeyFromIndex(index));
+            const groupIndex = Math.max(1, parseInt(section.groupIndex, 10) || 1);
+            const name = `${groupKey}${groupIndex}`;
+            const color = normalizeHex(section.color || section.renderColor || PALETTE[index % PALETTE.length], PALETTE[index % PALETTE.length]);
+            const label = cleanText(section.label, name);
+
+            return {
+                id: section.id || `sec-${index + 1}`,
+                sectionId: section.sectionId || section.id || `sec-${index + 1}`,
+                groupKey,
+                groupName: groupKey,
+                groupIndex,
+                name,
+                section: name,
+                sectionName: name,
+                label,
+                floor: cleanText(section.floor, "1"),
+                grade: cleanText(section.grade, "일반석"),
+                price: parseInt(section.price, 10) || 0,
+                color,
+                renderColor: color,
+                sourceColor: section.sourceColor || color,
+                polygon,
+                polygons,
+                bbox,
+                area: round(polygons.reduce((sum, item) => sum + Math.abs(polygonArea(item)), 0) || Math.abs(polygonArea(polygon))),
+                sourceRegionIds: normalizeArray(section.sourceRegionIds || section.sectionIds || section.id).map(String),
+                sectionIds: normalizeArray(section.sectionIds || section.sourceRegionIds || section.id).map(String),
+                button: buildButtonInfo(bbox, label, color, 0),
+                manual: Boolean(section.manual),
+                merged: Boolean(section.merged)
+            };
+        });
+    }
+
+    function ensureGroupsAfterLoad() {
+        if (!state.sections.length) return;
+        const groupedCount = state.sections.filter((section) => section.__stage3Grouped).length;
+        if (groupedCount >= Math.ceil(state.sections.length / 2)) {
+            state.sections.forEach((section, index) => {
+                const parsed = parseSectionCode(section.sectionName || section.name || section.section);
+                section.groupKey = normalizeGroupKey(section.groupKey || section.groupName || parsed?.groupKey, groupKeyFromIndex(index));
+                section.groupName = section.groupKey;
+                section.groupIndex = Math.max(1, parseInt(section.groupIndex, 10) || parsed?.groupIndex || nextGroupIndex(section.groupKey));
+                applyDerivedName(section);
+            });
+            renumberGroups(false);
+        } else {
+            autoGroupSectionsByColor(false);
+        }
+    }
+
+    function applyDerivedName(section, explicitLabel = null) {
+        const beforeName = section.sectionName || section.name || section.section || "";
+        const beforeLabel = section.label || "";
+        const groupKey = normalizeGroupKey(section.groupKey || section.groupName, "A");
+        const groupIndex = Math.max(1, parseInt(section.groupIndex, 10) || 1);
+        const name = `${groupKey}${groupIndex}`;
+        section.groupKey = groupKey;
+        section.groupName = groupKey;
+        section.groupIndex = groupIndex;
+        section.section = name;
+        section.name = name;
+        section.sectionName = name;
+        if (explicitLabel !== null && cleanText(explicitLabel, "")) {
+            section.label = cleanText(explicitLabel, name);
+        } else if (!beforeLabel || beforeLabel === beforeName || parseSectionCode(beforeLabel)) {
+            section.label = name;
+        } else {
+            section.label = beforeLabel;
+        }
+        section.button = buildButtonInfo(section.bbox || bboxOf(section.polygon), section.label || name, section.color || section.renderColor || "#d9d9d9", 0);
+    }
+
+    function sectionDisplayName(section) {
+        if (!section) return "-";
+        const groupKey = normalizeGroupKey(section.groupKey || section.groupName || section.sectionName, "A");
+        const parsed = parseSectionCode(section.sectionName || section.name || section.section);
+        const groupIndex = Math.max(1, parseInt(section.groupIndex, 10) || parsed?.groupIndex || 1);
+        return `${groupKey}${groupIndex}`;
+    }
+
+    function renumberGroups(showToast = true) {
+        getGroupedSections().forEach((group) => {
+            sortSectionsByPosition(group.items).forEach((section, index) => {
+                section.groupKey = group.key;
+                section.groupName = group.key;
+                section.groupIndex = index + 1;
+                applyDerivedName(section);
+            });
+        });
+        fillForm(getPrimarySelected());
+        saveLocalState();
+        syncAll();
+        if (showToast) toast("그룹별 번호를 1부터 다시 정렬했습니다.");
+    }
+
+    function renumberGroup(groupKey, showToast = true) {
+        const key = normalizeGroupKey(groupKey, "A");
+        const items = sortSectionsByPosition(state.sections.filter((section) => normalizeGroupKey(section.groupKey || section.groupName, "A") === key));
+        items.forEach((section, index) => {
+            section.groupKey = key;
+            section.groupName = key;
+            section.groupIndex = index + 1;
+            applyDerivedName(section);
+        });
+        if (showToast) toast(`${key} 그룹 번호를 정렬했습니다.`);
+    }
+
+    function nextGroupIndex(groupKey) {
+        const key = normalizeGroupKey(groupKey, "A");
+        return state.sections.reduce((max, section) => {
+            if (normalizeGroupKey(section.groupKey || section.groupName, "A") !== key) return max;
+            return Math.max(max, parseInt(section.groupIndex, 10) || 0);
+        }, 0) + 1;
+    }
+
+    function getGroupedSections() {
+        const map = new Map();
+        state.sections.forEach((section) => {
+            const key = normalizeGroupKey(section.groupKey || section.groupName || section.sectionName, "A");
+            const color = normalizeHex(section.color || section.renderColor || section.sourceColor || "#d9d9d9", "#d9d9d9");
+            if (!map.has(key)) map.set(key, { key, color, items: [] });
+            map.get(key).items.push(section);
+        });
+
+        return Array.from(map.values())
+            .map((group) => ({
+                ...group,
+                items: sortSectionsByPosition(group.items),
+                center: averageCenter(group.items)
+            }))
+            .sort((a, b) => {
+                const keyCompare = groupKeySortValue(a.key) - groupKeySortValue(b.key);
+                if (keyCompare !== 0) return keyCompare;
+                const rowTolerance = Math.max(16, state.height * 0.035);
+                if (Math.abs(a.center.y - b.center.y) > rowTolerance) return a.center.y - b.center.y;
+                return a.center.x - b.center.x;
+            });
+    }
+
+    function renderGroupSelect() {
+        if (!dom.groupBatchSelect) return;
+        const current = dom.groupBatchSelect.value;
+        const groups = getGroupedSections();
+        if (!groups.length) {
+            dom.groupBatchSelect.innerHTML = `<option value="A">A 그룹 없음</option>`;
+            return;
+        }
+        dom.groupBatchSelect.innerHTML = groups.map((group) => `<option value="${escapeAttr(group.key)}">${escapeHtml(group.key)} 그룹 · ${group.items.length}개</option>`).join("");
+        const next = groups.some((group) => group.key === current) ? current : groups[0].key;
+        dom.groupBatchSelect.value = next;
+        fillGroupBatchForm(next);
+    }
+
+    function fillGroupBatchForm(value = null) {
+        const key = normalizeGroupKey(typeof value === "string" ? value : dom.groupBatchSelect?.value, "A");
+        const targets = state.sections.filter((section) => normalizeGroupKey(section.groupKey || section.groupName, "A") === key);
+        const first = targets[0];
+        if (!first) return;
+        setValue(dom.groupRenameInput, key);
+        setValue(dom.groupColorInput, normalizeHex(first.color || first.renderColor || "#d9d9d9", "#d9d9d9"));
+        setValue(dom.groupFloorInput, first.floor || "1");
+        setValue(dom.groupGradeInput, first.grade || "일반석");
+        setValue(dom.groupPriceInput, String(parseInt(first.price, 10) || 0));
+    }
+
+    function syncNamePreviewFromGroupInput() {
+        const groupKey = normalizeGroupKey(dom.groupKeyInput?.value, "A");
+        const groupIndex = Math.max(1, parseInt(dom.groupIndexInput?.value, 10) || 1);
+        setValue(dom.groupKeyInput, groupKey);
+        setValue(dom.sectionNameInput, `${groupKey}${groupIndex}`);
+    }
+
+    function parseSectionCode(value) {
+        const text = String(value || "").trim().toUpperCase();
+        const match = text.match(/^([A-Z]+)\s*[-_ ]?\s*(\d+)$/);
+        if (!match) return null;
+        return {
+            groupKey: normalizeGroupKey(match[1], "A"),
+            groupIndex: Math.max(1, parseInt(match[2], 10) || 1)
+        };
+    }
+
+    function normalizeGroupKey(value, fallback = "A") {
+        const raw = String(value || "").trim().toUpperCase();
+        const match = raw.match(/[A-Z]+/);
+        if (match) return match[0].slice(0, 2);
+        const fallbackMatch = String(fallback || "A").trim().toUpperCase().match(/[A-Z]+/);
+        return fallbackMatch ? fallbackMatch[0].slice(0, 2) : "A";
+    }
+
+    function groupKeyFromIndex(index) {
+        if (index < GROUP_KEYS.length) return GROUP_KEYS[index];
+        const first = GROUP_KEYS[Math.floor(index / GROUP_KEYS.length) - 1] || "Z";
+        const second = GROUP_KEYS[index % GROUP_KEYS.length] || "Z";
+        return `${first}${second}`;
+    }
+
+    function groupKeySortValue(key) {
+        const text = normalizeGroupKey(key, "A");
+        return text.split("").reduce((sum, char) => sum * 26 + (char.charCodeAt(0) - 64), 0);
+    }
+
+    function sortSectionsByPosition(sections) {
+        return [...sections].sort((a, b) => {
+            const ca = polygonCenter(getPolygon(a));
+            const cb = polygonCenter(getPolygon(b));
+            const rowTolerance = Math.max(16, state.height * 0.035);
+            if (Math.abs(ca.y - cb.y) > rowTolerance) return ca.y - cb.y;
+            return ca.x - cb.x;
+        });
+    }
+
+    function averageCenter(sections) {
+        if (!sections.length) return { x: 0, y: 0 };
+        const sum = sections.reduce((acc, section) => {
+            const center = polygonCenter(getPolygon(section));
+            acc.x += center.x;
+            acc.y += center.y;
+            return acc;
+        }, { x: 0, y: 0 });
+        return { x: sum.x / sections.length, y: sum.y / sections.length };
+    }
+
+    function hexToRgb(hex) {
+        const normalized = normalizeHex(hex, "#d9d9d9");
+        return {
+            r: parseInt(normalized.slice(1, 3), 16),
+            g: parseInt(normalized.slice(3, 5), 16),
+            b: parseInt(normalized.slice(5, 7), 16),
+            a: 255
+        };
+    }
+
+    function exportDebugImageDataUrl() {
+        if (!state.width || !state.height) return "";
+        debugCanvas.width = state.width;
+        debugCanvas.height = state.height;
+        debugCtx.clearRect(0, 0, state.width, state.height);
+        debugCtx.drawImage(canvas, 0, 0);
+        drawSections(debugCtx, true);
+        return debugCanvas.toDataURL("image/png");
+    }
+
+    function syncAll() {
+        syncPartUi();
+        renderOverlay();
+        renderPreview();
+        renderList();
+        renderInfo();
+        syncSelectionSummary();
+    }
+
+    function setPart(part) {
+        state.activePart = part;
+        syncPartUi();
+        if (dom.canvasGuide) {
+            dom.canvasGuide.textContent = part === 1
+                ? "구역 자동 나누기 후 비슷한 색상끼리 자동 그룹이 붙습니다."
+                : part === 2
+                    ? "클릭 선택 / Shift 다중 선택 / 병합으로 구역 도형만 정리하세요."
+                    : "색상 그룹을 확인하고 잘못 묶인 구역은 A~Z 그룹을 수정하세요.";
+        }
+    }
+
+    function syncPartUi() {
+        [1, 2, 3].forEach((number) => {
+            const panel = dom[`part${number}Panel`];
+            const button = dom[`partBtn${number}`];
+            if (!panel || !button) return;
+            const active = state.activePart === number;
+            panel.classList.toggle("is-active", active);
+            panel.classList.toggle("is-done", number < state.activePart);
+            button.classList.toggle("active", active);
+            const status = panel.querySelector(".stage3-step__status");
+            if (status) status.textContent = active ? "진행중" : number < state.activePart ? "완료" : "대기";
+        });
+    }
+
+    function renderOverlay() {
+        if (!overlayCtx) return;
+        overlayCtx.clearRect(0, 0, state.width, state.height);
+        drawSections(overlayCtx, false);
+
+        if (state.dragRect) {
+            overlayCtx.save();
+            overlayCtx.setLineDash([8, 6]);
+            overlayCtx.lineWidth = 2;
+            overlayCtx.strokeStyle = "#2563eb";
+            overlayCtx.fillStyle = "rgba(37, 99, 235, 0.12)";
+            overlayCtx.fillRect(state.dragRect.x, state.dragRect.y, state.dragRect.w, state.dragRect.h);
+            overlayCtx.strokeRect(state.dragRect.x, state.dragRect.y, state.dragRect.w, state.dragRect.h);
+            overlayCtx.restore();
+        }
+    }
+
+    function drawSections(targetCtx, debugMode) {
+        state.sections.forEach((section, index) => {
+            const selected = state.selectedIds.includes(section.id);
+            const color = normalizeHex(section.color || section.renderColor || PALETTE[index % PALETTE.length], PALETTE[index % PALETTE.length]);
+            const polygons = getPolygons(section);
+
+            polygons.forEach((polygon) => {
+                drawPolygon(targetCtx, polygon, {
+                    stroke: selected ? "#ef4444" : color,
+                    fill: debugMode ? withAlpha(color, 0.18) : selected ? "rgba(239, 68, 68, 0.08)" : "rgba(255,255,255,0)",
+                    lineWidth: selected ? 3 : 2,
+                    dash: selected ? [8, 5] : []
+                });
+            });
+
+            const bbox = section.bbox || bboxOf(polygonsPoints(polygons));
+            const label = sectionDisplayName(section);
+            const x = bbox.x + bbox.w / 2;
+            const y = bbox.y + bbox.h / 2;
+            drawLabel(targetCtx, label, x, y, selected, debugMode, bbox);
+        });
+    }
+
+    function drawPolygon(targetCtx, polygon, option) {
+        if (!polygon || polygon.length < 3) return;
+        targetCtx.save();
+        targetCtx.beginPath();
+        targetCtx.moveTo(polygon[0].x, polygon[0].y);
+        for (let i = 1; i < polygon.length; i += 1) targetCtx.lineTo(polygon[i].x, polygon[i].y);
+        targetCtx.closePath();
+        targetCtx.fillStyle = option.fill;
+        targetCtx.fill();
+        targetCtx.strokeStyle = option.stroke;
+        targetCtx.lineWidth = option.lineWidth;
+        targetCtx.setLineDash(option.dash || []);
+        targetCtx.stroke();
+        targetCtx.restore();
+    }
+
+    function drawLabel(targetCtx, label, x, y, selected, debugMode, bbox = null) {
+        const text = String(label || "-").slice(0, 28);
+        if (!text) return;
+
+        const box = bbox || { w: 80, h: 36 };
+        const widthLimited = box.w / Math.max(6, text.length) * 1.55;
+        const heightLimited = box.h * 0.32;
+        const fontSize = Math.round(clamp(Math.min(Math.max(11, heightLimited), widthLimited), 10, 24));
+
+        targetCtx.save();
+        targetCtx.font = `900 ${fontSize}px Pretendard, Arial, sans-serif`;
+        targetCtx.textAlign = "center";
+        targetCtx.textBaseline = "middle";
+        targetCtx.lineJoin = "round";
+        targetCtx.miterLimit = 2;
+        targetCtx.strokeStyle = selected ? "rgba(220, 38, 38, 0.72)" : "rgba(15, 23, 42, 0.48)";
+        targetCtx.lineWidth = Math.max(2.2, fontSize * 0.18);
+        targetCtx.strokeText(text, x, y + 1);
+        targetCtx.fillStyle = "#ffffff";
+        targetCtx.fillText(text, x, y + 1);
+
+        if (selected && !debugMode) {
+            targetCtx.beginPath();
+            targetCtx.arc(x, y - fontSize * 1.05, 4, 0, Math.PI * 2);
+            targetCtx.fillStyle = "#ef4444";
+            targetCtx.fill();
+        }
+
+        targetCtx.restore();
+    }
+
+    function renderPreview() {
+        if (!previewCtx || !previewCanvas || !state.width || !state.height) return;
+        const scale = previewCanvas.width / state.width;
+        previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        previewCtx.save();
+        previewCtx.scale(scale, scale);
+        previewCtx.drawImage(canvas, 0, 0);
+        drawSections(previewCtx, true);
+        previewCtx.restore();
+    }
+
+    function renderList() {
+        if (!dom.sectionList) return;
+        renderGroupSelect();
+
+        if (!state.sections.length) {
+            dom.sectionList.innerHTML = `<div class="stage3-empty">아직 구역이 없습니다.</div>`;
             return;
         }
 
-        dom.colorRegionList.innerHTML = state.colorRegions.map((region) => {
-            const selected = region.id === state.selectedRegionId ? " is-selected" : "";
-            const checked = state.angleRegions[region.id]?.checked ? "✓" : "";
-
-            return `
-                <button type="button" class="stage1-list-item${selected}" data-region-id="${escapeHtml(region.id)}">
-                    <i style="background:${escapeHtml(region.color)}"></i>
-                    <span>${escapeHtml(region.name)}</span>
-                    <small>${escapeHtml(region.roleName || "좌석")} / ${Math.round(region.bbox.w)}×${Math.round(region.bbox.h)}</small>
-                    <strong>${checked}</strong>
-                </button>
+        const groups = getGroupedSections();
+        dom.sectionList.innerHTML = groups.map((group) => {
+            const header = `
+                <div class="stage3-group-header">
+                    <span class="stage3-group-header__dot" style="background:${escapeAttr(group.color)}"></span>
+                    <b>${escapeHtml(group.key)} 그룹</b>
+                    <span>${group.items.length}개</span>
+                </div>
             `;
+            const items = group.items.map((section) => {
+                const name = escapeHtml(sectionDisplayName(section));
+                const floor = escapeHtml(section.floor || "1");
+                const grade = escapeHtml(section.grade || "일반석");
+                const area = Math.round(section.area || Math.abs(polygonArea(section.polygon || [])) || 0);
+                const color = normalizeHex(section.color || section.renderColor || group.color, group.color);
+                const selected = state.selectedIds.includes(section.id) ? " is-selected" : "";
+                return `
+                    <button type="button" class="stage3-section-item${selected}" data-section-id="${escapeAttr(section.id)}">
+                        <span class="stage3-section-item__color" style="background:${escapeAttr(color)}"></span>
+                        <span class="stage3-section-item__text">
+                            <b>${name}</b>
+                            <span>${floor}층 · ${grade}</span>
+                        </span>
+                        <span class="stage3-section-item__area">${area}</span>
+                    </button>
+                `;
+            }).join("");
+            return `<div class="stage3-group-block">${header}${items}</div>`;
         }).join("");
 
-        bindRegionList(dom.colorRegionList);
-    }
-
-    function renderAngleRegionList() {
-        if (!dom.angleRegionList) {
-            return;
-        }
-
-        const items = state.colorRegions.filter((region) => state.selectedAngleRegionIds.includes(region.id) || state.angleRegions[region.id]?.checked);
-
-        if (items.length <= 0) {
-            dom.angleRegionList.innerHTML = `<div class="stage1-empty">각도가 계산된 구역이 없습니다.</div>`;
-            return;
-        }
-
-        dom.angleRegionList.innerHTML = items.map((region) => {
-            const selected = region.id === state.selectedRegionId ? " is-selected" : "";
-            const angle = getRegionAngle(region);
-            const label = state.angleRegions[region.id]?.checked ? "각도 설정 완료" : "드래그 선택됨";
-
-            return `
-                <button type="button" class="stage1-list-item${selected}" data-region-id="${escapeHtml(region.id)}">
-                    <i style="background:${escapeHtml(region.color)}"></i>
-                    <span>${escapeHtml(region.name)}</span>
-                    <small>${label}</small>
-                    <strong>${round(angle)}°</strong>
-                </button>
-            `;
-        }).join("");
-
-        bindRegionList(dom.angleRegionList);
-    }
-
-    function renderSeatEstimateList() {
-        if (!dom.seatEstimateList) {
-            return;
-        }
-
-        if (state.seatSections.length <= 0) {
-            dom.seatEstimateList.innerHTML = `<div class="stage1-empty">아직 추정된 좌석이 없습니다.</div>`;
-            return;
-        }
-
-        dom.seatEstimateList.innerHTML = state.seatSections.map((section) => {
-            const selected = section.id === state.selectedRegionId ? " is-selected" : "";
-            const seatCount = (state.seatsBySection[section.id] || []).length;
-
-            return `
-                <button type="button" class="stage1-list-item${selected}" data-region-id="${escapeHtml(section.id)}">
-                    <i style="background:${escapeHtml(section.color)}"></i>
-                    <span>${escapeHtml(section.name)}</span>
-                    <small>${section.rows}×${section.cols} / ${seatCount}석</small>
-                    <strong>${round(section.angle)}°</strong>
-                </button>
-            `;
-        }).join("");
-
-        bindRegionList(dom.seatEstimateList);
-    }
-
-    function bindRegionList(container) {
-        container.querySelectorAll("[data-region-id]").forEach((button) => {
-            button.addEventListener("click", () => {
-                state.selectedRegionId = button.dataset.regionId;
-                syncAllPanels();
-                render();
+        dom.sectionList.querySelectorAll("[data-section-id]").forEach((button) => {
+            button.addEventListener("click", (event) => {
+                const id = button.dataset.sectionId;
+                if (event.shiftKey || event.ctrlKey || event.metaKey) toggleSelected(id);
+                else state.selectedIds = [id];
+                fillForm(getPrimarySelected());
+                syncAll();
             });
         });
     }
 
-    function updateSelectedInfo() {
-        const region = getSelectedRegion();
-
-        if (dom.angleRegionName) {
-            dom.angleRegionName.value = region ? region.name : "-";
-        }
-
-        if (dom.angleValue) {
-            dom.angleValue.value = region ? `시선 ${round(getRegionFacingAngle(region))}° / 줄 ${round(getRegionGridAngle(region))}°` : "0°";
-        }
+    function renderInfo() {
+        const selected = getSelectedSections();
+        const primary = selected[0] || null;
+        setText(dom.totalCount, String(state.sections.length));
+        setText(dom.selectedCount, String(selected.length));
+        setText(dom.selectedArea, selected.length ? String(Math.round(selected.reduce((sum, section) => sum + (section.area || 0), 0))) : "-");
+        setText(dom.selectedName, primary ? `${normalizeGroupKey(primary.groupKey || primary.groupName, "A")} / ${sectionDisplayName(primary)}` : "-");
     }
 
-    function saveWorkState() {
-        localStorage.setItem(STORAGE_KEYS.colorRegions, JSON.stringify(state.colorRegions));
-        localStorage.setItem(STORAGE_KEYS.angleRegions, JSON.stringify(state.angleRegions));
-        localStorage.setItem(STORAGE_KEYS.selectedAngleRegions, JSON.stringify(state.selectedAngleRegionIds));
-        localStorage.setItem(STORAGE_KEYS.baseLayoutsByGroup, JSON.stringify(state.baseLayoutsByGroup));
-        localStorage.setItem(STORAGE_KEYS.visualGroups, JSON.stringify(state.visualGroups));
-        if (state.selectedVisualGroupId) {
-            localStorage.setItem(STORAGE_KEYS.selectedVisualGroupId, state.selectedVisualGroupId);
+    function syncSelectionSummary() {
+        if (!dom.selectionSummary) return;
+        const selected = getSelectedSections();
+        if (!selected.length) {
+            dom.selectionSummary.textContent = "선택 구역 없음";
+            return;
         }
-        localStorage.setItem(STORAGE_KEYS.seatSections, JSON.stringify(state.seatSections));
-        localStorage.setItem(STORAGE_KEYS.seats, JSON.stringify(state.seatsBySection));
-        localStorage.setItem(STORAGE_KEYS.layouts, JSON.stringify(state.layoutsBySection));
-
-        if (state.generatedUrl) {
-            localStorage.setItem(STORAGE_KEYS.generatedImage, state.generatedUrl);
-        }
+        dom.selectionSummary.textContent = selected.map((section) => sectionDisplayName(section)).join(" / ");
     }
 
-    function buildRoleMap(imageData, width, height) {
-        const roleMap = new Uint8Array(width * height);
-        const data = imageData.data;
-
-        for (let i = 0; i < width * height; i += 1) {
-            const offset = i * 4;
-            roleMap[i] = classifyColorRole(data[offset], data[offset + 1], data[offset + 2], data[offset + 3]);
-        }
-
-        return roleMap;
-    }
-
-    function classifyColorRole(r, g, b, a) {
-        if (a < 10) return ROLE.BACKGROUND;
-
-        const hsl = rgbToHsl(r, g, b);
-        const max = Math.max(r, g, b);
-        const min = Math.min(r, g, b);
-        const chroma = max - min;
-
-        if (hsl.l <= 0.20 && hsl.s <= 0.55) return ROLE.BLACK;
-        if ((max >= 246 && min >= 222) || (hsl.l >= 0.78 && hsl.s <= 0.42)) return ROLE.WHITE;
-        if (hsl.s <= 0.20 && hsl.l >= 0.18 && hsl.l <= 0.92) return ROLE.GRAY;
-        if (hsl.s < 0.24 || chroma < 20 || hsl.l < 0.20 || hsl.l > 0.88) return ROLE.BACKGROUND;
-
-        const hue = hsl.h;
-        if (hue >= 340 || hue < 13) return ROLE.SEAT_RED;
-        if (hue >= 13 && hue < 55) return hsl.s < 0.48 && hsl.l < 0.70 ? ROLE.SEAT_BROWN : ROLE.SEAT_ORANGE;
-        if (hue >= 55 && hue < 170) return ROLE.SEAT_GREEN;
-        if (hue >= 170 && hue < 215) return ROLE.SEAT_BLUE;
-        if (hue >= 215 && hue < 315) return ROLE.SEAT_PURPLE;
-        if (hue >= 315 && hue < 340) return ROLE.SEAT_PINK;
-
-        return ROLE.BACKGROUND;
-    }
-
-    function cleanupRoleMap(roleMap, width, height) {
-        for (let iteration = 0; iteration < 2; iteration += 1) {
-            const next = new Uint8Array(roleMap);
-
-            for (let y = 1; y < height - 1; y += 1) {
-                for (let x = 1; x < width - 1; x += 1) {
-                    const index = y * width + x;
-                    const role = roleMap[index];
-                    const counts = countNeighborSeatRoles(roleMap, width, height, x, y, 1);
-                    const dominant = getDominantRole(counts);
-
-                    if (!isSeatRole(role) && dominant.count >= 5) {
-                        next[index] = dominant.role;
-                    } else if (isSeatRole(role) && dominant.role !== ROLE.UNKNOWN && dominant.role !== role && dominant.count >= 6) {
-                        next[index] = dominant.role;
-                    }
-                }
-            }
-
-            roleMap.set(next);
-        }
-    }
-
-    function countNeighborSeatRoles(roleMap, width, height, x, y, radius) {
-        const counts = new Map();
-
-        for (let dy = -radius; dy <= radius; dy += 1) {
-            for (let dx = -radius; dx <= radius; dx += 1) {
-                if (dx === 0 && dy === 0) continue;
-                const nx = x + dx;
-                const ny = y + dy;
-                if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
-                const role = roleMap[ny * width + nx];
-                if (!isSeatRole(role)) continue;
-                counts.set(role, (counts.get(role) || 0) + 1);
-            }
-        }
-
-        return counts;
-    }
-
-    function getDominantRole(counts) {
-        let role = ROLE.UNKNOWN;
-        let count = 0;
-
-        counts.forEach((value, key) => {
-            if (value > count) {
-                role = key;
-                count = value;
-            }
-        });
-
-        return { role, count };
-    }
-
-    function extractComponents(roleMap, width, height, predicate) {
-        const visited = new Uint8Array(width * height);
-        const components = [];
-        const queue = [];
-
-        for (let i = 0; i < width * height; i += 1) {
-            if (visited[i] || !predicate(roleMap[i])) continue;
-
-            const targetRole = roleMap[i];
-            const component = {
-                role: targetRole,
-                pixels: [],
-                area: 0,
-                minX: Infinity,
-                minY: Infinity,
-                maxX: -Infinity,
-                maxY: -Infinity
-            };
-
-            queue.length = 0;
-            queue.push(i);
-            visited[i] = 1;
-
-            while (queue.length > 0) {
-                const current = queue.pop();
-                const x = current % width;
-                const y = Math.floor(current / width);
-
-                component.pixels.push(current);
-                component.area += 1;
-                component.minX = Math.min(component.minX, x);
-                component.minY = Math.min(component.minY, y);
-                component.maxX = Math.max(component.maxX, x);
-                component.maxY = Math.max(component.maxY, y);
-
-                pushNeighbor(queue, visited, roleMap, width, height, x + 1, y, targetRole);
-                pushNeighbor(queue, visited, roleMap, width, height, x - 1, y, targetRole);
-                pushNeighbor(queue, visited, roleMap, width, height, x, y + 1, targetRole);
-                pushNeighbor(queue, visited, roleMap, width, height, x, y - 1, targetRole);
-            }
-
-            component.width = component.maxX - component.minX + 1;
-            component.height = component.maxY - component.minY + 1;
-            components.push(component);
-        }
-
-        return components;
-    }
-
-    function pushNeighbor(queue, visited, roleMap, width, height, x, y, targetRole) {
-        if (x < 0 || y < 0 || x >= width || y >= height) return;
-        const index = y * width + x;
-        if (visited[index] || roleMap[index] !== targetRole) return;
-        visited[index] = 1;
-        queue.push(index);
-    }
-
-    function createRegionFromComponent(component) {
-    const color = averageComponentColor(component);
-    const bbox = {
-        x: component.minX,
-        y: component.minY,
-        w: component.width,
-        h: component.height
-    };
-    const maskSpans = buildComponentSpans(component);
-
-    return {
-        id: "",
-        name: "",
-        label: "",
-        floor: "1",
-        grade: getDefaultGrade(component.role),
-        color,
-        role: component.role,
-        roleName: ROLE_NAME[component.role] || "좌석",
-        bbox,
-        rawBbox: { ...bbox },
-        // 실제 색상 마스크 외곽을 단순화한 polygon이다.
-        // bbox 4각형으로 저장하면 예매 화면에서 사각형 덩어리가 되므로 여기서 막는다.
-        polygon: buildComponentContourPolygon(component, bbox),
-        maskSpans
-    };
-}
-
-    function buildComponentOrientedPolygon(component, fallbackBbox) {
-        const pixels = component.pixels || [];
-
-        if (pixels.length < 12) {
-            return bboxToPolygon(fallbackBbox);
-        }
-
-        const step = Math.max(1, Math.floor(pixels.length / 900));
-        const points = [];
-        let cx = 0;
-        let cy = 0;
-
-        for (let i = 0; i < pixels.length; i += step) {
-            const index = pixels[i];
-            const x = index % state.width;
-            const y = Math.floor(index / state.width);
-            points.push({ x, y });
-            cx += x;
-            cy += y;
-        }
-
-        if (points.length < 12) {
-            return bboxToPolygon(fallbackBbox);
-        }
-
-        cx /= points.length;
-        cy /= points.length;
-
-        let xx = 0;
-        let xy = 0;
-        let yy = 0;
-
-        points.forEach((point) => {
-            const dx = point.x - cx;
-            const dy = point.y - cy;
-            xx += dx * dx;
-            xy += dx * dy;
-            yy += dy * dy;
-        });
-
-        let angle = 0.5 * radToDeg(Math.atan2(2 * xy, xx - yy));
-        angle = snapSideAxisAngle(angle);
-
-        const center = { x: cx, y: cy };
-        const localPoints = points.map((point) => rotatePoint(point, center, -angle));
-        const localBbox = getBbox(localPoints);
-        const padding = 1.5;
-        const localPolygon = [
-            { x: localBbox.x - padding, y: localBbox.y - padding },
-            { x: localBbox.x + localBbox.w + padding, y: localBbox.y - padding },
-            { x: localBbox.x + localBbox.w + padding, y: localBbox.y + localBbox.h + padding },
-            { x: localBbox.x - padding, y: localBbox.y + localBbox.h + padding }
-        ];
-
-        const polygon = localPolygon.map((point) => {
-            const rotated = rotatePoint(point, center, angle);
-            return { x: round(rotated.x), y: round(rotated.y) };
-        });
-
-        const orientedBbox = getBbox(polygon);
-        const fallbackArea = Math.max(1, fallbackBbox.w * fallbackBbox.h);
-        const orientedArea = Math.max(1, orientedBbox.w * orientedBbox.h);
-
-        if (orientedArea > fallbackArea * 1.85) {
-            return bboxToPolygon(fallbackBbox);
-        }
-
-        return polygon;
-    }
-
-    function bboxToPolygon(bbox) {
-        return [
-            { x: bbox.x, y: bbox.y },
-            { x: bbox.x + bbox.w, y: bbox.y },
-            { x: bbox.x + bbox.w, y: bbox.y + bbox.h },
-            { x: bbox.x, y: bbox.y + bbox.h }
-        ];
-    }
-
-    function averageComponentColor(component) {
-        const data = state.imageData.data;
-        let r = 0;
-        let g = 0;
-        let b = 0;
-        let count = 0;
-        const step = Math.max(1, Math.floor(component.pixels.length / 600));
-
-        for (let i = 0; i < component.pixels.length; i += step) {
-            const offset = component.pixels[i] * 4;
-            r += data[offset];
-            g += data[offset + 1];
-            b += data[offset + 2];
-            count += 1;
-        }
-
-        if (count <= 0) return "#999999";
-        return rgbToHex(r / count, g / count, b / count);
-    }
-
-    function ensureRoleMap() {
-        if (!state.imageData) {
-            state.imageData = sourceCtx.getImageData(0, 0, state.width, state.height);
-        }
-
-        if (!state.roleMap) {
-            state.roleMap = buildRoleMap(state.imageData, state.width, state.height);
-            cleanupRoleMap(state.roleMap, state.width, state.height);
-        }
-    }
-
-    function ensureAngleModePanel() {
-        const part2 = document.querySelector("#part2 .seatmap-step__body");
-
-        if (!part2 || document.getElementById("angleGlobalStart")) {
-            dom.angleGlobalStart = document.getElementById("angleGlobalStart");
+    function fillForm(section) {
+        if (!section) {
+            setValue(dom.groupKeyInput, "A");
+            setValue(dom.groupIndexInput, "1");
+            setValue(dom.sectionNameInput, "A1");
+            setValue(dom.floorInput, "1");
+            setValue(dom.gradeInput, "일반석");
+            setValue(dom.priceInput, "132000");
+            setValue(dom.sectionColorInput, "#d9d9d9");
+            setValue(dom.labelInput, "");
             return;
         }
 
-        const panel = document.createElement("div");
-        panel.className = "stage1-angle-mode-box";
-        panel.innerHTML = `
-            <div class="stage1-angle-mode-box__title">각도 계산 방식</div>
-            <button type="button" class="stage1-primary" id="angleGlobalStart">2-1 전체 각도 계산</button>
-            <div class="stage1-angle-mode-box__help">STAGE/중앙 지점 하나를 클릭하면 모든 구역이 그 지점을 바라보되, 각 구역 양 사이드의 평행/직각 후보로 스냅됩니다. 대각선 구역은 45°/135° 계열도 후보로 잡습니다.</div>
-            <div class="stage1-angle-mode-box__divider"></div>
-            <div class="stage1-angle-mode-box__help"><b>2-2 구역별 보정</b>은 아래 버튼으로 구역을 드래그한 뒤 다시 STAGE 지점을 클릭합니다.</div>
-        `;
+        const groupKey = normalizeGroupKey(section.groupKey || section.groupName || section.sectionName, "A");
+        const groupIndex = Math.max(1, parseInt(section.groupIndex, 10) || parseSectionCode(section.sectionName)?.groupIndex || 1);
+        setValue(dom.groupKeyInput, groupKey);
+        setValue(dom.groupIndexInput, String(groupIndex));
+        setValue(dom.sectionNameInput, `${groupKey}${groupIndex}`);
+        setValue(dom.floorInput, section.floor || "1");
+        setValue(dom.gradeInput, section.grade || "일반석");
+        setValue(dom.priceInput, String(parseInt(section.price, 10) || 0));
+        setValue(dom.sectionColorInput, normalizeHex(section.color || section.renderColor || "#d9d9d9", "#d9d9d9"));
+        setValue(dom.labelInput, section.label || section.sectionName || section.name || "");
+        fillGroupBatchForm(groupKey);
+    }
 
-        const card = part2.querySelector(".stage1-card");
+    function sortSections(showToast = true) {
+        state.sections.sort((a, b) => {
+            const ca = polygonCenter(getPolygon(a));
+            const cb = polygonCenter(getPolygon(b));
+            const rowTolerance = Math.max(16, state.height * 0.035);
+            if (Math.abs(ca.y - cb.y) > rowTolerance) return ca.y - cb.y;
+            return ca.x - cb.x;
+        });
+        if (showToast) toast("구역 목록을 위→아래, 왼쪽→오른쪽 기준으로 정렬했습니다.");
+        saveLocalState();
+        syncAll();
+    }
 
-        if (card && card.nextSibling) {
-            part2.insertBefore(panel, card.nextSibling);
+    function findSectionAt(point) {
+        for (let i = state.sections.length - 1; i >= 0; i -= 1) {
+            const section = state.sections[i];
+            const polygons = getPolygons(section);
+            if (polygons.some((polygon) => pointInPolygon(point, polygon))) return section;
+        }
+        return null;
+    }
+
+    function getPrimarySelected() {
+        const id = state.selectedIds[0];
+        return state.sections.find((section) => section.id === id) || null;
+    }
+
+    function getSelectedSections() {
+        const selectedSet = new Set(state.selectedIds);
+        return state.sections.filter((section) => selectedSet.has(section.id));
+    }
+
+    function toggleSelected(id) {
+        if (!id) return;
+        if (state.selectedIds.includes(id)) {
+            state.selectedIds = state.selectedIds.filter((value) => value !== id);
         } else {
-            part2.prepend(panel);
+            state.selectedIds.push(id);
         }
-
-        dom.angleGlobalStart = document.getElementById("angleGlobalStart");
     }
 
-    function ensurePart4InfoPanel() {
-        if (document.getElementById("part4InfoPanel")) {
-            dom.part4InfoPanel = document.getElementById("part4InfoPanel");
-            return;
-        }
-
-        const app = document.getElementById("concertStage1App");
-
-        if (!app) {
-            return;
-        }
-
-        const panel = document.createElement("aside");
-        panel.id = "part4InfoPanel";
-        panel.className = "stage1-right-panel";
-        panel.innerHTML = `<div class="stage1-right-panel__inner"><strong>도형 정보</strong><div class="stage1-empty">파트 4에서 도형을 생성한 뒤 클릭하세요.</div></div>`;
-        app.appendChild(panel);
-        dom.part4InfoPanel = panel;
-    }
-
-    function injectStage1DynamicStyle() {
-        if (document.getElementById("stage1DynamicStyle")) {
-            return;
-        }
-
-        const style = document.createElement("style");
-        style.id = "stage1DynamicStyle";
-        style.textContent = `
-            .stage1-right-panel{display:none;width:280px;min-width:280px;border-left:1px solid #e2e8f0;background:rgba(255,255,255,.96);box-shadow:-12px 0 30px rgba(15,23,42,.06);overflow:auto}
-            .seatmap-workspace--concert-stage1[data-part="4"] .stage1-right-panel{display:block}
-            .stage1-right-panel__inner{padding:14px;display:flex;flex-direction:column;gap:10px}
-            .stage1-right-panel__inner>strong{font-size:15px;font-weight:900;color:#0f172a}
-            .stage1-info-mini{border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc;padding:12px;color:#334155;font-size:12px;font-weight:800;line-height:1.6}
-            .stage1-info-mini b{display:block;color:#0f172a;font-size:14px;margin-bottom:6px}
-            .stage1-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-            .stage1-chip{padding:4px 7px;border-radius:999px;background:#eef2ff;color:#4338ca;font-size:11px;font-weight:900}
-            .stage1-angle-mode-box{margin:0 0 12px;padding:12px;border:1px solid #ddd6fe;border-radius:10px;background:#faf5ff;display:flex;flex-direction:column;gap:8px}
-            .stage1-angle-mode-box__title{font-size:13px;font-weight:900;color:#312e81}
-            .stage1-angle-mode-box__help{font-size:11px;font-weight:800;line-height:1.45;color:#64748b}
-            .stage1-angle-mode-box__help b{color:#312e81}
-            .stage1-angle-mode-box__divider{height:1px;background:#e9d5ff;margin:2px 0}
-        `;
-        document.head.appendChild(style);
-    }
-
-    function getRegionGroupKey(region) {
-        if (!region) {
-            return "unknown";
-        }
-
-        if (Number.isFinite(Number(region.role))) {
-            return `role-${region.role}`;
-        }
-
-        return `color-${normalizeHex(region.color || "#999999")}`;
-    }
-
-    function getGroupLabel(region) {
-        return region?.roleName || region?.color || getRegionGroupKey(region);
-    }
-
-    function getSeatScaleForRegion(region) {
-        if (!region) {
-            return 0.76;
-        }
-
-        if (region.role === ROLE.SEAT_PURPLE) {
-            return 0.66;
-        }
-
-        if (region.role === ROLE.SEAT_BROWN) {
-            return 0.82;
-        }
-
-        return 0.76;
-    }
-
-    function getLayoutPresetForRegion(region) {
-        const groupKey = getRegionGroupKey(region);
-        const exact = state.baseLayoutsByGroup[groupKey];
-
-        if (exact) {
-            return exact;
-        }
-
-        const fallback = state.baseLayoutsByGroup.__last || {
-            cellW: 14,
-            cellH: 14,
-            seatSize: 10
-        };
-
-        const densityScale = getPresetDensityScale(region);
-        const seatScale = getSeatScaleForRegion(region);
-
-        return {
-            ...fallback,
-            groupKey,
-            cellW: Math.max(2, fallback.cellW * densityScale),
-            cellH: Math.max(2, fallback.cellH * densityScale),
-            seatSize: Math.max(2, Math.floor(Math.min(fallback.cellW, fallback.cellH) * densityScale * seatScale))
-        };
-    }
-
-    function getPresetDensityScale(region) {
-        if (!region) {
-            return 1;
-        }
-
-        if (region.role === ROLE.SEAT_PURPLE) {
-            return 0.72;
-        }
-
-        if (region.role === ROLE.SEAT_BROWN) {
-            return 1.12;
-        }
-
-        return 1;
-    }
-
-    function rectGap(a, b) {
-        const dx = Math.max(0, Math.max(a.x, b.x) - Math.min(a.x + a.w, b.x + b.w));
-        const dy = Math.max(0, Math.max(a.y, b.y) - Math.min(a.y + a.h, b.y + b.h));
-        return Math.hypot(dx, dy);
-    }
-
-    function getDominantMemberColor(members) {
-        const countMap = new Map();
-
-        members.forEach((member) => {
-            const color = normalizeHex(member.color || "#d9d9d9");
-            countMap.set(color, (countMap.get(color) || 0) + 1);
-        });
-
-        let bestColor = members[0]?.color || "#d9d9d9";
-        let bestCount = -1;
-
-        countMap.forEach((count, color) => {
-            if (count > bestCount) {
-                bestColor = color;
-                bestCount = count;
-            }
-        });
-
-        return bestColor;
-    }
-
-    function selectVisualGroupAtPoint(point) {
-        const group = findVisualGroupAtPoint(point);
-        state.selectedVisualGroupId = group ? group.id : null;
-        saveWorkState();
-        renderSelectedVisualGroupInfo(group);
-        render();
-    }
-
-    function findVisualGroupAtPoint(point) {
-        for (let i = state.visualGroups.length - 1; i >= 0; i -= 1) {
-            const group = state.visualGroups[i];
-            const hit = (group.polygons || []).some((polygon) => pointInPolygon(point, polygon));
-
-            if (hit) {
-                return group;
-            }
-        }
-
-        return null;
-    }
-
-    function getSelectedVisualGroup() {
-        return state.visualGroups.find((group) => group.id === state.selectedVisualGroupId) || null;
-    }
-
-    function renderSelectedVisualGroupInfo(group) {
-        if (!dom.part4InfoPanel) {
-            return;
-        }
-
-        const inner = dom.part4InfoPanel.querySelector(".stage1-right-panel__inner") || dom.part4InfoPanel;
-
-        if (!group) {
-            inner.innerHTML = `<strong>도형 정보</strong><div class="stage1-empty">도형을 클릭하면 포함 좌석 정보가 표시됩니다.</div>`;
-            return;
-        }
-
-        const sections = group.sectionIds || [];
-        const seatIds = group.seatIds || [];
-        const sectionChips = sections.slice(0, 16).map((id) => `<span class="stage1-chip">${escapeHtml(id)}</span>`).join("");
-        const more = sections.length > 16 ? `<span class="stage1-chip">+${sections.length - 16}</span>` : "";
-
-        inner.innerHTML = `
-            <strong>도형 정보</strong>
-            <div class="stage1-info-mini">
-                <b>${escapeHtml(group.label || group.id)}</b>
-                <div>포함 구역 수: ${sections.length}</div>
-                <div>포함 좌석 수: ${seatIds.length}</div>
-                <div>크기: ${round(group.bbox?.w || 0)} × ${round(group.bbox?.h || 0)}</div>
-                <div class="stage1-chip-row">${sectionChips}${more}</div>
-            </div>
-        `;
-    }
-
-    function drawSelectedVisualGroupOutline() {
-        const group = getSelectedVisualGroup();
-
-        if (!group) {
-            return;
-        }
-
-        overlayCtx.save();
-        overlayCtx.strokeStyle = "rgba(37, 99, 235, 0.65)";
-        overlayCtx.lineWidth = 2;
-        overlayCtx.setLineDash([6, 6]);
-
-        (group.polygons || []).forEach((polygon) => {
-            if (!polygon || polygon.length < 3) {
-                return;
-            }
-
-            overlayCtx.beginPath();
-            overlayCtx.moveTo(polygon[0].x, polygon[0].y);
-            for (let i = 1; i < polygon.length; i += 1) {
-                overlayCtx.lineTo(polygon[i].x, polygon[i].y);
-            }
-            overlayCtx.closePath();
-            overlayCtx.stroke();
-        });
-
-        overlayCtx.restore();
-    }
-
-    function getSelectedRegion() {
-        return state.colorRegions.find((region) => region.id === state.selectedRegionId) || null;
-    }
-
-    function findRegionAtPoint(point) {
-        for (let i = state.colorRegions.length - 1; i >= 0; i -= 1) {
-            if (pointInPolygon(point, state.colorRegions[i].polygon)) {
-                return state.colorRegions[i];
-            }
-        }
-        return null;
-    }
-
-    function getRegionAngle(region) {
-        return getRegionGridAngle(region);
-    }
-
-    function getRegionGridAngle(region) {
-        if (!region) return 0;
-        const item = state.angleRegions[region.id];
-        if (item && Number.isFinite(Number(item.gridAngle))) return Number(item.gridAngle);
-        if (item && Number.isFinite(Number(item.angle))) return Number(item.angle);
-        return getLongSideAngle(region.polygon);
-    }
-
-    function getRegionFacingAngle(region) {
-        if (!region) return 0;
-        const item = state.angleRegions[region.id];
-        if (item && Number.isFinite(Number(item.facingAngle))) return Number(item.facingAngle);
-        return normalizeAngle(getRegionGridAngle(region) + 90);
-    }
-
-    function getRegionLocalSize(region, angle) {
-        const center = getPolygonCenter(region.polygon);
-        const localPoints = region.polygon.map((point) => rotatePoint(point, center, -angle));
-        const bbox = getBbox(localPoints);
-        return { w: Math.max(1, bbox.w), h: Math.max(1, bbox.h) };
-    }
-
-    function getLongSideAngle(points) {
-        const bbox = getBbox(points);
-        return bbox.w >= bbox.h ? 0 : 90;
-    }
-
-    function upsertSeatSection(section) {
-        const index = state.seatSections.findIndex((item) => item.id === section.id);
-        if (index >= 0) state.seatSections[index] = section;
-        else state.seatSections.push(section);
-    }
-
-    function makeSeatId(region, seat) {
-        const floor = safeSeatPart(region.floor || "1");
-        const sectionName = safeSeatPart(region.label || region.name || region.id);
-        const grade = safeSeatPart(seat.grade || "UNASSIGNED");
-        const status = safeSeatPart(seat.status || "AVAILABLE");
-        return `${floor}-${sectionName}-${seat.row}-${seat.col}-${grade}-${status}-${round(seat.x)}-${round(seat.y)}-${round(seat.size)}-${round(seat.angle)}`;
-    }
-
-    function getCanvasPoint(event) {
+    function canvasPointFromEvent(event) {
         const rect = overlay.getBoundingClientRect();
-        if (!rect.width || !rect.height) return null;
         return {
-            x: clamp((event.clientX - rect.left) * overlay.width / rect.width, 0, overlay.width),
-            y: clamp((event.clientY - rect.top) * overlay.height / rect.height, 0, overlay.height)
+            x: clamp((event.clientX - rect.left) * (overlay.width / rect.width), 0, state.width),
+            y: clamp((event.clientY - rect.top) * (overlay.height / rect.height), 0, state.height)
         };
     }
 
-    function normalizeRect(rect) {
-        const x = Math.min(rect.x, rect.x + rect.w);
-        const y = Math.min(rect.y, rect.y + rect.h);
-        const w = Math.abs(rect.w);
-        const h = Math.abs(rect.h);
-        return { x, y, w, h };
+    function detectBackgroundColor() {
+        if (!state.width || !state.height) return { r: 255, g: 255, b: 255, a: 255 };
+        const imageData = ctx.getImageData(0, 0, state.width, state.height);
+        const data = imageData.data;
+        const samples = [];
+        const stepX = Math.max(1, Math.floor(state.width / 80));
+        const stepY = Math.max(1, Math.floor(state.height / 80));
+
+        for (let x = 0; x < state.width; x += stepX) {
+            samples.push(pixelAtXY(data, x, 0));
+            samples.push(pixelAtXY(data, x, state.height - 1));
+        }
+        for (let y = 0; y < state.height; y += stepY) {
+            samples.push(pixelAtXY(data, 0, y));
+            samples.push(pixelAtXY(data, state.width - 1, y));
+        }
+
+        const buckets = new Map();
+        samples.forEach((color) => {
+            const key = `${Math.round(color.r / 16) * 16},${Math.round(color.g / 16) * 16},${Math.round(color.b / 16) * 16}`;
+            const entry = buckets.get(key) || { r: 0, g: 0, b: 0, count: 0 };
+            entry.r += color.r;
+            entry.g += color.g;
+            entry.b += color.b;
+            entry.count += 1;
+            buckets.set(key, entry);
+        });
+
+        const best = Array.from(buckets.values()).sort((a, b) => b.count - a.count)[0];
+        if (!best) return { r: 255, g: 255, b: 255, a: 255 };
+        return { r: best.r / best.count, g: best.g / best.count, b: best.b / best.count, a: 255 };
     }
 
-    function rectOverlapArea(a, b) {
-        const x = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
-        const y = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
-        return x * y;
+    function pixelAt(data, index) {
+        const offset = index * 4;
+        return { r: data[offset], g: data[offset + 1], b: data[offset + 2], a: data[offset + 3] };
+    }
+
+    function pixelAtXY(data, x, y) {
+        return pixelAt(data, Math.round(y) * state.width + Math.round(x));
+    }
+
+    function getPolygon(section) {
+        if (Array.isArray(section?.polygon) && section.polygon.length >= 3) return section.polygon;
+        if (Array.isArray(section?.polygons) && section.polygons[0]?.length >= 3) return section.polygons[0];
+        return [];
+    }
+
+    function getPolygons(section) {
+        if (Array.isArray(section?.polygons) && section.polygons.length) {
+            return section.polygons.filter((polygon) => Array.isArray(polygon) && polygon.length >= 3);
+        }
+        const polygon = getPolygon(section);
+        return polygon.length >= 3 ? [polygon] : [];
+    }
+
+    function hasUsablePolygon(section) {
+        return getPolygons(section).length > 0 || getPolygon(section).length >= 3;
+    }
+
+    function normalizeLoadedSection(section, index) {
+        const id = cleanText(section.id || section.sectionId, `sec-${index + 1}`);
+        const polygons = getPolygons(section).map((polygon) => polygon.map(normalizePoint)).filter((polygon) => polygon.length >= 3);
+        const polygon = polygons[0] || getPolygon(section).map(normalizePoint);
+        const points = polygonsPoints(polygons.length ? polygons : [polygon]);
+        const bbox = section.bbox && Number.isFinite(Number(section.bbox.w)) ? normalizeBbox(section.bbox) : bboxOf(points);
+        const color = normalizeHex(section.color || section.renderColor || section.sourceColor || PALETTE[index % PALETTE.length], PALETTE[index % PALETTE.length]);
+        const name = cleanText(section.sectionName || section.name || section.section, section.label || `A${index + 1}`);
+        const parsed = parseSectionCode(name);
+        const originalHasGroupInfo = Boolean(section.groupKey || section.groupName || parsed);
+        const groupKey = normalizeGroupKey(section.groupKey || section.groupName || parsed?.groupKey, groupKeyFromIndex(index));
+        const groupIndex = Math.max(1, parseInt(section.groupIndex, 10) || parsed?.groupIndex || index + 1);
+        const sectionName = `${groupKey}${groupIndex}`;
+
+        return {
+            ...section,
+            id,
+            sectionId: section.sectionId || id,
+            groupKey,
+            groupName: groupKey,
+            groupIndex,
+            __stage3Grouped: originalHasGroupInfo,
+            section: sectionName,
+            name: sectionName,
+            sectionName,
+            label: cleanText(section.label, sectionName),
+            floor: cleanText(section.floor, "1"),
+            grade: cleanText(section.grade, "일반석"),
+            price: parseInt(section.price, 10) || 0,
+            color,
+            renderColor: color,
+            polygon,
+            polygons: polygons.length ? polygons : [polygon],
+            bbox,
+            area: Math.round(Number(section.area) || Math.abs(polygonArea(polygon)) || 0),
+            sourceRegionIds: normalizeArray(section.sourceRegionIds || section.sectionIds || id).map(String),
+            sectionIds: normalizeArray(section.sectionIds || section.sourceRegionIds || id).map(String),
+            button: section.button || buildButtonInfo(bbox, section.label || sectionName, color, 0)
+        };
+    }
+
+    function updateNextId() {
+        const maxId = state.sections.reduce((max, section) => {
+            const number = parseInt(String(section.id || "").replace(/\D+/g, ""), 10) || 0;
+            return Math.max(max, number);
+        }, 0);
+        state.nextId = maxId + 1;
+    }
+
+    function cleanupPolygon(polygon, tolerance, snapSize) {
+        if (!Array.isArray(polygon) || polygon.length < 3) return polygon;
+        let out = removeDuplicatePoints(polygon.map(normalizePoint));
+        if (out.length >= 4 && tolerance > 0) {
+            const closed = out.concat([out[0]]);
+            out = rdp(closed, tolerance).slice(0, -1);
+        }
+        if (snapSize > 0) {
+            out = out.map((point) => ({
+                x: Math.round(point.x / snapSize) * snapSize,
+                y: Math.round(point.y / snapSize) * snapSize
+            }));
+            out = removeDuplicatePoints(out);
+        }
+        if (out.length < 3) return polygon;
+        return out;
+    }
+
+    function rdp(points, epsilon) {
+        if (!points || points.length < 3) return points || [];
+        let maxDistance = 0;
+        let index = 0;
+        const end = points.length - 1;
+
+        for (let i = 1; i < end; i += 1) {
+            const distance = perpendicularDistance(points[i], points[0], points[end]);
+            if (distance > maxDistance) {
+                index = i;
+                maxDistance = distance;
+            }
+        }
+
+        if (maxDistance > epsilon) {
+            const left = rdp(points.slice(0, index + 1), epsilon);
+            const right = rdp(points.slice(index), epsilon);
+            return left.slice(0, -1).concat(right);
+        }
+
+        return [points[0], points[end]];
+    }
+
+    function perpendicularDistance(point, lineStart, lineEnd) {
+        const dx = lineEnd.x - lineStart.x;
+        const dy = lineEnd.y - lineStart.y;
+        if (dx === 0 && dy === 0) return distance(point, lineStart);
+        return Math.abs(dy * point.x - dx * point.y + lineEnd.x * lineStart.y - lineEnd.y * lineStart.x) / Math.sqrt(dx * dx + dy * dy);
+    }
+
+    function convexHull(points) {
+        const uniquePoints = uniqueByPoint(points.map(normalizePoint));
+        if (uniquePoints.length <= 3) return uniquePoints;
+
+        uniquePoints.sort((a, b) => a.x - b.x || a.y - b.y);
+        const lower = [];
+        for (const point of uniquePoints) {
+            while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], point) <= 0) lower.pop();
+            lower.push(point);
+        }
+        const upper = [];
+        for (let i = uniquePoints.length - 1; i >= 0; i -= 1) {
+            const point = uniquePoints[i];
+            while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], point) <= 0) upper.pop();
+            upper.push(point);
+        }
+        return lower.slice(0, -1).concat(upper.slice(0, -1));
+    }
+
+    function cross(o, a, b) {
+        return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
     }
 
     function pointInPolygon(point, polygon) {
         let inside = false;
-        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i, i += 1) {
+        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
             const xi = polygon[i].x;
             const yi = polygon[i].y;
             const xj = polygon[j].x;
             const yj = polygon[j].y;
-            const intersect = ((yi > point.y) !== (yj > point.y)) && (point.x < (xj - xi) * (point.y - yi) / ((yj - yi) || 1) + xi);
+            const intersect = ((yi > point.y) !== (yj > point.y))
+                && (point.x < (xj - xi) * (point.y - yi) / ((yj - yi) || 0.000001) + xi);
             if (intersect) inside = !inside;
         }
         return inside;
     }
 
-    function getPolygonCenter(points) {
-        return getPointsCenter(points);
-    }
-
-    function getPointsCenter(points) {
-        if (!points || points.length <= 0) return { x: 0, y: 0 };
-        let x = 0;
-        let y = 0;
-        points.forEach((point) => {
-            x += Number(point.x || 0);
-            y += Number(point.y || 0);
-        });
-        return { x: x / points.length, y: y / points.length };
-    }
-
-    function quantile(values, ratio) {
-        if (!values || values.length <= 0) {
-            return 0;
+    function polygonArea(polygon) {
+        if (!polygon || polygon.length < 3) return 0;
+        let area = 0;
+        for (let i = 0; i < polygon.length; i += 1) {
+            const current = polygon[i];
+            const next = polygon[(i + 1) % polygon.length];
+            area += current.x * next.y - next.x * current.y;
         }
-
-        const index = Math.max(0, Math.min(values.length - 1, Math.round((values.length - 1) * ratio)));
-        return values[index];
+        return area / 2;
     }
 
-    function getBbox(points) {
-        if (!points || points.length <= 0) return { x: 0, y: 0, w: 0, h: 0 };
-        const xs = points.map((point) => Number(point.x || 0));
-        const ys = points.map((point) => Number(point.y || 0));
-        const minX = Math.min(...xs);
-        const maxX = Math.max(...xs);
-        const minY = Math.min(...ys);
-        const maxY = Math.max(...ys);
+    function polygonCenter(polygon) {
+        if (!polygon || !polygon.length) return { x: 0, y: 0 };
+        const bbox = bboxOf(polygon);
+        return { x: bbox.x + bbox.w / 2, y: bbox.y + bbox.h / 2 };
+    }
+
+    function bboxOf(points) {
+        const list = Array.isArray(points?.[0]) ? polygonsPoints(points) : points;
+        if (!list || !list.length) return { x: 0, y: 0, w: 0, h: 0 };
+        let minX = Infinity;
+        let minY = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
+        list.forEach((point) => {
+            minX = Math.min(minX, Number(point.x) || 0);
+            minY = Math.min(minY, Number(point.y) || 0);
+            maxX = Math.max(maxX, Number(point.x) || 0);
+            maxY = Math.max(maxY, Number(point.y) || 0);
+        });
         return { x: round(minX), y: round(minY), w: round(maxX - minX), h: round(maxY - minY) };
     }
 
-    function rotatePoint(point, center, degree) {
-        const rad = degToRad(degree);
-        const cos = Math.cos(rad);
-        const sin = Math.sin(rad);
-        const dx = point.x - center.x;
-        const dy = point.y - center.y;
+    function buildButtonInfo(bbox, label, color, angle) {
+        const cx = bbox.x + bbox.w / 2;
+        const cy = bbox.y + bbox.h / 2;
         return {
-            x: center.x + dx * cos - dy * sin,
-            y: center.y + dx * sin + dy * cos
+            x: round(cx),
+            y: round(cy),
+            w: round(bbox.w),
+            h: round(bbox.h),
+            xPercent: percent(cx, state.width),
+            yPercent: percent(cy, state.height),
+            wPercent: percent(bbox.w, state.width),
+            hPercent: percent(bbox.h, state.height),
+            angle: round(angle || 0),
+            label,
+            color
         };
     }
 
-    function snapSeatAngle(angle, reference) {
-        let value = normalizeAngleToParallel(angle, reference);
-        const targets = [-180, -90, 0, 90, 180];
-        let best = value;
-        let bestDiff = Infinity;
+    function rectPolygon(rect) {
+        return [
+            { x: round(rect.x), y: round(rect.y) },
+            { x: round(rect.x + rect.w), y: round(rect.y) },
+            { x: round(rect.x + rect.w), y: round(rect.y + rect.h) },
+            { x: round(rect.x), y: round(rect.y + rect.h) }
+        ];
+    }
 
-        targets.forEach((target) => {
-            const candidate = normalizeAngleToParallel(target, reference);
-            const diff = Math.abs(angleDiff(value, candidate));
+    function normalizeRect(rect) {
+        const x1 = clamp(rect.x, 0, state.width);
+        const y1 = clamp(rect.y, 0, state.height);
+        const x2 = clamp(rect.x + rect.w, 0, state.width);
+        const y2 = clamp(rect.y + rect.h, 0, state.height);
+        return {
+            x: Math.min(x1, x2),
+            y: Math.min(y1, y2),
+            w: Math.abs(x2 - x1),
+            h: Math.abs(y2 - y1)
+        };
+    }
 
-            if (diff < bestDiff) {
-                best = candidate;
-                bestDiff = diff;
-            }
+    function roundedRectPath(targetCtx, x, y, w, h, r) {
+        const radius = Math.min(r, w / 2, h / 2);
+        targetCtx.moveTo(x + radius, y);
+        targetCtx.lineTo(x + w - radius, y);
+        targetCtx.quadraticCurveTo(x + w, y, x + w, y + radius);
+        targetCtx.lineTo(x + w, y + h - radius);
+        targetCtx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+        targetCtx.lineTo(x + radius, y + h);
+        targetCtx.quadraticCurveTo(x, y + h, x, y + h - radius);
+        targetCtx.lineTo(x, y + radius);
+        targetCtx.quadraticCurveTo(x, y, x + radius, y);
+    }
+
+    function normalizePoint(point) {
+        return { x: round(Number(point?.x) || 0), y: round(Number(point?.y) || 0) };
+    }
+
+    function normalizeBbox(bbox) {
+        return {
+            x: round(Number(bbox.x) || 0),
+            y: round(Number(bbox.y) || 0),
+            w: round(Number(bbox.w ?? bbox.width) || 0),
+            h: round(Number(bbox.h ?? bbox.height) || 0)
+        };
+    }
+
+    function polygonsPoints(polygons) {
+        return normalizeArray(polygons).flatMap((polygon) => normalizeArray(polygon).map(normalizePoint));
+    }
+
+    function removeDuplicatePoints(points) {
+        const output = [];
+        points.forEach((point) => {
+            const last = output[output.length - 1];
+            if (!last || Math.abs(last.x - point.x) > 0.01 || Math.abs(last.y - point.y) > 0.01) output.push(point);
         });
-
-        if (bestDiff <= 12) {
-            return normalizeAngle(best);
+        if (output.length > 1) {
+            const first = output[0];
+            const last = output[output.length - 1];
+            if (Math.abs(first.x - last.x) <= 0.01 && Math.abs(first.y - last.y) <= 0.01) output.pop();
         }
-
-        return Math.round(value / 5) * 5;
+        return output;
     }
 
-    function normalizeAngleToParallel(angle, reference) {
-        let value = normalizeAngle(angle);
-        while (angleDiff(value, reference) > 90) value = normalizeAngle(value - 180);
-        while (angleDiff(value, reference) < -90) value = normalizeAngle(value + 180);
-        return value;
+    function uniqueByPoint(points) {
+        const map = new Map();
+        points.forEach((point) => map.set(`${round(point.x)},${round(point.y)}`, normalizePoint(point)));
+        return Array.from(map.values());
     }
 
-    function blendAngles(a, b, weightA, weightB) {
-        const ar = degToRad(a);
-        const br = degToRad(b);
-        const x = Math.cos(ar) * weightA + Math.cos(br) * weightB;
-        const y = Math.sin(ar) * weightA + Math.sin(br) * weightB;
-        return radToDeg(Math.atan2(y, x));
+    function setZoom(value) {
+        state.zoom = clamp(value, 0.25, 3);
+        if (dom.canvasBox) dom.canvasBox.style.transform = `scale(${state.zoom})`;
+        const zoomValue = document.getElementById("zoomValue");
+        if (zoomValue) zoomValue.textContent = `${Math.round(state.zoom * 100)}%`;
     }
 
-    function angleDiff(a, b) {
-        return normalizeAngle(a - b);
-    }
-
-    function normalizeAngle(angle) {
-        let value = Number(angle || 0);
-        while (value > 180) value -= 360;
-        while (value < -180) value += 360;
-        return round(value);
-    }
-
-    function degToRad(degree) {
-        return degree * Math.PI / 180;
-    }
-
-    function radToDeg(rad) {
-        return rad * 180 / Math.PI;
-    }
-
-    function isSeatRole(role) {
-        return role >= 20;
-    }
-
-    function getDefaultGrade(role) {
-        if (role === ROLE.SEAT_BROWN) return "VIP";
-        if (role === ROLE.SEAT_PURPLE) return "스탠딩";
-        return "일반석";
-    }
-
-    function colorDistance(a, b) {
-        return Math.sqrt((a.r - b.r) ** 2 + (a.g - b.g) ** 2 + (a.b - b.b) ** 2);
-    }
-
-    function rgbToHsl(r, g, b) {
-        r /= 255;
-        g /= 255;
-        b /= 255;
-        const max = Math.max(r, g, b);
-        const min = Math.min(r, g, b);
-        let h = 0;
-        let s = 0;
-        const l = (max + min) / 2;
-        if (max !== min) {
-            const d = max - min;
-            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-            if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
-            else if (max === g) h = (b - r) / d + 2;
-            else h = (r - g) / d + 4;
-            h *= 60;
+    function fitZoom() {
+        if (!dom.canvasScroll || !state.width || !state.height) {
+            setZoom(1);
+            return;
         }
-        return { h, s, l };
+        const scaleX = (dom.canvasScroll.clientWidth - 90) / state.width;
+        const scaleY = (dom.canvasScroll.clientHeight - 90) / state.height;
+        setZoom(Math.min(1, Math.max(0.25, Math.min(scaleX, scaleY))));
     }
 
-    function rgbToHex(r, g, b) {
-        return `#${[r, g, b].map((value) => clamp(Math.round(value), 0, 255).toString(16).padStart(2, "0")).join("")}`;
+    function projectFileUrl(fileName) {
+        return `/temp/seatmap/${encodeURIComponent(state.projectId)}/${fileName}`;
     }
 
-    function hexToRgb(hex) {
-        const value = normalizeHex(hex);
-        return {
-            r: parseInt(value.slice(1, 3), 16),
-            g: parseInt(value.slice(3, 5), 16),
-            b: parseInt(value.slice(5, 7), 16)
-        };
+    function loadImage(url) {
+        return new Promise((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => resolve(image);
+            image.onerror = () => reject(new Error("이미지 로드 실패: " + url));
+            image.src = url;
+        });
     }
 
-    function normalizeHex(value) {
-        const color = String(value || "#000000").trim();
-        if (/^#[0-9a-fA-F]{6}$/.test(color)) return color.toLowerCase();
-        if (/^#[0-9a-fA-F]{3}$/.test(color)) return ("#" + color.slice(1).split("").map((item) => item + item).join("")).toLowerCase();
-        return "#000000";
-    }
-
-    function loadImage(url, callback) {
-        const image = new Image();
-        image.onload = () => callback(image);
-        image.onerror = () => {
-            console.error("[Stage1] 이미지 로딩 실패:", url);
-            toast("이미지를 불러오지 못했습니다.");
-        };
-        image.src = url;
-    }
-
-    function appendNoCache(url) {
-        if (!url || url.startsWith("data:image")) return url;
-        return `${url}${url.includes("?") ? "&" : "?"}v=${Date.now()}`;
+    function noCache(url) {
+        if (!url) return url;
+        if (url.startsWith("data:")) return url;
+        const joiner = url.includes("?") ? "&" : "?";
+        return `${url}${joiner}v=${Date.now()}`;
     }
 
     function readJson(key, fallback) {
@@ -2990,13 +2008,28 @@ function pointLineDistance(point, start, end) {
         }
     }
 
-    function clonePoints(points) {
-        return (points || []).map((point) => ({ x: round(point.x), y: round(point.y) }));
+    function normalizeArray(value) {
+        if (Array.isArray(value)) return value;
+        if (value == null || value === "") return [];
+        return [value];
     }
 
-    function positiveInt(value, fallback) {
-        const number = parseInt(value, 10);
-        return Number.isFinite(number) && number > 0 ? number : fallback;
+    function unique(values) {
+        return Array.from(new Set(values.filter(Boolean)));
+    }
+
+    function copyPoint(point) {
+        return { x: round(point.x), y: round(point.y) };
+    }
+
+    function cleanText(value, fallback) {
+        const text = String(value ?? "").trim();
+        return text || fallback;
+    }
+
+    function sanitizeProjectId(value) {
+        const text = String(value || "seat").trim();
+        return text.replace(/[^a-zA-Z0-9가-힣._-]/g, "_") || "seat";
     }
 
     function positiveNumber(value, fallback) {
@@ -3004,21 +2037,66 @@ function pointLineDistance(point, start, end) {
         return Number.isFinite(number) && number >= 0 ? number : fallback;
     }
 
-    function safeValue(value, fallback) {
-        const text = String(value || "").trim();
-        return text || fallback;
+    function readSimplify() {
+        return positiveNumber(dom.simplifyTolerance?.value, 4);
     }
 
-    function safeSeatPart(value) {
-        return String(value ?? "").trim().replace(/\s+/g, "").replace(/-/g, "").replace(/[^\w가-힣]/g, "");
+    function normalizeHex(value, fallback) {
+        const text = String(value || fallback || "#d9d9d9").trim();
+        if (/^#[0-9a-fA-F]{6}$/.test(text)) return text.toLowerCase();
+        if (/^#[0-9a-fA-F]{3}$/.test(text)) {
+            return "#" + text.slice(1).split("").map((char) => char + char).join("").toLowerCase();
+        }
+        return fallback || "#d9d9d9";
+    }
+
+    function rgbToHex(color) {
+        return "#" + [color.r, color.g, color.b].map((value) => {
+            const number = clamp(Math.round(value), 0, 255);
+            return number.toString(16).padStart(2, "0");
+        }).join("");
+    }
+
+    function withAlpha(hex, alpha) {
+        const normalized = normalizeHex(hex, "#d9d9d9");
+        const r = parseInt(normalized.slice(1, 3), 16);
+        const g = parseInt(normalized.slice(3, 5), 16);
+        const b = parseInt(normalized.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function colorDistance(a, b) {
+        const dr = (a.r || 0) - (b.r || 0);
+        const dg = (a.g || 0) - (b.g || 0);
+        const db = (a.b || 0) - (b.b || 0);
+        return Math.sqrt(dr * dr + dg * dg + db * db);
+    }
+
+    function distance(a, b) {
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    function percent(value, total) {
+        if (!total) return 0;
+        return round((Number(value) || 0) / total * 100);
     }
 
     function round(value) {
-        return Math.round(Number(value || 0) * 100) / 100;
+        return Math.round((Number(value) || 0) * 100) / 100;
     }
 
     function clamp(value, min, max) {
-        return Math.max(min, Math.min(max, value));
+        return Math.min(max, Math.max(min, Number(value) || 0));
+    }
+
+    function setText(element, text) {
+        if (element) element.textContent = text;
+    }
+
+    function setValue(element, value) {
+        if (element) element.value = value;
     }
 
     function escapeHtml(value) {
@@ -3027,715 +2105,19 @@ function pointLineDistance(point, start, end) {
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+            .replace(/'/g, "&#39;");
+    }
+
+    function escapeAttr(value) {
+        return escapeHtml(value).replace(/`/g, "&#96;");
     }
 
     function toast(message) {
-        if (!dom.toast) {
-            console.log(message);
-            return;
-        }
-
-        dom.toast.textContent = message;
-        dom.toast.classList.add("show");
-        window.setTimeout(() => dom.toast.classList.remove("show"), 1800);
+        const target = dom.toast;
+        if (!target) return;
+        target.textContent = message;
+        target.classList.add("show");
+        clearTimeout(toast.timer);
+        toast.timer = setTimeout(() => target.classList.remove("show"), 2200);
     }
-
-    // ============================================================================
-    // v10 patch: mask based seat placement + shape-clean render
-    // - 좌석은 실제 색상 마스크 내부 기준으로만 생성한다.
-    // - 깔끔화는 도형을 새로 비틀지 않고, 원본 색상 마스크를 단색으로 다시 칠한다.
-    // ============================================================================
-
-    function createRegionFromComponent(component) {
-    const color = averageComponentColor(component);
-    const bbox = {
-        x: component.minX,
-        y: component.minY,
-        w: component.width,
-        h: component.height
-    };
-    const maskSpans = buildComponentSpans(component);
-
-    return {
-        id: "",
-        name: "",
-        label: "",
-        floor: "1",
-        grade: getDefaultGrade(component.role),
-        color,
-        role: component.role,
-        roleName: ROLE_NAME[component.role] || "좌석",
-        bbox,
-        rawBbox: { ...bbox },
-        // 실제 색상 마스크 외곽을 단순화한 polygon이다.
-        // bbox 4각형으로 저장하면 예매 화면에서 사각형 덩어리가 되므로 여기서 막는다.
-        polygon: buildComponentContourPolygon(component, bbox),
-        maskSpans
-    };
-}
-
-    function buildComponentSpans(component) {
-        const byRow = new Map();
-        const pixels = component.pixels || [];
-
-        pixels.forEach((index) => {
-            const x = index % state.width;
-            const y = Math.floor(index / state.width);
-
-            if (!byRow.has(y)) {
-                byRow.set(y, []);
-            }
-
-            byRow.get(y).push(x);
-        });
-
-        return Array.from(byRow.entries())
-            .sort((a, b) => a[0] - b[0])
-            .map(([y, xs]) => {
-                xs.sort((a, b) => a - b);
-
-                const ranges = [];
-                let start = xs[0];
-                let prev = xs[0];
-
-                for (let i = 1; i < xs.length; i += 1) {
-                    const x = xs[i];
-
-                    if (x <= prev + 1) {
-                        prev = x;
-                        continue;
-                    }
-
-                    ranges.push([start, prev]);
-                    start = x;
-                    prev = x;
-                }
-
-                ranges.push([start, prev]);
-
-                return { y, ranges };
-            });
-    }
-
-    function getRegionSpanMap(region) {
-        if (!Array.isArray(region?.maskSpans) || region.maskSpans.length <= 0) {
-            return null;
-        }
-
-        if (region._spanMap) {
-            return region._spanMap;
-        }
-
-        const map = new Map();
-
-        region.maskSpans.forEach((row) => {
-            map.set(Number(row.y), row.ranges || []);
-        });
-
-        region._spanMap = map;
-        return map;
-    }
-
-    function isPointInRegionMask(region, point, dilation = 1) {
-        const spanMap = getRegionSpanMap(region);
-
-        if (!spanMap) {
-            return pointInPolygon(point, region.polygon || []);
-        }
-
-        const x = Math.round(point.x);
-        const y = Math.round(point.y);
-        const d = Math.max(0, Number(dilation || 0));
-
-        for (let yy = y - d; yy <= y + d; yy += 1) {
-            const ranges = spanMap.get(yy);
-
-            if (!ranges) {
-                continue;
-            }
-
-            for (const range of ranges) {
-                if (x >= Number(range[0]) - d && x <= Number(range[1]) + d) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    function getAllowedLocalBbox(region, center, gridAngle, fallbackBbox) {
-        const localXs = [];
-        const localYs = [];
-        const step = Math.max(1, Math.round(Math.min(fallbackBbox.w, fallbackBbox.h) / 64));
-        const minX = Math.floor(fallbackBbox.x);
-        const maxX = Math.ceil(fallbackBbox.x + fallbackBbox.w);
-        const minY = Math.floor(fallbackBbox.y);
-        const maxY = Math.ceil(fallbackBbox.y + fallbackBbox.h);
-
-        for (let y = minY; y <= maxY; y += step) {
-            for (let x = minX; x <= maxX; x += step) {
-                const world = rotatePoint({ x, y }, center, gridAngle);
-
-                if (isPointAllowedInRegionStrict(region, world, 1)) {
-                    localXs.push(x);
-                    localYs.push(y);
-                }
-            }
-        }
-
-        if (localXs.length < 8) {
-            return null;
-        }
-
-        localXs.sort((a, b) => a - b);
-        localYs.sort((a, b) => a - b);
-
-        const qx1 = quantile(localXs, 0.01);
-        const qx2 = quantile(localXs, 0.99);
-        const qy1 = quantile(localYs, 0.01);
-        const qy2 = quantile(localYs, 0.99);
-
-        return {
-            x: qx1,
-            y: qy1,
-            w: Math.max(1, qx2 - qx1),
-            h: Math.max(1, qy2 - qy1)
-        };
-    }
-
-    function getFixedPitchGridBox(region, gridAngle, rows, cols, pitchX, pitchY) {
-        const usable = getRegionUsableLocalBox(region, gridAngle);
-        const targetW = Math.max(1, pitchX * Math.max(1, cols));
-        const targetH = Math.max(1, pitchY * Math.max(1, rows));
-
-        // 핵심: polygon bbox가 아니라 실제 색상 마스크 bbox 안에서만 grid를 잡는다.
-        // target이 더 크면 pitch를 줄이지 않고, 들어가는 영역만 중앙 정렬한다.
-        const w = Math.min(targetW, usable.w);
-        const h = Math.min(targetH, usable.h);
-
-        return {
-            x: usable.x + (usable.w - w) / 2,
-            y: usable.y + (usable.h - h) / 2,
-            w: Math.max(1, w),
-            h: Math.max(1, h)
-        };
-    }
-
-    function buildSeatsForRegionWithCoverage(region, layout) {
-        const center = getPolygonCenter(region.polygon);
-        const gridBox = layout.gridBox || getFixedPitchGridBox(
-            region,
-            layout.angle,
-            layout.rows,
-            layout.cols,
-            layout.pitchX || layout.seatSize,
-            layout.pitchY || layout.seatSize
-        );
-        const cellW = Math.max(1, Number(layout.pitchX || layout.cellW || (gridBox.w / Math.max(1, layout.cols))));
-        const cellH = Math.max(1, Number(layout.pitchY || layout.cellH || (gridBox.h / Math.max(1, layout.rows))));
-        const seats = [];
-
-        for (let row = 1; row <= layout.rows; row += 1) {
-            for (let col = 1; col <= layout.cols; col += 1) {
-                const localX = gridBox.x + (col - 0.5) * cellW;
-                const localY = gridBox.y + (row - 0.5) * cellH;
-                const rotated = rotatePoint({ x: localX, y: localY }, center, layout.angle);
-                const centerAllowed = isPointAllowedInRegionStrict(region, rotated, 1);
-                const coverage = getSeatCoverage(region, rotated, layout.seatSize, layout.angle);
-
-                // 중심점이 색상 마스크 내부에 있어야 하고, 좌석 사각형도 절반 이상 포함되어야 한다.
-                if (!centerAllowed || coverage < 0.50) {
-                    continue;
-                }
-
-                const seat = {
-                    sectionId: region.id,
-                    row,
-                    col,
-                    status: "AVAILABLE",
-                    x: round(rotated.x),
-                    y: round(rotated.y),
-                    size: round(layout.seatSize),
-                    angle: round(layout.facingAngle ?? normalizeAngle(layout.angle + 90)),
-                    gridAngle: round(layout.angle)
-                };
-
-                seat.id = makeSeatId(region, seat);
-                seats.push(seat);
-            }
-        }
-
-        return seats;
-    }
-
-    function getSeatCoverage(region, seatCenter, seatSize, angle) {
-        const half = seatSize / 2;
-        const samples = [];
-
-        for (let sy = -2; sy <= 2; sy += 1) {
-            for (let sx = -2; sx <= 2; sx += 1) {
-                samples.push({
-                    x: sx * half / 2,
-                    y: sy * half / 2
-                });
-            }
-        }
-
-        let allowed = 0;
-
-        samples.forEach((sample) => {
-            const point = rotatePoint(
-                { x: seatCenter.x + sample.x, y: seatCenter.y + sample.y },
-                seatCenter,
-                angle
-            );
-
-            if (isPointAllowedInRegionStrict(region, point, 1)) {
-                allowed += 1;
-            }
-        });
-
-        return allowed / samples.length;
-    }
-
-    function isPointAllowedInRegionStrict(region, point, dilation = 1) {
-        if (!point || point.x < 0 || point.y < 0 || point.x >= state.width || point.y >= state.height) {
-            return false;
-        }
-
-        // 추출된 실제 색상 마스크가 있으면 그것을 최우선으로 사용한다.
-        // 이게 좌석이 통로/회색/다른 구역으로 튀는 룰 브레이크를 막는다.
-        if (Array.isArray(region?.maskSpans) && region.maskSpans.length > 0) {
-            return isPointInRegionMask(region, point, dilation);
-        }
-
-        if (!pointInPolygon(point, region.polygon || [])) {
-            return false;
-        }
-
-        ensureRoleMap();
-        const x = Math.round(point.x);
-        const y = Math.round(point.y);
-        const role = state.roleMap[y * state.width + x];
-
-        if (role === region.role) {
-            return true;
-        }
-
-        const offset = (y * state.width + x) * 4;
-        const data = state.imageData.data;
-        const target = hexToRgb(region.color || "#999999");
-        const pixel = { r: data[offset], g: data[offset + 1], b: data[offset + 2] };
-
-        return colorDistance(pixel, target) <= 42;
-    }
-
-    function isPointAllowedInRegionLoose(region, point) {
-        return isPointAllowedInRegionStrict(region, point, 1);
-    }
-
-    function isPointAllowedInRegion(region, point) {
-        return isPointAllowedInRegionStrict(region, point, 0);
-    }
-
-    function renderSolidSections() {
-        if (state.seatSections.length <= 0) {
-            toast("먼저 파트 3에서 좌석을 추정하세요.");
-            return;
-        }
-
-        state.visualGroups = buildVisualGroups();
-
-        solidCanvas.width = state.width;
-        solidCanvas.height = state.height;
-        solidCtx.clearRect(0, 0, state.width, state.height);
-
-        // 원본 배치/통로/STAGE/외곽은 유지한다.
-        solidCtx.drawImage(sourceCanvas, 0, 0, state.width, state.height);
-
-        // 좌석 구역은 새 polygon으로 비틀지 않고, 추출 당시 실제 색상 마스크를 단색으로 다시 칠한다.
-        state.seatSections.forEach((section) => {
-            const region = state.colorRegions.find((item) => item.id === section.id) || section;
-            drawRegionMaskSolid(region, section.color || region.color || "#d9d9d9");
-        });
-
-        state.generatedUrl = solidCanvas.toDataURL("image/png");
-        state.previewMode = "solid";
-        state.selectedVisualGroupId = null;
-
-        saveWorkState();
-        render();
-        syncAllPanels();
-        renderSelectedVisualGroupInfo(null);
-        toast("원본 배치를 유지한 깔끔화 이미지를 생성했습니다.");
-    }
-
-    function drawRegionMaskSolid(region, color) {
-    solidCtx.save();
-    solidCtx.fillStyle = color || region.color || "#d9d9d9";
-
-    const polygons = normalizeGroupPolygons(region).length > 0
-        ? normalizeGroupPolygons(region)
-        : [region.polygon || []];
-
-    let drawn = false;
-
-    polygons.forEach((polygon) => {
-        if (!polygon || polygon.length < 3) {
-            return;
-        }
-
-        solidCtx.beginPath();
-        solidCtx.moveTo(polygon[0].x, polygon[0].y);
-
-        for (let i = 1; i < polygon.length; i += 1) {
-            solidCtx.lineTo(polygon[i].x, polygon[i].y);
-        }
-
-        solidCtx.closePath();
-        solidCtx.fill();
-        drawn = true;
-    });
-
-    // polygon 생성 실패 시에만 원본 maskSpans를 fallback으로 사용한다.
-    if (!drawn && Array.isArray(region?.maskSpans) && region.maskSpans.length > 0) {
-        region.maskSpans.forEach((row) => {
-            const y = Number(row.y);
-            (row.ranges || []).forEach((range) => {
-                const x1 = Number(range[0]);
-                const x2 = Number(range[1]);
-                solidCtx.fillRect(x1, y, Math.max(1, x2 - x1 + 1), 1);
-            });
-        });
-    }
-
-    solidCtx.restore();
-}
-
-    // =====================================================================
-    // v11 override: 같은 구역 내부 좌석 간격 0px / 개인 점유칸 기준 배치
-    // - 기준 구역에서 seatW/seatH를 계산하고 같은 색상/역할 그룹에 고정
-    // - 다른 구역은 좌석 크기/간격을 줄이지 않고 들어갈 수 있는 rows/cols만 계산
-    // - 좌석 중심 + 회전 좌석 사각형 50% 이상이 실제 색상 마스크 안에 있을 때만 생성
-    // =====================================================================
-
-    function applyBaseRegion() {
-        const region = getSelectedRegion();
-
-        if (!region) {
-            toast("기준 구역을 선택하세요.");
-            return;
-        }
-
-        const rows = positiveInt(dom.baseRows?.value, 5);
-        const cols = positiveInt(dom.baseCols?.value, 10);
-        const floor = safeValue(dom.baseFloor?.value, "1");
-        const name = safeValue(dom.baseSectionName?.value, region.name);
-        const color = safeValue(dom.baseColor?.value, region.color || "#f77bab");
-        const gridAngle = getRegionGridAngle(region);
-        const facingAngle = getRegionFacingAngle(region);
-        const usable = getRegionUsableLocalBox(region, gridAngle);
-        const groupKey = getRegionGroupKey(region);
-
-        // 좌석은 의자 간격이 아니라 개인 점유칸이다.
-        // 따라서 기준 구역 N×M 입력값으로 구역 내부를 정확히 나누고, 내부 gap은 항상 0이다.
-        const seatW = Math.max(1, usable.w / cols);
-        const seatH = Math.max(1, usable.h / rows);
-        const seatSize = Math.max(1, Math.min(seatW, seatH));
-
-        state.baseRegionId = region.id;
-        region.floor = floor;
-        region.name = name;
-        region.label = name;
-        region.color = color;
-
-        const baseLayout = {
-            groupKey,
-            rows,
-            cols,
-            layoutType: "linear",
-            seatW,
-            seatH,
-            seatSize,
-            pitchX: seatW,
-            pitchY: seatH,
-            cellW: seatW,
-            cellH: seatH,
-            gapX: 0,
-            gapY: 0,
-            internalGapX: 0,
-            internalGapY: 0,
-            gridAngle,
-            facingAngle,
-            angle: gridAngle,
-            savedAt: new Date().toISOString()
-        };
-
-        state.baseLayoutsByGroup[groupKey] = baseLayout;
-        state.baseLayoutsByGroup.__last = baseLayout;
-
-        const section = createSeatSection(region, rows, cols, seatSize, gridAngle, facingAngle, baseLayout);
-        const seats = buildSeatsForRegionWithCoverage(region, section.layout);
-
-        upsertSeatSection(section);
-        state.seatsBySection[section.id] = seats;
-        state.layoutsBySection[section.id] = section.layout;
-
-        saveWorkState();
-        syncAllPanels();
-        render();
-        toast(`${region.name} 기준을 ${getGroupLabel(region)} 그룹에 저장했습니다. 좌석 내부 간격 0px`);
-    }
-
-    function estimateAllSeats() {
-        const baseRegion = getSelectedRegion() || state.colorRegions.find((region) => region.id === state.baseRegionId);
-
-        if (!baseRegion) {
-            toast("좌석 기준을 잡을 구역을 먼저 클릭하세요.");
-            return;
-        }
-
-        const groupKey = getRegionGroupKey(baseRegion);
-
-        if (!state.baseLayoutsByGroup[groupKey]) {
-            applyBaseRegion();
-        }
-
-        const baseLayout = state.baseLayoutsByGroup[groupKey];
-
-        if (!baseLayout) {
-            toast("선택 구역 기준 설정에 실패했습니다.");
-            return;
-        }
-
-        ensureRoleMap();
-
-        const floor = safeValue(dom.baseFloor?.value, "1");
-        const targetRegions = state.colorRegions.filter((region) => getRegionGroupKey(region) === groupKey);
-        const targetIdSet = new Set(targetRegions.map((region) => region.id));
-
-        // 같은 색상/역할 그룹만 다시 추정한다. 다른 그룹은 유지한다.
-        state.seatSections = state.seatSections.filter((section) => !targetIdSet.has(section.id));
-
-        targetRegions.forEach((region) => {
-            delete state.seatsBySection[region.id];
-            delete state.layoutsBySection[region.id];
-        });
-
-        let estimatedCount = 0;
-        const baseSeatW = Math.max(1, Number(baseLayout.seatW || baseLayout.pitchX || baseLayout.seatSize || 8));
-        const baseSeatH = Math.max(1, Number(baseLayout.seatH || baseLayout.pitchY || baseLayout.seatSize || 8));
-        const baseSeatSize = Math.max(1, Number(baseLayout.seatSize || Math.min(baseSeatW, baseSeatH)));
-
-        targetRegions.forEach((region, index) => {
-            const gridAngle = getRegionGridAngle(region);
-            const facingAngle = getRegionFacingAngle(region);
-            const usable = getRegionUsableLocalBox(region, gridAngle);
-
-            // 좌석 크기/간격은 절대 줄이지 않는다.
-            // 공간이 부족하면 좌석 개수만 줄어든다.
-            const rows = Math.max(1, Math.floor(usable.h / baseSeatH));
-            const cols = Math.max(1, Math.floor(usable.w / baseSeatW));
-
-            if (!region.name || /^구역\s*\d+$/.test(region.name)) {
-                region.name = region.id === baseRegion.id
-                    ? safeValue(dom.baseSectionName?.value, "A1")
-                    : `구역${index + 1}`;
-                region.label = region.name;
-            }
-
-            region.floor = region.floor || floor;
-
-            const fixedLayout = {
-                ...baseLayout,
-                rows,
-                cols,
-                layoutType: "linear",
-                seatW: baseSeatW,
-                seatH: baseSeatH,
-                seatSize: baseSeatSize,
-                pitchX: baseSeatW,
-                pitchY: baseSeatH,
-                cellW: baseSeatW,
-                cellH: baseSeatH,
-                gapX: 0,
-                gapY: 0,
-                internalGapX: 0,
-                internalGapY: 0,
-                gridAngle,
-                facingAngle,
-                angle: gridAngle,
-                coverageThreshold: 0.50,
-                centerRequired: true
-            };
-
-            const section = createSeatSection(region, rows, cols, baseSeatSize, gridAngle, facingAngle, fixedLayout);
-            const seats = buildSeatsForRegionWithCoverage(region, section.layout);
-
-            upsertSeatSection(section);
-            state.seatsBySection[section.id] = seats;
-            state.layoutsBySection[section.id] = section.layout;
-            estimatedCount += seats.length;
-        });
-
-        state.baseRegionId = baseRegion.id;
-        state.visualGroups = [];
-        state.selectedVisualGroupId = null;
-
-        saveWorkState();
-        syncAllPanels();
-        render();
-        toast(`${getGroupLabel(baseRegion)} 그룹 ${targetRegions.length}개 구역 / ${estimatedCount}석을 추정했습니다. 내부 간격 0px`);
-    }
-
-    function createSeatSection(region, rows, cols, seatSize, gridAngle, facingAngle, presetLayout = null) {
-        const fixedSeatW = Math.max(1, Number(presetLayout?.seatW || presetLayout?.pitchX || seatSize || 8));
-        const fixedSeatH = Math.max(1, Number(presetLayout?.seatH || presetLayout?.pitchY || seatSize || 8));
-        const fixedSeatSize = Math.max(1, Number(presetLayout?.seatSize || Math.min(fixedSeatW, fixedSeatH)));
-        const gridBox = getFixedPitchGridBox(region, gridAngle, rows, cols, fixedSeatW, fixedSeatH);
-
-        const layout = {
-            rows,
-            cols,
-            layoutType: presetLayout?.layoutType || "linear",
-            seatW: fixedSeatW,
-            seatH: fixedSeatH,
-            seatSize: fixedSeatSize,
-            gapX: 0,
-            gapY: 0,
-            internalGapX: 0,
-            internalGapY: 0,
-            cellW: fixedSeatW,
-            cellH: fixedSeatH,
-            pitchX: fixedSeatW,
-            pitchY: fixedSeatH,
-            gridBox,
-            gridAngle,
-            facingAngle,
-            angle: gridAngle,
-            coverageThreshold: 0.50,
-            centerRequired: true
-        };
-
-        return {
-            id: region.id,
-            name: region.name || region.label || region.id,
-            label: region.label || region.name || region.id,
-            floor: region.floor || "1",
-            color: region.color || "#d9d9d9",
-            role: region.role,
-            groupKey: getRegionGroupKey(region),
-            polygon: clonePoints(region.polygon),
-            bbox: { ...region.bbox },
-            angle: facingAngle,
-            gridAngle,
-            facingAngle,
-            rows,
-            cols,
-            seatRows: rows,
-            seatCols: cols,
-            seatSize: fixedSeatSize,
-            seatW: fixedSeatW,
-            seatH: fixedSeatH,
-            layout
-        };
-    }
-
-    function getFixedPitchGridBox(region, gridAngle, rows, cols, pitchX, pitchY) {
-        const usable = getRegionUsableLocalBox(region, gridAngle);
-        const targetW = Math.max(1, pitchX * Math.max(1, cols));
-        const targetH = Math.max(1, pitchY * Math.max(1, rows));
-        const w = Math.min(targetW, usable.w);
-        const h = Math.min(targetH, usable.h);
-
-        // 구역 내부 실제 색상 마스크 bbox 안에서만 중앙 정렬한다.
-        // 좌석 사이 간격을 만들기 위해 w/h를 늘리거나 pitch를 재분배하지 않는다.
-        return {
-            x: usable.x + (usable.w - w) / 2,
-            y: usable.y + (usable.h - h) / 2,
-            w: Math.max(1, w),
-            h: Math.max(1, h)
-        };
-    }
-
-    function buildSeatsForRegionWithCoverage(region, layout) {
-        const center = getPolygonCenter(region.polygon);
-        const gridBox = layout.gridBox || getFixedPitchGridBox(
-            region,
-            layout.angle,
-            layout.rows,
-            layout.cols,
-            layout.pitchX || layout.seatW || layout.seatSize,
-            layout.pitchY || layout.seatH || layout.seatSize
-        );
-        const seatW = Math.max(1, Number(layout.seatW || layout.pitchX || layout.seatSize || 8));
-        const seatH = Math.max(1, Number(layout.seatH || layout.pitchY || layout.seatSize || 8));
-        const seats = [];
-
-        for (let row = 1; row <= layout.rows; row += 1) {
-            for (let col = 1; col <= layout.cols; col += 1) {
-                const localX = gridBox.x + (col - 0.5) * seatW;
-                const localY = gridBox.y + (row - 0.5) * seatH;
-                const rotated = rotatePoint({ x: localX, y: localY }, center, layout.angle);
-                const centerAllowed = isPointAllowedInRegionStrict(region, rotated, 1);
-                const coverage = getSeatCoverageRect(region, rotated, seatW, seatH, layout.angle);
-
-                if (!centerAllowed || coverage < 0.50) {
-                    continue;
-                }
-
-                const seat = {
-                    sectionId: region.id,
-                    row,
-                    col,
-                    status: "AVAILABLE",
-                    x: round(rotated.x),
-                    y: round(rotated.y),
-                    size: round(Math.min(seatW, seatH)),
-                    w: round(seatW),
-                    h: round(seatH),
-                    angle: round(layout.facingAngle ?? normalizeAngle(layout.angle + 90)),
-                    gridAngle: round(layout.angle)
-                };
-
-                seat.id = makeSeatId(region, seat);
-                seats.push(seat);
-            }
-        }
-
-        return seats;
-    }
-
-    function getSeatCoverageRect(region, seatCenter, seatW, seatH, angle) {
-        const samples = [];
-
-        for (let sy = -2; sy <= 2; sy += 1) {
-            for (let sx = -2; sx <= 2; sx += 1) {
-                samples.push({
-                    x: sx * seatW / 4,
-                    y: sy * seatH / 4
-                });
-            }
-        }
-
-        let allowed = 0;
-
-        samples.forEach((sample) => {
-            const point = rotatePoint(
-                { x: seatCenter.x + sample.x, y: seatCenter.y + sample.y },
-                seatCenter,
-                angle
-            );
-
-            if (isPointAllowedInRegionStrict(region, point, 1)) {
-                allowed += 1;
-            }
-        });
-
-        return allowed / samples.length;
-    }
-
-
 })();

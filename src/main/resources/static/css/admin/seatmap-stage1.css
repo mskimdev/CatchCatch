@@ -187,6 +187,17 @@
     color: #334155;
 }
 
+.crop-info-box--warning {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #9a3412;
+}
+
+.crop-info-box--warning strong,
+.crop-info-box--warning p {
+    color: #9a3412;
+}
+
 .crop-info-box strong {
     display: block;
     margin: 0 0 6px;
@@ -507,4 +518,139 @@
     .crop-side-panel--right {
         display: none;
     }
+}
+
+/* Stage 1 전용 방향 보정 도구 */
+.crop-step--transform {
+    border-color: #ddd6fe;
+}
+
+.crop-transform-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.crop-transform-btn {
+    min-height: 42px;
+    border: 1px solid #dbe3ef;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 950;
+    cursor: pointer;
+}
+
+.crop-transform-btn:hover {
+    border-color: #c4b5fd;
+    background: #f8f7ff;
+    color: #5b21b6;
+}
+
+.crop-transform-btn.is-active {
+    border-color: #7c3aed;
+    background: #f5f3ff;
+    color: #6d28d9;
+    box-shadow: inset 0 0 0 1px rgba(124, 58, 237, 0.15);
+}
+
+.crop-transform-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 10px 12px;
+    border: 1px solid #e9d5ff;
+    border-radius: 8px;
+    background: #faf5ff;
+}
+
+.crop-transform-status span {
+    color: #7e22ce;
+    font-size: 11px;
+    font-weight: 950;
+}
+
+.crop-transform-status b {
+    color: #4c1d95;
+    font-size: 12px;
+    font-weight: 950;
+    text-align: right;
+}
+
+/* Stage 1 파트 진행 상태 보정 */
+.crop-step.is-disabled .crop-step__body,
+.crop-step.is-locked .crop-step__body {
+    display: none;
+}
+
+.crop-step.is-complete {
+    border-color: #bbf7d0;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
+}
+
+.crop-step.is-complete .crop-step__number {
+    background: #10b981;
+    color: #ffffff;
+}
+
+.crop-step.is-complete .crop-step__status {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.crop-step.is-disabled .crop-transform-btn,
+.crop-step.is-locked .crop-transform-btn,
+.crop-transform-btn:disabled,
+.crop-primary-btn:disabled,
+.crop-secondary-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.48;
+    filter: grayscale(0.15);
+}
+
+.crop-secondary-btn--full {
+    margin-top: 8px;
+}
+
+/* Stage 1 완료 파트는 다른 Stage처럼 요약 버튼 형태로 접는다. */
+.crop-step.is-complete.is-collapsed {
+    border-color: #bbf7d0;
+    background: #ffffff;
+}
+
+.crop-step.is-complete.is-collapsed .crop-step__body {
+    display: none;
+}
+
+.crop-step.is-complete.is-collapsed .crop-step__header {
+    min-height: 58px;
+}
+
+.crop-step.is-complete.is-collapsed .crop-step__title em::after {
+    content: " · 클릭하면 다시 열 수 있습니다";
+    color: #10b981;
+}
+
+.crop-step.is-complete.is-summary + .crop-step {
+    margin-top: 10px;
+}
+
+/* Stage 1 역할 분리: Part 1 재편집 중에는 Part 2를 닫고, Part 2에서는 빨간 자르기 박스를 제거한다. */
+.crop-step.is-editing {
+    border-color: #c4b5fd;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08);
+}
+
+.crop-step.is-editing .crop-step__status {
+    background: #f5f3ff;
+    color: #6d28d9;
+}
+
+.crop-step.is-editing .crop-step__number {
+    background: #8b5cf6;
+    color: #ffffff;
 }

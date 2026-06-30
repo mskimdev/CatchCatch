@@ -12,6 +12,8 @@
         imageDataUrl: null,
         project: null,
         rotation: 0,
+        flipX: false,
+        flipY: false,
         zoom: 1,
         baseScale: 1,
         canvasWidth: 900,
@@ -23,7 +25,11 @@
         dragStartY: 0,
         dragOffsetX: 0,
         dragOffsetY: 0,
-        resizeCorner: null
+        resizeCorner: null,
+        baseChangeWarningAccepted: false,
+        cropApplied: false,
+        transformSaved: false,
+        cropStepExpanded: true
     };
 
     const $ = (id) => document.getElementById(id);
@@ -45,10 +51,18 @@
         bindClick("cropFit", fitToScreen);
         bindClick("cropRotateLeft", () => rotate(-90));
         bindClick("cropRotateRight", () => rotate(90));
+        bindClick("stage1RotateLeft", () => rotate(-90));
+        bindClick("stage1RotateRight", () => rotate(90));
+        bindClick("stage1FlipX", flipHorizontal);
+        bindClick("stage1FlipY", flipVertical);
         bindClick("cropReset", resetView);
-        bindClick("cropSave", saveCropImage);
-        bindClick("runCropSave", saveCropImage);
-        window.SeatMapCustomHeaderSave = saveCropImage;
+        bindClick("cropSelectStepHeader", toggleCropStepSummary);
+        bindClick("cropApply", applyCropAndOpenTransform);
+        bindClick("cropSave", applyCropAndOpenTransform);
+        bindClick("runCropSave", applyCropAndOpenTransform);
+        bindClick("transformApply", saveTransformAndExit);
+        bindClick("goStage2", goStage2);
+        window.SeatMapCustomHeaderSave = saveCurrentStage1Work;
         bindClick("applyFullCrop", selectFullArea);
         bindClick("clearCropArea", clearCropArea);
         bindClick("openMainPage", () => location.href = "/admin/seatmap/main");
@@ -88,8 +102,11 @@
         }
 
         state.project = project;
+        state.cropApplied = Boolean(project && (project.status === "CROPPED" || project.status === "STAGE1_CROPPED" || localStorage.getItem(stage1CropDoneKey(project)) === "true"));
+        state.transformSaved = Boolean(project && localStorage.getItem(stage1TransformDoneKey(project)) === "true");
 
         renderProjectInfo();
+        updateStepState();
 
         if (!project) {
             drawEmptyCanvas("새 도면을 먼저 생성하세요.");
@@ -146,8 +163,12 @@
             state.image = image;
             state.imageDataUrl = src;
             state.rotation = 0;
+            state.flipX = false;
+            state.flipY = false;
             state.zoom = 1;
             syncMiniMapSource(src);
+            updateTransformSummary();
+            updateStepState();
             fitToScreen();
         };
         image.onerror = () => {
@@ -191,8 +212,12 @@
         state.baseScale = Number.isFinite(scale) && scale > 0 ? scale : 1;
         state.zoom = 1;
         updateCanvasSize();
-        selectFullArea();
-        draw();
+        if (isCropPartEditable()) {
+            selectFullArea();
+        } else {
+            state.crop = null;
+            draw();
+        }
     }
 
     function updateCanvasSize() {
@@ -235,6 +260,7 @@
         ctx.save();
         ctx.translate(width / 2, height / 2);
         ctx.rotate((state.rotation * Math.PI) / 180);
+        ctx.scale(state.flipX ? -1 : 1, state.flipY ? -1 : 1);
 
         const imageScale = state.baseScale * state.zoom;
         ctx.drawImage(
@@ -248,7 +274,7 @@
     }
 
     function drawCropOverlay(ctx) {
-        if (!state.crop) {
+        if (!isCropPartEditable() || !state.crop) {
             return;
         }
 
@@ -278,30 +304,39 @@
     }
 
     function fullCrop() {
-        const marginX = Math.round(state.canvasWidth * 0.06);
-        const marginY = Math.round(state.canvasHeight * 0.06);
         return {
-            x: marginX,
-            y: marginY,
-            w: Math.max(40, state.canvasWidth - marginX * 2),
-            h: Math.max(40, state.canvasHeight - marginY * 2)
+            x: 0,
+            y: 0,
+            w: Math.max(40, state.canvasWidth),
+            h: Math.max(40, state.canvasHeight)
         };
     }
 
     function selectFullArea() {
+        if (!isCropPartEditable()) {
+            toast("자를 영역 선택 파트를 먼저 열어주세요.");
+            return;
+        }
         state.crop = fullCrop();
         draw();
     }
 
     function clearCropArea() {
+        if (!isCropPartEditable()) {
+            toast("자를 영역 선택 파트를 먼저 열어주세요.");
+            return;
+        }
         state.crop = null;
         draw();
     }
 
     function resetView() {
         state.rotation = 0;
+        state.flipX = false;
+        state.flipY = false;
         state.zoom = 1;
         updateZoomValue();
+        updateTransformSummary();
         fitToScreen();
     }
 
@@ -343,11 +378,52 @@
         }
 
         state.rotation = ((state.rotation + delta) % 360 + 360) % 360;
+        markTransformDirty();
         fitToScreen();
+        updateTransformSummary();
+    }
+
+    function flipHorizontal() {
+        if (!state.image) {
+            return;
+        }
+
+        state.flipX = !state.flipX;
+        markTransformDirty();
+        draw();
+        updateTransformSummary();
+    }
+
+    function flipVertical() {
+        if (!state.image) {
+            return;
+        }
+
+        state.flipY = !state.flipY;
+        markTransformDirty();
+        draw();
+        updateTransformSummary();
+    }
+
+    function updateTransformSummary() {
+        const summary = $("cropTransformSummary");
+        const flipTexts = [];
+
+        if (state.flipX) flipTexts.push("좌우");
+        if (state.flipY) flipTexts.push("상하");
+
+        if (summary) {
+            summary.textContent = `회전 ${state.rotation}° · ${flipTexts.length ? flipTexts.join("/") + " 뒤집기" : "뒤집기 없음"}`;
+        }
+
+        const flipXButton = $("stage1FlipX");
+        const flipYButton = $("stage1FlipY");
+        if (flipXButton) flipXButton.classList.toggle("is-active", state.flipX);
+        if (flipYButton) flipYButton.classList.toggle("is-active", state.flipY);
     }
 
     function startDrag(event) {
-        if (!state.image) {
+        if (!state.image || !isCropPartEditable()) {
             return;
         }
 
@@ -378,7 +454,7 @@
     }
 
     function dragCrop(event) {
-        if (!state.dragging || !state.crop) {
+        if (!isCropPartEditable() || !state.dragging || !state.crop) {
             return;
         }
 
@@ -481,18 +557,36 @@
         return { x, y, w, h };
     }
 
-    async function saveCropImage(buttonOverride) {
+    async function applyCropAndOpenTransform(event) {
+        await saveCropImage(event?.currentTarget || $("cropApply"), { openTransform: true });
+    }
+
+    async function saveCropImage(buttonOverride, options = {}) {
         if (!state.image || !state.project) {
             toast("저장할 도면이 없습니다.");
-            return;
+            return false;
         }
 
         if (!state.crop) {
             toast("자를 영역을 먼저 선택하세요.");
-            return;
+            return false;
         }
 
-        const button = buttonOverride || $("cropSave");
+        if (!state.baseChangeWarningAccepted) {
+            const confirmed = window.confirm(
+                "자르기를 적용하면 현재 도면의 기준 이미지가 선택 영역으로 교체됩니다.\n"
+                + "이후 버튼 이미지화, 구역, 좌석 배치는 변경된 도면 기준으로 다시 진행됩니다.\n\n"
+                + "계속 적용할까요?"
+            );
+
+            if (!confirmed) {
+                return false;
+            }
+
+            state.baseChangeWarningAccepted = true;
+        }
+
+        const button = buttonOverride || $("cropApply") || $("cropSave");
         const oldText = button ? button.textContent : "";
 
         try {
@@ -502,9 +596,11 @@
             }
 
             const imageDataUrl = buildCroppedImageDataUrl();
-            localStorage.setItem("seatmap_cropped_image", imageDataUrl);
-            localStorage.setItem("seat_button_originalImage", imageDataUrl);
-            localStorage.setItem("concert_originalImage", imageDataUrl);
+            state.transformSaved = false;
+            if (state.project) {
+                localStorage.removeItem(stage1TransformDoneKey(state.project));
+            }
+            clearDerivedSeatMapState();
 
             const response = await fetch(TEMP_SAVE_URL, {
                 method: "POST",
@@ -524,7 +620,11 @@
             }
 
             const result = await response.json();
-            updateProjectAfterSave(imageDataUrl, result);
+            const savedImageUrl = rememberStage1Image(result, imageDataUrl);
+            state.crop = null;
+            updateProjectAfterSave(savedImageUrl, result);
+            markCropApplied();
+            replaceCurrentBaseImage(savedImageUrl);
 
             if (button) {
                 button.textContent = "저장 완료";
@@ -534,7 +634,8 @@
                 }, 800);
             }
 
-            toast("자르기/회전 결과를 저장했습니다.");
+            toast(options.openTransform ? "자르기를 적용했습니다. 이제 도면 방향을 보정하세요." : "기준 도면을 선택 영역으로 갱신했습니다.");
+            return true;
         } catch (error) {
             console.error(error);
             if (button) {
@@ -545,7 +646,90 @@
                 }, 1000);
             }
             toast("저장 실패: " + error.message);
+            return false;
         }
+    }
+
+    async function saveTransformImage(event, options = {}) {
+        if (!state.image || !state.project) {
+            toast("저장할 도면이 없습니다.");
+            return false;
+        }
+
+        if (!state.cropApplied) {
+            toast("먼저 자르기를 적용하세요.");
+            return false;
+        }
+
+        const button = event?.currentTarget || $("transformApply");
+        const oldText = button ? button.textContent : "";
+
+        try {
+            if (button) {
+                button.disabled = true;
+                button.textContent = "저장 중...";
+            }
+
+            const imageDataUrl = buildTransformedImageDataUrl();
+            clearDerivedSeatMapState();
+
+            const response = await fetch(TEMP_SAVE_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    page: "stage1",
+                    folderName: state.project.folderName,
+                    seatJsonText: state.project.seatJsonText || JSON.stringify(DUMMY_SEATS),
+                    sectionJsonText: state.project.sectionJsonText || JSON.stringify(DUMMY_SECTIONS),
+                    imageDataUrl
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(await response.text() || `저장 실패: ${response.status}`);
+            }
+
+            const result = await response.json();
+            const savedImageUrl = rememberStage1Image(result, imageDataUrl);
+            state.crop = null;
+            updateProjectAfterSave(savedImageUrl, result);
+            markTransformSaved();
+            replaceCurrentBaseImage(savedImageUrl);
+
+            if (button) {
+                button.textContent = "저장 완료";
+                window.setTimeout(() => {
+                    button.textContent = oldText;
+                    button.disabled = false;
+                }, 800);
+            }
+
+            if (!options.silent) {
+                toast("Stage 1 마무리 저장을 완료했습니다.");
+            }
+            return true;
+        } catch (error) {
+            console.error(error);
+            if (button) {
+                button.textContent = "저장 실패";
+                window.setTimeout(() => {
+                    button.textContent = oldText;
+                    button.disabled = false;
+                }, 1000);
+            }
+            toast("저장 실패: " + error.message);
+            return false;
+        }
+    }
+
+    function buildTransformedImageDataUrl() {
+        const canvas = $("cropCanvas");
+        const cleanCanvas = document.createElement("canvas");
+        cleanCanvas.width = canvas.width;
+        cleanCanvas.height = canvas.height;
+        drawBaseImage(cleanCanvas.getContext("2d"), cleanCanvas.width, cleanCanvas.height);
+        return cleanCanvas.toDataURL("image/png");
     }
 
     function buildCroppedImageDataUrl() {
@@ -581,8 +765,116 @@
         return offscreen.toDataURL("image/png");
     }
 
+    function replaceCurrentBaseImage(imageDataUrl) {
+        if (!imageDataUrl) {
+            return;
+        }
+
+        const image = new Image();
+        image.onload = () => {
+            state.image = image;
+            state.imageDataUrl = imageDataUrl;
+            state.rotation = 0;
+            state.flipX = false;
+            state.flipY = false;
+            state.zoom = 1;
+            updateTransformSummary();
+            syncMiniMapSource(imageDataUrl);
+            fitToScreen();
+        };
+        image.src = imageDataUrl;
+    }
+
+    function clearDerivedSeatMapState() {
+        [
+            "seat_button_resultImage",
+            "seat_button_imageMeta",
+            "seat_button_groups",
+            "seat_button_selectedGroups",
+            "concert_cleanImage",
+            "concert_buttonImage",
+            "concert_buttonImageMeta",
+            "concert_sections",
+            "concert_seats",
+            "concert_extractSettings",
+            "concert_finalLayout",
+            "concert_imageMeta"
+        ].forEach((key) => localStorage.removeItem(key));
+    }
+
+
+    function saveCurrentStage1Work(event) {
+        if (!state.cropApplied || state.cropStepExpanded) {
+            return saveCropImage(event?.currentTarget || $("cropApply"), { openTransform: true });
+        }
+
+        return saveTransformImage(event, { silent: false });
+    }
+
+    async function saveTransformAndExit(event) {
+        const saved = await saveTransformImage(event, { silent: true });
+        if (!saved || !state.project) {
+            return;
+        }
+
+        location.href = `/admin/seatmap/main?projectId=${encodeURIComponent(state.project.folderName || state.project.id)}`;
+    }
+
+    function isCropPartEditable() {
+        return !state.cropApplied || state.cropStepExpanded;
+    }
+
+    function rememberStage1Image(result, fallbackDataUrl) {
+        const url = addCacheBuster(result?.croppedImageUrl || result?.imageUrl || fallbackDataUrl);
+        clearLocalImageCache();
+        safeLocalSet("seatmap_crop_originalImage", url);
+        safeLocalSet("seatmap_cropped_image", url);
+        safeLocalSet("seatmap_cropped_image_url", url);
+        safeLocalSet("seat_button_originalImage", url);
+        safeLocalSet("concert_originalImage", url);
+        return url;
+    }
+
+    function clearLocalImageCache() {
+        [
+            "seatmap_crop_originalImage",
+            "seatmap_cropped_image",
+            "seat_button_originalImage",
+            "concert_originalImage",
+            "seat_button_resultImage",
+            "concert_buttonImage",
+            "concert_cleanImage"
+        ].forEach((key) => localStorage.removeItem(key));
+    }
+
+    function safeLocalSet(key, value) {
+        try {
+            localStorage.setItem(key, value);
+        } catch (error) {
+            console.warn("localStorage 저장 생략:", key, error);
+        }
+    }
+
+    function addCacheBuster(url) {
+        if (!url || url.startsWith("data:image")) {
+            return url;
+        }
+        const separator = url.includes("?") ? "&" : "?";
+        return `${url}${separator}t=${Date.now()}`;
+    }
+
+    function stripHeavyProjectData(project) {
+        if (!project) {
+            return project;
+        }
+        const imageDataUrl = typeof project.imageDataUrl === "string" && project.imageDataUrl.startsWith("data:image")
+            ? (project.files?.croppedImage || project.files?.image || project.files?.originalImage || "")
+            : project.imageDataUrl;
+        return { ...project, imageDataUrl };
+    }
+
     function updateProjectAfterSave(imageDataUrl, result) {
-        const projects = getProjects();
+        const projects = getProjects().map(stripHeavyProjectData);
         const index = projects.findIndex((item) => item.id === state.project.id || item.folderName === state.project.folderName);
         const updated = {
             ...state.project,
@@ -605,8 +897,8 @@
             projects.unshift(updated);
         }
 
-        localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects.slice(0, 80)));
-        localStorage.setItem(CURRENT_PROJECT_KEY, updated.id);
+        safeLocalSet(PROJECTS_KEY, JSON.stringify(projects.slice(0, 80)));
+        safeLocalSet(CURRENT_PROJECT_KEY, updated.id);
         state.project = updated;
         renderProjectInfo();
     }
@@ -631,6 +923,15 @@
 
         const crop = normalizeCrop(state.crop);
         summary.textContent = `${Math.round(crop.w)} × ${Math.round(crop.h)}px`;
+    }
+
+    function toggleCropStepSummary() {
+        if (!state.cropApplied) {
+            return;
+        }
+
+        state.cropStepExpanded = !state.cropStepExpanded;
+        updateStepState();
     }
 
     function updateMiniViewport() {
@@ -658,6 +959,136 @@
             return { width: state.image.height, height: state.image.width };
         }
         return { width: state.image.width, height: state.image.height };
+    }
+
+    function markCropApplied() {
+        state.cropApplied = true;
+        state.transformSaved = false;
+        state.cropStepExpanded = false;
+        if (state.project) {
+            localStorage.setItem(stage1CropDoneKey(state.project), "true");
+            localStorage.removeItem(stage1TransformDoneKey(state.project));
+        }
+        updateStepState();
+    }
+
+    function markTransformDirty() {
+        if (!state.cropApplied) {
+            return;
+        }
+
+        state.transformSaved = false;
+        if (state.project) {
+            localStorage.removeItem(stage1TransformDoneKey(state.project));
+        }
+        updateStepState();
+    }
+
+    function markTransformSaved() {
+        state.transformSaved = true;
+        if (state.project) {
+            localStorage.setItem(stage1TransformDoneKey(state.project), "true");
+        }
+        updateStepState();
+    }
+
+    function updateStepState() {
+        const transformStep = $("transformStep");
+        const transformHeader = $("transformStepHeader");
+        const cropApply = $("cropApply");
+        const transformApply = $("transformApply");
+        const goButton = $("goStage2");
+        const transformButtons = ["stage1RotateLeft", "stage1RotateRight", "stage1FlipX", "stage1FlipY"]
+            .map((id) => $(id))
+            .filter(Boolean);
+        const firstStep = $("cropSelectStep") || document.querySelector(".crop-step-list .crop-step:first-child");
+        const firstHeader = $("cropSelectStepHeader");
+
+        if (!transformStep || !firstStep) {
+            return;
+        }
+
+        const cropDone = Boolean(state.cropApplied);
+        const firstExpanded = !cropDone || state.cropStepExpanded;
+        const transformEnabled = cropDone && !firstExpanded;
+        const transformDone = Boolean(state.transformSaved) && transformEnabled;
+
+        firstStep.classList.toggle("is-complete", cropDone && !firstExpanded);
+        firstStep.classList.toggle("is-active", firstExpanded);
+        firstStep.classList.toggle("is-collapsed", cropDone && !firstExpanded);
+        firstStep.classList.toggle("is-summary", cropDone && !firstExpanded);
+        firstStep.classList.toggle("is-editing", cropDone && firstExpanded);
+
+        const firstStatus = firstStep.querySelector(".crop-step__status");
+        const firstArrow = firstStep.querySelector(".crop-step__arrow");
+        if (firstStatus) firstStatus.textContent = !cropDone ? "진행중" : firstExpanded ? "수정중" : "완료";
+        if (firstArrow) firstArrow.textContent = firstExpanded ? "⌃" : "⌄";
+        if (firstHeader) {
+            firstHeader.disabled = false;
+            firstHeader.setAttribute("aria-expanded", firstExpanded ? "true" : "false");
+            firstHeader.title = cropDone
+                ? (firstExpanded ? "자르기 편집 닫기" : "자르기 영역 다시 열기")
+                : "자르기 영역 선택 진행 중";
+        }
+
+        transformStep.classList.toggle("is-disabled", !transformEnabled);
+        transformStep.classList.toggle("is-locked", !transformEnabled);
+        transformStep.classList.toggle("is-active", transformEnabled && !transformDone);
+        transformStep.classList.toggle("is-complete", transformDone);
+        transformStep.classList.toggle("is-collapsed", !transformEnabled || transformDone);
+        transformStep.classList.toggle("is-summary", transformDone);
+
+        const status = transformStep.querySelector(".crop-step__status");
+        const arrow = transformStep.querySelector(".crop-step__arrow");
+        if (status) status.textContent = !transformEnabled ? "대기" : transformDone ? "완료" : "진행중";
+        if (arrow) arrow.textContent = transformEnabled && !transformDone ? "⌃" : "⌄";
+        if (transformHeader) {
+            transformHeader.disabled = !transformEnabled;
+            transformHeader.setAttribute("aria-expanded", transformEnabled && !transformDone ? "true" : "false");
+        }
+
+        transformButtons.forEach((button) => button.disabled = !transformEnabled || transformDone);
+        if (transformApply) {
+            transformApply.disabled = !transformEnabled || transformDone;
+            transformApply.textContent = transformDone ? "저장 완료" : "저장하고 나가기";
+        }
+        if (goButton) goButton.disabled = !transformEnabled;
+
+        if (cropApply) cropApply.textContent = cropDone ? "자르기 다시 적용" : "자르기";
+
+        if (!isCropPartEditable()) {
+            state.crop = null;
+        }
+        draw();
+    }
+
+    async function goStage2(event) {
+        if (!state.project) {
+            location.href = "/admin/seatmap/stage/2";
+            return;
+        }
+
+        if (!state.cropApplied) {
+            toast("먼저 자르기를 적용하세요.");
+            return;
+        }
+
+        if (!state.transformSaved) {
+            const saved = await saveTransformImage(event, { silent: true });
+            if (!saved) {
+                return;
+            }
+        }
+
+        location.href = `/admin/seatmap/stage/2?projectId=${encodeURIComponent(state.project.folderName || state.project.id)}`;
+    }
+
+    function stage1CropDoneKey(project) {
+        return `seatmap_stage1_crop_done_${project?.folderName || project?.id || "default"}`;
+    }
+
+    function stage1TransformDoneKey(project) {
+        return `seatmap_stage1_transform_done_${project?.folderName || project?.id || "default"}`;
     }
 
     function getProjects() {

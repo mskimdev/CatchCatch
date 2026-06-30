@@ -1,233 +1,246 @@
-<div class="seatmap-workspace seatmap-workspace--stage3 seatmap-workspace--concert-stage1"
-     id="concertStage1App"
-     data-next-url="{{stage2Url}}">
+<div class="seatmap-workspace seatmap-workspace--stage3 stage3-workspace"
+     id="stage3App"
+     data-project-id="{{projectId}}"
+     data-stage2-url="{{stage2Url}}"
+     data-stage4-url="{{stage4Url}}"
+     data-button-image-url="{{seatmapImageUrl}}">
 
-    <aside class="seatmap-side seatmap-side--left">
-        <div class="seatmap-step-list">
+    <aside class="seatmap-side seatmap-side--left stage3-left">
+        <div class="stage3-title">
+            <strong>Stage 03 · 구역 나누기</strong>
+            <span>Stage 2에서 넘어온 button-image.png를 구역 단위로 나눈 뒤, 비슷한 색상끼리 A~Z 그룹으로 묶고 A1~An 번호를 확정합니다.</span>
+        </div>
 
-            <section class="seatmap-step is-active" id="part1" data-part="1">
-                <button type="button" class="seatmap-step__header" id="tab1">
-                    <span class="seatmap-step__check">1</span>
-                    <strong>파트 1</strong>
-                    <em>색상 추출</em>
-                    <span class="seatmap-step__status">진행중</span>
+        <div class="stage3-step-list">
+            <section class="stage3-step is-active" id="part1Panel" data-step="1">
+                <button type="button" class="stage3-step__header active" id="partBtn1">
+                    <span class="stage3-step__num">1</span>
+                    <span class="stage3-step__text">
+                        <b>구역 자동 나누기</b>
+                        <small>button-image.png 연결 도형 분리</small>
+                    </span>
+                    <span class="stage3-step__status">진행중</span>
                 </button>
 
-                <div class="seatmap-step__body">
-                    <div class="stage1-card">
-                        <strong>구역 색상 추출</strong>
-                        <p>
-                            원본 도면에서 좌석 색상을 자동으로 추출하고, 연결된 좌석 색상 덩어리를 구역 후보로 만듭니다.
-                            이 단계는 최종 이미지를 만드는 단계가 아니라 좌석 구역 후보를 찾는 단계입니다.
+                <div class="stage3-step__body">
+                    <div class="stage3-card">
+                        <p class="stage3-help">
+                            색상 단색화가 끝난 이미지를 그대로 읽고, 서로 떨어진 도형 덩어리를 구역 후보로 만듭니다.
+                            구역 안의 글자/구멍은 외곽 polygon 안에 포함된 것으로 보고 별도 좌석이나 버튼으로 처리하지 않습니다.
                         </p>
-                    </div>
 
-                    <div class="stage1-info-grid">
-                        <div>
-                            <label for="colorMinArea">최소 구역 면적</label>
-                            <input type="number" id="colorMinArea" value="120" min="1">
+                        <div class="stage3-form-grid stage3-form-grid--two">
+                            <div>
+                                <label for="minArea">최소 구역 면적</label>
+                                <input type="number" id="minArea" value="120" min="1">
+                            </div>
+                            <div>
+                                <label for="bgTolerance">배경 허용범위</label>
+                                <input type="number" id="bgTolerance" value="34" min="1" max="160">
+                            </div>
+                            <div>
+                                <label for="simplifyTolerance">외곽 단순화</label>
+                                <input type="number" id="simplifyTolerance" value="4" min="0" max="30">
+                            </div>
+                            <div>
+                                <label for="snapSize">좌표 스냅</label>
+                                <input type="number" id="snapSize" value="0" min="0" max="30">
+                            </div>
                         </div>
-                        <div>
-                            <label for="colorTolerance">색상 허용 범위</label>
-                            <input type="number" id="colorTolerance" value="45" min="1">
-                        </div>
+
+                        <button type="button" class="stage3-btn stage3-btn--primary" id="autoExtractBtn">구역 자동 나누기</button>
+                        <button type="button" class="stage3-btn" id="clearSectionsBtn">구역 초기화</button>
+                        <button type="button" class="stage3-btn stage3-btn--primary" id="goPart2Btn">다음: 그룹 수정</button>
                     </div>
-
-                    <button type="button" class="stage1-primary" id="extractColorRegions">
-                        색상 추출 / 구역 후보 생성
-                    </button>
-
-                    <button type="button" class="stage1-button" id="clearColorRegions">
-                        구역 후보 초기화
-                    </button>
-
-                    <div class="stage1-list" id="colorRegionList">
-                        <div class="stage1-empty">아직 추출된 구역 후보가 없습니다.</div>
-                    </div>
-
-                    <button type="button" class="stage1-primary" id="goPart2">
-                        다음: 각도 계산
-                    </button>
                 </div>
             </section>
 
-            <section class="seatmap-step" id="part2" data-part="2">
-                <button type="button" class="seatmap-step__header" id="tab2">
-                    <span class="seatmap-step__check">2</span>
-                    <strong>파트 2</strong>
-                    <em>각도 계산</em>
-                    <span class="seatmap-step__status">대기</span>
+            <section class="stage3-step" id="part2Panel" data-step="2">
+                <button type="button" class="stage3-step__header" id="partBtn2">
+                    <span class="stage3-step__num">2</span>
+                    <span class="stage3-step__text">
+                        <b>구역 선택 · 병합</b>
+                        <small>잘못 나뉜 도형만 보정</small>
+                    </span>
+                    <span class="stage3-step__status">대기</span>
                 </button>
 
-                <div class="seatmap-step__body">
-                    <div class="stage1-card">
-                        <strong>구역별 좌석 각도 계산</strong>
-                        <p>
-                            파란 박스로 여러 구역을 한 번에 드래그한 뒤, 메인 스테이지나 중앙 방향을 클릭하세요.
-                            각 구역은 클릭점을 바라보는 방향을 기본값으로 잡고, 구역 양쪽 경계선 방향으로 각도를 보정합니다.
+                <div class="stage3-step__body">
+                    <div class="stage3-card">
+                        <p class="stage3-help">
+                            도면이나 우측 목록에서 구역을 선택합니다. Shift/Ctrl 클릭은 다중 선택입니다.
+                            드래그 수동 추가와 병합은 구역을 나누는 용도만 사용합니다.
                         </p>
+
+                        <button type="button" class="stage3-btn stage3-btn--dark" id="manualAddBtn">수동 구역 추가</button>
+                        <button type="button" class="stage3-btn" id="cancelToolBtn">선택/도구 해제</button>
+                        <button type="button" class="stage3-btn stage3-btn--green" id="mergeSectionsBtn">선택 구역 병합</button>
+                        <button type="button" class="stage3-btn stage3-btn--red" id="deleteSectionsBtn">선택 구역 삭제</button>
+
+                        <div class="stage3-selection-summary" id="selectionSummary">선택 구역 없음</div>
+                        <button type="button" class="stage3-btn stage3-btn--primary" id="goPart3Btn">다음: 그룹/번호 지정</button>
                     </div>
-
-                    <button type="button" class="stage1-primary" id="angleDragStart">
-                        각도 범위 드래그
-                    </button>
-
-                    <button type="button" class="stage1-button" id="angleClearSelected">
-                        선택 구역 각도 삭제
-                    </button>
-
-                    <div class="stage1-info-grid">
-                        <div>
-                            <label for="angleRegionName">선택 구역</label>
-                            <input type="text" id="angleRegionName" value="-" readonly>
-                        </div>
-                        <div>
-                            <label for="angleValue">계산 각도</label>
-                            <input type="text" id="angleValue" value="0°" readonly>
-                        </div>
-                    </div>
-
-                    <div class="stage1-list" id="angleRegionList">
-                        <div class="stage1-empty">각도가 계산된 구역이 없습니다.</div>
-                    </div>
-
-                    <button type="button" class="stage1-primary" id="goPart3">
-                        다음: 좌석 자동 추정
-                    </button>
                 </div>
             </section>
 
-            <section class="seatmap-step" id="part3" data-part="3">
-                <button type="button" class="seatmap-step__header" id="tab3">
-                    <span class="seatmap-step__check">3</span>
-                    <strong>파트 3</strong>
-                    <em>전체 좌석 추정</em>
-                    <span class="seatmap-step__status">대기</span>
+            <section class="stage3-step" id="part3Panel" data-step="3">
+                <button type="button" class="stage3-step__header" id="partBtn3">
+                    <span class="stage3-step__num">3</span>
+                    <span class="stage3-step__text">
+                        <b>구역 그룹화 / 번호 지정</b>
+                        <small>A~Z 그룹 + 그룹별 1~n 번호 확정</small>
+                    </span>
+                    <span class="stage3-step__status">대기</span>
                 </button>
 
-                <div class="seatmap-step__body">
-                    <div class="stage1-card">
-                        <strong>기준 좌석으로 전체 자동 추정</strong>
-                        <p>
-                            기준 구역 하나를 선택하고 세로 N / 가로 M을 입력하세요.
-                            기준 구역의 좌석 간격을 계산한 뒤, 모든 구역에 좌석을 생성합니다.
-                            좌석은 해당 구역 색상 범위에 반 이상 포함될 때만 생성됩니다.
+                <div class="stage3-step__body">
+                    <div class="stage3-card">
+                        <p class="stage3-help">
+                            Stage 3은 좌석/예매 버튼 범위가 아니라 구역 자체를 정리하는 단계입니다.
+                            비슷한 색상끼리 A, B, C 그룹으로 묶고 각 그룹 안에서 A1, A2처럼 번호를 붙입니다.
                         </p>
+
+                        <div class="stage3-group-tools">
+                            <div>
+                                <label for="groupTolerance">색상 그룹 허용범위</label>
+                                <input type="number" id="groupTolerance" value="42" min="1" max="180">
+                            </div>
+                            <button type="button" class="stage3-btn stage3-btn--green" id="autoGroupBtn">색상별 자동 그룹화</button>
+                            <button type="button" class="stage3-btn stage3-btn--dark" id="renumberGroupsBtn">그룹 번호 재정렬</button>
+                        </div>
+
+                        <div class="stage3-form-grid stage3-form-grid--two">
+                            <div>
+                                <label for="groupKeyInput">선택 구역 그룹</label>
+                                <input type="text" id="groupKeyInput" value="A" maxlength="2" placeholder="A~Z">
+                            </div>
+                            <div>
+                                <label for="groupIndexInput">그룹 번호</label>
+                                <input type="number" id="groupIndexInput" value="1" min="1">
+                            </div>
+                            <div>
+                                <label for="sectionNameInput">최종 구역명</label>
+                                <input type="text" id="sectionNameInput" placeholder="예: A1, B12" readonly>
+                            </div>
+                            <div>
+                                <label for="labelInput">표시 라벨</label>
+                                <input type="text" id="labelInput" placeholder="비우면 구역명 표시">
+                            </div>
+                            <div>
+                                <label for="floorInput">층</label>
+                                <input type="text" id="floorInput" value="1">
+                            </div>
+                            <div>
+                                <label for="gradeInput">등급</label>
+                                <input type="text" id="gradeInput" value="일반석">
+                            </div>
+                            <div>
+                                <label for="priceInput">가격</label>
+                                <input type="number" id="priceInput" value="132000" min="0">
+                            </div>
+                            <div>
+                                <label for="sectionColorInput">그룹 표시 색상</label>
+                                <input type="color" id="sectionColorInput" value="#d9d9d9">
+                            </div>
+                        </div>
+
+                        <button type="button" class="stage3-btn stage3-btn--dark" id="applyInfoBtn">선택 구역을 이 그룹으로 묶기</button>
+
+                        <div class="stage3-bulk-name-box stage3-bulk-name-box--group">
+                            <label for="groupBatchSelect">그룹 단체 수정</label>
+                            <div class="stage3-form-grid stage3-form-grid--two">
+                                <div>
+                                    <select id="groupBatchSelect"></select>
+                                </div>
+                                <div>
+                                    <input type="text" id="groupRenameInput" maxlength="2" placeholder="변경 그룹명 A~Z">
+                                </div>
+                                <div>
+                                    <input type="color" id="groupColorInput" value="#d9d9d9" title="그룹 색상">
+                                </div>
+                                <div>
+                                    <input type="text" id="groupFloorInput" value="1" placeholder="층">
+                                </div>
+                                <div>
+                                    <input type="text" id="groupGradeInput" value="일반석" placeholder="등급">
+                                </div>
+                                <div>
+                                    <input type="number" id="groupPriceInput" value="132000" min="0" placeholder="가격">
+                                </div>
+                            </div>
+                            <div class="stage3-inline-actions">
+                                <button type="button" class="stage3-btn stage3-btn--green" id="applyGroupBatchBtn">선택 그룹 전체 적용</button>
+                                <button type="button" class="stage3-btn" id="selectGroupBtn">이 그룹 전체 선택</button>
+                            </div>
+                        </div>
+
+                        <div class="stage3-bulk-name-box">
+                            <label for="nameBatchInput">구역 그룹 수동 입력</label>
+                            <textarea id="nameBatchInput" rows="5" placeholder="A\nA\nA\nB\nB 처럼 정렬 순서대로 그룹명만 입력하거나 A1, A2처럼 직접 입력"></textarea>
+                            <div class="stage3-inline-actions">
+                                <button type="button" class="stage3-btn stage3-btn--dark" id="sampleNameTemplateBtn">A/B/C 예시</button>
+                                <button type="button" class="stage3-btn stage3-btn--green" id="applyNameBatchBtn">정렬 순서대로 그룹 적용</button>
+                            </div>
+                        </div>
+
+                        <button type="button" class="stage3-btn stage3-btn--green" id="autoNameBtn">그룹별 1~n 번호 재정렬</button>
+                        <button type="button" class="stage3-btn stage3-btn--primary" id="saveSectionsBtn">seatmap-sections.json 저장</button>
+                        <button type="button" class="stage3-btn stage3-btn--primary" id="toStage4Btn">Stage 4 좌석 배치로 이동</button>
                     </div>
-
-                    <div class="stage1-info-grid">
-                        <div>
-                            <label for="baseFloor">층</label>
-                            <input type="text" id="baseFloor" value="1">
-                        </div>
-                        <div>
-                            <label for="baseSectionName">기준 구역명</label>
-                            <input type="text" id="baseSectionName" value="A1">
-                        </div>
-                        <div>
-                            <label for="baseGrade">등급</label>
-                            <input type="text" id="baseGrade" value="일반석">
-                        </div>
-                        <div>
-                            <label for="baseColor">색상</label>
-                            <input type="color" id="baseColor" value="#f77bab">
-                        </div>
-                        <div>
-                            <label for="baseRows">세로 N</label>
-                            <input type="number" id="baseRows" value="5" min="1">
-                        </div>
-                        <div>
-                            <label for="baseCols">가로 M</label>
-                            <input type="number" id="baseCols" value="10" min="1">
-                        </div>
-                    </div>
-
-                    <button type="button" class="stage1-primary" id="applyBaseRegion">
-                        선택 구역 기준 설정
-                    </button>
-
-                    <button type="button" class="stage1-primary" id="estimateAllSeats">
-                        전체 좌석 자동 추정
-                    </button>
-
-                    <button type="button" class="stage1-button" id="clearEstimatedSeats">
-                        좌석 추정 초기화
-                    </button>
-
-                    <div class="stage1-list" id="seatEstimateList">
-                        <div class="stage1-empty">아직 추정된 좌석이 없습니다.</div>
-                    </div>
-
-                    <button type="button" class="stage1-primary" id="goPart4">
-                        다음: 깔끔화
-                    </button>
-                </div>
-            </section>
-
-            <section class="seatmap-step" id="part4" data-part="4">
-                <button type="button" class="seatmap-step__header" id="tab4">
-                    <span class="seatmap-step__check">4</span>
-                    <strong>파트 4</strong>
-                    <em>깔끔화 / 저장</em>
-                    <span class="seatmap-step__status">대기</span>
-                </button>
-
-                <div class="seatmap-step__body">
-                    <div class="stage1-card">
-                        <strong>좌석 기반 단색 도형 생성</strong>
-                        <p>
-                            좌석 추정 결과를 기준으로 구역 외곽을 다시 계산하고,
-                            원본을 지우는 방식이 아니라 새 캔버스에 깔끔한 단색 구역 이미지를 생성합니다.
-                        </p>
-                    </div>
-
-                    <div class="stage1-info-grid">
-                        <div>
-                            <label for="solidGap">구역 간격</label>
-                            <input type="number" id="solidGap" value="5" min="0">
-                        </div>
-                        <div>
-                            <label for="solidBackground">배경색</label>
-                            <input type="color" id="solidBackground" value="#f7f7f7">
-                        </div>
-                    </div>
-
-                    <button type="button" class="stage1-primary" id="renderSolidSections">
-                        깔끔한 단색 도형 생성
-                    </button>
-
-                    <button type="button" class="stage1-button" id="showOriginalImage">
-                        원본 보기
-                    </button>
-
-                    <button type="button" class="stage1-primary" id="saveStage1Result">
-                        Stage1 저장
-                    </button>
-
-                    <button type="button" class="stage1-primary" id="toStage2">
-                        Stage2로 이동
-                    </button>
                 </div>
             </section>
 
         </div>
     </aside>
 
-    <main class="seatmap-canvas-area">
-        <div class="stage1-toolbar">
-            <strong id="stage1Title">색상 추출</strong>
-            <span id="stage1Size">-</span>
-            <span id="stage1Guide">좌석 색상을 추출해서 구역 후보를 생성하세요.</span>
+    <main class="seatmap-main stage3-main">
+        <div class="stage3-canvas-toolbar">
+            <strong id="canvasTitle">구역 그룹화 도면</strong>
+            <span id="canvasSize">-</span>
+            <span id="canvasGuide">자동 구역화 후 색상 그룹을 확인하고, 잘못 묶인 구역은 선택해서 A~Z 그룹을 수정하세요.</span>
         </div>
 
-        <div class="seatmap-canvas-scroll">
-            <div class="stage1-canvas-box" id="box">
-                <canvas id="canvas"></canvas>
-                <canvas id="overlay"></canvas>
+        <div class="stage3-canvas-scroll" id="canvasScroll">
+            <div class="stage3-canvas-box" id="canvasBox">
+                <canvas class="stage3-canvas-base" id="canvas"></canvas>
+                <canvas class="stage3-canvas-overlay" id="overlay"></canvas>
             </div>
         </div>
     </main>
 
+    <aside class="seatmap-side seatmap-side--right stage3-right">
+        <div class="stage3-side-card">
+            <h3>원본 미니맵</h3>
+            <img id="miniImg" alt="Stage 3 원본 미니맵">
+            <p class="stage3-help stage3-help--small">cropped-image.png 또는 seatmap-image.png 확인용입니다.</p>
+        </div>
+
+        <div class="stage3-side-card">
+            <h3>선택 정보</h3>
+            <div class="stage3-info-grid">
+                <div><b id="totalCount">0</b><span>전체 구역</span></div>
+                <div><b id="selectedCount">0</b><span>선택 구역</span></div>
+                <div><b id="selectedArea">-</b><span>면적</span></div>
+                <div><b id="selectedName">-</b><span>그룹/구역명</span></div>
+            </div>
+        </div>
+
+        <div class="stage3-side-card">
+            <div class="stage3-side-head">
+                <h3>그룹별 구역 목록</h3>
+                <button type="button" class="stage3-text-btn" id="sortSectionsBtn">정렬</button>
+            </div>
+            <div class="stage3-section-list" id="sectionList">
+                <div class="stage3-empty">아직 구역이 없습니다.</div>
+            </div>
+        </div>
+
+        <div class="stage3-side-card">
+            <h3>결과 미리보기</h3>
+            <canvas id="previewCanvas"></canvas>
+            <p class="stage3-help stage3-help--small">흰 글자 라벨이 표시된 검수용 debug-polygons.png로 저장됩니다.</p>
+        </div>
+    </aside>
+
     <div class="seatmap-toast" id="toast"></div>
 </div>
-

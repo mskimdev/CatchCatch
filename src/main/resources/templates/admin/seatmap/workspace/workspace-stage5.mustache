@@ -1,81 +1,36 @@
-<aside class="seatmap-side seatmap-side--left stage3-left">
-    <div class="seatmap-step-list">
+<aside class="seatmap-side seatmap-side--left stage5-left">
+    <div class="seatmap-side__title">STEP 05 · 예매 버튼 생성</div>
 
+    <div class="seatmap-step-list">
         <section id="part1Panel" class="seatmap-step is-active" data-step="1">
             <button type="button" class="seatmap-step__header active" id="partBtn1">
                 <span class="seatmap-step__check" data-step="1"></span>
                 <span class="seatmap-step__text">
                     <b>파트 1</b>
-                    <small>기준 행·렬 설정</small>
+                    <small>입력 데이터 확인</small>
                 </span>
-                <span class="seatmap-step__status">진행중</span>
+                <span class="seatmap-step__status" id="part1Status">진행중</span>
                 <span class="seatmap-step__arrow">⌄</span>
             </button>
 
             <div class="seatmap-step__body">
                 <div class="seatmap-step__system">
-                    <div class="box active stage3-stage-box">
-                        <h3>좌석 방향 기준</h3>
-                        <div class="help-text">
-                            04 단계는 좌석만 생성합니다. 구역명과 polygon은 03 구역 나누기 단계의 결과를 사용하고, 여기서는 행·렬·크기·간격만 조정합니다.
-                        </div>
-
-                        <label class="stage3-check-row">
-                            <input type="checkbox" id="stageEditMode">
-                            <span>도면에서 기준 방향 조절</span>
-                        </label>
-
-                        <div class="field-grid field-grid--two">
-                            <div>
-                                <label for="stageX">기준점 X</label>
-                                <input type="number" id="stageX" value="0">
-                            </div>
-                            <div>
-                                <label for="stageY">기준점 Y</label>
-                                <input type="number" id="stageY" value="0">
-                            </div>
-                        </div>
-
-                        <div class="field-grid field-grid--two">
-                            <div>
-                                <label for="stageW">기준 영역 너비</label>
-                                <input type="number" id="stageW" value="360" min="20">
-                            </div>
-                            <div>
-                                <label for="stageH">기준 영역 높이</label>
-                                <input type="number" id="stageH" value="54" min="10">
-                            </div>
-                        </div>
-
-                        <div class="field-grid field-grid--two">
-                            <button type="button" class="btn" id="resetStagePosition">기준 방향 자동 배치</button>
-                            <button type="button" class="btn btn--dark" id="autoStageAngles">기준 방향 각도 적용</button>
-                        </div>
-                    </div>
-
                     <div class="box active">
-                        <label for="baseSectionSelect">기준 구역</label>
-                        <select id="baseSectionSelect"></select>
-
-                        <div class="field-grid field-grid--one">
-                            <div>
-                                <label for="baseCols">기준 렬 수</label>
-                                <input type="number" id="baseCols" value="10" min="1">
-                            </div>
+                        <h3>Stage 3 / Stage 4 결과 확인</h3>
+                        <div class="help-text">
+                            seatmap-sections.json과 seats/{projectId}-seatmap-seats.json을 읽어서 sectionId 매칭만 검증합니다. 이 단계에서는 구역과 좌석을 새로 만들지 않습니다.
                         </div>
 
-                        <div class="field-grid field-grid--two">
-                            <button type="button" class="btn btn--dark" id="applyBaseOne">선택 구역 좌석 생성</button>
-                            <button type="button" class="btn btn--green" id="applyBaseAll">전체 구역 좌석 추정</button>
+                        <div class="stage5-stat-grid">
+                            <div class="stat"><b id="sectionCountText">0</b><span>section</span></div>
+                            <div class="stat"><b id="seatCountText">0</b><span>seat</span></div>
+                            <div class="stat"><b id="matchFailCountText">0</b><span>매칭 실패</span></div>
+                            <div class="stat"><b id="missingNameCountText">0</b><span>이름 누락</span></div>
                         </div>
-                    </div>
 
-                    <div class="box stage3-section-list-box">
-                        <h3>구역별 행·렬 / 좌석 수</h3>
-                        <div class="section-list" id="sectionsList1"></div>
+                        <div class="stage5-warning-list" id="warningList"></div>
+                        <button type="button" class="btn primary" id="reloadDataBtn">입력 데이터 다시 읽기</button>
                     </div>
-
-                    <button type="button" class="btn btn--next-stage" id="goPart2">다음: 좌석 세부 보정</button>
                 </div>
             </div>
         </section>
@@ -85,46 +40,168 @@
                 <span class="seatmap-step__check" data-step="2"></span>
                 <span class="seatmap-step__text">
                     <b>파트 2</b>
-                    <small>구역별 좌석 편집</small>
+                    <small>버튼 자동 생성</small>
                 </span>
-                <span class="seatmap-step__status">대기</span>
+                <span class="seatmap-step__status" id="part2Status">대기</span>
                 <span class="seatmap-step__arrow">⌄</span>
             </button>
 
             <div class="seatmap-step__body">
                 <div class="seatmap-step__system">
                     <div class="box active">
-                        <label for="editSectionSelect">수정할 구역</label>
-                        <select id="editSectionSelect"></select>
-
-                        <div class="field-grid field-grid--two">
-                            <div>
-                                <label for="editRows">행 수</label>
-                                <input type="number" id="editRows" value="5" min="1">
-                            </div>
-                            <div>
-                                <label for="editCols">렬 수</label>
-                                <input type="number" id="editCols" value="10" min="1">
-                            </div>
+                        <h3>section polygon → booking button</h3>
+                        <div class="help-text">
+                            Stage 3 polygon을 그대로 버튼 polygon으로 사용하고, Stage 4 좌석 JSON에서 seatCount와 availableSeatCount를 집계합니다.
                         </div>
+                        <button type="button" class="btn green" id="generateButtonsBtn">booking button 자동 생성</button>
+                        <button type="button" class="btn" id="loadSavedButtonsBtn">저장된 booking-buttons.json 불러오기</button>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-                        <button type="button" class="btn btn--dark" id="regenSelected">선택 구역 행·렬 재생성</button>
+        <section id="part3Panel" class="seatmap-step" data-step="3">
+            <button type="button" class="seatmap-step__header" id="partBtn3">
+                <span class="seatmap-step__check" data-step="3"></span>
+                <span class="seatmap-step__text">
+                    <b>파트 3</b>
+                    <small>버튼 검수 / 수정</small>
+                </span>
+                <span class="seatmap-step__status" id="part3Status">대기</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active">
+                        <h3>표시 옵션</h3>
+                        <label class="stage5-check-row">
+                            <input type="checkbox" id="showSectionPolygon" checked>
+                            <span>Stage 3 section polygon 표시</span>
+                        </label>
+                        <label class="stage5-check-row">
+                            <input type="checkbox" id="showButtonPolygon" checked>
+                            <span>booking button polygon 표시</span>
+                        </label>
+                        <label class="stage5-check-row">
+                            <input type="checkbox" id="showSeats" checked>
+                            <span>Stage 4 좌석 표시</span>
+                        </label>
+                        <label class="stage5-check-row">
+                            <input type="checkbox" id="showLabels" checked>
+                            <span>구역 label 표시</span>
+                        </label>
                     </div>
 
                     <div class="box">
-                        <h3>좌석 선택 작업</h3>
-                        <div class="help-text">
-                            좌석은 반드시 정사각형으로 배치합니다. 행은 A, B, C 순서이고 렬은 1, 2, 3 숫자 순서입니다.
+                        <h3>선택 구역 수정</h3>
+                        <div class="help-text">도면에서 label을 드래그하면 labelPoint가 수정됩니다. polygon은 Stage 3 값을 기준으로 보존합니다.</div>
+                        <div class="row">
+                            <div>
+                                <label for="labelXInput">label X</label>
+                                <input id="labelXInput" type="number" step="1">
+                            </div>
+                            <div>
+                                <label for="labelYInput">label Y</label>
+                                <input id="labelYInput" type="number" step="1">
+                            </div>
                         </div>
+                        <div class="row">
+                            <div>
+                                <label for="colorInput">색상</label>
+                                <input id="colorInput" type="color" value="#8b5cf6">
+                            </div>
+                            <div>
+                                <label for="strokeInput">선 색상</label>
+                                <input id="strokeInput" type="color" value="#8b5cf6">
+                            </div>
+                        </div>
+                        <label class="stage5-check-row">
+                            <input type="checkbox" id="visibleInput" checked>
+                            <span>visible</span>
+                        </label>
+                        <label class="stage5-check-row">
+                            <input type="checkbox" id="clickableInput" checked>
+                            <span>clickable</span>
+                        </label>
+                        <button type="button" class="btn" id="applySelectedBtn">선택 구역 값 반영</button>
                     </div>
 
-                    <button type="button" class="btn btn--next-stage" id="toStage4">05 예매 버튼 생성으로 이동</button>
+                    <div class="box stage5-section-list-box">
+                        <h3>booking button 목록</h3>
+                        <div class="section-list stage5-button-list" id="buttonList"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="part4Panel" class="seatmap-step" data-step="4">
+            <button type="button" class="seatmap-step__header" id="partBtn4">
+                <span class="seatmap-step__check" data-step="4"></span>
+                <span class="seatmap-step__text">
+                    <b>파트 4</b>
+                    <small>최종 저장</small>
+                </span>
+                <span class="seatmap-step__status" id="part4Status">대기</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active">
+                        <h3>booking-buttons.json 저장</h3>
+                        <div class="stage5-save-summary" id="saveSummary">저장할 버튼 0개</div>
+                        <button type="button" class="btn green" id="saveBookingButtonsBtn">booking-buttons.json 저장</button>
+                        <button type="button" class="btn primary" id="toStage6Btn">Stage 6 최종 꾸미기로 이동</button>
+                    </div>
                 </div>
             </div>
         </section>
     </div>
+</aside>
 
-    <div class="seatmap-side-guide" id="stage3Guide">
-        미니맵에서 기준 구역을 클릭하고 기준 렬 수만 입력한 뒤 전체 구역을 자동 추정하세요.
+<main class="seatmap-main stage5-main" id="canvasScroll">
+    <div class="canvas-wrap stage5-canvas-wrap">
+        <div class="canvas-head">
+            <strong id="canvasTitle">예매 화면 버튼 미리보기</strong>
+            <span id="canvasSize">-</span>
+        </div>
+        <div class="canvas-box stage5-canvas-box" id="canvasBox">
+            <canvas class="base" id="stage5BaseCanvas"></canvas>
+            <canvas id="stage5OverlayCanvas"></canvas>
+        </div>
+        <div class="stage5-tooltip" id="stage5Tooltip"></div>
+    </div>
+</main>
+
+<aside class="seatmap-side seatmap-side--right stage5-right">
+    <div class="minimap">
+        <h3>원본 미니맵</h3>
+        <img id="miniImg" alt="seatmap-image 미니맵" />
+        <div class="help">seatmap-image.png를 우선 사용하고, 없으면 cropped-image.png를 기준 도면으로 표시합니다.</div>
+    </div>
+
+    <div class="preview-card stage5-preview-card">
+        <h3>최종 예매 미리보기</h3>
+        <canvas id="previewCanvas"></canvas>
+    </div>
+
+    <div class="preview-card stage5-info-card">
+        <h3>선택 구역 정보</h3>
+        <dl class="stage5-info-list">
+            <div><dt>sectionId</dt><dd id="infoSectionId">-</dd></div>
+            <div><dt>sectionName</dt><dd id="infoSectionName">-</dd></div>
+            <div><dt>층 / 등급</dt><dd id="infoFloorGrade">-</dd></div>
+            <div><dt>가격</dt><dd id="infoPrice">-</dd></div>
+            <div><dt>좌석 수</dt><dd id="infoSeatCount">-</dd></div>
+            <div><dt>예매 가능</dt><dd id="infoAvailableCount">-</dd></div>
+            <div><dt>labelPoint</dt><dd id="infoLabelPoint">-</dd></div>
+            <div><dt>visible / clickable</dt><dd id="infoFlags">-</dd></div>
+        </dl>
+    </div>
+
+    <div class="preview-card">
+        <h3>JSON 미리보기</h3>
+        <pre class="json-box" id="jsonPreview">[]</pre>
     </div>
 </aside>
