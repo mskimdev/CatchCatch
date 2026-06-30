@@ -23,11 +23,11 @@
                         </div>
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-6 form-group">
+                                <div class="col-md-12 form-group">
                                     <label>공연 제목</label>
                                     <input type="text" name="title" class="form-control" value="[테스트] 2026 싸이 흠뻑쇼 - 서울" required>
                                 </div>
-                                <div class="col-md-6 form-group">
+                                <div class="col-md-12 form-group">
                                     <label>아티스트</label>
                                     <input type="text" name="artist" class="form-control" value="싸이 (PSY)" required>
                                 </div>
@@ -198,12 +198,7 @@
                             </div>
 
                             <div class="row">
-                                <div class="col-md-6 form-group">
-                                    <label class="font-weight-bold text-dark">상세페이지 내용</label>
-                                    <textarea name="detailDescription1" class="form-control js-summernote" rows="5"
-                                              placeholder="예: [티켓 예매 안내] 본 공연은 회차당 1인 2매까지 가능하며... (비워두면 사용자 화면에 노출되지 않습니다)"></textarea>
-                                </div>
-                                <div class="col-md-6 form-group">
+                                <div class="col-md-12 form-group">
                                     <label class="font-weight-bold text-dark">추가 공연정보 / 유의사항 및 안내</label>
                                     <textarea name="detailDescription2" class="form-control js-summernote" rows="5"
                                               placeholder="예: [출연진 변경 안내] 25일 공연 캐스팅이 배우 사정으로 인해... (비워두면 사용자 화면에 노출되지 않습니다)"></textarea>
@@ -397,10 +392,47 @@
                         });
                     })();
 
+                    function validateConcertSchedule(requireFutureTicketOpenDate) {
+                        const ticketOpenDate = form.querySelector('[name="ticketOpenDate"]').value;
+                        const startDate = form.querySelector('[name="startDate"]').value;
+                        const endDate = form.querySelector('[name="endDate"]').value;
+
+                        if (!ticketOpenDate || !startDate || !endDate) {
+                            CcUI.alert('티켓 오픈일, 공연 시작일, 공연 종료일을 모두 입력해 주세요.', 'warning');
+                            return false;
+                        }
+
+                        if (requireFutureTicketOpenDate) {
+                            const ticketOpenTime = new Date(ticketOpenDate).getTime();
+                            if (Number.isNaN(ticketOpenTime) || ticketOpenTime < Date.now()) {
+                                CcUI.alert('티켓 오픈일은 현재 시간 이후로 입력해 주세요.', 'warning');
+                                return false;
+                            }
+                        }
+
+                        const ticketOpenDay = ticketOpenDate.slice(0, 10);
+                        if (startDate < ticketOpenDay) {
+                            CcUI.alert('공연 시작일은 티켓 오픈일보다 이전일 수 없습니다.', 'warning');
+                            return false;
+                        }
+                        if (endDate < startDate) {
+                            CcUI.alert('공연 종료일은 공연 시작일보다 이전일 수 없습니다.', 'warning');
+                            return false;
+                        }
+                        if (endDate < ticketOpenDay) {
+                            CcUI.alert('공연 종료일은 티켓 오픈일보다 이전일 수 없습니다.', 'warning');
+                            return false;
+                        }
+
+                        return true;
+                    }
+
                     const form = document.getElementById("concertForm");
                     if (form) {
                         form.addEventListener("submit", function(e) {
                             e.preventDefault();
+                            if (!validateConcertSchedule(true)) return;
+
                             const submitForm = () => {
                                 syncSummernoteEditors();
                                 form.submit();

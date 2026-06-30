@@ -87,7 +87,6 @@ public class ConcertResponse {
             String contact,
             String detailBannerUrl,
             String detailTitle,
-            String detailDescription1,
             String detailDescription2,
             Integer reviewCount,
             boolean reviewEnabled,
@@ -157,7 +156,6 @@ public class ConcertResponse {
                     .contact(concert.getContact())
                     .detailBannerUrl(concert.getDetailBannerUrl())
                     .detailTitle(concert.getDetailTitle())
-                    .detailDescription1(concert.getDetailDescription1())
                     .detailDescription2(concert.getDetailDescription2())
                     .reviewCount(Math.toIntExact(reviewCount == null ? 0L : reviewCount))
                     .reviewEnabled(concert.isReviewEnabled())
