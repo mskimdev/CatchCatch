@@ -473,18 +473,33 @@ public class BookingResponse {
 
     @Getter
     public static class SeatFormDTO {
-        private static final String DEFAULT_SEATMAP_IMAGE_URL = "/temp/seatmap/seat/seatmap-image.png";
+        private static final String DEFAULT_SEATMAP_FILE_PATH = "/temp/seatmap/seats/example-seatmap-seats.json";
+        private static final String SEAT_FILE_SUFFIX = "-seatmap-seats.json";
 
         private List<SeatDTO> seats;
         private List<SeatGradeTabDTO> gradeTabs;
         private String seatsJson;
+
+        // 좌석도 파일 기준 경로
+        private String seatMapFilePath;
+        private String seatMapProjectId;
+
+        // booking 화면에서 사용할 asset 경로
         private String overviewImageUrl;
+        private String buttonImageUrl;
+        private String bookingButtonsJsonUrl;
+        private String seatMapSectionsJsonUrl;
+        private String seatMapMetaJsonUrl;
 
         public SeatFormDTO(List<Seat> seats) {
-            this(seats, Set.of());
+            this(seats, Set.of(), DEFAULT_SEATMAP_FILE_PATH);
         }
 
         public SeatFormDTO(List<Seat> seats, Set<Integer> bookedSeatIds) {
+            this(seats, bookedSeatIds, DEFAULT_SEATMAP_FILE_PATH);
+        }
+
+        public SeatFormDTO(List<Seat> seats, Set<Integer> bookedSeatIds, String seatMapFilePath) {
             Set<Integer> safeBookedSeatIds = bookedSeatIds == null ? Set.of() : bookedSeatIds;
 
             this.seats = seats.stream()
@@ -503,13 +518,50 @@ public class BookingResponse {
             activateFirstGradeTab();
 
             this.seatsJson = toJson(this.seats);
-            this.overviewImageUrl = DEFAULT_SEATMAP_IMAGE_URL;
+
+            this.seatMapFilePath = normalizeSeatMapFilePath(seatMapFilePath);
+            this.seatMapProjectId = extractSeatMapProjectId(this.seatMapFilePath);
+
+            String projectBasePath = "/temp/seatmap/" + this.seatMapProjectId;
+
+            this.overviewImageUrl = projectBasePath + "/seatmap-image.png";
+            this.buttonImageUrl = projectBasePath + "/button-image.png";
+            this.bookingButtonsJsonUrl = projectBasePath + "/booking-buttons.json";
+            this.seatMapSectionsJsonUrl = projectBasePath + "/seatmap-sections.json";
+            this.seatMapMetaJsonUrl = projectBasePath + "/seatmap-meta.json";
         }
 
         private void activateFirstGradeTab() {
             if (!gradeTabs.isEmpty()) {
                 gradeTabs.get(0).active = true;
             }
+        }
+
+        private static String normalizeSeatMapFilePath(String seatMapFilePath) {
+            if (seatMapFilePath == null || seatMapFilePath.isBlank()) {
+                return DEFAULT_SEATMAP_FILE_PATH;
+            }
+
+            return seatMapFilePath;
+        }
+
+        private static String extractSeatMapProjectId(String seatMapFilePath) {
+            String normalizedPath = normalizeSeatMapFilePath(seatMapFilePath);
+
+            int slashIndex = normalizedPath.lastIndexOf("/");
+            String fileName = slashIndex >= 0
+                    ? normalizedPath.substring(slashIndex + 1)
+                    : normalizedPath;
+
+            if (fileName.endsWith(SEAT_FILE_SUFFIX)) {
+                return fileName.substring(0, fileName.length() - SEAT_FILE_SUFFIX.length());
+            }
+
+            if (fileName.endsWith(".json")) {
+                return fileName.substring(0, fileName.length() - ".json".length());
+            }
+
+            return fileName;
         }
     }
 
