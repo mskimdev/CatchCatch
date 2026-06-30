@@ -19,6 +19,7 @@ import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.user.User;
 import com.catchcatch.ticket.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -33,6 +34,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
@@ -353,7 +355,13 @@ public class PaymentService {
 
         if (reqDTO.shouldSendSms()) {
             String phone = reqDTO.smsPhone().replaceAll("-", "").trim();
-            notificationDispatcher.dispatchBookingConfirmedSms(booking, phone, baseUrl);
+
+            try {
+                notificationDispatcher.dispatchBookingConfirmedSms(booking, phone, baseUrl);
+            } catch (Exception e) {
+                // SMS 발송은 부가 기능이므로 실패하더라도 결제 완료 처리는 그대로 진행한다.
+                log.error("예매 확정 SMS 발송 실패 - bookingId={}, phone={}", booking.getId(), phone, e);
+            }
         }
 
         if (reqDTO.shouldUpdateProfile() && user.getPhone() == null) {
