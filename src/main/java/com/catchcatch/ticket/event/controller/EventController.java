@@ -39,6 +39,7 @@ public class EventController {
         model.addAttribute("ongoingActive", "ongoing".equals(status));
         model.addAttribute("upcomingActive", "upcoming".equals(status));
         model.addAttribute("endedActive", "ended".equals(status));
+        model.addAttribute("activeEvent", true);
 
         if ("upcoming".equals(status)) {
             model.addAttribute("pageTitle", "오픈 예정 이벤트");

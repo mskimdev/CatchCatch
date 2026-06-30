@@ -36,6 +36,7 @@ public class FaqController {
         model.addAttribute("isCancelRefund", category == FaqCategory.CANCEL_REFUND);
         model.addAttribute("isEvent", category == FaqCategory.EVENT);
         model.addAttribute("isService", category == FaqCategory.SERVICE);
+        model.addAttribute("activeQna", true);
 
         return "support/faq";
     }
