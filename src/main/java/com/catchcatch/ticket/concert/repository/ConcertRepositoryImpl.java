@@ -5,6 +5,7 @@ import com.catchcatch.ticket.concert.core.ConcertStatus;
 import com.catchcatch.ticket.concert.dto.ConcertRequest;
 import com.catchcatch.ticket.concert.dto.ConcertResponse;
 import com.catchcatch.ticket.concert.enums.ConcertGenre;
+import com.catchcatch.ticket.review.ReviewRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
 
     private final EntityManager em;
+    private final ReviewRepository reviewRepository;
 
     @Override
     public ConcertResponse.ConcertListResponseDTO findConcertsByFilters(ConcertRequest.SearchConditionDTO condition) {
@@ -46,8 +48,16 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
         long endCount = getCountByStatus(ConcertStatus.ENDED);
         long totalCount = getTotalCount();
 
+        Map<Integer, ReviewRepository.ConcertReviewStats> reviewStatsByConcertId = getReviewStatsByConcertId(content);
         List<ConcertResponse.ListDTO> dtoList = content.stream()
-                .map(ConcertResponse.ListDTO::from)
+                .map(concert -> {
+                    ReviewRepository.ConcertReviewStats stats = reviewStatsByConcertId.get(concert.getId());
+                    return ConcertResponse.ListDTO.from(
+                            concert,
+                            stats == null ? 0.0 : stats.getAverageRating(),
+                            stats == null ? 0L : stats.getReviewCount()
+                    );
+                })
                 .collect(Collectors.toList());
 
         return ConcertResponse.ConcertListResponseDTO.builder()
@@ -92,6 +102,22 @@ public class ConcertRepositoryImpl implements ConcertRepositoryCustom {
     private long getTotalCount() {
         return em.createQuery("SELECT COUNT(c) FROM Concert c", Long.class)
                 .getSingleResult();
+    }
+
+    private Map<Integer, ReviewRepository.ConcertReviewStats> getReviewStatsByConcertId(List<Concert> concerts) {
+        if (concerts == null || concerts.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Integer> concertIds = concerts.stream()
+                .map(Concert::getId)
+                .toList();
+
+        return reviewRepository.findStatsByConcertIds(concertIds).stream()
+                .collect(Collectors.toMap(
+                        ReviewRepository.ConcertReviewStats::getConcertId,
+                        stats -> stats
+                ));
     }
 
     private void appendKeywordFilter(StringBuilder jpql, Map<String, Object> parameters, String keyword) {

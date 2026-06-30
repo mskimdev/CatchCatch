@@ -3,7 +3,7 @@
 -- ================
 INSERT INTO venue_tb
 (name, address, total_capacity, seat_map_file_path, created_at)
-VALUES ('올림픽공원 체조경기장', '서울특별시 송파구 올림픽로 424', 15000, '/json/seatmap/seatmap-concert-session.json', NOW()),
+VALUES ('올림픽공원 체조경기장', '서울특별시 송파구 올림픽로 424', 15000, '/json/seatmap/olympic_seats.json', NOW()),
        ('KSPO DOME', '서울특별시 송파구 올림픽로 424', 15000, NULL, NOW()),
        ('잠실실내체육관', '서울특별시 송파구 올림픽로 25', 15000, NULL, NOW()),
        ('부산 사직실내체육관', '부산광역시 동래구 사직동 산 29', 12000, NULL, NOW()),

@@ -95,6 +95,30 @@ public interface SeatRepository extends JpaRepository<Seat, Integer> {
     }
 
     /**
+     * 공연 상세 화면에서 회차별/등급별 구매 가능 좌석 수를 표시하기 위한 집계
+     */
+    @Query("""
+            select s.concertSession.id as sessionId,
+                   s.grade as grade,
+                   count(s) as totalCount,
+                   sum(case when s.status = :availableStatus then 1 else 0 end) as remainingCount
+            from Seat s
+            where s.concertSession.id in :sessionIds
+            group by s.concertSession.id, s.grade
+            """)
+    List<SessionGradeSeatAvailability> findSeatAvailabilityBySessionIds(
+            @Param("sessionIds") List<Integer> sessionIds,
+            @Param("availableStatus") SeatStatus availableStatus
+    );
+
+    interface SessionGradeSeatAvailability {
+        Integer getSessionId();
+        SeatGrade getGrade();
+        long getTotalCount();
+        Long getRemainingCount();
+    }
+
+    /**
      * 좌석 임시 점유 시 동시성 방지용 조회
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)

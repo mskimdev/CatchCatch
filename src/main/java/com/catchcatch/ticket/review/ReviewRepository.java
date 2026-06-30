@@ -25,6 +25,22 @@ public interface ReviewRepository extends JpaRepository<Review,Long> {
     // 권한 확인
     long countByConcertId(Integer concertId);
 
+    @Query("""
+            select r.concert.id as concertId,
+                   avg(r.rating) as averageRating,
+                   count(r.id) as reviewCount
+            from Review r
+            where r.concert.id in :concertIds
+            group by r.concert.id
+            """)
+    List<ConcertReviewStats> findStatsByConcertIds(@Param("concertIds") List<Integer> concertIds);
+
+    interface ConcertReviewStats {
+        Integer getConcertId();
+        Double getAverageRating();
+        Long getReviewCount();
+    }
+
     Optional<Review> findByIdAndUser_IdAndConcert_Id(
             Long reviewId,
             Integer userId,
