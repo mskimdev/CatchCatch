@@ -50,6 +50,34 @@ public interface PointHistoryRepository extends JpaRepository<PointHistory, Inte
     );
 
     /**
+     * 사용 가능한 이벤트 적립분 조회 (락 없는 버전)
+     *
+     * findUsablePointGroups와 조회 조건은 동일하지만 PESSIMISTIC_WRITE 락을 걸지 않는다.
+     * 포인트를 실제로 차감하지 않는 단순 합계 조회(readOnly 트랜잭션)에서 사용한다.
+     * MySQL은 READ ONLY 트랜잭션에서 SELECT ... FOR UPDATE를 거부하므로,
+     * 락이 필요 없는 조회는 반드시 이 메서드를 사용해야 한다.
+     */
+    @Query("""
+        select ph
+        from PointHistory ph
+        where ph.user.id = :userId
+          and ph.eventHistory is not null
+          and ph.id = (
+              select max(ph2.id)
+              from PointHistory ph2
+              where ph2.user.id = ph.user.id
+                and ph2.eventHistory.id = ph.eventHistory.id
+          )
+          and ph.balance > 0
+          and ph.expiredAt > :now
+        order by ph.expiredAt asc, ph.id asc
+    """)
+    List<PointHistory> findUsablePointGroupsNoLock(
+            @Param("userId") Integer userId,
+            @Param("now") Timestamp now
+    );
+
+    /**
      * 만료 대상 이벤트 적립분 조회
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
