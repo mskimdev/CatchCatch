@@ -13,7 +13,7 @@
     const PROJECTS_KEY = "seatmap_projects";
     const CURRENT_PROJECT_KEY = "seatmap_current_project_id";
 
-    const DUMMY_SEATS = [{ id: "1-A-1-1-VIP-AVAILABLE" }];
+    const DUMMY_SEATS = [{ id: "1-A-A-1-VIP-AVAILABLE" }];
     const DUMMY_SECTIONS = [{ id: "1-A", name: "A구역", grade: "VIP", seatCount: 0 }];
 
     const STORAGE_KEYS = {
@@ -350,8 +350,9 @@
         const seatText = project.seatJsonText || JSON.stringify(DUMMY_SEATS);
         const sectionText = project.sectionJsonText || JSON.stringify(DUMMY_SECTIONS);
         const imageUrl = project.imageDataUrl
-            || localStorage.getItem("seatmap_cropped_image")
-            || localStorage.getItem("seat_button_originalImage")
+            || project.files?.croppedImage
+            || project.files?.image
+            || project.files?.originalImage
             || null;
 
         localStorage.setItem("concert_seats", seatText);
@@ -458,7 +459,7 @@
 
             serverProjects.forEach((item) => {
                 const folderName = item.folderName || item.id;
-                if (!folderName) {
+                if (!folderName || folderName === "seats") {
                     return;
                 }
 
@@ -547,6 +548,7 @@
         }
 
         setCurrentProjectId(project.id);
+        clearProjectImageCache();
         applyProjectToLocalStorage(project);
         renderCurrentProject();
         renderProjectList();
@@ -593,6 +595,19 @@
         renderCurrentProject();
         renderProjectList();
         toast("도면을 삭제했습니다.");
+    }
+
+    function clearProjectImageCache() {
+        [
+            "seatmap_crop_originalImage",
+            "seatmap_cropped_image",
+            "seat_button_originalImage",
+            "seat_button_resultImage",
+            "concert_originalImage",
+            "concert_cleanImage",
+            "concert_buttonImage",
+            "concert_stage4_finalImage"
+        ].forEach((key) => localStorage.removeItem(key));
     }
 
     function createProjectDetailText(project) {
@@ -661,7 +676,7 @@
             originalImage: `${base}/original-image.png`,
             croppedImage: `${base}/cropped-image.png`,
             image: `${base}/seatmap-image.png`,
-            seatJson: `${base}/seatmap-seats.json`,
+            seatJson: `/temp/seatmap/seats/${folderName}-seatmap-seats.json`,
             sectionJson: `${base}/seatmap-sections.json`,
             metaJson: `${base}/seatmap-meta.json`
         };

@@ -567,59 +567,98 @@ input[type="range"] {
     }
 }
 /* =========================================================
-   SeatTrace canvas/workspace common control
+   Shared workspace control bar
 ========================================================= */
-.seatmap-canvas-control,
-.seatmap-command-bar.seatmap-canvas-control {
+.seatmap-work-toolbar {
+    height: 56px;
     position: sticky;
-    top: 10px;
-    left: 14px;
-    z-index: 80;
-    width: max-content;
-    max-width: calc(100% - 28px);
+    top: 68px;
+    z-index: 40;
+    background: #ffffff;
+    border-bottom: 1px solid var(--seatmap-line);
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin: 10px 0 -2px 14px;
-    padding: 6px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.96);
-    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
-    backdrop-filter: blur(8px);
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 18px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
 }
 
-.seatmap-canvas-control .seatmap-command-btn {
-    min-width: 42px;
-    height: 31px;
-    padding: 0 11px;
-    border: 1px solid #dbe2ea;
-    border-radius: 6px;
-    background: #ffffff;
-    color: #334155;
-    font-size: 12px;
-    font-weight: 900;
-    line-height: 1;
-    text-decoration: none;
+.seatmap-work-toolbar__left,
+.seatmap-work-toolbar__tools,
+.seatmap-work-toolbar__right {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.seatmap-work-toolbar__title {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding-left: 4px;
+}
+
+.seatmap-work-toolbar__title strong {
+    color: #111827;
+    font-size: 13px;
+    font-weight: 950;
+    letter-spacing: -0.03em;
+}
+
+.seatmap-work-toolbar__title span {
+    margin-top: 2px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 360px;
+}
+
+.seatmap-work-toolbar__button,
+.seatmap-work-toolbar__save,
+.seatmap-work-toolbar__next {
+    height: 34px;
+    border-radius: 10px;
+    padding: 0 12px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 950;
     white-space: nowrap;
 }
 
-.seatmap-canvas-control .seatmap-command-btn:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
+.seatmap-work-toolbar__button {
+    border: 1px solid #dbe3ef;
+    background: #ffffff;
+    color: #334155;
 }
 
-.seatmap-canvas-control .seatmap-command-btn--link {
-    color: #475569;
+.seatmap-work-toolbar__button:hover { background: #f8fafc; }
+
+.seatmap-work-toolbar__save {
+    border: 0;
+    background: linear-gradient(135deg, var(--seatmap-violet), var(--seatmap-blue));
+    color: #ffffff;
 }
 
-.seatmap-canvas-control .seatmap-zoom-value {
-    min-width: 48px;
-    color: #475569;
-    font-size: 12px;
-    font-weight: 950;
-    text-align: center;
+.seatmap-work-toolbar__next {
+    border: 0;
+    background: #0f172a;
+    color: #ffffff;
+}
+
+@media (max-width: 1100px) {
+    .seatmap-work-toolbar {
+        top: 0;
+        height: auto;
+        min-height: 56px;
+        flex-wrap: wrap;
+        padding: 10px 14px;
+    }
 }

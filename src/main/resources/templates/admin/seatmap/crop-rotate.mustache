@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SeatTrace - 도면 자르기 & 회전</title>
+    <title>SeatTrace - 도면 정리</title>
 
     <link rel="stylesheet" href="/css/admin/seatmap-header.css">
     <link rel="stylesheet" href="/css/admin/seatmap-workspace.css">
@@ -12,7 +12,44 @@
 
 <body class="seatmap-crop-body">
 {{> admin/seatmap/common/header}}
-{{> admin/seatmap/workspace/workspace-crop-rotate}}
+{{> admin/seatmap/common/work-toolbar}}
+
+<main class="crop-page">
+    <aside class="crop-side">
+        <section class="crop-panel">
+            <span class="crop-panel__eyebrow">STEP 01</span>
+            <h1>도면 정리</h1>
+            <p>원본 PNG를 그대로 띄우고, 마우스로 저장할 영역을 직접 드래그합니다. 선택 영역 안은 원본 그대로 유지되고 바깥 영역만 흐리게 표시됩니다.</p>
+
+            <div class="crop-info">
+                <label>현재 도면</label>
+                <strong id="cropProjectName">도면 없음</strong>
+                <small id="cropProjectPath">새 도면을 먼저 생성하세요.</small>
+            </div>
+
+            <div class="crop-actions">
+                <button type="button" class="crop-action crop-action--primary" id="applyFullCrop">전체 영역 선택</button>
+                <button type="button" class="crop-action" id="clearCropArea">영역 다시 선택</button>
+                <button type="button" class="crop-action" id="openMainPage">메인으로</button>
+            </div>
+        </section>
+
+        <section class="crop-panel crop-panel--compact">
+            <h2>저장 대상</h2>
+            <code id="cropSavePath">/temp/seatmap/도면명/seatmap-image.png</code>
+        </section>
+    </aside>
+
+    <section class="crop-stage">
+        <div class="crop-stage__top">
+            <strong>미리보기</strong>
+            <span>이미지 위를 드래그해서 자를 영역을 선택하세요.</span>
+        </div>
+        <div class="crop-canvas-wrap" id="cropCanvasWrap">
+            <canvas id="cropCanvas"></canvas>
+        </div>
+    </section>
+</main>
 
 <div class="toast" id="toast"></div>
 

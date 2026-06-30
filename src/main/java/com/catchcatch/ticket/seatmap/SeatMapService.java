@@ -35,7 +35,7 @@ public class SeatMapService {
             Path.of("out/production/resources/static");
 
     private static final String DEFAULT_SEATS_JSON =
-            "[{\"id\":\"1-A-1-1-VIP-AVAILABLE\"}]";
+            "[{\"id\":\"1-VIP-A-1-VIP-AVAILABLE\"}]";
 
     private static final String DEFAULT_SECTIONS_JSON =
             "[{\"id\":\"1-A\",\"name\":\"A구역\",\"grade\":\"VIP\",\"seatCount\":0}]";
@@ -48,7 +48,7 @@ public class SeatMapService {
             String folderRelativePath = "temp/seatmap/" + folderName;
             String now = LocalDateTime.now().toString();
 
-            String seatJsonRelativePath = folderRelativePath + "/seatmap-seats.json";
+            String seatJsonRelativePath = "temp/seatmap/seats/" + folderName + "-seatmap-seats.json";
             String sectionJsonRelativePath = folderRelativePath + "/seatmap-sections.json";
             String originalImageRelativePath = folderRelativePath + "/original-image.png";
             String croppedImageRelativePath = folderRelativePath + "/cropped-image.png";
@@ -108,6 +108,7 @@ public class SeatMapService {
             try (var stream = Files.list(baseDir)) {
                 stream
                         .filter(Files::isDirectory)
+                        .filter(folder -> !"seats".equals(folder.getFileName().toString()))
                         .sorted(Comparator.comparing(this::getLastModifiedTimeSafe).reversed())
                         .forEach(folder -> projects.add(toProjectSummary(folder)));
             }
@@ -125,6 +126,7 @@ public class SeatMapService {
             String relativePath = "temp/seatmap/" + folderName;
 
             deleteStaticFolder(relativePath);
+            deleteStaticFolder("temp/seatmap/seats/" + folderName + "-seatmap-seats.json");
 
             return new ProjectDeleteResult(true, folderName);
         } catch (Exception e) {
@@ -135,10 +137,16 @@ public class SeatMapService {
     // 이미지 버튼화 이미지 저장
     public OverwriteSaveResult overwriteSave(SeatMapRequest.OverwriteSaveDTO req) {
         try {
-            String folderName = sanitizeFolderName(req.getFolderName());
-            String folderRelativePath = "temp/seatmap/" + folderName;
-            String jsonRelativePath = folderRelativePath + "/button-image-state.json";
-            String imageRelativePath = folderRelativePath + "/button-image.png";
+            Path jsonPath = Path.of(
+                    "src/main/resources/static/json/seatmap/seatmap-concert-session.json"
+            );
+
+            Path imagePath = Path.of(
+                    "src/main/resources/static/images/seatmap/generated/seatmap-concert-image.png"
+            );
+
+            Files.createDirectories(jsonPath.getParent());
+            Files.createDirectories(imagePath.getParent());
 
             String jsonText = req.getJsonText();
 
@@ -146,21 +154,23 @@ public class SeatMapService {
                 jsonText = "{}";
             }
 
-            writeTextToStaticAll(jsonRelativePath, jsonText);
+            Files.writeString(jsonPath, jsonText, StandardCharsets.UTF_8);
 
             String imageDataUrl = req.getImageDataUrl();
 
             if (imageDataUrl != null && imageDataUrl.startsWith("data:image")) {
-                byte[] imageBytes = decodeBase64Image(imageDataUrl);
-                writeBytesToStaticAll(imageRelativePath, imageBytes);
+                String base64 = imageDataUrl.replaceFirst("^data:image/\\w+;base64,", "");
+                byte[] imageBytes = Base64.getDecoder().decode(base64);
+                Files.write(imagePath, imageBytes);
             }
 
             return new OverwriteSaveResult(
-                    "/" + jsonRelativePath,
-                    "/" + imageRelativePath
+                    "/json/seatmap/seatmap-concert-session.json",
+                    "/images/seatmap/generated/seatmap-concert-image.png"
             );
-        } catch (Exception e) {
-            throw new RuntimeException("좌석 이미지 버튼화 저장 실패", e);
+
+        } catch (IOException e) {
+            throw new RuntimeException("좌석도 덮어쓰기 저장 실패", e);
         }
     }
 
@@ -176,12 +186,14 @@ public class SeatMapService {
             String folderName = sanitizeFolderName(req.getFolderName());
             String folderRelativePath = "temp/seatmap/" + folderName;
 
-            String seatJsonRelativePath = folderRelativePath + "/seatmap-seats.json";
+            String seatJsonRelativePath = "temp/seatmap/seats/" + folderName + "-seatmap-seats.json";
+            String oldSeatJsonRelativePath = folderRelativePath + "/seatmap-seats.json";
             String sectionJsonRelativePath = folderRelativePath + "/seatmap-sections.json";
             String imageRelativePath = folderRelativePath + "/seatmap-image.png";
             String croppedImageRelativePath = folderRelativePath + "/cropped-image.png";
 
             writeTextToStaticAll(seatJsonRelativePath, defaultText(req.getSeatJsonText(), DEFAULT_SEATS_JSON));
+            deleteStaticFolder(oldSeatJsonRelativePath);
             writeTextToStaticAll(sectionJsonRelativePath, defaultText(req.getSectionJsonText(), DEFAULT_SECTIONS_JSON));
 
             if (req.getImageDataUrl() != null && req.getImageDataUrl().startsWith("data:image")) {
@@ -283,7 +295,7 @@ public class SeatMapService {
                 folderUrl + "/original-image.png",
                 folderUrl + "/cropped-image.png",
                 folderUrl + "/seatmap-image.png",
-                folderUrl + "/seatmap-seats.json",
+                "/temp/seatmap/seats/" + folderName + "-seatmap-seats.json",
                 folderUrl + "/seatmap-sections.json",
                 folderUrl + "/seatmap-meta.json"
         );
@@ -309,7 +321,7 @@ public class SeatMapService {
                 + "\"originalImage\":\"original-image.png\","
                 + "\"croppedImage\":\"cropped-image.png\","
                 + "\"image\":\"seatmap-image.png\","
-                + "\"seats\":\"seatmap-seats.json\","
+                + "\"seats\":\"../seats/" + jsonEscape(folderName) + "-seatmap-seats.json\","
                 + "\"sections\":\"seatmap-sections.json\""
                 + "}"
                 + "}";
@@ -369,7 +381,7 @@ public class SeatMapService {
 
     private String sanitizeFolderName(String folderName) {
         if (folderName == null || folderName.isBlank()) {
-            return "seat";
+            return "concert-session";
         }
 
         String cleaned = folderName
@@ -380,7 +392,7 @@ public class SeatMapService {
                 .replaceAll("^_+|_+$", "");
 
         if (cleaned.isBlank()) {
-            return "seat";
+            return "concert-session";
         }
 
         return cleaned;
