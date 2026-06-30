@@ -16,6 +16,18 @@
   const IMAGE_META_KEY = "concert_imageMeta";
   const STAGE2_BACKGROUND_COLOR = "#ffffff";
   const STAGE2_SHAPE_COLOR = "#d9d9d9";
+
+  function getProjectFolderName() {
+    const query = new URLSearchParams(location.search);
+    return query.get("projectId") ||
+      localStorage.getItem("seatmap_current_folder_name") ||
+      localStorage.getItem("seatmap_current_project_id") ||
+      "seat";
+  }
+
+  function getProjectImageUrl(fileName) {
+    return `/temp/seatmap/${encodeURIComponent(projectFolderName || getProjectFolderName())}/${fileName}`;
+  }
   let stage1Settings = readStage1Settings();
 
   const base = $("baseCanvas");
@@ -33,10 +45,19 @@
   });
 
   let part = 1;
+  const projectFolderName = getProjectFolderName();
   let cleanUrl =
     localStorage.getItem("concert_cleanImage") ||
-    localStorage.getItem("concert_originalImage");
-  let originalUrl = localStorage.getItem("concert_originalImage") || cleanUrl;
+    localStorage.getItem("concert_buttonImage") ||
+    localStorage.getItem("seatmap_button_image_url") ||
+    getProjectImageUrl("button-image.png") ||
+    localStorage.getItem("concert_originalImage") ||
+    getProjectImageUrl("cropped-image.png");
+  let originalUrl =
+    localStorage.getItem("concert_originalImage") ||
+    localStorage.getItem("seatmap_original_image_url") ||
+    getProjectImageUrl("original-image.png") ||
+    cleanUrl;
   let W = 0,
     H = 0;
   let cleanImageLoaded = false;

@@ -3,8 +3,9 @@
 
     const state = {
         projectId: new URLSearchParams(location.search).get("projectId")
-            || localStorage.getItem("seatmap_current_project_id")
+            || localStorage.getItem("seatmap_current_folder_name")
             || localStorage.getItem("seatmap_current_folder")
+            || localStorage.getItem("seatmap_current_project_id")
             || "seat",
         image: null,
         objects: [],
@@ -72,8 +73,20 @@
         showToast(tool === "text" ? "텍스트 추가 모드" : tool === "rect" ? "구역 박스 추가 모드" : "좌석 추가 모드");
     }
 
+    function withCacheBust(url) {
+        if (!url || String(url).startsWith("data:image") || String(url).startsWith("blob:")) {
+            return url;
+        }
+
+        return `${url}${String(url).includes("?") ? "&" : "?"}t=${Date.now()}`;
+    }
+
     function loadImage() {
-        const url = `/temp/seatmap/${encodeURIComponent(state.projectId)}/seatmap-image.png?t=${Date.now()}`;
+        const savedUrl = localStorage.getItem("seatmap_final_image_url")
+            || localStorage.getItem("concert_stage4_finalImageUrl")
+            || localStorage.getItem("concert_generated_overviewImage");
+        const baseUrl = savedUrl || `/temp/seatmap/${encodeURIComponent(state.projectId)}/seatmap-image.png`;
+        const url = withCacheBust(baseUrl);
         const img = new Image();
         img.onload = () => {
             state.image = img;

@@ -421,21 +421,48 @@
     }
 
     function findBestSourceImage() {
-        const priority = [
-            STORAGE.original,
-            STORAGE.concertOriginal,
-            STORAGE.concertClean,
-            STORAGE.result
+        const projectFolder = getSeatmapProjectFolderName();
+        const fallbackBase = `/temp/seatmap/${projectFolder}`;
+        const priorityValues = [
+            { key: STORAGE.original, value: localStorage.getItem(STORAGE.original) },
+            { key: "seatmap_cropped_image_url", value: localStorage.getItem("seatmap_cropped_image_url") },
+            { key: "cropped-image.png", value: `${fallbackBase}/cropped-image.png` },
+            { key: STORAGE.concertOriginal, value: localStorage.getItem(STORAGE.concertOriginal) },
+            { key: "original-image.png", value: `${fallbackBase}/original-image.png` },
+            { key: STORAGE.concertClean, value: localStorage.getItem(STORAGE.concertClean) },
+            { key: STORAGE.result, value: localStorage.getItem(STORAGE.result) }
         ];
 
-        for (const key of priority) {
-            const value = localStorage.getItem(key);
-            if (value && value.startsWith("data:image")) {
-                return { key, dataUrl: value };
+        for (const item of priorityValues) {
+            const value = item.value;
+            if (isLoadableImageSource(value)) {
+                return { key: item.key, dataUrl: appendButtonImageCacheBust(value) };
             }
         }
 
         return { key: "", dataUrl: "" };
+    }
+
+    function isLoadableImageSource(value) {
+        if (!value || typeof value !== "string") {
+            return false;
+        }
+
+        const source = value.trim();
+
+        return source.startsWith("data:image")
+            || source.startsWith("blob:")
+            || /^https?:\/\//i.test(source)
+            || /^\//.test(source)
+            || /\.(png|jpe?g|webp|gif|bmp|svg)(\?|#|$)/i.test(source);
+    }
+
+    function appendButtonImageCacheBust(value) {
+        if (!value || value.startsWith("data:image") || value.startsWith("blob:")) {
+            return value;
+        }
+
+        return `${value}${value.includes("?") ? "&" : "?"}t=${Date.now()}`;
     }
 
     function runAutoConversion(shouldApplyToConcert, options = {}) {
