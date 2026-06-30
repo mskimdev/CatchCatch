@@ -5,13 +5,14 @@ import com.catchcatch.ticket.concert.banner.BannerRepository;
 import com.catchcatch.ticket.concert.banner.BannerResponse;
 import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.concert.core.ConcertStatus;
+import com.catchcatch.ticket.concert.dto.ConcertRequest;
 import com.catchcatch.ticket.concert.dto.ConcertResponse;
 import com.catchcatch.ticket.concert.repository.ConcertRepository;
 import com.catchcatch.ticket.concertlike.ConcertLikeRepository;
+import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.review.ReviewRepository;
 import com.catchcatch.ticket.seat.Seat;
 import com.catchcatch.ticket.seat.SeatRepository;
-import com.catchcatch.ticket.user.dto.SessionUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -40,7 +41,7 @@ public class ConcertService {
     // ==========================================
 
     // 1. 추천 콘서트 (예매 가능)
-    public List<ConcertResponse.ListDTO> getHomepageConcerts() {
+    public List<ConcertResponse.ListDTO> getHomeList() {
 
         Pageable pageable = PageRequest.of(0, 8);
 
@@ -48,7 +49,7 @@ public class ConcertService {
         return concertList.stream()
                 .map(ConcertResponse.ListDTO::from)
                 .collect(Collectors.toList());
-    } // end of getHomepageConcerts
+    } // end of getHomeList
 
     // 2. 인기 콘서트
     public List<ConcertResponse.ListDTO> getPopularConcerts() {
@@ -88,11 +89,11 @@ public class ConcertService {
     /**
      * [상세 페이지용] 공연 상세 데이터 조회 (Concert + Sessions + Seats 통합)
      */
-    public ConcertResponse.DetailDTO getConcertDetail(Integer concertId, Integer sessionUserId) {
+    public ConcertResponse.DetailDTO getDetail(Integer concertId, Integer sessionUserId) {
 
         // 1. 공연 및 회차 데이터 조회 (N+1 방지)
         Concert concert = concertRepository.findByIdWithDetails(concertId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공연입니다. ID: " + concertId));
+                .orElseThrow(() -> new NotFoundException("해당 공연을 찾을 수 없습니다."));
 
         // 좋아요 유무 확인
         boolean isLiked = false;
@@ -111,15 +112,14 @@ public class ConcertService {
 
         // 3. 엔티티 데이터를 DTO 팩토리 메서드로 넘겨 조립합니다.
         return ConcertResponse.DetailDTO.of(concert, seats, reviewCount,isLiked);
-    } // end of getConcertDetail
+    } // end of getDetail
 
 
     /**
      * [목록 페이지용] 동적 필터 및 검색 적용
      */
-    public ConcertResponse.ConcertListResponseDTO searchConcertList(Concert.ConcertSearchCondition condition) {
+    public ConcertResponse.ConcertListResponseDTO getList(ConcertRequest.SearchConditionDTO condition) {
 
-        // 2. 다시 QueryDSL로 스위치 ON!
         return concertRepository.findConcertsByFilters(condition);
     }
 
@@ -127,7 +127,7 @@ public class ConcertService {
     // 3. 콘서트오픈예정 페이지(open-soon) 메서드
     // ==========================================
     @Transactional(readOnly = true)
-    public ConcertResponse.OpenSoonPageResponse getOpenSoonPageData(String genre) {
+    public ConcertResponse.OpenSoonPageResponse getOpenSoonPage(String genre) {
         // 1. DB에서 장르 필터링 조건에 맞게 조회
         List<Concert> concerts = concertRepository.findOpenSoonConcerts(genre);
 

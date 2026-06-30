@@ -1,5 +1,3 @@
-/* concert-list.css — 콘서트 목록 페이지 전용 */
-
 .cc-list-layout { display: grid; grid-template-columns: 230px 1fr; gap: 30px; align-items: start; }
 
 .cc-sidebar { position: sticky; top: 232px; overflow: hidden; }

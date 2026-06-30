@@ -50,7 +50,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/admin",
                         "/admin/**",
                         "/api/admin/**",
-                        "/api/concert/**",
                         "/api/venues/**",
                         "/api/queue/admin/**"
                 )

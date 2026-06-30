@@ -1,13 +1,8 @@
-/* concert-detail.css — 콘서트 상세 페이지 전용 */
-
 html, body, .cc-main, .cc-detail-main {
     overflow: visible;
     overflow-x: clip;
 }
 
-/* =========================================================
-   1. 전체 페이지 레이아웃 (PC: 좌 7 우 3 / 모바일: 1단)
-   ========================================================= */
 .cc-detail-page {
     display: flex;
     align-items: flex-start;
@@ -19,7 +14,6 @@ html, body, .cc-main, .cc-detail-main {
     position: relative;
 }
 
-/* 좌측 묶음 (포스터, 정보, 탭, 본문, 리뷰) */
 .cc-left-wrapper {
     flex: 1;
     min-width: 0;
@@ -28,7 +22,6 @@ html, body, .cc-main, .cc-detail-main {
     gap: 30px;
 }
 
-/* 우측 묶음 (PC용 Sticky 사이드바 예매창) */
 .cc-detail-sidebar {
     flex: 0 0 clamp(320px, 30vw, 360px);
     width: clamp(320px, 30vw, 360px);
@@ -43,20 +36,16 @@ html, body, .cc-main, .cc-detail-main {
 .cc-detail-sidebar::-webkit-scrollbar { width: 6px; }
 .cc-detail-sidebar::-webkit-scrollbar-thumb { background-color: #ddd; border-radius: 10px; }
 
-
-/* =========================================================
-   2. 포스터 및 상단 정보 영역 (Hero)
-   ========================================================= */
 .cc-detail-hero {
     display: flex;
-    align-items: stretch; /* 높이 맞춤 */
+    align-items: stretch;
     gap: 40px;
     width: 100%;
 }
 
 .cc-poster-large {
     flex: 0 0 45%;
-    border-radius: 5%; /* 라운드 제거 */
+    border-radius: 1%;
     background: #0f1224;
     box-shadow: 0 12px 30px rgba(0,0,0,0.15);
     overflow: hidden;
@@ -65,7 +54,7 @@ html, body, .cc-main, .cc-detail-main {
 .cc-poster-large img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* 여백 없이 꽉 채우기 */
+    object-fit: cover;
     display: block;
 }
 
@@ -78,7 +67,6 @@ html, body, .cc-main, .cc-detail-main {
 
 .cc-detail-category { color: #ff3b30; font-weight: 800; margin-bottom: 8px; font-size: 15px; }
 
-/* 타이틀과 하트 아이콘(PC용) 한 줄 배치 */
 .cc-detail-title-row {
     display: flex;
     align-items: flex-start;
@@ -88,7 +76,6 @@ html, body, .cc-main, .cc-detail-main {
 }
 .cc-detail-title { margin: 0; font-size: 32px; font-weight: 900; line-height: 1.3; word-break: keep-all; flex: 1; }
 
-/* PC용 하트 버튼 */
 .cc-btn-heart {
     display: inline-flex; align-items: center; justify-content: center;
     width: 48px; height: 48px; flex-shrink: 0;
@@ -116,10 +103,6 @@ html, body, .cc-main, .cc-detail-main {
 .cc-price-row span { color: #666; width: 60px; }
 .cc-price-row strong { color: #111; font-weight: 900; font-size: 17px; }
 
-
-/* =========================================================
-   3. 본문 탭 및 상세 영역
-   ========================================================= */
 .cc-detail-content-body { width: 100%; max-width: 100%; min-width: 0; margin-top: 10px; }
 .cc-detail-content__inner { display: grid; width: 100%; min-width: 0; gap: 20px; }
 .cc-detail-auxiliary-desc { box-sizing: border-box; padding: 30px; border: 1px solid #e5e5e5; border-radius: 16px; background: #fafafa; min-width: 0; }
@@ -129,10 +112,6 @@ html, body, .cc-main, .cc-detail-main {
 .desc-text { color: #333; font-size: 16px; font-weight: 500; line-height: 1.8; white-space: pre-wrap; word-break: break-all; overflow-wrap: break-word;}
 .desc-text img { max-width: 100%; height: auto; margin: 20px auto; border-radius: 12px; display: block; }
 
-
-/* =========================================================
-   4. 예매창 공통 모듈 (PC 사이드바 & 모바일 바텀시트 공용)
-   ========================================================= */
 .cc-quick-booking { padding: 20px; border-radius: 18px; box-shadow: 0 18px 42px rgba(43, 21, 91, .08); background: #fff; }
 .cc-quick-booking h3 { margin: 0 0 16px; font-size: 18px; font-weight: 950; }
 
@@ -187,10 +166,6 @@ html, body, .cc-main, .cc-detail-main {
 .cc-open-countdown__sep { font-size: 16px; font-weight: 950; color: #cfd5e3; padding-bottom: 16px; }
 .cc-open-countdown__date { margin: 0; font-size: 12px; font-weight: 750; color: #bbb; }
 
-
-/* =========================================================
-   5. 완벽 복구된 리뷰(Review) UI 스타일
-   ========================================================= */
 body.cc-review-modal-open { overflow: hidden; }
 .cc-review-modal[hidden] { display: none; }
 .cc-review-modal { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 24px; }
@@ -256,29 +231,22 @@ body.cc-review-modal-open { overflow: hidden; }
 .cc-review-empty h5 { margin: 0 0 8px; color: #111; font-size: 19px; font-weight: 950; }
 .cc-review-empty p { margin: 0; color: #888; font-weight: 750; }
 
-
-/* =========================================================
-   6. 반응형 디자인 (모바일 전용 1단 레이아웃 및 바텀시트)
-   ========================================================= */
-
-/* PC 모드에서는 모바일 전용 팝업 헤더 & 하단 플로팅 바 감추기 */
 .cc-mobile-sidebar-header,
 .cc-mobile-fixed-footer {
     display: none;
 }
 
 @media (max-width: 1180px) {
-    /* 1. 레이아웃 1단으로 변경 (사이드바 해제) */
+
     .cc-detail-page {
         display: block;
-        padding: 20px 16px 120px; /* 하단 바 영역만큼 여백 확보 */
+        padding: 20px 16px 120px;
     }
 
     .cc-left-wrapper {
         display: block;
     }
 
-    /* 2. 모바일 하트/타이틀 재정렬 */
     .cc-detail-hero {
         flex-direction: column;
         align-items: center;
@@ -292,10 +260,9 @@ body.cc-review-modal-open { overflow: hidden; }
 
     .cc-detail-title-row { align-items: center; }
 
-    /* 3. 모바일 전용 하단 고정 예매버튼 표시 */
     .cc-mobile-fixed-footer {
         display: flex;
-        gap: 10px; /* 버튼과 하트 아이콘 사이 간격 */
+        gap: 10px;
         position: fixed;
         inset: auto 0 0 0;
         background: rgba(255, 255, 255, 0.95);
@@ -307,10 +274,9 @@ body.cc-review-modal-open { overflow: hidden; }
     }
 
     .cc-mobile-fixed-footer .cc-btn {
-        flex: 1; /* 예매 버튼이 남은 공간 꽉 채움 */
+        flex: 1;
     }
 
-    /* 4. 예매창을 바텀시트(Bottom Sheet) 모달로 변환 */
     .cc-detail-sidebar {
         position: fixed;
         inset: auto 0 0 0;
@@ -318,22 +284,20 @@ body.cc-review-modal-open { overflow: hidden; }
         max-width: none;
         max-height: 80vh;
         background: #fff;
-        z-index: 2000; /* 전체 요소를 덮음 */
+        z-index: 2000;
         border-radius: 24px 24px 0 0;
         box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
-        transform: translateY(100%); /* 기본 숨김 */
+        transform: translateY(100%);
         transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         display: flex;
         flex-direction: column;
     }
 
-    .cc-detail-sidebar.is-open { transform: translateY(0); } /* 오픈 클래스 */
+    .cc-detail-sidebar.is-open { transform: translateY(0); }
 
-    /* 바텀시트 전용 헤더 표시 */
     .cc-mobile-sidebar-header { display: flex; }
     .cc-quick-booking { box-shadow: none; padding: 20px 24px; }
 
-    /* 5. 기타 모바일 디테일 */
     .cc-tabs {
         margin: 20px 0;
         overflow-x: auto;
@@ -393,7 +357,6 @@ body.cc-review-modal-open { overflow: hidden; }
         padding: 44px 20px;
     }
 
-    /* 상세페이지 본문 영역 스타일 */
     .cc-detail-content {
         width: 100%;
         margin-top: 40px;
@@ -401,7 +364,6 @@ body.cc-review-modal-open { overflow: hidden; }
         border-top: 1px solid #e5e5e5;
     }
 
-    /* 메인 배너 이미지 통으로 맞추기 */
     .cc-detail-main-banner {
         width: 100%;
         text-align: center;
@@ -415,7 +377,6 @@ body.cc-review-modal-open { overflow: hidden; }
         margin: 0 auto;
     }
 
-    /* 보조 설명 박스 스타일링 */
     .cc-detail-auxiliary-desc {
         width: 100%;
         max-width: 100%;
@@ -441,7 +402,6 @@ body.cc-review-modal-open { overflow: hidden; }
     }
 }
 
-/* 공연장 안내 / 지도 - PC, 모바일 공통 */
 .cc-venue-section,
 .cc-refund-section {
     margin-top: 24px;
@@ -524,7 +484,6 @@ body.cc-review-modal-open { overflow: hidden; }
     color: #6d28d9;
 }
 
-/* 취소/환불 규정 - PC, 모바일 공통 */
 .cc-refund-title {
     margin: 0 0 24px;
     font-size: 24px;

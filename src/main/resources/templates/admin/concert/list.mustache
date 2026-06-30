@@ -121,7 +121,7 @@
             onConfirm: async () => {
                 try {
                     CcUI.loading.show('공연을 삭제하고 있습니다...');
-                    const { res, data } = await apiDelete(`/api/concert/${id}`);
+                    const { res, data } = await apiDelete(`/api/admin/concerts/${id}`);
                     CcUI.loading.hide();
 
                     if (res && res.ok) {
@@ -136,7 +136,6 @@
                     CcUI.alert(data?.msg || '공연 삭제에 실패했습니다.', 'error');
                 } catch (error) {
                     CcUI.loading.hide();
-                    console.error('삭제 요청 중 오류 발생:', error);
                     CcUI.alert('삭제 처리 중 서버와 통신하지 못했습니다.', 'error');
                 }
             }
