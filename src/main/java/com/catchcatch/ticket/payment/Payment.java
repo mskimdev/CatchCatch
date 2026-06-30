@@ -1,6 +1,7 @@
 package com.catchcatch.ticket.payment;
 
 import com.catchcatch.ticket.booking.Booking;
+import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.payment.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -108,12 +109,11 @@ public class Payment {
     }
 
 
-    public void changeMethod(String method) {
+    public void changeStatus(PaymentStatus status) {
         if (this.status != PaymentStatus.READY) {
-            throw new IllegalStateException("결제 대기 상태에서만 결제 수단을 변경할 수 있습니다.");
+            throw new BadRequestException("결제 대기 상태가 아닙니다.");
         }
-
-        this.method = method;
+        this.status = status;
     }
 
     public void changePrepareInfo(String method,

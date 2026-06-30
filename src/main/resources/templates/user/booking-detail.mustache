@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="/css/user-mypage.css">
 <link rel="stylesheet" href="/css/user-booking-detail.css">
 </head>
-
+<body>
 <main class="cc-main">
     <div class="cc-container cc-mypage-layout">
 
@@ -43,40 +43,49 @@
                         </div>
 
                         <div class="cc-detail-section-body">
-                            <div class="cc-ticket-qr-wrap">
-                                <div id="ticket-qr"
-                                     class="cc-ticket-qr"
-                                     data-token="{{ticketToken}}">
-                                </div>
+                            {{#canUseTicket}}
+                                <div class="cc-ticket-qr-wrap">
+                                    <div id="ticket-qr"
+                                         class="cc-ticket-qr"
+                                         data-token="{{ticketToken}}">
+                                    </div>
 
-                                <p class="cc-ticket-qr-desc">
-                                    공연 당일 입장 시 직원에게 QR코드를 보여주세요.
-                                </p>
-
-                                <div class="cc-ticket-code-box">
-                                    <button type="button"
-                                            class="cc-ticket-code-toggle js-ticket-code-toggle">
-                                        입장 코드 보기
-                                    </button>
-
-                                    <p class="cc-ticket-code is-hidden js-ticket-code">
-                                        입장 코드
-                                        <strong>{{ticketCode}}</strong>
+                                    <p class="cc-ticket-qr-desc">
+                                        공연 당일 입장 시 직원에게 QR코드를 보여주세요.
                                     </p>
 
-                                    <a href="/staff/tickets/verify-code?code={{ticketCode}}"
+                                    <div class="cc-ticket-code-box">
+                                        <button type="button"
+                                                class="cc-ticket-code-toggle js-ticket-code-toggle">
+                                            입장 코드 보기
+                                        </button>
+
+                                        <p class="cc-ticket-code is-hidden js-ticket-code">
+                                            입장 코드
+                                            <strong>{{ticketCode}}</strong>
+                                        </p>
+
+                                        <a href="/staff/tickets/verify-code?code={{ticketCode}}"
+                                        target="_blank"
+                                        class="cc-ticket-test-link">
+                                        수동 검증 테스트
+                                        </a>
+                                    </div>
+
+                                    <a href="/staff/tickets/verify?token={{ticketToken}}"
                                     target="_blank"
                                     class="cc-ticket-test-link">
-                                    수동 검증 테스트
+                                    입장권 검증 테스트
                                     </a>
                                 </div>
+                            {{/canUseTicket}}
 
-                                <a href="/staff/tickets/verify?token={{ticketToken}}"
-                                target="_blank"
-                                class="cc-ticket-test-link">
-                                입장권 검증 테스트
-                                </a>
-                            </div>
+                            {{^canUseTicket}}
+                                <div class="cc-ticket-disabled">
+                                    <strong>입장권을 사용할 수 없습니다.</strong>
+                                    <p>취소되었거나 결제가 완료되지 않은 예매는 QR코드를 표시하지 않습니다.</p>
+                                </div>
+                            {{/canUseTicket}}
                         </div>
                     </section>
 
@@ -192,5 +201,5 @@
 <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{kakaoMapJsKey}}&autoload=false&libraries=services"></script>
 <script src="/js/booking/booking-detail-map.js"></script>
 <script src="/js/booking/booking-detail.js"></script>
-
+</body>
 </html>

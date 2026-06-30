@@ -63,12 +63,6 @@
                             </div>
                         {{/detailBannerUrl}}
 
-                        {{#detailDescription1}}
-                            <div class="cc-detail-auxiliary-desc side-box">
-                                <h4 class="desc-title" style="color: #cc0000;">상세페이지 내용</h4>
-                                <div class="desc-text">{{{detailDescription1}}}</div>
-                            </div>
-                        {{/detailDescription1}}
 
                         {{#detailDescription2}}
                             <div class="cc-detail-auxiliary-desc info-box">
@@ -190,12 +184,15 @@
                                 </select>
                                 <div class="cc-session-card-list" data-session-picker-for="sessionId">
                                     {{#sessions}}
-                                        <button type="button" class="cc-session-card" data-session-value="{{id}}">
+                                        <button type="button"
+                                                class="cc-session-card"
+                                                data-session-value="{{id}}"
+                                                {{#seatRemains}}data-seat-{{gradeKey}}="{{remainingCount}}" {{/seatRemains}}>
                                             <strong>{{label}}</strong>
                                         </button>
                                     {{/sessions}}
                                 </div>
-                                <div class="cc-seat-remain">VIP석 <b>108</b> / R석 <b>137</b> / S석 <b class="is-zero">0석</b></div>
+                                <div class="cc-seat-remain" aria-live="polite"></div>
                             </div>
                         </section>
                     </div>
@@ -1004,6 +1001,7 @@ function initAddressCopy() {
                     buttons.forEach(item => item.classList.remove("is-selected"));
                     button.classList.add("is-selected");
                     updateSessionSummary(sessionSelect, sessionSummary);
+                    updateSeatRemain(form, button);
                     sessionSelect.dispatchEvent(new Event("change", { bubbles: true }));
                 });
             });
@@ -1013,6 +1011,7 @@ function initAddressCopy() {
                 firstVisibleButton.click();
             } else {
                 updateSessionSummary(sessionSelect, sessionSummary);
+                updateSeatRemain(form, Array.from(buttons).find(button => button.dataset.sessionValue === sessionSelect.value));
             }
         });
     }
@@ -1041,11 +1040,13 @@ function initAddressCopy() {
             buttons.forEach(button => button.classList.remove("is-selected"));
             currentButton.classList.add("is-selected");
             updateSessionSummary(sessionSelect, sessionSummary);
+            updateSeatRemain(form, currentButton);
         } else if (firstVisibleButton) {
             firstVisibleButton.click();
         } else {
             sessionSelect.value = "";
             if (sessionSummary) sessionSummary.textContent = "";
+            updateSeatRemain(form, null);
         }
     }
 
@@ -1053,6 +1054,36 @@ function initAddressCopy() {
         if (!sessionSelect || !sessionSummary) return;
         const selectedOption = Array.from(sessionSelect.options).find(opt => opt.value === sessionSelect.value);
         sessionSummary.textContent = selectedOption ? selectedOption.textContent.trim() : "";
+    }
+
+    function updateSeatRemain(form, selectedButton) {
+        const seatRemain = form ? form.querySelector(".cc-seat-remain") : null;
+        if (!seatRemain) return;
+
+        if (!selectedButton) {
+            seatRemain.textContent = "잔여 좌석 정보가 없습니다.";
+            return;
+        }
+
+        const gradeLabels = [
+            { key: "vip", label: "VIP석" },
+            { key: "r", label: "R석" },
+            { key: "s", label: "S석" },
+            { key: "a", label: "A석" }
+        ];
+
+        const items = gradeLabels
+            .map(({ key, label }) => {
+                const value = selectedButton.getAttribute(`data-seat-${key}`);
+                if (value === null) return null;
+
+                const remainingCount = Number(value) || 0;
+                const zeroClass = remainingCount === 0 ? ' class="is-zero"' : "";
+                return `${label} <b${zeroClass}>${remainingCount}석</b>`;
+            })
+            .filter(Boolean);
+
+        seatRemain.innerHTML = items.length > 0 ? items.join(" / ") : "잔여 좌석 정보가 없습니다.";
     }
 
     function initBookingSectionToggle() {

@@ -160,7 +160,7 @@ public class PaymentResponse {
                     formatAmount(payment.getAmount()),
 
                     payment.getPaidAt(),
-                    formatTimestampMinute(payment.getPaidAt()),
+                    formatTimestampMinute(payment.getPaidAt(),payment.getStatus()),
 
                     payment.getStatus(),
                     toStatusLabel(payment.getStatus()),
@@ -507,7 +507,11 @@ public class PaymentResponse {
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
 
-    private static String formatTimestampMinute(Timestamp timestamp) {
+    private static String formatTimestampMinute(Timestamp timestamp, PaymentStatus status) {
+        if (status == PaymentStatus.CANCELED) {
+            return "예매 취소";
+        }
+
         if (timestamp == null) {
             return "결제 대기";
         }

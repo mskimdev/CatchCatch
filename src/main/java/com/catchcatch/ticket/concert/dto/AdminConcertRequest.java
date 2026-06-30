@@ -1,6 +1,5 @@
 package com.catchcatch.ticket.concert.dto;
 
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -40,7 +39,6 @@ public class AdminConcertRequest {
             @Min(value = 0, message = "A석 가격은 0 이상이어야 합니다.")
             Integer priceA,
 
-            @Future(message = "티켓 오픈일은 미래여야 합니다.")
             @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
             LocalDateTime ticketOpenDate,
 
@@ -60,7 +58,6 @@ public class AdminConcertRequest {
             String organizer,
             String detailBannerUrl,
             String detailTitle,
-            String detailDescription1,
             String detailDescription2,
             String ageLimit,
             String contact,
@@ -130,7 +127,6 @@ public class AdminConcertRequest {
 
             String description,
             String detailBannerUrl,
-            String detailDescription1,
             String detailDescription2,
             String posterUrl,
             String concertStatus,
