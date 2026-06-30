@@ -12,39 +12,52 @@
 --  user_tb
 --  비밀번호: 전부 "ssar1234" BCrypt
 -- ================
-INSERT INTO user_tb (username, password, email, phone, profile_image, oauth_provider, role, point, created_at, is_deleted)
-VALUES
-    ('admin',    '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'admin@catchcatch.com',    '010-0000-0000', NULL, 'LOCAL', 'ADMIN', 0,     NOW(), false),
-    ('manager', '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'manager@catchcatch.com', '010-2222-2222', NULL, 'LOCAL', 'MANAGER', 0, NOW(), false),
-    ('user1',    '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'user1@test.com',          '010-1111-1111', NULL, 'LOCAL', 'USER',  0,     NOW(), false),
-    ('user2',    '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'user2@test.com',          '010-2222-2222', NULL, 'LOCAL', 'USER',  0,     NOW(), false),
-    ('user3',    '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'user3@test.com',          '010-3333-3333', NULL, 'LOCAL', 'USER',  0,     NOW(), false),
-    ('kakaouser','$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'kakao_12345@kakao.com',   '010-4444-4444', NULL, 'KAKAO', 'USER',  0,     NOW(), false),
-    ('ssar',     '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'ssar@naver.com',          '010-5729-1754', NULL, 'LOCAL', 'USER',  0,     NOW(), false);
+INSERT INTO user_tb (username, password, email, phone, profile_image, oauth_provider, role, point, created_at,
+                     is_deleted)
+VALUES ('admin', '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'admin@catchcatch.com',
+        '010-0000-0000', NULL, 'LOCAL', 'ADMIN', 0, NOW(), false),
+       ('manager', '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'manager@catchcatch.com',
+        '010-2222-2222', NULL, 'LOCAL', 'MANAGER', 0, NOW(), false),
+       ('user1', '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'user1@test.com', '010-1111-1111',
+        NULL, 'LOCAL', 'USER', 0, NOW(), false),
+       ('user2', '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'user2@test.com', '010-2222-2222',
+        NULL, 'LOCAL', 'USER', 0, NOW(), false),
+       ('user3', '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'user3@test.com', '010-3333-3333',
+        NULL, 'LOCAL', 'USER', 0, NOW(), false),
+       ('kakaouser', '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'kakao_12345@kakao.com',
+        '010-4444-4444', NULL, 'KAKAO', 'USER', 0, NOW(), false),
+       ('ssar', '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'ssar@naver.com', '010-5729-1754', NULL,
+        'LOCAL', 'USER', 0, NOW(), false);
 
 -- 실사용자 200명 (realuser1~200), 최근 6개월 내 가입, 20%는 카카오 소셜
-INSERT INTO user_tb (username, password, email, phone, profile_image, oauth_provider, role, point, created_at, is_deleted)
-SELECT
-    'realuser' || x,
-    '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK',
-    'realuser' || x || '@catchcatch.com',
-    '010-' || LPAD(CAST(MOD(x, 10000) AS VARCHAR), 4, '0') || '-' || LPAD(CAST(MOD(x * 37, 10000) AS VARCHAR), 4, '0'),
-    NULL,
-    CASE WHEN MOD(x, 5) = 0 THEN 'KAKAO' ELSE 'LOCAL' END,
-    'USER',
-    MOD(x * 173, 50000),
-    DATEADD('DAY', -MOD(x * 7, 180), NOW()),
-    false
+INSERT INTO user_tb (username, password, email, phone, profile_image, oauth_provider, role, point, created_at,
+                     is_deleted)
+SELECT 'realuser' || x,
+       '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK',
+       'realuser' || x || '@catchcatch.com',
+       '010-' || LPAD(CAST(MOD(x, 10000) AS VARCHAR), 4, '0') || '-' ||
+       LPAD(CAST(MOD(x * 37, 10000) AS VARCHAR), 4, '0'),
+       NULL,
+       CASE WHEN MOD(x, 5) = 0 THEN 'KAKAO' ELSE 'LOCAL' END,
+       'USER',
+       MOD(x * 173, 50000),
+       DATEADD('DAY', -MOD(x * 7, 180), NOW()),
+       false
 FROM SYSTEM_RANGE(1, 200) AS t(x);
 
 -- k6 부하테스트용 유저 5000명
-INSERT INTO user_tb (username, password, email, phone, profile_image, oauth_provider, role, point, created_at, is_deleted)
-SELECT
-    'loadgen' || x,
-    '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK',
-    'loadgen' || x || '@test.com',
-    '010-0000-0000',
-    NULL, 'LOCAL', 'USER', 0, NOW(), false
+INSERT INTO user_tb (username, password, email, phone, profile_image, oauth_provider, role, point, created_at,
+                     is_deleted)
+SELECT 'loadgen' || x,
+       '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK',
+       'loadgen' || x || '@test.com',
+       '010-0000-0000',
+       NULL,
+       'LOCAL',
+       'USER',
+       0,
+       NOW(),
+       false
 FROM SYSTEM_RANGE(1, 5000) AS t(x);
 -- user_id 기준:
 --   1=admin, 2=user1, 3=user2, 4=user3, 5=kakaouser, 6=ssar
@@ -53,9 +66,10 @@ FROM SYSTEM_RANGE(1, 5000) AS t(x);
 
 -- 후기 테스트 전용 계정
 -- 비밀번호: ssar1234
-INSERT INTO user_tb (username, password, email, phone, profile_image, oauth_provider, role, point, created_at, is_deleted)
-VALUES
-    ('sarr', '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'sarr@naver.com', '010-7777-7777', NULL, 'LOCAL', 'USER', 0, NOW(), false);
+INSERT INTO user_tb (username, password, email, phone, profile_image, oauth_provider, role, point, created_at,
+                     is_deleted)
+VALUES ('sarr', '$2a$10$khm3EIgyknCWhPOeB78.Oe7aSr1uF1DnytJ40b/LoBi9Q1Uig9RIK', 'sarr@naver.com', '010-7777-7777', NULL,
+        'LOCAL', 'USER', 0, NOW(), false);
 --   5207=sarr (후기 테스트)
 
 
@@ -63,15 +77,14 @@ VALUES
 --  venue_tb
 -- ================
 INSERT INTO venue_tb (name, address, total_capacity, seat_map_file_path, created_at)
-VALUES
-    ('고척스카이돔',          '서울특별시 구로구 경인로 430',                25000, NULL, NOW()),
-    ('고려대학교 화정체육관',  '서울특별시 성북구 안암로 145',                6000,  '/json/seatmap/seatmap-concert-session.json', NOW()),
-    ('장충체육관',            '서울특별시 중구 을지로 241',                  8000,  NULL, NOW()),
-    ('세종문화회관 대극장',    '서울특별시 종로구 세종대로 175',               3000,  NULL, NOW()),
-    ('일산 킨텍스 제1전시장', '경기도 고양시 일산서구 킨텍스로 217-60',       20000, NULL, NOW()),
-    ('인천 파라다이스시티',    '인천광역시 중구 영종해안남로321번길 186',       15000, NULL, NOW()),
-    ('k6 부하테스트 공연장 A','서울특별시 송파구 올림픽로 000',               1000,  NULL, NOW()),
-    ('k6 부하테스트 공연장 B','서울특별시 송파구 올림픽로 001',               1000,  NULL, NOW());
+VALUES ('고척스카이돔', '서울특별시 구로구 경인로 430', 25000, NULL, NOW()),
+       ('고려대학교 화정체육관', '서울특별시 성북구 안암로 145', 6000, '/json/seatmap/seatmap-concert-session.json', NOW()),
+       ('장충체육관', '서울특별시 중구 을지로 241', 8000, NULL, NOW()),
+       ('세종문화회관 대극장', '서울특별시 종로구 세종대로 175', 3000, NULL, NOW()),
+       ('일산 킨텍스 제1전시장', '경기도 고양시 일산서구 킨텍스로 217-60', 20000, NULL, NOW()),
+       ('인천 파라다이스시티', '인천광역시 중구 영종해안남로321번길 186', 15000, NULL, NOW()),
+       ('k6 부하테스트 공연장 A', '서울특별시 송파구 올림픽로 000', 1000, NULL, NOW()),
+       ('k6 부하테스트 공연장 B', '서울특별시 송파구 올림픽로 001', 1000, NULL, NOW());
 -- venue_id: 1=고척스카이돔, 2=고려대화정, 3=장충체육관, 4=세종문화회관, 5=킨텍스, 6=파라다이스시티, 7=k6A, 8=k6B
 
 
@@ -83,109 +96,108 @@ INSERT INTO concert_tb
  genre, start_date, end_date, ticket_open_date, age_limit, runtime, organizer, contact,
  detail_banner_url, detail_title, detail_description1, detail_description2,
  price_vip, price_r, price_s, price_a, created_at, is_deleted)
-VALUES
-    (2, 'Red Velvet FAN-CON 〈A Day in Red & Velvet〉', 'Red Velvet',
-     '레드벨벳의 공식 팬콘서트. 역대 최고의 셋리스트와 화려한 퍼포먼스로 레베럿과 함께하는 특별한 두 밤.',
-     '/images/posters/poster-redvelvet.jpg', 'OPEN', 'FANMEETING',
-     '2026-08-01', '2026-08-02', '2026-06-15 20:00:00', '전체 관람가', '120분', 'SM 엔터테인먼트', '1544-1111',
-     '/images/details/detail-redvelvet.jpg', '레드벨벳과 함께하는 특별한 여름',
-     '팬들이 직접 만들어가는 무대, Red Velvet FAN-CON', '고려대학교 화정체육관을 가득 채울 열기와 감동',
-     132000, 110000, 88000, 0, NOW(), false),
+VALUES (2, 'Red Velvet FAN-CON 〈A Day in Red & Velvet〉', 'Red Velvet',
+        '레드벨벳의 공식 팬콘서트. 역대 최고의 셋리스트와 화려한 퍼포먼스로 레베럿과 함께하는 특별한 두 밤.',
+        '/images/posters/poster-redvelvet.jpg', 'OPEN', 'FANMEETING',
+        '2026-08-01', '2026-08-02', '2026-06-15 20:00:00', '전체 관람가', '120분', 'SM 엔터테인먼트', '1544-1111',
+        '/images/details/detail-redvelvet.jpg', '레드벨벳과 함께하는 특별한 여름',
+        '팬들이 직접 만들어가는 무대, Red Velvet FAN-CON', '고려대학교 화정체육관을 가득 채울 열기와 감동',
+        132000, 110000, 88000, 0, NOW(), false),
 
-    (4, '뮤지컬 〈베토벤〉', '뮤지컬 배우 앙상블',
-     '천재 음악가 베토벤의 삶과 음악을 무대 위에 펼쳐내는 대작 뮤지컬. 세종문화회관 대극장에서의 감동적인 공연.',
-     '/images/posters/poster-beethoven.jpg', 'OPEN', 'MUSICAL',
-     '2026-06-09', '2026-08-11', '2026-04-15 14:00:00', '만 7세 이상 관람가', '150분 (인터미션 20분)', '신시컴퍼니', '1544-2222',
-     '/images/details/detail-beethoven.jpg', '천재의 고뇌와 열정이 만들어낸 불멸의 선율',
-     '베토벤의 삶을 감동적으로 그려낸 대작 뮤지컬', '세종문화회관 대극장을 가득 채울 웅장한 무대',
-     0, 150000, 130000, 110000, NOW(), false),
+       (4, '뮤지컬 〈베토벤〉', '뮤지컬 배우 앙상블',
+        '천재 음악가 베토벤의 삶과 음악을 무대 위에 펼쳐내는 대작 뮤지컬. 세종문화회관 대극장에서의 감동적인 공연.',
+        '/images/posters/poster-beethoven.jpg', 'OPEN', 'MUSICAL',
+        '2026-06-09', '2026-08-11', '2026-04-15 14:00:00', '만 7세 이상 관람가', '150분 (인터미션 20분)', '신시컴퍼니', '1544-2222',
+        '/images/details/detail-beethoven.jpg', '천재의 고뇌와 열정이 만들어낸 불멸의 선율',
+        '베토벤의 삶을 감동적으로 그려낸 대작 뮤지컬', '세종문화회관 대극장을 가득 채울 웅장한 무대',
+        0, 150000, 130000, 110000, NOW(), false),
 
-    (1, '2027 후지이 카제 Prema 월드 투어 - 서울', '후지이 카제',
-     '고척스카이돔을 매진시킨 후지이 카제의 두 번째 내한공연. Prema 월드투어 서울 단독 공연.',
-     '/images/posters/poster-fujiikaze.jpg', 'COMING_SOON', 'CONCERT',
-     '2027-01-09', '2027-01-09', '2026-09-05 12:00:00', '전체 관람가', '120분', '현대카드', '1644-1234',
-     '/images/details/detail-fujiikaze.jpg', '다시 한번 고척돔을 가득 채울 그의 목소리',
-     '일본을 넘어 전 세계를 사로잡은 후지이 카제의 Prema 월드 투어', '단 하루뿐인 서울 공연, 놓치지 마세요',
-     165000, 143000, 121000, 99000, NOW(), false),
+       (1, '2027 후지이 카제 Prema 월드 투어 - 서울', '후지이 카제',
+        '고척스카이돔을 매진시킨 후지이 카제의 두 번째 내한공연. Prema 월드투어 서울 단독 공연.',
+        '/images/posters/poster-fujiikaze.jpg', 'COMING_SOON', 'CONCERT',
+        '2027-01-09', '2027-01-09', '2026-09-05 12:00:00', '전체 관람가', '120분', '현대카드', '1644-1234',
+        '/images/details/detail-fujiikaze.jpg', '다시 한번 고척돔을 가득 채울 그의 목소리',
+        '일본을 넘어 전 세계를 사로잡은 후지이 카제의 Prema 월드 투어', '단 하루뿐인 서울 공연, 놓치지 마세요',
+        165000, 143000, 121000, 99000, NOW(), false),
 
-    (5, '워터밤 서울 2026', '다수 아티스트',
-     '국내 최대 규모 물총 축제 워터밤! 역대 최대 라인업으로 돌아온 여름 대표 페스티벌. 3일간 킨텍스를 가득 채울 뜨거운 열기.',
-     '/images/posters/poster-waterbomb.jpg', 'OPEN', 'FESTIVAL',
-     '2026-07-24', '2026-07-26', '2026-05-20 12:00:00', '만 18세 이상 관람가', '360분', '워터밤 컴퍼니', '1544-7755',
-     '/images/details/detail-waterbomb.jpg', '2026년 여름, 가장 뜨거운 3일',
-     '역대 최강 라인업과 함께하는 대한민국 최대 물총 축제', '킨텍스를 흠뻑 적실 잊지 못할 여름 추억',
-     220000, 90000, 0, 0, NOW(), false),
+       (5, '워터밤 서울 2026', '다수 아티스트',
+        '국내 최대 규모 물총 축제 워터밤! 역대 최대 라인업으로 돌아온 여름 대표 페스티벌. 3일간 킨텍스를 가득 채울 뜨거운 열기.',
+        '/images/posters/poster-waterbomb.jpg', 'OPEN', 'FESTIVAL',
+        '2026-07-24', '2026-07-26', '2026-05-20 12:00:00', '만 18세 이상 관람가', '360분', '워터밤 컴퍼니', '1544-7755',
+        '/images/details/detail-waterbomb.jpg', '2026년 여름, 가장 뜨거운 3일',
+        '역대 최강 라인업과 함께하는 대한민국 최대 물총 축제', '킨텍스를 흠뻑 적실 잊지 못할 여름 추억',
+        220000, 90000, 0, 0, NOW(), false),
 
-    (6, '사운드 플래닛 페스티벌 2026', '다수 아티스트',
-     '국내외 정상급 뮤지션들이 총출동하는 대규모 음악 페스티벌. 인천 파라다이스시티에서 펼쳐지는 2일간의 음악 축제.',
-     '/images/posters/poster-soundplanet.jpg', 'OPEN', 'FESTIVAL',
-     '2026-09-05', '2026-09-06', '2026-05-15 20:00:00', '전체 관람가', '480분', '사운드 리퍼블리카', '1544-4455',
-     '/images/details/detail-soundplanet.png', '바다와 음악이 만나는 최고의 페스티벌',
-     '국내외 정상급 아티스트들의 2일간 릴레이 공연', '인천 파라다이스시티에서 즐기는 낭만적인 음악 축제',
-     0, 143000, 0, 0, NOW(), false),
+       (6, '사운드 플래닛 페스티벌 2026', '다수 아티스트',
+        '국내외 정상급 뮤지션들이 총출동하는 대규모 음악 페스티벌. 인천 파라다이스시티에서 펼쳐지는 2일간의 음악 축제.',
+        '/images/posters/poster-soundplanet.jpg', 'OPEN', 'FESTIVAL',
+        '2026-09-05', '2026-09-06', '2026-05-15 20:00:00', '전체 관람가', '480분', '사운드 리퍼블리카', '1544-4455',
+        '/images/details/detail-soundplanet.png', '바다와 음악이 만나는 최고의 페스티벌',
+        '국내외 정상급 아티스트들의 2일간 릴레이 공연', '인천 파라다이스시티에서 즐기는 낭만적인 음악 축제',
+        0, 143000, 0, 0, NOW(), false),
 
-    (3, 'ICN 〉 NTG : BIG Naughty Concert', 'BIG Naughty (서동현)',
-     '힙합 씬의 신성 BIG Naughty(서동현)의 단독 콘서트. 장충체육관을 가득 채울 에너지 넘치는 무대.',
-     '/images/posters/poster-bignaughty.jpg', 'CLOSED_SOON', 'CONCERT',
-     '2026-07-11', '2026-07-11', '2026-06-10 20:00:00', '만 7세 이상 관람가', '120분', 'BIGHIT MUSIC', '1544-3366',
-     '/images/details/detail-bignaughty.png', '힙합을 넘어선 음악적 진화',
-     'BIG Naughty의 모든 것을 담은 첫 단독 콘서트', '장충체육관을 뒤흔들 역대급 퍼포먼스',
-     110000, 99000, 0, 0, NOW(), false),
+       (3, 'ICN 〉 NTG : BIG Naughty Concert', 'BIG Naughty (서동현)',
+        '힙합 씬의 신성 BIG Naughty(서동현)의 단독 콘서트. 장충체육관을 가득 채울 에너지 넘치는 무대.',
+        '/images/posters/poster-bignaughty.jpg', 'CLOSED_SOON', 'CONCERT',
+        '2026-07-11', '2026-07-11', '2026-06-10 20:00:00', '만 7세 이상 관람가', '120분', 'BIGHIT MUSIC', '1544-3366',
+        '/images/details/detail-bignaughty.png', '힙합을 넘어선 음악적 진화',
+        'BIG Naughty의 모든 것을 담은 첫 단독 콘서트', '장충체육관을 뒤흔들 역대급 퍼포먼스',
+        110000, 99000, 0, 0, NOW(), false),
 
-    (3, 'David Byrne Who Is The Sky? Tour', 'David Byrne',
-     '토킹 헤즈 리더이자 전설적인 뮤지션 데이비드 번의 첫 단독 내한공연. 반세기를 아우르는 명곡들과의 만남.',
-     '/images/posters/poster-davidbyrne.png', 'OPEN', 'CONCERT',
-     '2026-08-21', '2026-08-21', '2026-05-30 12:00:00', '전체 관람가', '120분', '라이브네이션코리아', '1588-7828',
-     '/images/details/detail-davidbyrne.png', '살아있는 전설이 서울을 찾아옵니다',
-     'Talking Heads부터 솔로 명반까지, 데이비드 번의 50년 음악 여정', '경희대 평화의전당에서 펼쳐지는 단 하루의 공연',
-     0, 143000, 121000, 99000, NOW(), false),
+       (3, 'David Byrne Who Is The Sky? Tour', 'David Byrne',
+        '토킹 헤즈 리더이자 전설적인 뮤지션 데이비드 번의 첫 단독 내한공연. 반세기를 아우르는 명곡들과의 만남.',
+        '/images/posters/poster-davidbyrne.png', 'OPEN', 'CONCERT',
+        '2026-08-21', '2026-08-21', '2026-05-30 12:00:00', '전체 관람가', '120분', '라이브네이션코리아', '1588-7828',
+        '/images/details/detail-davidbyrne.png', '살아있는 전설이 서울을 찾아옵니다',
+        'Talking Heads부터 솔로 명반까지, 데이비드 번의 50년 음악 여정', '경희대 평화의전당에서 펼쳐지는 단 하루의 공연',
+        0, 143000, 121000, 99000, NOW(), false),
 
-    (2, '나상현씨밴드 클럽투어 ''여름빛 2026'' - 서울', '나상현씨밴드',
-     '인디 밴드 나상현씨밴드의 전국 클럽투어 서울 공연. 뜨거운 여름밤을 수놓을 소규모 라이브의 감동.',
-     '/images/posters/poster-nasanghyun.jpg', 'OPEN', 'CONCERT',
-     '2026-08-30', '2026-08-30', '2026-06-20 12:00:00', '전체 관람가', '100분', '인디레이블 소속', '02-1234-5678',
-     '/images/details/detail-nasanghyun.jpg', '여름밤과 가장 잘 어울리는 인디의 감성',
-     '나상현씨밴드와 함께하는 여름 마지막 날의 특별한 기억', '소규모 공연장에서만 느낄 수 있는 뜨거운 라이브',
-     0, 0, 44000, 33000, NOW(), false),
+       (2, '나상현씨밴드 클럽투어 ''여름빛 2026'' - 서울', '나상현씨밴드',
+        '인디 밴드 나상현씨밴드의 전국 클럽투어 서울 공연. 뜨거운 여름밤을 수놓을 소규모 라이브의 감동.',
+        '/images/posters/poster-nasanghyun.jpg', 'OPEN', 'CONCERT',
+        '2026-08-30', '2026-08-30', '2026-06-20 12:00:00', '전체 관람가', '100분', '인디레이블 소속', '02-1234-5678',
+        '/images/details/detail-nasanghyun.jpg', '여름밤과 가장 잘 어울리는 인디의 감성',
+        '나상현씨밴드와 함께하는 여름 마지막 날의 특별한 기억', '소규모 공연장에서만 느낄 수 있는 뜨거운 라이브',
+        0, 0, 44000, 33000, NOW(), false),
 
-    (4, '정명훈x KBS교향악단x김선욱 〈베토벤+브람스〉', '정명훈, 김선욱',
-     '마에스트로 정명훈과 피아니스트 김선욱이 KBS교향악단과 함께하는 세기의 클래식 공연. 베토벤과 브람스의 걸작을 세종문화회관 대극장에서.',
-     '/images/posters/poster-myunghun.jpg', 'COMING_SOON', 'CLASSIC',
-     '2026-10-04', '2026-10-04', '2026-08-20 12:00:00', '만 7세 이상 관람가', '100분 (인터미션 20분)', '세종문화회관', '02-399-1000',
-     '/images/details/detail-myunghun.jpg', '두 거장이 함께하는 클래식의 밤',
-     '마에스트로 정명훈 x 피아니스트 김선욱 x KBS교향악단', '세종문화회관 대극장에서 만나는 베토벤과 브람스의 걸작',
-     120000, 100000, 80000, 60000, NOW(), false),
+       (4, '정명훈x KBS교향악단x김선욱 〈베토벤+브람스〉', '정명훈, 김선욱',
+        '마에스트로 정명훈과 피아니스트 김선욱이 KBS교향악단과 함께하는 세기의 클래식 공연. 베토벤과 브람스의 걸작을 세종문화회관 대극장에서.',
+        '/images/posters/poster-myunghun.jpg', 'COMING_SOON', 'CLASSIC',
+        '2026-10-04', '2026-10-04', '2026-08-20 12:00:00', '만 7세 이상 관람가', '100분 (인터미션 20분)', '세종문화회관', '02-399-1000',
+        '/images/details/detail-myunghun.jpg', '두 거장이 함께하는 클래식의 밤',
+        '마에스트로 정명훈 x 피아니스트 김선욱 x KBS교향악단', '세종문화회관 대극장에서 만나는 베토벤과 브람스의 걸작',
+        120000, 100000, 80000, 60000, NOW(), false),
 
-    -- k6 부하테스트 전용 콘서트 2개
-    (7, 'k6 부하테스트 콘서트 A', 'k6',
-     'k6 부하 테스트 전용 콘서트 데이터 A.',
-     '/images/sample/poster-music.svg', 'OPEN', 'CONCERT',
-     '2026-12-31', '2026-12-31', '2026-01-01 00:00:00', '전체 관람가', '120분', 'k6', '000-0000-0000',
-     '/images/sample/detail-banner.svg', 'k6 부하테스트 A', 'k6 부하 테스트 전용', 'k6 부하 테스트 전용',
-     100000, 80000, 60000, 40000, NOW(), false),
+       -- k6 부하테스트 전용 콘서트 2개
+       (7, 'k6 부하테스트 콘서트 A', 'k6',
+        'k6 부하 테스트 전용 콘서트 데이터 A.',
+        '/images/sample/poster-music.svg', 'OPEN', 'CONCERT',
+        '2026-12-31', '2026-12-31', '2026-01-01 00:00:00', '전체 관람가', '120분', 'k6', '000-0000-0000',
+        '/images/sample/detail-banner.svg', 'k6 부하테스트 A', 'k6 부하 테스트 전용', 'k6 부하 테스트 전용',
+        100000, 80000, 60000, 40000, NOW(), false),
 
-    (8, 'k6 부하테스트 콘서트 B', 'k6',
-     'k6 부하 테스트 전용 콘서트 데이터 B.',
-     '/images/sample/poster-music.svg', 'OPEN', 'CONCERT',
-     '2026-12-31', '2026-12-31', '2026-01-01 00:00:00', '전체 관람가', '120분', 'k6', '000-0000-0000',
-     '/images/sample/detail-banner.svg', 'k6 부하테스트 B', 'k6 부하 테스트 전용', 'k6 부하 테스트 전용',
-     100000, 80000, 60000, 40000, NOW(), false),
+       (8, 'k6 부하테스트 콘서트 B', 'k6',
+        'k6 부하 테스트 전용 콘서트 데이터 B.',
+        '/images/sample/poster-music.svg', 'OPEN', 'CONCERT',
+        '2026-12-31', '2026-12-31', '2026-01-01 00:00:00', '전체 관람가', '120분', 'k6', '000-0000-0000',
+        '/images/sample/detail-banner.svg', 'k6 부하테스트 B', 'k6 부하 테스트 전용', 'k6 부하 테스트 전용',
+        100000, 80000, 60000, 40000, NOW(), false),
 
-    (5, '2026 전주얼티밋뮤직페스티벌', '다수 아티스트',
-     '전주 완산야구장에서 펼쳐지는 대한민국 대표 여름 뮤직 페스티벌. 국내외 정상급 아티스트들이 총출동하는 역대 최강 라인업.',
-     '/images/banners/banner-jeonju-festival.jpg', 'OPEN', 'FESTIVAL',
-     '2026-08-07', '2026-08-09', '2026-06-20 20:00:00', '만 14세 이상 관람가', '360분', 'JUMF 조직위원회', '1544-7766',
-     '/images/banners/banner-jeonju-festival.jpg', '전주에서 만나는 여름의 절정',
-     '국내외 정상급 아티스트들과 함께하는 3일간의 뜨거운 축제', '전주 완산야구장을 가득 채울 잊지 못할 여름 추억',
-     0, 110000, 88000, 0, NOW(), false),
+       (5, '2026 전주얼티밋뮤직페스티벌', '다수 아티스트',
+        '전주 완산야구장에서 펼쳐지는 대한민국 대표 여름 뮤직 페스티벌. 국내외 정상급 아티스트들이 총출동하는 역대 최강 라인업.',
+        '/images/banners/banner-jeonju-festival.jpg', 'OPEN', 'FESTIVAL',
+        '2026-08-07', '2026-08-09', '2026-06-20 20:00:00', '만 14세 이상 관람가', '360분', 'JUMF 조직위원회', '1544-7766',
+        '/images/banners/banner-jeonju-festival.jpg', '전주에서 만나는 여름의 절정',
+        '국내외 정상급 아티스트들과 함께하는 3일간의 뜨거운 축제', '전주 완산야구장을 가득 채울 잊지 못할 여름 추억',
+        0, 110000, 88000, 0, NOW(), false),
 
-    (6, '2026 인천 펜타포트 락 페스티벌', '다수 아티스트',
-     '국내외 최정상 록 아티스트들이 한자리에! KB국민카드와 함께하는 인천 펜타포트 락 페스티벌 2026.',
-     '/images/banners/banner-pentaport.png', 'OPEN', 'FESTIVAL',
-     '2026-07-31', '2026-08-02', '2026-06-10 12:00:00', '전체 관람가', '480분', '펜타포트 페스티벌 조직위', '032-123-4567',
-     '/images/banners/banner-pentaport.png', '인천에서 울려 퍼지는 록의 함성',
-     '국내외 정상급 록 밴드들의 3일간 릴레이 공연', '송도달빛축제공원에서 즐기는 여름 최고의 록 페스티벌',
-     0, 132000, 99000, 0, NOW(), false);
+       (6, '2026 인천 펜타포트 락 페스티벌', '다수 아티스트',
+        '국내외 최정상 록 아티스트들이 한자리에! KB국민카드와 함께하는 인천 펜타포트 락 페스티벌 2026.',
+        '/images/banners/banner-pentaport.png', 'OPEN', 'FESTIVAL',
+        '2026-07-31', '2026-08-02', '2026-06-10 12:00:00', '전체 관람가', '480분', '펜타포트 페스티벌 조직위', '032-123-4567',
+        '/images/banners/banner-pentaport.png', '인천에서 울려 퍼지는 록의 함성',
+        '국내외 정상급 록 밴드들의 3일간 릴레이 공연', '송도달빛축제공원에서 즐기는 여름 최고의 록 페스티벌',
+        0, 132000, 99000, 0, NOW(), false);
 -- concert_id: 1=RedVelvet, 2=뮤지컬베토벤, 3=후지이카제, 4=워터밤, 5=사운드플래닛, 6=BIGNaughty, 7=DavidByrne, 8=나상현씨밴드, 9=정명훈클래식, 10=k6A, 11=k6B, 12=전주얼티밋뮤직페스티벌, 13=인천펜타포트
 
 
@@ -193,41 +205,40 @@ VALUES
 --  concert_session_tb
 -- ================
 INSERT INTO concert_session_tb (concert_id, session_date, session_time, round, created_at, is_deleted)
-VALUES
-    (1,  '2026-08-01', '18:00:00', '1회차', NOW(), false),  -- session_id 1  (RedVelvet 1일차)
-    (1,  '2026-08-02', '18:00:00', '2회차', NOW(), false),  -- session_id 2  (RedVelvet 2일차)
-    (2,  '2026-07-11', '19:00:00', '1회차', NOW(), false),  -- session_id 3  (뮤지컬베토벤)
-    (2,  '2026-07-18', '19:00:00', '2회차', NOW(), false),  -- session_id 4  (뮤지컬베토벤)
-    (2,  '2026-08-08', '19:00:00', '3회차', NOW(), false),  -- session_id 5  (뮤지컬베토벤)
-    (3,  '2027-01-09', '18:00:00', '1회차', NOW(), false),  -- session_id 6  (후지이카제)
-    (4,  '2026-07-24', '17:00:00', '07.24', NOW(), false),  -- session_id 7  (워터밤 1일차)
-    (4,  '2026-07-25', '17:00:00', '07.25', NOW(), false),  -- session_id 8  (워터밤 2일차)
-    (4,  '2026-07-26', '17:00:00', '07.26', NOW(), false),  -- session_id 9  (워터밤 3일차)
-    (5,  '2026-09-05', '16:00:00', '1일차', NOW(), false),  -- session_id 10 (사운드플래닛 1일차)
-    (5,  '2026-09-06', '16:00:00', '2일차', NOW(), false),  -- session_id 11 (사운드플래닛 2일차)
-    (6,  '2026-07-11', '19:00:00', '1회차', NOW(), false),  -- session_id 12 (BIGNaughty)
-    (7,  '2026-08-21', '19:00:00', '1회차', NOW(), false),  -- session_id 13 (DavidByrne)
-    (8,  '2026-08-30', '20:00:00', '1회차', NOW(), false),  -- session_id 14 (나상현씨밴드)
-    (9,  '2026-10-04', '17:00:00', '1회차', NOW(), false),  -- session_id 15 (정명훈클래식)
-    (10, '2026-12-31', '20:00:00', '1회차', NOW(), false),  -- session_id 16 (k6A)
-    (11, '2026-12-31', '21:00:00', '1회차', NOW(), false),  -- session_id 17 (k6B)
-    (12, '2026-08-07', '16:00:00', '1일차', NOW(), false),  -- session_id 18 (전주얼티밋뮤직페스티벌 1일차)
-    (12, '2026-08-08', '16:00:00', '2일차', NOW(), false),  -- session_id 19 (전주얼티밋뮤직페스티벌 2일차)
-    (12, '2026-08-09', '16:00:00', '3일차', NOW(), false),  -- session_id 20 (전주얼티밋뮤직페스티벌 3일차)
-    (13, '2026-07-31', '17:00:00', '1일차', NOW(), false),  -- session_id 21 (인천펜타포트 1일차)
-    (13, '2026-08-01', '17:00:00', '2일차', NOW(), false),  -- session_id 22 (인천펜타포트 2일차)
-    (13, '2026-08-02', '17:00:00', '3일차', NOW(), false);  -- session_id 23 (인천펜타포트 3일차)
+VALUES (1, '2026-08-01', '18:00:00', '1회차', NOW(), false),   -- session_id 1  (RedVelvet 1일차)
+       (1, '2026-08-02', '18:00:00', '2회차', NOW(), false),   -- session_id 2  (RedVelvet 2일차)
+       (2, '2026-07-11', '19:00:00', '1회차', NOW(), false),   -- session_id 3  (뮤지컬베토벤)
+       (2, '2026-07-18', '19:00:00', '2회차', NOW(), false),   -- session_id 4  (뮤지컬베토벤)
+       (2, '2026-08-08', '19:00:00', '3회차', NOW(), false),   -- session_id 5  (뮤지컬베토벤)
+       (3, '2027-01-09', '18:00:00', '1회차', NOW(), false),   -- session_id 6  (후지이카제)
+       (4, '2026-07-24', '17:00:00', '07.24', NOW(), false), -- session_id 7  (워터밤 1일차)
+       (4, '2026-07-25', '17:00:00', '07.25', NOW(), false), -- session_id 8  (워터밤 2일차)
+       (4, '2026-07-26', '17:00:00', '07.26', NOW(), false), -- session_id 9  (워터밤 3일차)
+       (5, '2026-09-05', '16:00:00', '1일차', NOW(), false),   -- session_id 10 (사운드플래닛 1일차)
+       (5, '2026-09-06', '16:00:00', '2일차', NOW(), false),   -- session_id 11 (사운드플래닛 2일차)
+       (6, '2026-07-11', '19:00:00', '1회차', NOW(), false),   -- session_id 12 (BIGNaughty)
+       (7, '2026-08-21', '19:00:00', '1회차', NOW(), false),   -- session_id 13 (DavidByrne)
+       (8, '2026-08-30', '20:00:00', '1회차', NOW(), false),   -- session_id 14 (나상현씨밴드)
+       (9, '2026-10-04', '17:00:00', '1회차', NOW(), false),   -- session_id 15 (정명훈클래식)
+       (10, '2026-12-31', '20:00:00', '1회차', NOW(), false),  -- session_id 16 (k6A)
+       (11, '2026-12-31', '21:00:00', '1회차', NOW(), false),  -- session_id 17 (k6B)
+       (12, '2026-08-07', '16:00:00', '1일차', NOW(), false),  -- session_id 18 (전주얼티밋뮤직페스티벌 1일차)
+       (12, '2026-08-08', '16:00:00', '2일차', NOW(), false),  -- session_id 19 (전주얼티밋뮤직페스티벌 2일차)
+       (12, '2026-08-09', '16:00:00', '3일차', NOW(), false),  -- session_id 20 (전주얼티밋뮤직페스티벌 3일차)
+       (13, '2026-07-31', '17:00:00', '1일차', NOW(), false),  -- session_id 21 (인천펜타포트 1일차)
+       (13, '2026-08-01', '17:00:00', '2일차', NOW(), false),  -- session_id 22 (인천펜타포트 2일차)
+       (13, '2026-08-02', '17:00:00', '3일차', NOW(), false);
+-- session_id 23 (인천펜타포트 3일차)
 
 -- 후기 작성 테스트용 종료 회차
 -- sarr/ssar가 어떤 콘서트 상세에서도 후기 작성 조건을 통과할 수 있도록 모든 콘서트에 과거 회차를 추가한다.
 INSERT INTO concert_session_tb (concert_id, session_date, session_time, round, created_at, is_deleted)
-SELECT
-    c.id,
-    DATEADD('DAY', -7, CURRENT_DATE),
-    TIME '10:00:00',
-    '후기 테스트',
-    NOW(),
-    false
+SELECT c.id,
+       DATEADD('DAY', -7, CURRENT_DATE),
+       TIME '10:00:00',
+       '후기 테스트',
+       NOW(),
+       false
 FROM concert_tb c;
 
 
@@ -240,110 +251,239 @@ FROM concert_tb c;
 
 -- session 1: VIP 50
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
-SELECT 1, 1, 'VIP', 'A', x, 'VIP A-' || x, 'VIP', 150000,
-    CASE WHEN MOD(x, 3) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
+SELECT 1,
+       1,
+       'VIP',
+       'A',
+       x,
+       'VIP A-' || x,
+       'VIP',
+       150000,
+       CASE WHEN MOD(x, 3) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
+       NOW()
 FROM SYSTEM_RANGE(1, 50) AS t(x);
 
 -- session 1: R 100
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
-SELECT 1, 1, 'R', 'B', x, 'R B-' || x, 'R', 130000,
-    CASE WHEN MOD(x, 4) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
+SELECT 1,
+       1,
+       'R',
+       'B',
+       x,
+       'R B-' || x,
+       'R',
+       130000,
+       CASE WHEN MOD(x, 4) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
+       NOW()
 FROM SYSTEM_RANGE(1, 100) AS t(x);
 
 -- session 1: S 200
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
-SELECT 1, 2, 'S', 'C', x, 'S C-' || x, 'S', 110000,
-    CASE WHEN MOD(x, 5) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
+SELECT 1,
+       2,
+       'S',
+       'C',
+       x,
+       'S C-' || x,
+       'S',
+       110000,
+       CASE WHEN MOD(x, 5) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
+       NOW()
 FROM SYSTEM_RANGE(1, 200) AS t(x);
 
 -- session 1: A 150
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
-SELECT 1, 2, 'A', 'D', x, 'A D-' || x, 'A', 90000,
-    CASE WHEN MOD(x, 6) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
+SELECT 1,
+       2,
+       'A',
+       'D',
+       x,
+       'A D-' || x,
+       'A',
+       90000,
+       CASE WHEN MOD(x, 6) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
+       NOW()
 FROM SYSTEM_RANGE(1, 150) AS t(x);
 
 -- session 2: VIP 50
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
-SELECT 2, 1, 'VIP', 'A', x, 'VIP A-' || x, 'VIP', 150000,
-    CASE WHEN MOD(x, 4) = 0 THEN 'SOLD' WHEN MOD(x, 7) = 0 THEN 'HELD' ELSE 'AVAILABLE' END, NOW()
+SELECT 2,
+       1,
+       'VIP',
+       'A',
+       x,
+       'VIP A-' || x,
+       'VIP',
+       150000,
+       CASE WHEN MOD(x, 4) = 0 THEN 'SOLD' WHEN MOD(x, 7) = 0 THEN 'HELD' ELSE 'AVAILABLE' END,
+       NOW()
 FROM SYSTEM_RANGE(1, 50) AS t(x);
 
 -- session 2: R 100
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
-SELECT 2, 1, 'R', 'B', x, 'R B-' || x, 'R', 130000,
-    CASE WHEN MOD(x, 5) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
+SELECT 2,
+       1,
+       'R',
+       'B',
+       x,
+       'R B-' || x,
+       'R',
+       130000,
+       CASE WHEN MOD(x, 5) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
+       NOW()
 FROM SYSTEM_RANGE(1, 100) AS t(x);
 
 -- session 2: S 200
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
-SELECT 2, 2, 'S', 'C', x, 'S C-' || x, 'S', 110000,
-    CASE WHEN MOD(x, 6) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
+SELECT 2,
+       2,
+       'S',
+       'C',
+       x,
+       'S C-' || x,
+       'S',
+       110000,
+       CASE WHEN MOD(x, 6) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
+       NOW()
 FROM SYSTEM_RANGE(1, 200) AS t(x);
 
 -- session 2: A 150
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
-SELECT 2, 2, 'A', 'D', x, 'A D-' || x, 'A', 90000,
-    CASE WHEN MOD(x, 7) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
+SELECT 2,
+       2,
+       'A',
+       'D',
+       x,
+       'A D-' || x,
+       'A',
+       90000,
+       CASE WHEN MOD(x, 7) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
+       NOW()
 FROM SYSTEM_RANGE(1, 150) AS t(x);
 
 -- session 3~15: each 250 seats (R 80 / S 120 / A 50)
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
-SELECT sid, 1, 'R', 'A', x, 'R A-' || x, 'R', 130000,
-    CASE WHEN MOD(x * sid, 5) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
-FROM (VALUES (3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),(14),(15)) AS s(sid)
-CROSS JOIN SYSTEM_RANGE(1, 80) AS t(x);
+SELECT sid,
+       1,
+       'R',
+       'A',
+       x,
+       'R A-' || x,
+       'R',
+       130000,
+       CASE WHEN MOD(x * sid, 5) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
+       NOW()
+FROM (VALUES (3), (4), (5), (6), (7), (8), (9), (10), (11), (12), (13), (14), (15)) AS s(sid)
+         CROSS JOIN SYSTEM_RANGE(1, 80) AS t(x);
 
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
-SELECT sid, 2, 'S', 'B', x, 'S B-' || x, 'S', 110000,
-    CASE WHEN MOD(x * sid, 6) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
-FROM (VALUES (3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),(14),(15)) AS s(sid)
-CROSS JOIN SYSTEM_RANGE(1, 120) AS t(x);
+SELECT sid,
+       2,
+       'S',
+       'B',
+       x,
+       'S B-' || x,
+       'S',
+       110000,
+       CASE WHEN MOD(x * sid, 6) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
+       NOW()
+FROM (VALUES (3), (4), (5), (6), (7), (8), (9), (10), (11), (12), (13), (14), (15)) AS s(sid)
+         CROSS JOIN SYSTEM_RANGE(1, 120) AS t(x);
 
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
-SELECT sid, 2, 'A', 'C', x, 'A C-' || x, 'A', 90000,
-    CASE WHEN MOD(x * sid, 7) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
-FROM (VALUES (3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),(14),(15)) AS s(sid)
-CROSS JOIN SYSTEM_RANGE(1, 50) AS t(x);
+SELECT sid,
+       2,
+       'A',
+       'C',
+       x,
+       'A C-' || x,
+       'A',
+       90000,
+       CASE WHEN MOD(x * sid, 7) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
+       NOW()
+FROM (VALUES (3), (4), (5), (6), (7), (8), (9), (10), (11), (12), (13), (14), (15)) AS s(sid)
+         CROSS JOIN SYSTEM_RANGE(1, 50) AS t(x);
 
 -- session 16,17 (k6): each 1000 A seats
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
-SELECT 16, 1, 'A', 'A', x, 'A A-' || x, 'A', 40000, 'AVAILABLE', NOW()
+SELECT 16,
+       1,
+       'A',
+       'A',
+       x,
+       'A A-' || x,
+       'A',
+       40000,
+       'AVAILABLE',
+       NOW()
 FROM SYSTEM_RANGE(1, 1000) AS t(x);
 
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
-SELECT 17, 1, 'A', 'A', x, 'A A-' || x, 'A', 40000, 'AVAILABLE', NOW()
+SELECT 17,
+       1,
+       'A',
+       'A',
+       x,
+       'A A-' || x,
+       'A',
+       40000,
+       'AVAILABLE',
+       NOW()
 FROM SYSTEM_RANGE(1, 1000) AS t(x);
 
 -- session 18~23 (전주얼티밋뮤직페스티벌, 인천펜타포트): each R 80 / S 120 / A 50
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
-SELECT sid, 1, 'R', 'A', x, 'R A-' || x, 'R', 110000,
-    CASE WHEN MOD(x * sid, 5) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
-FROM (VALUES (18),(19),(20),(21),(22),(23)) AS s(sid)
-CROSS JOIN SYSTEM_RANGE(1, 80) AS t(x);
+SELECT sid,
+       1,
+       'R',
+       'A',
+       x,
+       'R A-' || x,
+       'R',
+       110000,
+       CASE WHEN MOD(x * sid, 5) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
+       NOW()
+FROM (VALUES (18), (19), (20), (21), (22), (23)) AS s(sid)
+         CROSS JOIN SYSTEM_RANGE(1, 80) AS t(x);
 
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
-SELECT sid, 2, 'S', 'B', x, 'S B-' || x, 'S', 88000,
-    CASE WHEN MOD(x * sid, 6) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END, NOW()
-FROM (VALUES (18),(19),(20),(21),(22),(23)) AS s(sid)
-CROSS JOIN SYSTEM_RANGE(1, 120) AS t(x);
+SELECT sid,
+       2,
+       'S',
+       'B',
+       x,
+       'S B-' || x,
+       'S',
+       88000,
+       CASE WHEN MOD(x * sid, 6) = 0 THEN 'SOLD' ELSE 'AVAILABLE' END,
+       NOW()
+FROM (VALUES (18), (19), (20), (21), (22), (23)) AS s(sid)
+         CROSS JOIN SYSTEM_RANGE(1, 120) AS t(x);
 
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
-SELECT sid, 2, 'A', 'C', x, 'A C-' || x, 'A', 0,
-    'AVAILABLE', NOW()
-FROM (VALUES (18),(19),(20),(21),(22),(23)) AS s(sid)
-CROSS JOIN SYSTEM_RANGE(1, 50) AS t(x);
+SELECT sid,
+       2,
+       'A',
+       'C',
+       x,
+       'A C-' || x,
+       'A',
+       0,
+       'AVAILABLE',
+       NOW()
+FROM (VALUES (18), (19), (20), (21), (22), (23)) AS s(sid)
+         CROSS JOIN SYSTEM_RANGE(1, 50) AS t(x);
 
 
 -- ================
 --  queue_tb (기본 샘플)
 -- ================
 INSERT INTO queue_tb (user_id, concert_session_id, queue_number, status, entered_at, expired_at, created_at)
-VALUES
-    (2, 1, 1, 'ENTERED', NOW(), NULL,                          NOW()),
-    (3, 1, 2, 'WAITING', NULL,  DATEADD('MINUTE', 10, NOW()),  NOW()),
-    (4, 1, 3, 'WAITING', NULL,  DATEADD('MINUTE', 10, NOW()),  NOW()),
-    (5, 3, 1, 'ENTERED', NOW(), NULL,                          NOW()),
-    (2, 3, 2, 'EXPIRED', NULL,  DATEADD('MINUTE', -5, NOW()),  DATEADD('MINUTE', -20, NOW()));
+VALUES (2, 1, 1, 'ENTERED', NOW(), NULL, NOW()),
+       (3, 1, 2, 'WAITING', NULL, DATEADD('MINUTE', 10, NOW()), NOW()),
+       (4, 1, 3, 'WAITING', NULL, DATEADD('MINUTE', 10, NOW()), NOW()),
+       (5, 3, 1, 'ENTERED', NOW(), NULL, NOW()),
+       (2, 3, 2, 'EXPIRED', NULL, DATEADD('MINUTE', -5, NOW()), DATEADD('MINUTE', -20, NOW()));
 
 
 -- ================
@@ -351,35 +491,60 @@ VALUES
 --  user_id 7~206 (realuser1~200), session 1~15 순환, 총 500건
 --  PAID 70% / CANCELED 20% / PENDING 10%
 -- ================
-INSERT INTO booking_tb (user_id, concert_session_id, booking_number, status, total_amount, created_at, expires_at, paid_at, canceled_at)
-SELECT
-    7 + MOD(x - 1, 200),
-    1 + MOD(x - 1, 15),
-    'BK-' || LPAD(CAST(x AS VARCHAR), 6, '0'),
-    CASE
-        WHEN MOD(x, 10) = 0 THEN 'PENDING'
-        WHEN MOD(x, 10) IN (1, 2) THEN 'CANCELED'
-        ELSE 'PAID'
-    END,
-    CASE
-        WHEN MOD(x, 4) = 0 THEN 150000
-        WHEN MOD(x, 4) = 1 THEN 130000
-        WHEN MOD(x, 4) = 2 THEN 110000
-        ELSE 90000
-    END,
-    DATEADD('HOUR', -MOD(x * 13, 4320), NOW()),
-    CASE WHEN MOD(x, 10) = 0 THEN DATEADD('MINUTE', 15 - MOD(x * 13, 4320) * 60, NOW()) ELSE NULL END,
-    CASE WHEN MOD(x, 10) NOT IN (0, 1, 2) THEN DATEADD('MINUTE', 5 - MOD(x * 13, 4320) * 60, NOW()) ELSE NULL END,
-    CASE WHEN MOD(x, 10) IN (1, 2) THEN DATEADD('HOUR', 1 - MOD(x * 13, 4320), NOW()) ELSE NULL END
+INSERT INTO booking_tb (user_id,
+                        concert_session_id,
+                        booking_number,
+                        ticket_token,
+                        ticket_code,
+                        status,
+                        total_amount,
+                        created_at,
+                        expires_at,
+                        paid_at,
+                        canceled_at)
+SELECT 7 + MOD(x - 1, 200),
+       1 + MOD(x - 1, 15),
+       'BK-' || LPAD(CAST(x AS VARCHAR), 6, '0'),
+       'TOKEN-' || LPAD(CAST(x AS VARCHAR), 6, '0'),
+       'TC' || LPAD(CAST(x AS VARCHAR), 6, '0'),
+       CASE
+           WHEN MOD(x, 10) = 0 THEN 'PENDING'
+           WHEN MOD(x, 10) IN (1, 2) THEN 'CANCELED'
+           ELSE 'PAID'
+           END,
+       CASE
+           WHEN MOD(x, 4) = 0 THEN 150000
+           WHEN MOD(x, 4) = 1 THEN 130000
+           WHEN MOD(x, 4) = 2 THEN 110000
+           ELSE 90000
+           END,
+       DATEADD('HOUR', -MOD(x * 13, 4320), NOW()),
+       CASE WHEN MOD(x, 10) = 0 THEN DATEADD('MINUTE', 15 - MOD(x * 13, 4320) * 60, NOW()) ELSE NULL END,
+       CASE WHEN MOD(x, 10) NOT IN (0, 1, 2) THEN DATEADD('MINUTE', 5 - MOD(x * 13, 4320) * 60, NOW()) ELSE NULL END,
+       CASE WHEN MOD(x, 10) IN (1, 2) THEN DATEADD('HOUR', 1 - MOD(x * 13, 4320), NOW()) ELSE NULL END
 FROM SYSTEM_RANGE(1, 500) AS t(x);
 
 -- sarr/ssar 후기 작성 테스트용 결제 완료 예매
 -- 각 콘서트별 3건씩 만들어 반복 테스트가 가능하도록 한다.
-INSERT INTO booking_tb (user_id, concert_session_id, booking_number, status, total_amount, created_at, expires_at, paid_at, canceled_at)
+INSERT INTO booking_tb (
+    user_id,
+    concert_session_id,
+    booking_number,
+    ticket_token,
+    ticket_code,
+    status,
+    total_amount,
+    created_at,
+    expires_at,
+    paid_at,
+    canceled_at
+)
 SELECT
     u.id,
     cs.id,
     'BK-REVIEW-' || UPPER(u.username) || '-' || LPAD(CAST(c.id AS VARCHAR), 2, '0') || '-' || CAST(n.n AS VARCHAR),
+    'TOKEN-REVIEW-' || UPPER(u.username) || '-' || LPAD(CAST(c.id AS VARCHAR), 2, '0') || '-' || CAST(n.n AS VARCHAR),
+    'RV' || LPAD(CAST(u.id AS VARCHAR), 4, '0') || LPAD(CAST(c.id AS VARCHAR), 2, '0') || CAST(n.n AS VARCHAR),
     'PAID',
     90000,
     DATEADD('DAY', -6, NOW()),
@@ -387,32 +552,32 @@ SELECT
     DATEADD('DAY', -6, NOW()),
     NULL
 FROM user_tb u
-JOIN concert_tb c ON 1 = 1
-JOIN concert_session_tb cs ON cs.concert_id = c.id
+         JOIN concert_tb c ON 1 = 1
+         JOIN concert_session_tb cs ON cs.concert_id = c.id
     AND cs.round = '후기 테스트'
-JOIN SYSTEM_RANGE(1, 3) AS n(n) ON 1 = 1
+         JOIN SYSTEM_RANGE(1, 3) AS n(n) ON 1 = 1
 WHERE u.username IN ('sarr', 'ssar');
-
 
 -- ================
 --  booking_seat_tb
 --  각 booking에 해당 session의 SOLD 좌석 1개씩 스냅샷으로 연결
 -- ================
 INSERT INTO booking_seat_tb (booking_id, seat_id, price, seat_number_snapshot, seat_grade_snapshot, created_at)
-SELECT
-    b.id,
-    s.id,
-    s.price,
-    s.seat_number,
-    s.grade,
-    b.created_at
+SELECT b.id,
+       s.id,
+       s.price,
+       s.seat_number,
+       s.grade,
+       b.created_at
 FROM booking_tb b
-JOIN (
-    SELECT id, session_id, price, seat_number, grade,
-           ROW_NUMBER() OVER (PARTITION BY session_id ORDER BY id) AS rn
-    FROM seat_tb
-    WHERE status = 'SOLD'
-) s ON s.session_id = b.concert_session_id
+         JOIN (SELECT id,
+                      session_id,
+                      price,
+                      seat_number,
+                      grade,
+                      ROW_NUMBER() OVER (PARTITION BY session_id ORDER BY id) AS rn
+               FROM seat_tb
+               WHERE status = 'SOLD') s ON s.session_id = b.concert_session_id
     AND s.rn = 1 + MOD(b.id, 10)
 WHERE b.status IN ('PAID', 'CANCELED');
 
@@ -420,36 +585,36 @@ WHERE b.status IN ('PAID', 'CANCELED');
 -- ================
 --  payment_tb (PAID 예매)
 -- ================
-INSERT INTO payment_tb (booking_id, pg_tx_id, payment_id, original_amount, ticket_fee, used_point, amount, method, status, paid_at, created_at)
-SELECT
-    b.id,
-    'pg_' || b.id,
-    'cc_' || b.id,
-    b.total_amount - 2000,
-    2000,
-    CASE WHEN MOD(b.id, 8) = 0 THEN 5000 WHEN MOD(b.id, 8) = 4 THEN 10000 ELSE 0 END,
-    b.total_amount,
-    CASE WHEN MOD(b.id, 3) = 0 THEN 'kakaopay' WHEN MOD(b.id, 3) = 1 THEN 'card' ELSE 'tosspay' END,
-    'PAID',
-    b.paid_at,
-    b.created_at
+INSERT INTO payment_tb (booking_id, pg_tx_id, payment_id, original_amount, ticket_fee, used_point, amount, method,
+                        status, paid_at, created_at)
+SELECT b.id,
+       'pg_' || b.id,
+       'cc_' || b.id,
+       b.total_amount - 2000,
+       2000,
+       CASE WHEN MOD(b.id, 8) = 0 THEN 5000 WHEN MOD(b.id, 8) = 4 THEN 10000 ELSE 0 END,
+       b.total_amount,
+       CASE WHEN MOD(b.id, 3) = 0 THEN 'kakaopay' WHEN MOD(b.id, 3) = 1 THEN 'card' ELSE 'tosspay' END,
+       'PAID',
+       b.paid_at,
+       b.created_at
 FROM booking_tb b
 WHERE b.status = 'PAID';
 
 -- payment_tb (CANCELED 예매)
-INSERT INTO payment_tb (booking_id, pg_tx_id, payment_id, original_amount, ticket_fee, used_point, amount, method, status, paid_at, created_at)
-SELECT
-    b.id,
-    'pg_c_' || b.id,
-    'cc_c_' || b.id,
-    b.total_amount - 2000,
-    2000,
-    0,
-    b.total_amount,
-    CASE WHEN MOD(b.id, 2) = 0 THEN 'card' ELSE 'kakaopay' END,
-    'CANCELED',
-    NULL,
-    b.created_at
+INSERT INTO payment_tb (booking_id, pg_tx_id, payment_id, original_amount, ticket_fee, used_point, amount, method,
+                        status, paid_at, created_at)
+SELECT b.id,
+       'pg_c_' || b.id,
+       'cc_c_' || b.id,
+       b.total_amount - 2000,
+       2000,
+       0,
+       b.total_amount,
+       CASE WHEN MOD(b.id, 2) = 0 THEN 'card' ELSE 'kakaopay' END,
+       'CANCELED',
+       NULL,
+       b.created_at
 FROM booking_tb b
 WHERE b.status = 'CANCELED';
 
@@ -458,14 +623,14 @@ WHERE b.status = 'CANCELED';
 --  refund_tb
 -- ================
 INSERT INTO refund_tb (payment_id, amount, cancel_fee, reason, refunded_at)
-SELECT
-    p.id,
-    p.amount - CAST(p.amount * 0.1 AS INT),
-    CAST(p.amount * 0.1 AS INT),
-    CASE WHEN MOD(p.id, 3) = 0 THEN '개인 사정으로 인한 취소'
-         WHEN MOD(p.id, 3) = 1 THEN '일정 변경으로 인한 취소'
-         ELSE '중복 예매 취소' END,
-    DATEADD('HOUR', 1, p.created_at)
+SELECT p.id,
+       p.amount - CAST(p.amount * 0.1 AS INT),
+       CAST(p.amount * 0.1 AS INT),
+       CASE
+           WHEN MOD(p.id, 3) = 0 THEN '개인 사정으로 인한 취소'
+           WHEN MOD(p.id, 3) = 1 THEN '일정 변경으로 인한 취소'
+           ELSE '중복 예매 취소' END,
+       DATEADD('HOUR', 1, p.created_at)
 FROM payment_tb p
 WHERE p.status = 'CANCELED';
 
@@ -475,24 +640,22 @@ WHERE p.status = 'CANCELED';
 --  PAID 예매의 1% 적립, 일부 건 사용 내역
 -- ================
 INSERT INTO point_history_tb (user_id, type, amount, balance, created_at)
-SELECT
-    b.user_id,
-    'EARN',
-    CAST(b.total_amount * 0.01 AS INT),
-    CAST(b.total_amount * 0.01 AS INT),
-    b.paid_at
+SELECT b.user_id,
+       'EARN',
+       CAST(b.total_amount * 0.01 AS INT),
+       CAST(b.total_amount * 0.01 AS INT),
+       b.paid_at
 FROM booking_tb b
 WHERE b.status = 'PAID'
   AND b.paid_at IS NOT NULL
   AND MOD(b.id, 3) != 0;
 
 INSERT INTO point_history_tb (user_id, type, amount, balance, created_at)
-SELECT
-    b.user_id,
-    'USE',
-    -CAST(b.total_amount * 0.05 AS INT),
-    0,
-    b.paid_at
+SELECT b.user_id,
+       'USE',
+       -CAST(b.total_amount * 0.05 AS INT),
+       0,
+       b.paid_at
 FROM booking_tb b
 WHERE b.status = 'PAID'
   AND b.paid_at IS NOT NULL
@@ -504,11 +667,10 @@ WHERE b.status = 'PAID'
 --  realuser 200명 × 콘서트 9개 중 일부 → MERGE로 중복 방지
 -- ================
 MERGE INTO concert_like_tb (user_id, concert_id, created_at)
-KEY (user_id, concert_id)
-SELECT
-    7 + MOD(x - 1, 200),
-    1 + MOD(x - 1, 9),
-    DATEADD('DAY', -MOD(x * 11, 90), NOW())
+    KEY (user_id, concert_id)
+SELECT 7 + MOD(x - 1, 200),
+       1 + MOD(x - 1, 9),
+       DATEADD('DAY', -MOD(x * 11, 90), NOW())
 FROM SYSTEM_RANGE(1, 600) AS t(x);
 
 
@@ -516,124 +678,127 @@ FROM SYSTEM_RANGE(1, 600) AS t(x);
 --  operation_log_tb
 -- ================
 INSERT INTO operation_log_tb (actor, message, level, created_at)
-VALUES
-    ('admin',    'Red Velvet FAN-CON 〈A Day in Red & Velvet〉 1회차 좌석 배치 완료 (500석)', 'INFO', DATEADD('DAY', -60, NOW())),
-    ('admin',    '사운드 플래닛 페스티벌 2026 공연 등록',                     'INFO', DATEADD('DAY',    -45, NOW())),
-    ('admin',    '후지이 카제 Prema 월드 투어 상태 COMING_SOON 설정',          'INFO', DATEADD('DAY',    -30, NOW())),
-    ('admin',    'BIG Naughty 콘서트 CLOSED_SOON 처리 (공연 2주 전)',         'WARN', DATEADD('DAY',     -3, NOW())),
-    ('admin',    '워터밤 서울 2026 대기열 강제 종료',                         'WARN', DATEADD('DAY',     -1, NOW())),
-    ('admin',    '수동 환불 처리 완료 (booking:3)',                          'INFO', DATEADD('HOUR',    -5, NOW())),
-    ('admin',    '공지사항 등록: 6월 서비스 점검 안내',                        'INFO', DATEADD('DAY',     -7, NOW())),
-    ('admin',    'FAQ 수정: 환불 정책 안내 업데이트',                         'INFO', DATEADD('DAY',    -14, NOW())),
-    ('admin',    '메인 배너 교체 - Red Velvet FAN-CON 홍보',                 'INFO', DATEADD('DAY',    -10, NOW())),
-    ('admin',    '어뷰징 의심 계정 임시 비활성화 (user:15)',                   'WARN', DATEADD('HOUR',    -2, NOW())),
-    ('manager1', '뮤지컬 〈베토벤〉 3회차 좌석 추가 배치',                      'INFO', DATEADD('DAY',     -5, NOW())),
-    ('manager1', '포인트 만료 배치 수동 실행',                               'INFO', DATEADD('HOUR',    -1, NOW())),
-    ('manager1', '1:1 문의 답변 처리 (inquiry:12)',                         'INFO', DATEADD('HOUR',    -8, NOW())),
-    ('admin',    '대기열 동시 처리 상한 500 → 600 임시 조정',                 'WARN', DATEADD('DAY',     -2, NOW())),
-    ('admin',    'k6 부하테스트 완료 후 테스트 데이터 초기화',                  'INFO', DATEADD('HOUR',   -12, NOW()));
+VALUES ('admin', 'Red Velvet FAN-CON 〈A Day in Red & Velvet〉 1회차 좌석 배치 완료 (500석)', 'INFO', DATEADD('DAY', -60, NOW())),
+       ('admin', '사운드 플래닛 페스티벌 2026 공연 등록', 'INFO', DATEADD('DAY', -45, NOW())),
+       ('admin', '후지이 카제 Prema 월드 투어 상태 COMING_SOON 설정', 'INFO', DATEADD('DAY', -30, NOW())),
+       ('admin', 'BIG Naughty 콘서트 CLOSED_SOON 처리 (공연 2주 전)', 'WARN', DATEADD('DAY', -3, NOW())),
+       ('admin', '워터밤 서울 2026 대기열 강제 종료', 'WARN', DATEADD('DAY', -1, NOW())),
+       ('admin', '수동 환불 처리 완료 (booking:3)', 'INFO', DATEADD('HOUR', -5, NOW())),
+       ('admin', '공지사항 등록: 6월 서비스 점검 안내', 'INFO', DATEADD('DAY', -7, NOW())),
+       ('admin', 'FAQ 수정: 환불 정책 안내 업데이트', 'INFO', DATEADD('DAY', -14, NOW())),
+       ('admin', '메인 배너 교체 - Red Velvet FAN-CON 홍보', 'INFO', DATEADD('DAY', -10, NOW())),
+       ('admin', '어뷰징 의심 계정 임시 비활성화 (user:15)', 'WARN', DATEADD('HOUR', -2, NOW())),
+       ('manager1', '뮤지컬 〈베토벤〉 3회차 좌석 추가 배치', 'INFO', DATEADD('DAY', -5, NOW())),
+       ('manager1', '포인트 만료 배치 수동 실행', 'INFO', DATEADD('HOUR', -1, NOW())),
+       ('manager1', '1:1 문의 답변 처리 (inquiry:12)', 'INFO', DATEADD('HOUR', -8, NOW())),
+       ('admin', '대기열 동시 처리 상한 500 → 600 임시 조정', 'WARN', DATEADD('DAY', -2, NOW())),
+       ('admin', 'k6 부하테스트 완료 후 테스트 데이터 초기화', 'INFO', DATEADD('HOUR', -12, NOW()));
 
 
 -- ================
 --  notice_tb (user_id NOT NULL → admin(1) 작성자로 고정)
 -- ================
 INSERT INTO notice_tb (user_id, title, content, is_pinned, view_count, created_at, updated_at)
-VALUES
-    (1, '[필독] 티켓팅 유의사항 및 이용약관 안내',
-     '<p>안녕하세요. CatchCatch를 이용해 주셔서 감사합니다.</p><p>티켓 구매 전 반드시 유의사항을 확인해 주세요.</p><ol><li>예매 완료 후 취소 시 취소 수수료가 발생합니다.</li><li>입장 시 본인 확인이 필요합니다.</li><li>좌석 선택 후 15분 이내 결제를 완료해야 합니다.</li></ol>',
-     true, 1240, DATEADD('DAY', -90, NOW()), DATEADD('DAY', -90, NOW())),
+VALUES (1, '[필독] 티켓팅 유의사항 및 이용약관 안내',
+        '<p>안녕하세요. CatchCatch를 이용해 주셔서 감사합니다.</p><p>티켓 구매 전 반드시 유의사항을 확인해 주세요.</p><ol><li>예매 완료 후 취소 시 취소 수수료가 발생합니다.</li><li>입장 시 본인 확인이 필요합니다.</li><li>좌석 선택 후 15분 이내 결제를 완료해야 합니다.</li></ol>',
+        true, 1240, DATEADD('DAY', -90, NOW()), DATEADD('DAY', -90, NOW())),
 
-    (1, '[공지] 서버 점검 안내 (6/15 02:00~06:00)',
-     '<p>안정적인 서비스 제공을 위해 서버 점검을 실시합니다.</p><ul><li><strong>점검 일시:</strong> 2026년 6월 15일(월) 02:00 ~ 06:00</li><li><strong>점검 내용:</strong> 서버 인프라 업그레이드 및 안정성 개선</li></ul><p>점검 중에는 서비스 이용이 불가합니다. 이용에 불편을 드려 죄송합니다.</p>',
-     true, 876, DATEADD('DAY', -10, NOW()), DATEADD('DAY', -10, NOW())),
+       (1, '[공지] 서버 점검 안내 (6/15 02:00~06:00)',
+        '<p>안정적인 서비스 제공을 위해 서버 점검을 실시합니다.</p><ul><li><strong>점검 일시:</strong> 2026년 6월 15일(월) 02:00 ~ 06:00</li><li><strong>점검 내용:</strong> 서버 인프라 업그레이드 및 안정성 개선</li></ul><p>점검 중에는 서비스 이용이 불가합니다. 이용에 불편을 드려 죄송합니다.</p>',
+        true, 876, DATEADD('DAY', -10, NOW()), DATEADD('DAY', -10, NOW())),
 
-    (1, 'Red Velvet FAN-CON 〈A Day in Red & Velvet〉 예매 안내',
-     '<p>폭발적인 반응에 힘입어 <strong>Red Velvet FAN-CON 〈A Day in Red & Velvet〉</strong>의 예매가 시작되었습니다.</p><ul><li><strong>공연 일정:</strong> 2026년 8월 1~2일</li><li><strong>공연 장소:</strong> 고려대학교 화정체육관</li><li><strong>예매 오픈:</strong> 6월 15일 오후 8시</li></ul><p>많은 관심 부탁드립니다.</p>',
-     false, 2341, DATEADD('DAY', -20, NOW()), DATEADD('DAY', -20, NOW())),
+       (1, 'Red Velvet FAN-CON 〈A Day in Red & Velvet〉 예매 안내',
+        '<p>폭발적인 반응에 힘입어 <strong>Red Velvet FAN-CON 〈A Day in Red & Velvet〉</strong>의 예매가 시작되었습니다.</p><ul><li><strong>공연 일정:</strong> 2026년 8월 1~2일</li><li><strong>공연 장소:</strong> 고려대학교 화정체육관</li><li><strong>예매 오픈:</strong> 6월 15일 오후 8시</li></ul><p>많은 관심 부탁드립니다.</p>',
+        false, 2341, DATEADD('DAY', -20, NOW()), DATEADD('DAY', -20, NOW())),
 
-    (1, '포인트 적립 정책 변경 안내',
-     '<p>2026년 7월 1일부터 포인트 적립률이 변경됩니다.</p><ul><li><strong>변경 전:</strong> 결제 금액의 1% 적립</li><li><strong>변경 후:</strong> 결제 금액의 1.5% 적립</li></ul><p>더욱 풍성한 혜택으로 보답하겠습니다. 감사합니다.</p>',
-     false, 534, DATEADD('DAY', -15, NOW()), DATEADD('DAY', -15, NOW())),
+       (1, '포인트 적립 정책 변경 안내',
+        '<p>2026년 7월 1일부터 포인트 적립률이 변경됩니다.</p><ul><li><strong>변경 전:</strong> 결제 금액의 1% 적립</li><li><strong>변경 후:</strong> 결제 금액의 1.5% 적립</li></ul><p>더욱 풍성한 혜택으로 보답하겠습니다. 감사합니다.</p>',
+        false, 534, DATEADD('DAY', -15, NOW()), DATEADD('DAY', -15, NOW())),
 
-    (1, '[이벤트] 첫 예매 포인트 5,000점 증정',
-     '<p>첫 예매 완료 고객께 <strong>포인트 5,000점</strong>을 증정합니다.</p><ul><li><strong>대상:</strong> CatchCatch 첫 예매 완료 회원</li><li><strong>적용 기간:</strong> 2026년 8월 31일까지</li><li><strong>지급 시점:</strong> 예매 완료 즉시 자동 적립</li></ul>',
-     false, 1892, DATEADD('DAY', -30, NOW()), DATEADD('DAY', -30, NOW()));
+       (1, '[이벤트] 첫 예매 포인트 5,000점 증정',
+        '<p>첫 예매 완료 고객께 <strong>포인트 5,000점</strong>을 증정합니다.</p><ul><li><strong>대상:</strong> CatchCatch 첫 예매 완료 회원</li><li><strong>적용 기간:</strong> 2026년 8월 31일까지</li><li><strong>지급 시점:</strong> 예매 완료 즉시 자동 적립</li></ul>',
+        false, 1892, DATEADD('DAY', -30, NOW()), DATEADD('DAY', -30, NOW()));
 
 
 -- ================
 --  faq_tb (category: FaqCategory enum)
 -- ================
 INSERT INTO faq_tb (category, question, answer, created_at)
-VALUES
-    ('BOOKING', '예매 취소는 어떻게 하나요?',
-     '<p><strong>마이페이지 &gt; 예매 내역</strong>에서 취소 가능한 예매 건을 선택해 취소할 수 있습니다.</p><p>공연일 7일 전까지는 수수료 없이 취소 가능합니다.</p>',
-     NOW()),
-    ('BOOKING', '좌석을 선택하지 않으면 어떻게 되나요?',
-     '<p>좌석 선택 후 <strong>15분 이내</strong>에 결제를 완료하지 않으면 자동으로 예매가 취소됩니다.</p>',
-     NOW()),
-    ('PAYMENT', '사용 가능한 결제 수단은 무엇인가요?',
-     '<ul><li>신용/체크카드</li><li>카카오페이</li><li>토스페이</li><li>가상계좌</li></ul>',
-     NOW()),
-    ('PAYMENT', '포인트는 어떻게 사용하나요?',
-     '<p>결제 단계에서 보유 포인트의 전부 또는 일부를 사용할 수 있습니다.</p><p><strong>1포인트 = 1원</strong>으로 적용됩니다.</p>',
-     NOW()),
-    ('CANCEL_REFUND', '환불은 언제 처리되나요?',
-     '<p>결제수단과 카드사 정책에 따라 보통 <strong>3~7영업일</strong> 정도 소요됩니다.</p>',
-     NOW()),
-    ('CANCEL_REFUND', '취소 수수료는 얼마인가요?',
-     '<ul><li>공연일 <strong>7일 전까지</strong>: 수수료 없음</li><li><strong>6~3일 전</strong>: 10%</li><li><strong>2~1일 전</strong>: 20%</li><li><strong>당일</strong>: 30%</li></ul>',
-     NOW()),
-    ('MEMBER', '비밀번호를 잊어버렸어요.',
-     '<p>로그인 페이지에서 <strong>비밀번호 찾기</strong>를 이용하시거나, 소셜 로그인(카카오)으로 로그인하실 수 있습니다.</p>',
-     NOW()),
-    ('MEMBER', '회원 탈퇴는 어떻게 하나요?',
-     '<p><strong>마이페이지 &gt; 계정 설정</strong>에서 회원 탈퇴를 신청할 수 있습니다.</p><p>미사용 포인트와 예매 내역은 탈퇴 후 복구되지 않습니다.</p>',
-     NOW()),
-    ('SERVICE', '대기열이 무엇인가요?',
-     '<p>인기 공연의 경우 동시 접속자가 많아 공정한 예매를 위해 <strong>대기열 시스템</strong>을 운영합니다.</p><p>순번에 따라 순차적으로 입장합니다.</p>',
-     NOW()),
-    ('SERVICE', '대기 중 브라우저를 닫으면 어떻게 되나요?',
-     '<p>대기 순번은 유지되나, READY 상태가 됐을 때 <strong>10분 이내</strong>에 접속하지 않으면 순번이 만료됩니다.</p>',
-     NOW());
+VALUES ('BOOKING', '예매 취소는 어떻게 하나요?',
+        '<p><strong>마이페이지 &gt; 예매 내역</strong>에서 취소 가능한 예매 건을 선택해 취소할 수 있습니다.</p><p>공연일 7일 전까지는 수수료 없이 취소 가능합니다.</p>',
+        NOW()),
+       ('BOOKING', '좌석을 선택하지 않으면 어떻게 되나요?',
+        '<p>좌석 선택 후 <strong>15분 이내</strong>에 결제를 완료하지 않으면 자동으로 예매가 취소됩니다.</p>',
+        NOW()),
+       ('PAYMENT', '사용 가능한 결제 수단은 무엇인가요?',
+        '<ul><li>신용/체크카드</li><li>카카오페이</li><li>토스페이</li><li>가상계좌</li></ul>',
+        NOW()),
+       ('PAYMENT', '포인트는 어떻게 사용하나요?',
+        '<p>결제 단계에서 보유 포인트의 전부 또는 일부를 사용할 수 있습니다.</p><p><strong>1포인트 = 1원</strong>으로 적용됩니다.</p>',
+        NOW()),
+       ('CANCEL_REFUND', '취소 및 환불 규정은 어떻게 되나요?',
+        '<p><strong>취소 및 환불 규정</strong></p><p>① 예매 취소 조건보다 ② 취소 수수료 규정이 우선 적용됩니다.</p><p>예매 당일 자정(밤 12시) 이전에 취소하는 경우 티켓 취소수수료가 없으며, 취소기한 내 취소 시 예매 수수료도 환불됩니다.</p><hr><p><strong>① 취소수수료 규정</strong></p><p>관람일 기준 아래와 같이 취소 수수료가 적용됩니다.</p><ul><li>관람일 10일 전까지: 장당 4,000원<br><small>단, 티켓 금액의 10% 이내</small></li><li>관람일 9일 전 ~ 7일 전까지: 티켓 금액의 10%</li><li>관람일 6일 전 ~ 3일 전까지: 티켓 금액의 20%</li><li>관람일 2일 전 ~ 취소기한까지: 티켓 금액의 30%</li></ul><hr><p><strong>② 예매 취소 조건</strong></p><p>예매 후 7일 이내 취소 시 티켓 금액 전액이 환불됩니다. 단, 예매 수수료는 제외될 수 있습니다.</p><p>관람일이 가까운 경우에는 예매 취소 조건보다 취소수수료 규정이 우선 적용될 수 있습니다.</p><p>공연 당일이거나 취소 가능 시간이 지난 경우 예매 취소가 제한될 수 있습니다.</p>',
+        NOW()),
+       ('CANCEL_REFUND', '예매 당일 취소하면 수수료가 있나요?',
+        '<p>예매 당일 자정(밤 12시) 이전에 취소하는 경우에는 티켓 취소수수료가 없습니다.</p><p>또한 취소기한 내 취소라면 예매 수수료도 환불됩니다.</p><p>단, 공연 당일이거나 취소 가능 시간이 지난 경우에는 예매 취소가 제한될 수 있습니다.</p>',
+        NOW()),
+       ('MEMBER', '비밀번호를 잊어버렸어요.',
+        '<p>로그인 페이지에서 <strong>비밀번호 찾기</strong>를 이용하시거나, 소셜 로그인(카카오)으로 로그인하실 수 있습니다.</p>',
+        NOW()),
+       ('MEMBER', '회원 탈퇴는 어떻게 하나요?',
+        '<p><strong>마이페이지 &gt; 계정 설정</strong>에서 회원 탈퇴를 신청할 수 있습니다.</p><p>미사용 포인트와 예매 내역은 탈퇴 후 복구되지 않습니다.</p>',
+        NOW()),
+       ('SERVICE', '대기열이 무엇인가요?',
+        '<p>인기 공연의 경우 동시 접속자가 많아 공정한 예매를 위해 <strong>대기열 시스템</strong>을 운영합니다.</p><p>순번에 따라 순차적으로 입장합니다.</p>',
+        NOW()),
+       ('SERVICE', '대기 중 브라우저를 닫으면 어떻게 되나요?',
+        '<p>대기 순번은 유지되나, READY 상태가 됐을 때 <strong>10분 이내</strong>에 접속하지 않으면 순번이 만료됩니다.</p>',
+        NOW());
 
 
 -- ================
 --  inquiry_tb (reply, is_public, notify_email, notify_sms, category: InquiryCategory enum)
 -- ================
-INSERT INTO inquiry_tb (user_id, title, content, category, status, is_public, notify_email, notify_sms, reply, created_at)
-VALUES
-    (7,  '결제가 완료됐는데 예매가 안 돼있어요', '카카오페이로 결제했는데 예매 내역에 없습니다.', 'PAYMENT', 'RESOLVED', false, true, false, '결제 데이터를 확인한 결과 정상 처리되었습니다. 마이페이지를 새로고침 후 확인해 주세요.', DATEADD('DAY', -5, NOW())),
-    (8,  '취소 환불이 언제 되나요?',             '3일 전에 취소했는데 아직 환불이 안 됐습니다.',   'PAYMENT', 'RESOLVED', false, true, false, '카드사 환불은 영업일 기준 3~5일 소요됩니다. 이미 처리가 완료되어 곧 입금될 예정입니다.', DATEADD('DAY', -3, NOW())),
-    (9,  '대기열에서 오류가 났어요',              '대기 중 갑자기 화면이 멈췄습니다.',             'TICKET',  'PENDING',  false, false, false, NULL, DATEADD('DAY', -1, NOW())),
-    (10, '포인트가 적립이 안 됐어요',             '예매 완료 후 포인트가 적립되지 않았습니다.',     'TICKET',  'RESOLVED', false, true, false, '확인 결과 포인트 적립이 누락되었습니다. 수동으로 포인트를 지급해 드렸습니다.', DATEADD('DAY', -7, NOW())),
-    (11, '좌석 선택 화면이 안 열려요',            '좌석 선택 버튼을 눌러도 화면이 안 넘어갑니다.',  'TICKET',  'PENDING',  false, false, false, NULL, DATEADD('HOUR', -3, NOW())),
-    (12, '소셜 로그인 연동 문의',                '카카오 로그인 후 기존 계정과 합치고 싶어요.',     'USER',    'PENDING',  false, true, false, NULL, DATEADD('HOUR', -1, NOW()));
+INSERT INTO inquiry_tb (user_id, title, content, category, status, is_public, notify_email, notify_sms, reply,
+                        created_at)
+VALUES (7, '결제가 완료됐는데 예매가 안 돼있어요', '카카오페이로 결제했는데 예매 내역에 없습니다.', 'PAYMENT', 'RESOLVED', false, true, false,
+        '결제 데이터를 확인한 결과 정상 처리되었습니다. 마이페이지를 새로고침 후 확인해 주세요.', DATEADD('DAY', -5, NOW())),
+       (8, '취소 환불이 언제 되나요?', '3일 전에 취소했는데 아직 환불이 안 됐습니다.', 'PAYMENT', 'RESOLVED', false, true, false,
+        '카드사 환불은 영업일 기준 3~5일 소요됩니다. 이미 처리가 완료되어 곧 입금될 예정입니다.', DATEADD('DAY', -3, NOW())),
+       (9, '대기열에서 오류가 났어요', '대기 중 갑자기 화면이 멈췄습니다.', 'TICKET', 'PENDING', false, false, false, NULL,
+        DATEADD('DAY', -1, NOW())),
+       (10, '포인트가 적립이 안 됐어요', '예매 완료 후 포인트가 적립되지 않았습니다.', 'TICKET', 'RESOLVED', false, true, false,
+        '확인 결과 포인트 적립이 누락되었습니다. 수동으로 포인트를 지급해 드렸습니다.', DATEADD('DAY', -7, NOW())),
+       (11, '좌석 선택 화면이 안 열려요', '좌석 선택 버튼을 눌러도 화면이 안 넘어갑니다.', 'TICKET', 'PENDING', false, false, false, NULL,
+        DATEADD('HOUR', -3, NOW())),
+       (12, '소셜 로그인 연동 문의', '카카오 로그인 후 기존 계정과 합치고 싶어요.', 'USER', 'PENDING', false, true, false, NULL,
+        DATEADD('HOUR', -1, NOW()));
 
 
 -- ================
 --  event_tb
 -- ================
-INSERT INTO event_tb (title, description, notice_content, image_url, condition_type, condition_concert_id, reward_point, point_valid_months, start_date, end_date)
-VALUES
-    ('첫 예매 완료 포인트 증정',
-     '첫 예매를 완료하신 분께 포인트 5,000점을 드립니다.',
-     '<h3>유의사항</h3><ul><li>포인트는 참여 즉시 지급됩니다.</li><li>1인 1회 한정입니다.</li><li>포인트 유효기간은 지급일로부터 6개월입니다.</li></ul>',
-     NULL, 'NONE', NULL, 5000, 6, DATEADD('DAY', -60, NOW()), DATEADD('DAY', 60, NOW())),
+INSERT INTO event_tb (title, description, notice_content, image_url, condition_type, condition_concert_id, reward_point,
+                      point_valid_months, start_date, end_date)
+VALUES ('첫 예매 완료 포인트 증정',
+        '첫 예매를 완료하신 분께 포인트 5,000점을 드립니다.',
+        '<h3>유의사항</h3><ul><li>포인트는 참여 즉시 지급됩니다.</li><li>1인 1회 한정입니다.</li><li>포인트 유효기간은 지급일로부터 6개월입니다.</li></ul>',
+        NULL, 'NONE', NULL, 5000, 6, DATEADD('DAY', -60, NOW()), DATEADD('DAY', 60, NOW())),
 
-    ('여름 특별 예매 혜택',
-     '7~8월 공연 예매 시 추가 포인트 2,000점을 적립해 드립니다.',
-     '<h3>유의사항</h3><ul><li>CatchCatch에서 공연을 예매한 이력이 있는 회원만 참여 가능합니다.</li><li>포인트 유효기간은 3개월입니다.</li></ul>',
-     NULL, 'BOOKING_HISTORY', NULL, 2000, 3, DATEADD('DAY', -30, NOW()), DATEADD('DAY', 60, NOW())),
+       ('여름 특별 예매 혜택',
+        '7~8월 공연 예매 시 추가 포인트 2,000점을 적립해 드립니다.',
+        '<h3>유의사항</h3><ul><li>CatchCatch에서 공연을 예매한 이력이 있는 회원만 참여 가능합니다.</li><li>포인트 유효기간은 3개월입니다.</li></ul>',
+        NULL, 'BOOKING_HISTORY', NULL, 2000, 3, DATEADD('DAY', -30, NOW()), DATEADD('DAY', 60, NOW())),
 
-    ('SNS 공유 이벤트',
-     '공연 예매 후 SNS에 공유하시면 포인트 1,000점 증정합니다.',
-     '<h3>이벤트 참여 방법</h3><ol><li>공연을 예매합니다.</li><li>SNS에 예매 인증을 공유합니다.</li><li>포인트 지급받기 버튼을 누릅니다.</li></ol><h3>유의사항</h3><ul><li>1인 1회 참여 가능합니다.</li><li>포인트 유효기간은 3개월입니다.</li></ul>',
-     NULL, 'NONE', NULL, 1000, 3, DATEADD('DAY', -14, NOW()), DATEADD('DAY', 16, NOW())),
+       ('SNS 공유 이벤트',
+        '공연 예매 후 SNS에 공유하시면 포인트 1,000점 증정합니다.',
+        '<h3>이벤트 참여 방법</h3><ol><li>공연을 예매합니다.</li><li>SNS에 예매 인증을 공유합니다.</li><li>포인트 지급받기 버튼을 누릅니다.</li></ol><h3>유의사항</h3><ul><li>1인 1회 참여 가능합니다.</li><li>포인트 유효기간은 3개월입니다.</li></ul>',
+        NULL, 'NONE', NULL, 1000, 3, DATEADD('DAY', -14, NOW()), DATEADD('DAY', 16, NOW())),
 
-    ('신규 가입 웰컴 포인트',
-     '회원가입 완료 시 포인트 3,000점을 즉시 지급합니다.',
-     '<h3>유의사항</h3><ul><li>회원가입 완료 후 참여 버튼을 눌러야 포인트가 지급됩니다.</li><li>포인트 유효기간은 지급일로부터 12개월입니다.</li></ul>',
-     NULL, 'NONE', NULL, 3000, 12, DATEADD('DAY', -90, NOW()), DATEADD('DAY', 275, NOW()));
+       ('신규 가입 웰컴 포인트',
+        '회원가입 완료 시 포인트 3,000점을 즉시 지급합니다.',
+        '<h3>유의사항</h3><ul><li>회원가입 완료 후 참여 버튼을 눌러야 포인트가 지급됩니다.</li><li>포인트 유효기간은 지급일로부터 12개월입니다.</li></ul>',
+        NULL, 'NONE', NULL, 3000, 12, DATEADD('DAY', -90, NOW()), DATEADD('DAY', 275, NOW()));
 
 
 -- ================
@@ -641,11 +806,11 @@ VALUES
 --  YES24 스타일 3종 배너 (전주얼티밋뮤직페스티벌 / 뮤지컬 베토벤 / 인천 펜타포트)
 --  show_text = false → 텍스트 오버레이/그라데이션 없이 이미지만 노출
 -- ================
-INSERT INTO banner_tb (image_url, eyebrow, title, highlight, description, button_text, link_url, display_order, is_active, show_text)
-VALUES
-    ('/images/banners/banner-jeonju-festival.jpg', NULL, NULL, NULL, NULL, NULL, '/concerts/12', 1, true, false),
-    ('/images/banners/banner-beethoven.jpg',        NULL, NULL, NULL, NULL, NULL, '/concerts/2',  2, true, false),
-    ('/images/banners/banner-pentaport.png',        NULL, NULL, NULL, NULL, NULL, '/concerts/13', 3, true, false);
+INSERT INTO banner_tb (image_url, eyebrow, title, highlight, description, button_text, link_url, display_order,
+                       is_active, show_text)
+VALUES ('/images/banners/banner-jeonju-festival.jpg', NULL, NULL, NULL, NULL, NULL, '/concerts/12', 1, true, false),
+       ('/images/banners/banner-beethoven.jpg', NULL, NULL, NULL, NULL, NULL, '/concerts/2', 2, true, false),
+       ('/images/banners/banner-pentaport.png', NULL, NULL, NULL, NULL, NULL, '/concerts/13', 3, true, false);
 
 
 -- ================
@@ -653,9 +818,8 @@ VALUES
 -- ================
 INSERT INTO employee_tb
 (employee_number, name, department, status, user_id, created_at, updated_at)
-VALUES
-    ('EMP001', '김최고', '시스템관리팀', 'ACTIVE', 1, NOW(), NOW()),
-    ('EMP002', '이매니', '콘서트기획팀', 'ACTIVE', 2, NOW(), NOW()),
-    ('EMP003', '박사원', '고객지원팀', 'ACTIVE', 3, NOW(), NOW()),
-    ('EMP004', '정정지', '마케팅팀', 'SUSPENDED', 4, NOW(), NOW()),
-    ('EMP005', '최퇴사', '영업팀', 'RESIGNED', 5, NOW(), NOW());
+VALUES ('EMP001', '김최고', '시스템관리팀', 'ACTIVE', 1, NOW(), NOW()),
+       ('EMP002', '이매니', '콘서트기획팀', 'ACTIVE', 2, NOW(), NOW()),
+       ('EMP003', '박사원', '고객지원팀', 'ACTIVE', 3, NOW(), NOW()),
+       ('EMP004', '정정지', '마케팅팀', 'SUSPENDED', 4, NOW(), NOW()),
+       ('EMP005', '최퇴사', '영업팀', 'RESIGNED', 5, NOW(), NOW());
