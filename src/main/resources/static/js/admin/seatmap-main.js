@@ -13,8 +13,8 @@
     const PROJECTS_KEY = "seatmap_projects";
     const CURRENT_PROJECT_KEY = "seatmap_current_project_id";
 
-    const DUMMY_SEATS = [{ id: "1-A-1-1-VIP-AVAILABLE" }];
-    const DUMMY_SECTIONS = [{ id: "1-A", name: "A구역", grade: "VIP", seatCount: 0 }];
+    const DUMMY_SEATS = [{ id: "1-VIP-A-1-VIP-AVAILABLE" }];
+    const DUMMY_SECTIONS = [{ id: "1-VIP", name: "VIP", floor: "1", grade: "VIP", seatCount: 0 }];
 
     const STORAGE_KEYS = {
         seatButtonImage: [
@@ -206,8 +206,13 @@
                     originalImage: result.originalImageUrl,
                     croppedImage: result.croppedImageUrl,
                     image: result.imageUrl,
+                    buttonImage: result.buttonImageUrl,
+                    thumbnail: result.thumbnailImageUrl,
+                    debugImage: result.debugImageUrl,
                     seatJson: result.seatJsonUrl,
                     sectionJson: result.sectionJsonUrl,
+                    bookingButtons: result.bookingButtonsJsonUrl,
+                    decorations: result.decorationsJsonUrl,
                     metaJson: result.metaJsonUrl
                 }
             });
@@ -242,10 +247,10 @@
             sourceFileName: source.sourceFileName || "",
             createdAt,
             updatedAt,
-            seatJsonText: JSON.stringify(DUMMY_SEATS),
-            sectionJsonText: JSON.stringify(DUMMY_SECTIONS),
+            seatJsonText: source.seatJsonText || JSON.stringify(DUMMY_SEATS),
+            sectionJsonText: source.sectionJsonText || JSON.stringify(DUMMY_SECTIONS),
             imageDataUrl: source.imageDataUrl || null,
-            files: source.files || createLocalFileMap(folderName)
+            files: normalizeProjectFiles(folderName, source.files)
         };
     }
 
@@ -269,8 +274,13 @@
                     folder: result.folderUrl || project.files?.folder,
                     image: result.imageUrl || project.files?.image,
                     croppedImage: result.croppedImageUrl || project.files?.croppedImage,
+                    buttonImage: result.buttonImageUrl || project.files?.buttonImage,
+                    thumbnail: result.thumbnailImageUrl || project.files?.thumbnail,
+                    debugImage: result.debugImageUrl || project.files?.debugImage,
                     seatJson: result.seatJsonUrl || project.files?.seatJson,
-                    sectionJson: result.sectionJsonUrl || project.files?.sectionJson
+                    sectionJson: result.sectionJsonUrl || project.files?.sectionJson,
+                    bookingButtons: result.bookingButtonsJsonUrl || project.files?.bookingButtons,
+                    decorations: result.decorationsJsonUrl || project.files?.decorations
                 };
             }
         } catch (error) {
@@ -347,31 +357,81 @@
     }
 
     function applyProjectToLocalStorage(project) {
+        const folderName = project.folderName || project.id;
+        const files = normalizeProjectFiles(folderName, project.files);
         const seatText = project.seatJsonText || JSON.stringify(DUMMY_SEATS);
         const sectionText = project.sectionJsonText || JSON.stringify(DUMMY_SECTIONS);
-        const imageUrl = project.imageDataUrl
-            || localStorage.getItem("seatmap_cropped_image")
-            || localStorage.getItem("seat_button_originalImage")
-            || null;
+
+        const originalImageUrl = withCacheBust(files.originalImage);
+        const croppedImageUrl = project.imageDataUrl || withCacheBust(files.croppedImage || files.image || files.originalImage);
+        const buttonImageUrl = withCacheBust(files.buttonImage || files.croppedImage || files.image || files.originalImage);
+        const finalImageUrl = withCacheBust(files.image || files.croppedImage || files.originalImage);
+        const thumbnailImageUrl = withCacheBust(files.thumbnail || files.image || files.croppedImage || files.originalImage);
+        const debugImageUrl = withCacheBust(files.debugImage);
 
         localStorage.setItem("concert_seats", seatText);
         localStorage.setItem("concert_stage3_seats", seatText);
         localStorage.setItem("concert_sections", sectionText);
+        localStorage.setItem("concert_stage1_sections", sectionText);
+        localStorage.setItem("concert_stage2_sections", sectionText);
         localStorage.setItem("concert_stage4_sections", sectionText);
-        localStorage.setItem("seatmap_current_folder_name", project.folderName);
 
-        if (imageUrl) {
-            localStorage.setItem("seat_button_originalImage", imageUrl);
-            localStorage.setItem("concert_originalImage", imageUrl);
-            localStorage.setItem("seatmap_crop_originalImage", imageUrl);
-        }
+        localStorage.setItem("seatmap_current_project_id", folderName);
+        localStorage.setItem("seatmap_current_folder", folderName);
+        localStorage.setItem("seatmap_current_folder_name", folderName);
+        localStorage.setItem("seatmap_project_path", `/temp/seatmap/${folderName}`);
+
+        setUrlKey("seatmap_original_image_url", files.originalImage);
+        setUrlKey("seatmap_cropped_image_url", files.croppedImage);
+        setUrlKey("seatmap_button_image_url", files.buttonImage);
+        setUrlKey("seatmap_final_image_url", files.image);
+        setUrlKey("seatmap_thumbnail_image_url", files.thumbnail);
+        setUrlKey("seatmap_debug_image_url", files.debugImage);
+        setUrlKey("seatmap_seat_json_url", files.seatJson);
+        setUrlKey("seatmap_section_json_url", files.sectionJson);
+        setUrlKey("seatmap_booking_buttons_json_url", files.bookingButtons);
+        setUrlKey("seatmap_decorations_json_url", files.decorations);
+
+        // 01 도면 정리: original-image.png
+        setUrlKey("seatmap_crop_originalImage", originalImageUrl || croppedImageUrl);
+
+        // 02 버튼 이미지화: cropped-image.png를 입력으로 사용한다.
+        setUrlKey("seat_button_originalImage", croppedImageUrl || originalImageUrl);
+        setUrlKey("seat_button_resultImage", buttonImageUrl || croppedImageUrl || originalImageUrl);
+
+        // 03~04 구역/좌석 단계: button-image.png를 구역 도형 이미지로 사용한다.
+        setUrlKey("concert_originalImage", originalImageUrl || croppedImageUrl);
+        setUrlKey("concert_cleanImage", buttonImageUrl || croppedImageUrl || originalImageUrl);
+        setUrlKey("concert_buttonImage", buttonImageUrl || croppedImageUrl || originalImageUrl);
+
+        // 05~06 예매 버튼/최종 꾸미기: seatmap-image.png를 기준 이미지로 사용한다.
+        setUrlKey("concert_overviewImage", finalImageUrl || buttonImageUrl || croppedImageUrl || originalImageUrl);
+        setUrlKey("concert_generated_overviewImage", finalImageUrl || buttonImageUrl || croppedImageUrl || originalImageUrl);
+        setUrlKey("concert_stage4_finalImageUrl", finalImageUrl || buttonImageUrl || croppedImageUrl || originalImageUrl);
+        setUrlKey("concert_debugImage", debugImageUrl);
+        setUrlKey("concert_thumbnailImage", thumbnailImageUrl);
 
         localStorage.setItem("seat_button_entryFromMain", "true");
         localStorage.setItem("concert_entryFromMain", "true");
         localStorage.setItem("concert_imageMeta", JSON.stringify({
             source: "seatmap-main",
             projectId: project.id,
-            folderName: project.folderName,
+            folderName,
+            projectPath: `/temp/seatmap/${folderName}`,
+            images: {
+                originalImage: files.originalImage,
+                croppedImage: files.croppedImage,
+                buttonImage: files.buttonImage,
+                finalImage: files.image,
+                thumbnailImage: files.thumbnail,
+                debugImage: files.debugImage
+            },
+            json: {
+                seats: files.seatJson,
+                sections: files.sectionJson,
+                bookingButtons: files.bookingButtons,
+                decorations: files.decorations
+            },
             updatedAt: new Date().toISOString()
         }));
     }
@@ -408,6 +468,16 @@
             || localStorage.getItem("seat_button_originalImage")
             || localStorage.getItem("concert_originalImage")
             || null;
+    }
+
+    function withCacheBust(url) {
+        if (!url) {
+            return null;
+        }
+        if (String(url).startsWith("data:image")) {
+            return url;
+        }
+        return `${url}${String(url).includes("?") ? "&" : "?"}t=${Date.now()}`;
     }
 
     function saveProject(project) {
@@ -476,8 +546,13 @@
                             originalImage: item.originalImageUrl,
                             croppedImage: item.croppedImageUrl,
                             image: item.imageUrl,
+                            buttonImage: item.buttonImageUrl,
+                            thumbnail: item.thumbnailImageUrl,
+                            debugImage: item.debugImageUrl,
                             seatJson: item.seatJsonUrl,
                             sectionJson: item.sectionJsonUrl,
+                            bookingButtons: item.bookingButtonsJsonUrl,
+                            decorations: item.decorationsJsonUrl,
                             metaJson: item.metaJsonUrl
                         }
                     }));
@@ -546,11 +621,12 @@
             return;
         }
 
-        setCurrentProjectId(project.id);
+        const folderName = project.folderName || project.id;
+        setCurrentProjectId(folderName);
         applyProjectToLocalStorage(project);
         renderCurrentProject();
         renderProjectList();
-        toast("도면을 불러왔습니다.");
+        toast("도면을 불러왔습니다. 01~06 단계 이미지 경로를 다시 연결했습니다.");
     }
 
     async function deleteProject(projectId) {
@@ -653,6 +729,23 @@
         return base || `seatmap-${date.getTime()}`;
     }
 
+    function normalizeProjectFiles(folderName, files) {
+        const fallback = createLocalFileMap(folderName);
+        return {
+            ...fallback,
+            ...(files || {})
+        };
+    }
+
+    function setUrlKey(key, value) {
+        if (!value) {
+            localStorage.removeItem(key);
+            return;
+        }
+
+        localStorage.setItem(key, value);
+    }
+
     function createLocalFileMap(folderName) {
         const base = `/temp/seatmap/${folderName}`;
 
@@ -661,8 +754,13 @@
             originalImage: `${base}/original-image.png`,
             croppedImage: `${base}/cropped-image.png`,
             image: `${base}/seatmap-image.png`,
-            seatJson: `${base}/seatmap-seats.json`,
+            buttonImage: `${base}/button-image.png`,
+            thumbnail: `${base}/thumbnail.png`,
+            debugImage: `${base}/debug-polygons.png`,
+            seatJson: `/temp/seatmap/seats/${folderName}-seatmap-seats.json`,
             sectionJson: `${base}/seatmap-sections.json`,
+            bookingButtons: `${base}/booking-buttons.json`,
+            decorations: `${base}/seatmap-decorations.json`,
             metaJson: `${base}/seatmap-meta.json`
         };
     }

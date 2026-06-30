@@ -567,59 +567,118 @@ input[type="range"] {
     }
 }
 /* =========================================================
-   SeatTrace canvas/workspace common control
+   SeatTrace common photoshop workspace control
 ========================================================= */
-.seatmap-canvas-control,
-.seatmap-command-bar.seatmap-canvas-control {
-    position: sticky;
-    top: 10px;
-    left: 14px;
-    z-index: 80;
-    width: max-content;
-    max-width: calc(100% - 28px);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin: 10px 0 -2px 14px;
-    padding: 6px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.96);
-    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
-    backdrop-filter: blur(8px);
+.seatmap-page {
+    min-width: 1280px;
+    overflow: hidden;
 }
 
-.seatmap-canvas-control .seatmap-command-btn {
-    min-width: 42px;
-    height: 31px;
-    padding: 0 11px;
-    border: 1px solid #dbe2ea;
-    border-radius: 6px;
-    background: #ffffff;
-    color: #334155;
-    font-size: 12px;
-    font-weight: 900;
-    line-height: 1;
-    text-decoration: none;
-    display: inline-flex;
+.seatmap-work-toolbar {
+    height: 52px;
+    display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 18px;
+    border-bottom: 1px solid #dfe6f1;
+    background: #f8fafc;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+    position: relative;
+    z-index: 15;
+}
+
+.seatmap-work-toolbar__tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.seatmap-work-toolbar__button {
+    width: auto;
+    min-width: 58px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0 13px;
+    border: 1px solid #d7e0ef;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #1f2937;
+    font-size: 13px;
+    font-weight: 950;
+    box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+}
+
+.seatmap-work-toolbar__button:hover {
+    border-color: #b8c5d8;
+    background: #f8fafc;
+}
+
+.seatmap-work-toolbar__button.is-active,
+.seatmap-work-toolbar__button[data-seatmap-tool="pan"].is-active {
+    border-color: #7c3aed;
+    background: #f5f3ff;
+    color: #6d28d9;
+}
+
+.seatmap-work-toolbar__value {
+    min-width: 62px;
+    background: #eef2ff;
+    color: #1e293b;
+}
+
+.seatmap-work-toolbar__meta {
+    min-width: 0;
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.seatmap-work-toolbar__meta strong {
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 950;
+}
+
+.seatmap-work-toolbar__meta span {
+    max-width: 560px;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.seatmap-canvas-control .seatmap-command-btn:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
+.seatmap-workspace--crop,
+.seatmap-workspace--common {
+    height: calc(100vh - var(--seatmap-header-height) - 52px);
+    grid-template-columns: 360px minmax(0, 1fr) 300px;
 }
 
-.seatmap-canvas-control .seatmap-command-btn--link {
-    color: #475569;
+.seatmap-workspace--crop .seatmap-main,
+.seatmap-workspace--common .seatmap-main {
+    overflow: auto;
 }
 
-.seatmap-canvas-control .seatmap-zoom-value {
-    min-width: 48px;
-    color: #475569;
-    font-size: 12px;
-    font-weight: 950;
-    text-align: center;
+
+/* =========================================================
+   Common top toolbar layout
+   - 공용 작업 툴바가 붙는 03~06 화면도 01 도면 정리와 같은 높이 계산을 사용한다.
+   - 내부 command-bar를 제거했기 때문에 화면이 상단에서 한 번만 시작된다.
+========================================================= */
+.seatmap-workspace--concert-stage1,
+.seatmap-workspace--stage2,
+.seatmap-workspace--stage3,
+.seatmap-workspace--stage4,
+.seatmap-workspace--final {
+    height: calc(100vh - var(--seatmap-header-height) - 52px);
+}
+
+.app > .seatmap-workspace--stage3,
+.app > .seatmap-workspace--stage4 {
+    height: calc(100vh - var(--seatmap-header-height) - 52px);
 }

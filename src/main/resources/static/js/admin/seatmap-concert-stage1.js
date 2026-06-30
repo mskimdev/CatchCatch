@@ -219,13 +219,32 @@
         }
     }
 
+    function getProjectFolderName() {
+        const query = new URLSearchParams(location.search);
+        return query.get("projectId")
+            || localStorage.getItem("seatmap_current_folder_name")
+            || localStorage.getItem("seatmap_current_project_id")
+            || "seat";
+    }
+
+    function getProjectImageUrl(fileName) {
+        const folderName = getProjectFolderName();
+        return `/temp/seatmap/${encodeURIComponent(folderName)}/${fileName}`;
+    }
+
     async function loadInitialImage() {
         clearBrokenImageCache();
 
         let url = await readImageUrlFromJson();
 
         if (!url) {
-            url = localStorage.getItem("concert_buttonImage") || localStorage.getItem(STORAGE_KEYS.originalImage) || DEFAULT_IMAGE_URL;
+            url = localStorage.getItem("concert_buttonImage")
+                || localStorage.getItem("seatmap_button_image_url")
+                || getProjectImageUrl("button-image.png")
+                || localStorage.getItem(STORAGE_KEYS.originalImage)
+                || localStorage.getItem("seatmap_cropped_image_url")
+                || getProjectImageUrl("cropped-image.png")
+                || DEFAULT_IMAGE_URL;
         }
 
         state.originalUrl = appendNoCache(url);

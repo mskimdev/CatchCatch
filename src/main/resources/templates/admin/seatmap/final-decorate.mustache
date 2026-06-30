@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SeatTrace - 최종 꾸미기</title>
+    <link rel="stylesheet" href="/css/admin/seatmap-header.css">
+    <link rel="stylesheet" href="/css/admin/seatmap-workspace.css">
+    <link rel="stylesheet" href="/css/admin/seatmap-final-decorate.css">
+</head>
+<body>
+{{> admin/seatmap/common/header}}
+{{> admin/seatmap/common/work-toolbar}}
+
+<div class="seatmap-workspace seatmap-workspace--final" id="finalDecorateApp">
+    <aside class="seatmap-side seatmap-side--left final-side">
+        <div class="seatmap-side__title">STEP 06 · 최종 꾸미기</div>
+
+        <div class="box active">
+            <h3>직접 보정 도구</h3>
+            <div class="help-text">
+                예제 도면처럼 최종 품질을 올리는 단계입니다. 텍스트, 구역 박스, 좌석 사각형을 직접 올리고 위치를 보정합니다.
+            </div>
+
+            <div class="final-tool-grid">
+                <button type="button" class="btn primary" id="toolText">텍스트</button>
+                <button type="button" class="btn" id="toolRect">구역 박스</button>
+                <button type="button" class="btn" id="toolSeat">좌석</button>
+                <button type="button" class="btn red" id="deleteSelected">선택 삭제</button>
+            </div>
+        </div>
+
+        <div class="box">
+            <h3>선택 요소 설정</h3>
+            <label for="decorateText">텍스트</label>
+            <input id="decorateText" value="A구역">
+
+            <div class="field-grid field-grid--two">
+                <div>
+                    <label for="decorateColor">색상</label>
+                    <input type="color" id="decorateColor" value="#f77bab">
+                </div>
+                <div>
+                    <label for="decorateTextColor">글자색</label>
+                    <input type="color" id="decorateTextColor" value="#ffffff">
+                </div>
+            </div>
+
+            <div class="field-grid field-grid--two">
+                <div>
+                    <label for="decorateWidth">너비</label>
+                    <input type="number" id="decorateWidth" value="90" min="4">
+                </div>
+                <div>
+                    <label for="decorateHeight">높이</label>
+                    <input type="number" id="decorateHeight" value="42" min="4">
+                </div>
+            </div>
+
+            <div class="field-grid field-grid--two">
+                <div>
+                    <label for="decorateFontSize">글자 크기</label>
+                    <input type="number" id="decorateFontSize" value="22" min="8" max="80">
+                </div>
+                <div>
+                    <label for="decorateRadius">모서리</label>
+                    <input type="number" id="decorateRadius" value="0" min="0" max="40">
+                </div>
+            </div>
+
+            <button type="button" class="btn dark" id="applySelectedStyle">선택 요소에 적용</button>
+        </div>
+
+        <div class="box">
+            <h3>저장</h3>
+            <p class="help-text">저장하면 현재 캔버스가 seatmap-image.png로 저장됩니다. 원본 이미지는 건드리지 않습니다.</p>
+            <button type="button" class="btn green" id="saveFinalImage">최종 이미지 저장</button>
+        </div>
+    </aside>
+
+    <main class="seatmap-main final-main">
+        <div class="final-canvas-toolbar">
+            <strong>최종 도면 캔버스</strong>
+            <span id="finalCanvasInfo">도면을 불러오는 중...</span>
+        </div>
+        <div class="final-canvas-wrap" id="finalCanvasWrap">
+            <canvas id="finalCanvas"></canvas>
+        </div>
+    </main>
+
+    <aside class="seatmap-side seatmap-side--right final-side">
+        <div class="minimap">
+            <h3>현재 도면</h3>
+            <img id="finalMiniMap" alt="최종 도면 미니맵">
+            <div class="help">선택한 요소는 드래그로 이동할 수 있습니다. 더블클릭하면 텍스트를 바로 바꿀 수 있습니다.</div>
+        </div>
+
+        <div class="preview-card">
+            <h3>요소 목록</h3>
+            <div class="section-list" id="decorateObjectList"></div>
+        </div>
+    </aside>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script defer src="/js/admin/seatmap-header.js"></script>
+<script defer src="/js/admin/seatmap-final-decorate.js"></script>
+</body>
+</html>

@@ -21,6 +21,8 @@ public class SeatMapRequest {
         private String folderName;
         private String seatJsonText;
         private String sectionJsonText;
+        private String bookingButtonJsonText;
+        private String decorationJsonText;
         private String imageDataUrl;
     }
 
@@ -33,7 +35,6 @@ public class SeatMapRequest {
     @Getter
     @Setter
     public static class OverwriteSaveDTO {
-        private String folderName;
         private String imageDataUrl;
         private String jsonText;
     }

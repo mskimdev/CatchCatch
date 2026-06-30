@@ -1,12 +1,13 @@
 <aside class="seatmap-side seatmap-side--left">
-    <div class="seatmap-step-list">
+    <div class="seatmap-side__title">STEP 03 · 구역 나누기</div>
 
+    <div class="seatmap-step-list">
         <section id="part1Panel" class="seatmap-step is-active" data-step="1">
             <button type="button" class="seatmap-step__header active" id="partBtn1">
                 <span class="seatmap-step__check" data-step="1"></span>
                 <span class="seatmap-step__text">
                     <b>파트 1</b>
-                    <small>구역 추출 / 도형화</small>
+                    <small>도형 후보 확인</small>
                 </span>
                 <span class="seatmap-step__status">진행중</span>
                 <span class="seatmap-step__arrow">⌄</span>
@@ -15,22 +16,28 @@
             <div class="seatmap-step__body">
                 <div class="seatmap-step__system">
                     <div class="box active">
-                        <button type="button" class="btn amber" id="autoAnalyzeBtn">자동 구역 분석</button>
+                        <h3>버튼 이미지 기준 구역 추출</h3>
+                        <div class="help-text">
+                            이 단계는 좌석을 만들지 않습니다. button-image.png에서 구역 도형만 분리하고,
+                            잘못 잡힌 도형은 삭제·수동 추가·병합으로 정리합니다.
+                        </div>
+
+                        <button type="button" class="btn amber" id="autoAnalyzeBtn">구역 도형 자동 분석</button>
 
                         <div class="seatmap-part1-guide">
-                            <b>사용법</b>
-                            <span>구역 클릭 = 선택 / Shift + 다른 구역 클릭 = 합치기 / 빈 공간 드래그 = 수동 구역 추가</span>
+                            <b>작업 방식</b>
+                            <span>구역 클릭 = 선택 / Shift + 클릭 = 논리 병합 / 빈 공간 드래그 = 수동 구역 추가</span>
                         </div>
 
                         <div class="seatmap-selected-action hidden" id="part1SelectedActions">
                             <div class="seatmap-selected-action__body">
                                 <div class="seatmap-selected-action__text" id="part1SelectedText">선택 구역</div>
-                                <div class="seatmap-selected-action__hint">Shift + 다른 구역 클릭 시 합치기</div>
+                                <div class="seatmap-selected-action__hint">병합해도 원본 polygon 크기는 바꾸지 않습니다.</div>
                             </div>
                             <button type="button" class="btn red" id="deleteSectionBtn">선택 삭제</button>
                         </div>
 
-                        <button type="button" class="btn primary" id="goPart2Btn">다음: 면 자동 생성</button>
+                        <button type="button" class="btn primary" id="goPart2Btn">다음: 도형 면 보정</button>
                     </div>
 
                     <div class="hidden" aria-hidden="true">
@@ -51,7 +58,7 @@
                 <span class="seatmap-step__check" data-step="2"></span>
                 <span class="seatmap-step__text">
                     <b>파트 2</b>
-                    <small>구역 면 수정</small>
+                    <small>polygon 보정</small>
                 </span>
                 <span class="seatmap-step__status">대기</span>
                 <span class="seatmap-step__arrow">⌄</span>
@@ -60,11 +67,14 @@
             <div class="seatmap-step__body">
                 <div class="seatmap-step__system">
                     <div class="box active">
-                        <h3>자동 면 결과 수정</h3>
-                        <div class="seatmap-mode-help">파트1 점선은 범위로만 쓰고, 실제 회색 도형의 꼭짓점을 직선으로 이어 면을 만듭니다.</div>
-                        <button type="button" class="btn dark" id="makeSelectedButtonBtn">선택 면 재생성</button>
-                        <button type="button" class="btn" id="useExtractedAsFaceBtn">점선 범위 사용</button>
-                        <button type="button" class="btn green" id="makeAllButtonsBtn">전체 면 다시 생성</button>
+                        <h3>구역 도형 품질 보정</h3>
+                        <div class="seatmap-mode-help">
+                            자동 추출 결과가 삐뚤면 이 파트에서 면을 다시 만들거나, 점선 범위를 그대로 사용합니다.
+                            좌석 배치 기능은 다음 단계에서만 진행합니다.
+                        </div>
+                        <button type="button" class="btn dark" id="makeSelectedButtonBtn">선택 도형 재생성</button>
+                        <button type="button" class="btn" id="useExtractedAsFaceBtn">현재 점선 범위 사용</button>
+                        <button type="button" class="btn green" id="makeAllButtonsBtn">전체 도형 다시 생성</button>
 
                         <div class="hidden" aria-hidden="true">
                             <input type="range" id="buttonSimplify" min="1" max="18" value="2" />
@@ -76,7 +86,7 @@
                     </div>
 
                     <div class="box">
-                        <button type="button" class="btn primary" id="goPart3Btn">다음: 구역 번호 지정</button>
+                        <button type="button" class="btn primary" id="goPart3Btn">다음: 구역 정보 입력</button>
                     </div>
                 </div>
             </div>
@@ -87,7 +97,7 @@
                 <span class="seatmap-step__check" data-step="3"></span>
                 <span class="seatmap-step__text">
                     <b>파트 3</b>
-                    <small>구역 번호 지정</small>
+                    <small>이름 · 층 · 등급</small>
                 </span>
                 <span class="seatmap-step__status">대기</span>
                 <span class="seatmap-step__arrow">⌄</span>
@@ -96,25 +106,28 @@
             <div class="seatmap-step__body">
                 <div class="seatmap-step__system seatmap-step__system--compact">
                     <div class="box active">
-                        <h3>선택 구역 수정</h3>
+                        <h3>선택 구역 정보</h3>
+                        <div class="help-text">
+                            여기서는 구역만 확정합니다. 좌석 행·렬 입력은 04 좌석 배치 단계에서 처리합니다.
+                        </div>
                         <div class="row">
                             <div>
                                 <label>색상 그룹</label>
                                 <select id="sectionGroupSelect"></select>
                             </div>
                             <div>
-                                <label>구역 번호</label>
-                                <input id="sectionInput" value="" />
+                                <label>구역명</label>
+                                <input id="sectionInput" value="" placeholder="예: D2, VIP, STANDING_C" />
                             </div>
                         </div>
                         <button type="button" class="btn dark" id="applySectionBtn">선택 구역 적용</button>
                     </div>
 
                     <div class="box">
-                        <h3>검증</h3>
+                        <h3>검증 / 저장</h3>
                         <div class="seatmap-number-status" id="numberStatus"></div>
-                        <button type="button" class="btn green" id="saveStage2Btn">Stage2 저장</button>
-                        <button type="button" class="btn primary" id="toStage3Btn">Stage3 이동</button>
+                        <button type="button" class="btn green" id="saveStage2Btn">구역 JSON 저장</button>
+                        <button type="button" class="btn primary" id="toStage3Btn">04 좌석 배치로 이동</button>
                     </div>
 
                     <div class="hidden" aria-hidden="true">
@@ -134,10 +147,8 @@
 </aside>
 
 <main class="seatmap-main">
-{{> admin/seatmap/canvas-control/workspace-control}}
-
     <div class="canvas-wrap">
-        <span id="canvasTitle" class="sr-only">구역 도형화 도면</span>
+        <span id="canvasTitle" class="sr-only">구역 나누기 도면</span>
         <span id="canvasSize" class="sr-only">-</span>
         <div class="canvas-box" id="canvasBox">
             <canvas class="base" id="baseCanvas"></canvas>
@@ -150,11 +161,11 @@
     <div class="minimap">
         <h3>원본 미니맵</h3>
         <img id="miniImg" alt="원본 미니맵" />
-        <div class="help">색상은 구역 그룹 기준입니다. 잘못 잡힌 구역은 파트3에서 색상 그룹을 바꾸면 됩니다.</div>
+        <div class="help">미니맵은 원본 확인용입니다. 구역명, 등급, 층 정보는 좌측 패널에서 확정합니다.</div>
     </div>
 
     <div class="preview-card">
-        <h3>구역 번호 미리보기</h3>
+        <h3>구역명 미리보기</h3>
         <canvas id="previewCanvas"></canvas>
         <div class="legend" id="legend"></div>
     </div>

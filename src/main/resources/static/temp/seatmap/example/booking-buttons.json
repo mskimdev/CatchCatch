@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "projectId": "seat",
+  "projectId": "example",
   "imageWidth": 746,
   "imageHeight": 532,
   "description": "button-image.png 실제 색상 영역에서 추출한 polygon + 스크린샷 기준 좌석 수량 예제입니다. STANDING_C=75x24, D2/M2=196석.",

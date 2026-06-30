@@ -1,2 +1,19 @@
-{{! 호환용: 기존 work-toolbar partial을 workspace-control로 위임합니다. }}
-{{> admin/seatmap/canvas-control/workspace-control}}
+<nav class="seatmap-work-toolbar" data-step="{{seatmapStep}}">
+    <div class="seatmap-work-toolbar__tools">
+        <button type="button" class="seatmap-work-toolbar__button" id="undoAction" data-seatmap-tool="undo">↶ 작업취소</button>
+        <button type="button" class="seatmap-work-toolbar__button" id="redoAction" data-seatmap-tool="redo">↷ 다시실행</button>
+        <button type="button" class="seatmap-work-toolbar__button" id="zoomOut" data-seatmap-tool="zoom-out">－ 축소</button>
+        <button type="button" class="seatmap-work-toolbar__button seatmap-work-toolbar__value" id="zoomReset" data-seatmap-tool="zoom-reset"><span id="zoomValue">100%</span></button>
+        <button type="button" class="seatmap-work-toolbar__button" id="zoomIn" data-seatmap-tool="zoom-in">＋ 확대</button>
+        <button type="button" class="seatmap-work-toolbar__button" id="zoomFit" data-seatmap-tool="fit">맞춤</button>
+        <button type="button" class="seatmap-work-toolbar__button" id="zoomTool" data-seatmap-tool="pan">도면</button>
+        <button type="button" class="seatmap-work-toolbar__button" id="rotateLeft" data-seatmap-tool="rotate-left">↺ 왼쪽</button>
+        <button type="button" class="seatmap-work-toolbar__button" id="rotateRight" data-seatmap-tool="rotate-right">↻ 오른쪽</button>
+        <button type="button" class="seatmap-work-toolbar__button" id="resetView" data-seatmap-tool="reset">초기화</button>
+    </div>
+
+    <div class="seatmap-work-toolbar__meta">
+        <strong>{{seatmapTitle}}</strong>
+        <span>{{seatmapSubTitle}}</span>
+    </div>
+</nav>

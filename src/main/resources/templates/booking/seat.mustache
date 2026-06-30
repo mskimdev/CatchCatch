@@ -1,12 +1,26 @@
 {{> layout/header-booking}}
 
 <main class="cc-booking-seat-main">
-    <div class="cc-seat-popup" id="bookingSeatApp" data-max-select="4" data-concert-id="{{concertId}}" data-session-id="{{sessionId}}">
+    <div class="cc-seat-popup"
+         id="bookingSeatApp"
+         data-max-select="4"
+         data-concert-id="{{concertId}}"
+         data-session-id="{{sessionId}}"
+         data-seatmap-project-id="{{seat.seatMapProjectId}}"
+         data-seatmap-image-url="{{seat.overviewImageUrl}}"
+         data-booking-buttons-url="{{seat.bookingButtonsJsonUrl}}"
+         data-seatmap-sections-url="{{seat.seatMapSectionsJsonUrl}}"
+         data-seatmap-meta-url="{{seat.seatMapMetaJsonUrl}}">
+
         <header class="cc-seat-topbar">
             <div class="cc-seat-topbar__title">좌석 선택</div>
-            <div class="cc-seat-topbar__concert">{{#bookingTitle}}{{bookingTitle}}{{/bookingTitle}}{{^bookingTitle}}CatchCatch Concert{{/bookingTitle}}</div>
+            <div class="cc-seat-topbar__concert">
+                {{#bookingTitle}}{{bookingTitle}}{{/bookingTitle}}
+                {{^bookingTitle}}CatchCatch Concert{{/bookingTitle}}
+            </div>
+
             <select class="cc-seat-topbar__session" aria-label="공연 회차">
-                <option>2027.01.09 (토) 18:00</option>
+                <option>{{#seat.sessionText}}{{seat.sessionText}}{{/seat.sessionText}}{{^seat.sessionText}}선택된 회차{{/seat.sessionText}}</option>
             </select>
         </header>
 
@@ -18,7 +32,7 @@
                     <div class="cc-map-image-wrap" id="mapImageWrap">
                         <img id="seatmapImage"
                              class="cc-map-image"
-                             src="/temp/seatmap/seat/seatmap-image.png"
+                             src="{{seat.overviewImageUrl}}"
                              alt="좌석도">
                         <svg id="zoneOverlay"
                              class="cc-zone-overlay"
@@ -37,7 +51,10 @@
                     </div>
 
                     <div class="cc-bottom-guide" id="bottomGuide">
-                        <span id="bottomGuideText">구역을 먼저 선택해주세요 <small>(화면을 직접 선택하거나 우측 좌석등급을 선택해주세요)</small></span>
+                        <span id="bottomGuideText">
+                            구역을 먼저 선택해주세요
+                            <small>(화면을 직접 선택하거나 우측 좌석등급을 선택해주세요)</small>
+                        </span>
                         <button type="button" class="cc-guide-reset-btn" id="resetSelectionBtn">초기화</button>
                     </div>
                 </div>
@@ -48,7 +65,9 @@
 
                 <div class="cc-mini-map-box">
                     <div class="cc-mini-map" id="miniMapWrap">
-                        <img id="miniSeatmapImage" src="/temp/seatmap/seat/seatmap-image.png" alt="미니 좌석도">
+                        <img id="miniSeatmapImage"
+                             src="{{seat.overviewImageUrl}}"
+                             alt="미니 좌석도">
                         <svg id="miniZoneOverlay" class="cc-mini-zone-overlay" aria-hidden="true"></svg>
                     </div>
                     <button type="button" class="cc-full-map-btn" id="showFullMapBtn">좌석도 전체보기 〉</button>
@@ -83,21 +102,28 @@
     <script>
         (() => {
             const rawSeats =
-            {{#seat.seatsJson}}
-                {{{seat.seatsJson}}}
-            {{/seat.seatsJson}}
-            {{^seat.seatsJson}}
-                []
-            {{/seat.seatsJson}};
+        {{#seat.seatsJson}}
+            {{{seat.seatsJson}}}
+        {{/seat.seatsJson}}
+        {{^seat.seatsJson}}
+            []
+        {{/seat.seatsJson}};
 
             window.CATCHCATCH_SEATS = Array.isArray(rawSeats) ? rawSeats : [];
+
             window.CATCHCATCH_SEAT_META = {
                 concertId: "{{concertId}}",
                 sessionId: "{{sessionId}}",
                 maxSelectCount: 4,
-                projectId: "seat",
-                seatmapImageUrl: "/temp/seatmap/seat/seatmap-image.png",
-                bookingButtonsUrl: "/temp/seatmap/seat/booking-buttons.json"
+
+                seatMapFilePath: "{{seat.seatMapFilePath}}",
+                projectId: "{{seat.seatMapProjectId}}",
+
+                seatmapImageUrl: "{{seat.overviewImageUrl}}",
+                buttonImageUrl: "{{seat.buttonImageUrl}}",
+                bookingButtonsUrl: "{{seat.bookingButtonsJsonUrl}}",
+                seatMapSectionsUrl: "{{seat.seatMapSectionsJsonUrl}}",
+                seatMapMetaUrl: "{{seat.seatMapMetaJsonUrl}}"
             };
         })();
     </script>

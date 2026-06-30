@@ -4,8 +4,8 @@
     <aside class="crop-side">
         <section class="crop-panel">
 <span class="crop-panel__eyebrow">STEP 01</span>
-            <h1>도면 자르기 & 회전</h1>
-            <p>원본 PNG를 기준으로 필요한 영역만 정리하고, 버튼 이미지화 단계로 넘깁니다.</p>
+            <h1>도면 정리</h1>
+            <p>마우스로 저장할 영역을 드래그하고, 필요하면 좌우 회전 후 저장합니다.</p>
 
             <div class="crop-info">
                 <label>현재 도면</label>
@@ -15,6 +15,9 @@
 
             <div class="crop-actions">
                 <button type="button" class="crop-action crop-action--primary" id="applyFullCrop">전체 영역 선택</button>
+                <button type="button" class="crop-action" id="rotateLeft">왼쪽 회전</button>
+                <button type="button" class="crop-action" id="rotateRight">오른쪽 회전</button>
+                <button type="button" class="crop-action crop-action--danger" id="clearCropArea">영역 다시 선택</button>
                 <button type="button" class="crop-action" id="openMainPage">메인으로</button>
             </div>
         </section>
@@ -28,7 +31,7 @@
     <section class="crop-stage">
         <div class="crop-stage__top">
             <strong>미리보기</strong>
-            <span>빨간 점선 영역이 저장됩니다.</span>
+            <span>빈 공간 드래그 = 새 영역 선택 / 영역 내부 드래그 = 이동 / 모서리 드래그 = 크기 조절</span>
         </div>
         <div class="crop-canvas-wrap" id="cropCanvasWrap">
             <canvas id="cropCanvas"></canvas>

@@ -24,40 +24,6 @@
         originalImage: "concert_originalImage"
     };
 
-    function getCurrentFolderName() {
-        const urlProjectId = new URLSearchParams(location.search).get("projectId");
-        const headerProjectId = document.querySelector(".seatmap-header-simple")?.dataset.projectId;
-        const storedFolder = localStorage.getItem("seatmap_current_folder_name");
-        const currentId = localStorage.getItem("seatmap_current_project_id");
-
-        return sanitizeFolderName(urlProjectId || headerProjectId || storedFolder || currentId || "seat");
-    }
-
-    function getTempPaths() {
-        const folderName = getCurrentFolderName();
-        const base = `/temp/seatmap/${folderName}/`;
-
-        return {
-            base,
-            folderName,
-            seats: `${base}seatmap-seats.json`,
-            sections: `${base}seatmap-sections.json`,
-            image: `${base}seatmap-image.png`,
-            croppedImage: `${base}cropped-image.png`,
-            buttonImage: `${base}button-image.png`,
-            originalImage: `${base}original-image.png`
-        };
-    }
-
-    function sanitizeFolderName(value) {
-        return String(value || "seat")
-            .trim()
-            .replace(/\s+/g, "_")
-            .replace(/[^a-zA-Z0-9가-힣._-]/g, "_")
-            .replace(/_+/g, "_")
-            .replace(/^_+|_+$/g, "") || "seat";
-    }
-
     document.addEventListener("DOMContentLoaded", () => {
         initSaveInfo();
 
@@ -75,11 +41,6 @@
     }
 
     async function saveSeatmapTemp(button) {
-        if (typeof window.SeatMapCustomHeaderSave === "function") {
-            await window.SeatMapCustomHeaderSave(button);
-            return;
-        }
-
         const originalText = button.textContent;
 
         try {
@@ -135,9 +96,11 @@
 
         return {
             page: getPageName(),
-            folderName: getCurrentFolderName(),
-            seatJsonText: JSON.stringify(seatJson, null, 2),
-            sectionJsonText: JSON.stringify(sectionJson, null, 2),
+            folderName: getCurrentProjectId(),
+            seatJsonText: seatJson.length ? JSON.stringify(seatJson, null, 2) : "",
+            sectionJsonText: sectionJson.length ? JSON.stringify(sectionJson, null, 2) : "",
+            bookingButtonJsonText: readStoredText("concert_booking_buttons"),
+            decorationJsonText: readStoredText("seatmap_decorations"),
             imageDataUrl
         };
     }
@@ -198,28 +161,10 @@
         const col = cleanIdPart(seat.col || seat.no || seat.seatCol || 1);
         const grade = cleanIdPart(seat.grade || section.grade || "UNASSIGNED");
         const status = cleanIdPart(seat.status || "AVAILABLE");
-        const x = roundNumber(seat.x);
-        const y = roundNumber(seat.y);
-        const size = roundNumber(seat.size || seat.seatSize || section.seatSize || 0);
-        const angle = roundNumber(seat.angle ?? section.angle ?? 0);
-        const id = seat.id || [floor, sectionName, row, col, grade, status, x, y, size, angle].join("-");
+        const id = seat.id || [floor, sectionName, row, col, grade, status].join("-");
 
         return {
-            id,
-            sectionId: String(finalSectionId),
-            sourceSectionId: String(sourceSectionId || finalSectionId),
-            floor,
-            section: sectionName,
-            row: Number(row) || row,
-            col: Number(col) || col,
-            grade,
-            status,
-            x,
-            y,
-            size,
-            angle,
-            w: roundNumber(seat.w || seat.width || seat.size || size),
-            h: roundNumber(seat.h || seat.height || seat.size || size)
+            id
         };
     }
 
@@ -291,6 +236,13 @@
     }
 
     async function getCurrentImageDataUrl() {
+        if (window.SeatMapCrop && typeof window.SeatMapCrop.exportSelectedImage === "function") {
+            const cropped = window.SeatMapCrop.exportSelectedImage();
+            if (cropped && cropped.startsWith("data:image")) {
+                return cropped;
+            }
+        }
+
         const storedImage =
             localStorage.getItem(STORAGE_KEYS.stage1GeneratedImage) ||
             localStorage.getItem(STORAGE_KEYS.cleanImage);
@@ -423,6 +375,11 @@
         return value;
     }
 
+    function readStoredText(key) {
+        const value = localStorage.getItem(key);
+        return value && value.trim() ? value : "";
+    }
+
     function readJson(key, fallback) {
         try {
             const value = localStorage.getItem(key);
@@ -461,9 +418,8 @@
         }
 
         box.classList.remove("is-saving", "is-saved", "is-error");
-        const paths = getTempPaths();
         const defaultTitle = box.dataset.saveTitle || "저장 위치: 좌석 JSON · 구역 JSON · 도형 이미지";
-        const defaultPath = box.dataset.savePath || `${paths.seats} · ${paths.sections} · ${paths.image}`;
+        const defaultPath = box.dataset.savePath || `${TEMP_PATHS.seats} · seatmap-sections.json · seatmap-image.png`;
 
         title.textContent = defaultTitle;
         pathText.textContent = defaultPath;
@@ -480,9 +436,8 @@
 
         box.classList.remove("is-saved", "is-error");
         box.classList.add("is-saving");
-        const paths = getTempPaths();
         const defaultTitle = box.dataset.saveTitle || "저장 위치: 좌석 JSON · 구역 JSON · 도형 이미지";
-        const defaultPath = box.dataset.savePath || paths.base;
+        const defaultPath = box.dataset.savePath || TEMP_PATHS.base;
 
         title.textContent = "저장 중: " + defaultTitle.replace(/^저장 위치:\s*/, "");
         pathText.textContent = defaultPath;
@@ -507,11 +462,10 @@
         box.classList.add("is-saved");
         const defaultTitle = box.dataset.saveTitle || "저장 위치: 좌석 JSON · 구역 JSON · 도형 이미지";
         title.textContent = `최근 저장 완료: ${time} / ${defaultTitle.replace(/^저장 위치:\s*/, "")}`;
-        const paths = getTempPaths();
         pathText.textContent = [
-            result.seatJsonUrl || paths.seats,
-            result.sectionJsonUrl || paths.sections,
-            result.imageUrl || paths.image
+            result.seatJsonUrl || TEMP_PATHS.seats,
+            result.sectionJsonUrl || TEMP_PATHS.sections,
+            result.imageUrl || TEMP_PATHS.image
         ].join(" · ");
     }
 
@@ -533,13 +487,21 @@
     function getPageName() {
         const path = location.pathname;
 
-        if (path.includes("button-image")) return "button-image";
+        if (path.includes("crop-rotate")) return "seatmap-crop-rotate";
+        if (path.includes("button-image")) return "seatmap-button-image";
         if (path.includes("concert/stage1")) return "concert-stage1";
         if (path.includes("concert/stage2")) return "concert-stage2";
         if (path.includes("concert/stage3")) return "concert-stage3";
         if (path.includes("concert/stage4")) return "concert-stage4";
 
         return "seatmap";
+    }
+
+    function getCurrentProjectId() {
+        const fromQuery = new URLSearchParams(location.search).get("projectId");
+        const fromDataset = document.querySelector("[data-project-id]")?.dataset?.projectId;
+        const fromStorage = localStorage.getItem("seatmap_current_folder_name") || localStorage.getItem("seatmap_current_project_id");
+        return fromQuery || fromDataset || fromStorage || "seat";
     }
 
     function cleanIdPart(value) {

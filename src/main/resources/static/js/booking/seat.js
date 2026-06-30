@@ -36,6 +36,7 @@
 
   async function init() {
     cacheDom();
+    applyDynamicAssets();
     state.maxSelect = Number(window.CATCHCATCH_SEAT_META?.maxSelectCount || 4);
     state.seats = normalizeSeats(window.CATCHCATCH_SEATS || []);
 
@@ -72,8 +73,39 @@
     dom.showFullMapBtn = document.querySelector("#showFullMapBtn");
   }
 
+  function applyDynamicAssets() {
+    const imageUrl = resolveAssetUrl("seatmapImageUrl", "seatmap-image.png");
+
+    if (imageUrl) {
+      if (dom.mapImage) dom.mapImage.src = imageUrl;
+      if (dom.miniImage) dom.miniImage.src = imageUrl;
+    }
+  }
+
+  function resolveAssetUrl(metaKey, fileName) {
+    const meta = window.CATCHCATCH_SEAT_META || {};
+    const directUrl = meta[metaKey] || dom.app?.dataset?.[metaKey];
+
+    if (directUrl && String(directUrl).trim()) {
+      return String(directUrl).trim();
+    }
+
+    const projectId = String(meta.projectId || dom.app?.dataset?.seatmapProjectId || "").trim();
+
+    if (!projectId) {
+      return "";
+    }
+
+    return `/temp/seatmap/${projectId}/${fileName}`;
+  }
+
   async function loadAreas() {
-    const url = window.CATCHCATCH_SEAT_META?.bookingButtonsUrl || "/temp/seatmap/seat/booking-buttons.json";
+    const url = resolveAssetUrl("bookingButtonsUrl", "booking-buttons.json");
+
+    if (!url) {
+      state.areas = buildFallbackAreasFromGrades();
+      return;
+    }
 
     try {
       const response = await fetch(`${url}?t=${Date.now()}`, { cache: "no-store" });
@@ -146,6 +178,16 @@
       result.section = compact[2].trim();
       result.row = compact[3].trim();
       result.col = compact[4].trim();
+      return result;
+    }
+
+    // DB seat_number 형식: "D2 A-1", "STANDING_C A-1", "VIP_A C-8"
+    const simple = text.match(/^(.+?)\s+([^\s-]+)-(\d+)$/);
+    if (simple) {
+      result.section = simple[1].trim();
+      result.row = simple[2].trim();
+      result.col = simple[3].trim();
+      return result;
     }
 
     return result;
@@ -191,10 +233,12 @@
   }
 
   function normalizeArea(area, index) {
-    const grade = normalizeGrade(area.grade || area.gradeCode || area.type);
+    const rawGrade = normalizeGrade(area.grade || area.gradeCode || area.type);
     const floor = Number(area.floor || parseSectionKey(area.sectionId || area.id).floor || 1);
     const rawSection = parseSectionKey(area.sectionId || area.id).section || area.section || area.name || `구역${index + 1}`;
     const section = normalizeSectionName(rawSection);
+    const matchedSeat = firstSeatBySection(floor, section);
+    const grade = matchedSeat?.grade || rawGrade;
     const points = normalizePoints(area);
 
     return {
@@ -205,7 +249,7 @@
       sectionKey: sectionKey(floor, section),
       name: String(area.name || section),
       grade,
-      price: Number(area.price || firstPriceByGrade(grade) || 0),
+      price: Number(matchedSeat?.price || area.price || firstPriceByGrade(grade) || 0),
       points,
       center: getCenter(points, area),
       color: area.color || gradeColor(grade)
@@ -394,18 +438,12 @@
   }
 
   function filterByGrade(grade) {
-    const area = state.areas.find((item) => item.grade === grade);
-
     document.querySelectorAll(".cc-grade-row").forEach((button) => {
       button.classList.toggle("is-active", button.dataset.grade === grade);
     });
 
-    if (area) {
-      setGradeHover(grade);
-      updateGuide(`${escapeHtml(gradeLabel(grade))} 구역을 선택해주세요.`);
-      return;
-    }
-
+    state.activeArea = null;
+    setGradeHover(grade);
     renderSeatGridByGrade(grade);
   }
 
@@ -609,10 +647,24 @@
 
   function usedGrades() {
     const set = new Set(state.seats.map((seat) => seat.grade).filter(Boolean));
-    const areaSet = new Set(state.areas.map((area) => area.grade).filter(Boolean));
-    areaSet.forEach((grade) => set.add(grade));
+
+    if (set.size === 0) {
+      state.areas
+        .map((area) => area.grade)
+        .filter(Boolean)
+        .forEach((grade) => set.add(grade));
+    }
 
     return Array.from(set).sort((a, b) => gradeOrder(a) - gradeOrder(b));
+  }
+
+  function firstSeatBySection(floor, section) {
+    const normalizedSection = normalizeSectionName(section);
+    const key = sectionKey(floor, normalizedSection);
+
+    return state.seats.find((seat) =>
+      seat.sectionKey === key || normalizeSectionName(seat.sectionName) === normalizedSection
+    );
   }
 
   function firstPriceByGrade(grade) {
