@@ -12,7 +12,10 @@ import com.catchcatch.ticket.concertlike.ConcertLikeRepository;
 import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.review.ReviewRepository;
 import com.catchcatch.ticket.seat.Seat;
+import com.catchcatch.ticket.seat.SeatGrade;
 import com.catchcatch.ticket.seat.SeatRepository;
+import com.catchcatch.ticket.seat.SeatStatus;
+import com.catchcatch.ticket.session.ConcertSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -46,9 +50,7 @@ public class ConcertService {
         Pageable pageable = PageRequest.of(0, 8);
 
         List<Concert> concertList = concertRepository.findRecommendConcerts(ConcertStatus.OPEN, pageable);
-        return concertList.stream()
-                .map(ConcertResponse.ListDTO::from)
-                .collect(Collectors.toList());
+        return toListDTOsWithReviewStats(concertList);
     } // end of getHomeList
 
     // 2. 인기 콘서트
@@ -57,9 +59,7 @@ public class ConcertService {
         Pageable pageable = PageRequest.of(0, 8);
 
         List<Concert> popularList = concertRepository.findPopularConcerts(pageable);
-        return popularList.stream()
-                .map(ConcertResponse.ListDTO::from)
-                .collect(Collectors.toList());
+        return toListDTOsWithReviewStats(popularList);
     } // end of getPopularConcerts
 
     // 3. 홈 오픈 예정 섹션
@@ -109,11 +109,62 @@ public class ConcertService {
         }
 
         long reviewCount = reviewRepository.countByConcertId(concertId);
+        Map<Integer, Map<SeatGrade, Long>> remainingSeatCountsBySession =
+                getRemainingSeatCountsBySession(concert.getSessions());
 
         // 3. 엔티티 데이터를 DTO 팩토리 메서드로 넘겨 조립합니다.
-        return ConcertResponse.DetailDTO.of(concert, seats, reviewCount,isLiked);
+        return ConcertResponse.DetailDTO.of(concert, seats, reviewCount, isLiked, remainingSeatCountsBySession);
     } // end of getDetail
 
+
+    // 카드 DTO에 리뷰 집계를 매핑합니다.
+    private List<ConcertResponse.ListDTO> toListDTOsWithReviewStats(List<Concert> concerts) {
+        if (concerts == null || concerts.isEmpty()) {
+            return List.of();
+        }
+
+        List<Integer> concertIds = concerts.stream()
+                .map(Concert::getId)
+                .toList();
+
+        Map<Integer, ReviewRepository.ConcertReviewStats> reviewStatsByConcertId =
+                reviewRepository.findStatsByConcertIds(concertIds).stream()
+                        .collect(Collectors.toMap(
+                                ReviewRepository.ConcertReviewStats::getConcertId,
+                                stats -> stats
+                        ));
+
+        return concerts.stream()
+                .map(concert -> {
+                    ReviewRepository.ConcertReviewStats stats = reviewStatsByConcertId.get(concert.getId());
+                    return ConcertResponse.ListDTO.from(
+                            concert,
+                            stats == null ? 0.0 : stats.getAverageRating(),
+                            stats == null ? 0L : stats.getReviewCount()
+                    );
+                })
+                .toList();
+    }
+
+    private Map<Integer, Map<SeatGrade, Long>> getRemainingSeatCountsBySession(List<ConcertSession> sessions) {
+        if (sessions == null || sessions.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Integer> sessionIds = sessions.stream()
+                .map(ConcertSession::getId)
+                .toList();
+
+        return seatRepository.findSeatAvailabilityBySessionIds(sessionIds, SeatStatus.AVAILABLE).stream()
+                .collect(Collectors.groupingBy(
+                        SeatRepository.SessionGradeSeatAvailability::getSessionId,
+                        Collectors.toMap(
+                                SeatRepository.SessionGradeSeatAvailability::getGrade,
+                                row -> row.getRemainingCount() == null ? 0L : row.getRemainingCount(),
+                                Long::sum
+                        )
+                ));
+    }
 
     /**
      * [목록 페이지용] 동적 필터 및 검색 적용

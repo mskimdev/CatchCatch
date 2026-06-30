@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ConcertResponse {
@@ -29,6 +30,10 @@ public class ConcertResponse {
             String badge
     ) {
         public static ListDTO from(Concert concert) {
+            return from(concert, 0.0, 0L);
+        }
+
+        public static ListDTO from(Concert concert, Double averageRating, Long reviewCount) {
             String genreLabel = concert.getGenreLabel();
             String region = "미상";
             if (concert.getVenue().getAddress() != null && concert.getVenue().getAddress().length() >= 2) {
@@ -50,11 +55,17 @@ public class ConcertResponse {
                     dataRange,
                     concert.getVenue().getName(),
                     region,
-                    // TODO - review 및 평점 도메인 생성 시 수정
-                    4.9,
-                    2765,
+                    normalizeRating(averageRating),
+                    Math.toIntExact(reviewCount == null ? 0L : reviewCount),
                     "예매가능"
             );
+        }
+
+        private static double normalizeRating(Double rating) {
+            if (rating == null) {
+                return 0.0;
+            }
+            return Math.round(rating * 10.0) / 10.0;
         }
     }
 
@@ -88,7 +99,13 @@ public class ConcertResponse {
             List<PriceDTO> prices,
             boolean isLiked
     ) {
-        public static DetailDTO of(Concert concert, List<Seat> seats, Long reviewCount, boolean isLiked) {
+        public static DetailDTO of(
+                Concert concert,
+                List<Seat> seats,
+                Long reviewCount,
+                boolean isLiked,
+                Map<Integer, Map<SeatGrade, Long>> remainingSeatCountsBySession
+        ) {
             String safeDateRange = (concert.getStartDate() != null && concert.getEndDate() != null)
                     ? concert.getStartDate() + "~" + concert.getEndDate() : "일정 미정";
             String safeVenueName = (concert.getVenue() != null) ? concert.getVenue().getName() : "공연장 미정";
@@ -97,10 +114,18 @@ public class ConcertResponse {
                     ? concert.getVenue().getAddress()
                     : "주소 미정";
 
+            Map<Integer, Map<SeatGrade, Long>> safeRemainingSeatCountsBySession =
+                    remainingSeatCountsBySession == null ? Map.of() : remainingSeatCountsBySession;
+
             List<SessionDTO> sessionDTOs = new ArrayList<>();
             List<ConcertSession> concertSessions = concert.getSessions();
             for (int i = 0; i < concertSessions.size(); i++) {
-                sessionDTOs.add(SessionDTO.of(concertSessions.get(i), i + 1));
+                ConcertSession session = concertSessions.get(i);
+                sessionDTOs.add(SessionDTO.of(
+                        session,
+                        i + 1,
+                        safeRemainingSeatCountsBySession.getOrDefault(session.getId(), Map.of())
+                ));
             }
             List<PriceDTO> priceDTOs = seats.stream()
                     .collect(Collectors.toMap(
@@ -156,9 +181,10 @@ public class ConcertResponse {
     @Builder
     public record SessionDTO(
             Integer id,
-            String label
+            String label,
+            List<SeatRemainDTO> seatRemains
     ) {
-        public static SessionDTO of(ConcertSession session, int turnIndex) {
+        public static SessionDTO of(ConcertSession session, int turnIndex, Map<SeatGrade, Long> remainingSeatCounts) {
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd (E)");
             DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -167,9 +193,30 @@ public class ConcertResponse {
                     session.getSessionDate().format(dateFormatter),
                     session.getSessionTime().format(timeFormatter));
 
+            List<SeatRemainDTO> seatRemains = List.of(SeatGrade.VIP, SeatGrade.R, SeatGrade.S, SeatGrade.A).stream()
+                    .filter(remainingSeatCounts::containsKey)
+                    .map(grade -> SeatRemainDTO.of(grade, remainingSeatCounts.get(grade)))
+                    .toList();
+
             return SessionDTO.builder()
                     .id(session.getId())
                     .label(label)
+                    .seatRemains(seatRemains)
+                    .build();
+        }
+    }
+
+    @Builder
+    public record SeatRemainDTO(
+            String gradeKey,
+            Long remainingCount
+    ) {
+        public static SeatRemainDTO of(SeatGrade grade, Long remainingCount) {
+            long safeRemainingCount = remainingCount == null ? 0L : remainingCount;
+
+            return SeatRemainDTO.builder()
+                    .gradeKey(grade.name().toLowerCase())
+                    .remainingCount(safeRemainingCount)
                     .build();
         }
     }
