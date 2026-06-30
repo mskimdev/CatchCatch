@@ -1900,7 +1900,7 @@ function pointLineDistance(point, start, end) {
                 },
                 credentials: "same-origin",
                 body: JSON.stringify({
-                    page: "concert-stage1",
+                    page: "stage3",
                     seatJsonText: JSON.stringify(seats, null, 2),
                     sectionJsonText: JSON.stringify(sections, null, 2),
                     imageDataUrl
@@ -1924,7 +1924,7 @@ function pointLineDistance(point, start, end) {
 
     async function moveToStage2() {
         await saveStage1Result();
-        const nextUrl = dom.concertStage1App?.dataset?.nextUrl || "/admin/seatmap/concert/stage2";
+        const nextUrl = (dom.concertStage1App || document.getElementById("stage3App"))?.dataset?.nextUrl || "/admin/seatmap/stage/4";
         window.location.href = nextUrl;
     }
 

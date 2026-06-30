@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SeatTrace - 예매 버튼 생성</title>
+    <title>SeatTrace - 05 예매 버튼 생성</title>
 
     <link rel="stylesheet" href="/css/admin/seatmap-header.css">
     <link rel="stylesheet" href="/css/admin/seatmap-workspace.css">
-    <link rel="stylesheet" href="/css/admin/seatmap-concert-stage3.css">
+    <link rel="stylesheet" href="/css/admin/seatmap-stage5.css">
 </head>
 
-<body class="seatmap-page seatmap-page--stage3">
+<body class="seatmap-page seatmap-page--stage5">
 {{> admin/seatmap/common/header}}
 {{> admin/seatmap/common/work-toolbar}}
 
-<div class="app" id="stage3App" data-stage4-url="/admin/seatmap/concert/stage4">
-    <div class="seatmap-workspace seatmap-workspace--stage3">
+<div class="app" id="stage3App" data-stage4-url="{{stage6Url}}" data-stage6-url="{{stage6Url}}">
+    <div class="seatmap-workspace seatmap-workspace--stage5">
 
-        {{> admin/seatmap/workspace/workspace-concert-stage3}}
+        {{> admin/seatmap/workspace/workspace-stage5}}
 
         <main class="seatmap-main stage3-main">
             <div class="stage3-board">
@@ -30,7 +30,7 @@
                         <canvas id="miniCanvas"></canvas>
                     </div>
                     <div class="stage3-map-help">
-                        Stage2에서 만든 예매용 컬러 도면을 그대로 불러옵니다. 휠로 확대/축소, 드래그로 이동합니다.
+                        Stage4에서 만든 예매용 컬러 도면을 그대로 불러옵니다. 휠로 확대/축소, 드래그로 이동합니다.
                     </div>
                 </section>
 
@@ -132,6 +132,6 @@
 
 <script defer src="/js/admin/seatmap-header.js"></script>
 <script defer src="/js/admin/seatmap-workspace.js"></script>
-<script defer src="/js/admin/seatmap-concert-stage3.js"></script>
+<script defer src="/js/admin/seatmap-stage5.js"></script>
 </body>
 </html>

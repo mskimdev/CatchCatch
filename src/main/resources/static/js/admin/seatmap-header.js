@@ -487,12 +487,12 @@
     function getPageName() {
         const path = location.pathname;
 
-        if (path.includes("crop-rotate")) return "seatmap-crop-rotate";
-        if (path.includes("button-image")) return "seatmap-button-image";
-        if (path.includes("concert/stage1")) return "concert-stage1";
-        if (path.includes("concert/stage2")) return "concert-stage2";
-        if (path.includes("concert/stage3")) return "concert-stage3";
-        if (path.includes("concert/stage4")) return "concert-stage4";
+        if (path.includes("/stage/1") || path.includes("crop-rotate")) return "stage1";
+        if (path.includes("/stage/2") || path.includes("button-image")) return "stage2";
+        if (path.includes("/stage/3") || path.includes("concert/stage1")) return "stage3";
+        if (path.includes("/stage/4") || path.includes("concert/stage2")) return "stage4";
+        if (path.includes("/stage/5") || path.includes("concert/stage3")) return "stage5";
+        if (path.includes("/stage/6") || path.includes("concert/stage4")) return "stage6";
 
         return "seatmap";
     }

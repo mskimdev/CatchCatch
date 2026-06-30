@@ -1384,7 +1384,7 @@
         toast("콘서트 제작에 적용했습니다.");
 
         setTimeout(() => {
-            location.href = app?.dataset.concertUrl || "/admin/seatmap/concert/stage1";
+            location.href = app?.dataset.concertUrl || "/admin/seatmap/stage/3";
         }, 350);
     }
 
@@ -10240,7 +10240,7 @@ SeatTrace 버튼 이미지화 결과 파일
 
     // ============================================================================
     // v41 patch: button-image Part 1 = 도형 색상 추출 + 원본 위 cover 미리보기
-    // - 수정 대상은 concert-stage1이 아니라 /admin/seatmap/button-image 흐름이다.
+    // - 수정 대상은 concert-stage1이 아니라 /admin/seatmap/stage/2 흐름이다.
     // - 원본(sourceCanvas)은 절대 덮어쓰지 않고, 선택 색상만 새 후보 레이어로 생성한다.
     // ============================================================================
 

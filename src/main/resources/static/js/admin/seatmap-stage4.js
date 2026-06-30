@@ -8,9 +8,9 @@
   const appRoot = $("stage2App");
   const ROUTES = {
     // 이전 스테이지
-    stage1: appRoot?.dataset.stage1Url || "/admin/seatmap/concert/stage1",
+    stage1: appRoot?.dataset.stage1Url || "/admin/seatmap/stage/3",
     // 다음 스테이지
-    stage3: appRoot?.dataset.stage3Url || "/admin/seatmap/concert/stage3",
+    stage3: appRoot?.dataset.stage3Url || "/admin/seatmap/stage/5",
   };
   const STAGE1_SETTINGS_KEY = "concert_stage1Settings";
   const IMAGE_META_KEY = "concert_imageMeta";

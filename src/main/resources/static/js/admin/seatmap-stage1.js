@@ -511,7 +511,7 @@
                 headers: { "Content-Type": "application/json" },
                 credentials: "same-origin",
                 body: JSON.stringify({
-                    page: "seatmap-crop-rotate",
+                    page: "stage1",
                     folderName: state.project.folderName,
                     seatJsonText: state.project.seatJsonText || JSON.stringify(DUMMY_SEATS),
                     sectionJsonText: state.project.sectionJsonText || JSON.stringify(DUMMY_SECTIONS),

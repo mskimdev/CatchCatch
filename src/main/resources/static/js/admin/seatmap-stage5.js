@@ -2115,7 +2115,7 @@
             return;
         }
 
-        const url = dom.app?.dataset.stage4Url || "/admin/seatmap/concert/stage4";
+        const url = dom.app?.dataset.stage4Url || "/admin/seatmap/stage/6";
         window.location.href = url;
     }
 

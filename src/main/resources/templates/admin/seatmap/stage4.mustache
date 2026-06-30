@@ -3,23 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SeatTrace - 좌석 배치</title>
+    <title>SeatTrace - 04 좌석 배치</title>
 
     <link rel="stylesheet" href="/css/admin/seatmap-header.css">
     <link rel="stylesheet" href="/css/admin/seatmap-workspace.css">
-    <link rel="stylesheet" href="/css/admin/seatmap-concert-stage2.css">
+    <link rel="stylesheet" href="/css/admin/seatmap-stage4.css">
 </head>
 
-<body class="seatmap-page seatmap-page--stage2">
+<body class="seatmap-page seatmap-page--stage4">
 {{> admin/seatmap/common/header}}
 {{> admin/seatmap/common/work-toolbar}}
 
-<div class="seatmap-workspace seatmap-workspace--stage2"
+<div class="seatmap-workspace seatmap-workspace--stage4"
      id="stage2App"
-     data-stage1-url="{{stage1Url}}"
-     data-stage3-url="{{stage3Url}}">
+     data-stage1-url="{{stage3Url}}"
+     data-stage3-url="{{stage5Url}}"
+     data-prev-stage-url="{{stage3Url}}"
+     data-next-stage-url="{{stage5Url}}">
 
-    {{> admin/seatmap/workspace/workspace-concert-stage2}}
+    {{> admin/seatmap/workspace/workspace-stage4}}
 
 </div>
 
@@ -27,6 +29,6 @@
 
 <script defer src="/js/admin/seatmap-header.js"></script>
 <script defer src="/js/admin/seatmap-workspace.js"></script>
-<script defer src="/js/admin/seatmap-concert-stage2.js"></script>
+<script defer src="/js/admin/seatmap-stage4.js"></script>
 </body>
 </html>

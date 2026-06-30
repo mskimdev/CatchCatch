@@ -248,19 +248,19 @@ public class SeatMapService {
                 byte[] imageBytes = decodeBase64Image(req.getImageDataUrl());
                 String page = defaultText(req.getPage(), "");
 
-                if ("seatmap-crop-rotate".equals(page) || "crop-rotate".equals(page)) {
+                if ("stage1".equals(page) || "seatmap-crop-rotate".equals(page) || "crop-rotate".equals(page)) {
                     writeBytesToStaticAll(croppedImagePath, imageBytes);
                     writeBytesToStaticAll(seatmapImagePath, imageBytes);
                     writeBytesToStaticAll(thumbnailPath, imageBytes);
                     imageUrl = "/" + croppedImagePath;
-                } else if ("seatmap-button-image".equals(page) || "button-image".equals(page)) {
+                } else if ("stage2".equals(page) || "seatmap-button-image".equals(page) || "button-image".equals(page)) {
                     writeBytesToStaticAll(buttonImagePath, imageBytes);
                     imageUrl = "/" + buttonImagePath;
-                } else if ("seatmap-final-decorate".equals(page) || "final-decorate".equals(page) || "stage4".equals(page)) {
+                } else if ("stage6".equals(page) || "seatmap-final-decorate".equals(page) || "final-decorate".equals(page) || "stage4".equals(page)) {
                     writeBytesToStaticAll(seatmapImagePath, imageBytes);
                     writeBytesToStaticAll(thumbnailPath, imageBytes);
                     imageUrl = "/" + seatmapImagePath;
-                } else if ("booking-buttons".equals(page) || "stage3".equals(page)) {
+                } else if ("booking-buttons".equals(page) || "stage5".equals(page) || "stage3".equals(page)) {
                     writeBytesToStaticAll(debugImagePath, imageBytes);
                     imageUrl = "/" + debugImagePath;
                 } else {
