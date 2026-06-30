@@ -103,6 +103,16 @@
     </script>
 
     <script src="/js/booking/seat.js?v=2026063002"></script>
+    {{#errorMessage}}
+        <script>
+            window.addEventListener('load', function() {
+                const errorMsg = "{{errorMessage}}";
+            if (errorMsg && errorMsg.trim() !== "") {
+                CcUI.alert(errorMsg);
+            }
+        });
+        </script>
+    {{/errorMessage}}
 </main>
 
 {{> layout/footer}}

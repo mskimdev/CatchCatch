@@ -11,6 +11,7 @@ import com.catchcatch.ticket.concert.core.Concert;
 import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.payment.Payment;
+import com.catchcatch.ticket.payment.enums.PaymentStatus;
 import com.catchcatch.ticket.payment.repository.PaymentRepository;
 import com.catchcatch.ticket.queue.QueueService;
 import com.catchcatch.ticket.seat.Seat;
@@ -81,12 +82,13 @@ public class BookingService {
                 .distinct()
                 .toList();
 
-        if (bookingRepository.existsByUser_IdAndConcertSession_IdAndStatusIn(
-                userId,
-                sessionId,
-                ACTIVE_BOOKING_STATUSES
-        )) {
-            throw new BadRequestException("이미 진행 중인 예매가 있습니다.");
+        long existingSeatCount = bookingSeatRepository.countAllocatedSeats(userId, sessionId, ACTIVE_BOOKING_STATUSES);
+
+        long requestedSeatCount = seatIds.size();
+
+        if (existingSeatCount + requestedSeatCount > 4) {
+            throw new BadRequestException("회차당 최대 4매까지만 예매 가능합니다. " +
+                    "(현재 예매 완료 및 진행중: " + existingSeatCount + "석 / 요청: " + requestedSeatCount + "석)");
         }
 
         List<Seat> seats = seatRepository.findAllByIdInAndSessionIdForUpdate(sessionId, seatIds);
@@ -202,6 +204,10 @@ public class BookingService {
         expiredBookings.forEach(booking -> {
             releaseSeats(booking);
             booking.expire();
+            paymentRepository.findByBookingAndStatus(booking, PaymentStatus.READY)
+                    .ifPresent(payment -> {
+                        payment.changeStatus(PaymentStatus.CANCELED);
+                    });
             releaseQueueSlot(booking);
         });
     }
