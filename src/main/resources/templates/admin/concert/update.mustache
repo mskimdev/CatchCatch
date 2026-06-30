@@ -172,11 +172,6 @@
 
                             <div class="row">
                                 <div class="col-md-12 form-group">
-                                    <label class="font-weight-bold text-dark">상세페이지 내용</label>
-                                    <textarea name="detailDescription1" class="form-control js-summernote" rows="8"
-                                              placeholder="상세페이지 본문에 표시할 소개, 이미지, 안내 문구를 작성하세요.">{{concert.detailDescription1}}</textarea>
-                                </div>
-                                <div class="col-md-12 form-group">
                                     <label class="font-weight-bold text-dark">추가 공연정보 / 유의사항 및 안내</label>
                                     <textarea name="detailDescription2" class="form-control js-summernote" rows="6"
                                               placeholder="추가 공연 정보, 캐스팅 변경, 예매 유의사항 등을 작성하세요.">{{concert.detailDescription2}}</textarea>
@@ -231,6 +226,33 @@
 
                     function normalizeBlank(value) {
                         return value === '' ? null : value;
+                    }
+
+                    function validateConcertSchedule() {
+                        const ticketOpenDate = concertUpdateForm.querySelector('[name="ticketOpenDate"]').value;
+                        const startDate = concertUpdateForm.querySelector('[name="startDate"]').value;
+                        const endDate = concertUpdateForm.querySelector('[name="endDate"]').value;
+
+                        if (!ticketOpenDate || !startDate || !endDate) {
+                            CcUI.alert('티켓 오픈일, 공연 시작일, 공연 종료일을 모두 입력해 주세요.', 'warning');
+                            return false;
+                        }
+
+                        const ticketOpenDay = ticketOpenDate.slice(0, 10);
+                        if (startDate < ticketOpenDay) {
+                            CcUI.alert('공연 시작일은 티켓 오픈일보다 이전일 수 없습니다.', 'warning');
+                            return false;
+                        }
+                        if (endDate < startDate) {
+                            CcUI.alert('공연 종료일은 공연 시작일보다 이전일 수 없습니다.', 'warning');
+                            return false;
+                        }
+                        if (endDate < ticketOpenDay) {
+                            CcUI.alert('공연 종료일은 티켓 오픈일보다 이전일 수 없습니다.', 'warning');
+                            return false;
+                        }
+
+                        return true;
                     }
 
                     const concertIdText = "{{concert.id}}";
@@ -296,6 +318,7 @@
                     if (concertUpdateForm) {
                         concertUpdateForm.addEventListener('submit', function (e) {
                             e.preventDefault();
+                            if (!validateConcertSchedule()) return;
 
                             CcUI.confirm({
                                 text: '공연 정보를 수정하시겠습니까?',
@@ -324,7 +347,6 @@
                                             detailTitle: formData.get('detailTitle'),
                                             detailBannerUrl: normalizeBlank(formData.get('detailBannerUrl')),
                                             description: formData.get('description'),
-                                            detailDescription1: formData.get('detailDescription1'),
                                             detailDescription2: formData.get('detailDescription2'),
                                             posterImageBase64: null
                                         };

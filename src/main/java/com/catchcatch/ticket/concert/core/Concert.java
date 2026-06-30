@@ -78,9 +78,6 @@ public class Concert {
     private String detailBannerUrl;
     private String detailTitle;
     @Column(columnDefinition = "TEXT")
-    private String detailDescription1;
-
-    @Column(columnDefinition = "TEXT")
     private String detailDescription2;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -144,7 +141,6 @@ public class Concert {
         this.detailTitle = dto.detailTitle();
         this.detailBannerUrl = dto.detailBannerUrl();
         this.description = dto.description();
-        this.detailDescription1 = dto.detailDescription1();
         this.detailDescription2 = dto.detailDescription2();
         this.posterUrl = updatePosterUrl;
         this.priceVip = dto.priceVip();
