@@ -34,35 +34,64 @@ public class SeatMapService {
     private static final Path INTELLIJ_RUNTIME_STATIC_DIR =
             Path.of("out/production/resources/static");
 
-    private static final String DEFAULT_SEATS_JSON =
-            "[{\"id\":\"1-VIP-A-1-VIP-AVAILABLE\"}]";
+    private static final String DEFAULT_SEATS_JSON = """
+            [
+              {
+                "id": "1-VIP-A-1-VIP-AVAILABLE"
+              }
+            ]
+            """;
 
-    private static final String DEFAULT_SECTIONS_JSON =
-            "[{\"id\":\"1-A\",\"name\":\"A구역\",\"grade\":\"VIP\",\"seatCount\":0}]";
+    private static final String DEFAULT_SECTIONS_JSON = """
+            [
+              {
+                "id": "1-VIP",
+                "floor": "1",
+                "name": "VIP",
+                "grade": "VIP",
+                "seatCount": 0
+              }
+            ]
+            """;
+
+    private static final String DEFAULT_BOOKING_BUTTONS_JSON = "[]";
+    private static final String DEFAULT_DECORATIONS_JSON = "{\"texts\":[],\"shapes\":[],\"manualSeats\":[]}";
 
     // 새 도면 폴더 생성
     public ProjectCreateResult createProject(SeatMapRequest.ProjectCreateDTO req) {
         try {
             String projectName = defaultText(req.getProjectName(), "콘서트 대형장 도면");
             String folderName = resolveUniqueFolderName(sanitizeFolderName(defaultText(req.getFolderName(), projectName)));
-            String folderRelativePath = "temp/seatmap/" + folderName;
+            String folderRelativePath = projectFolderRelativePath(folderName);
+            String seatsJsonRelativePath = seatsJsonRelativePath(folderName);
             String now = LocalDateTime.now().toString();
 
-            String seatJsonRelativePath = "temp/seatmap/seats/" + folderName + "-seatmap-seats.json";
-            String sectionJsonRelativePath = folderRelativePath + "/seatmap-sections.json";
             String originalImageRelativePath = folderRelativePath + "/original-image.png";
             String croppedImageRelativePath = folderRelativePath + "/cropped-image.png";
-            String imageRelativePath = folderRelativePath + "/seatmap-image.png";
+            String seatmapImageRelativePath = folderRelativePath + "/seatmap-image.png";
+            String buttonImageRelativePath = folderRelativePath + "/button-image.png";
+            String thumbnailImageRelativePath = folderRelativePath + "/thumbnail.png";
+            String debugImageRelativePath = folderRelativePath + "/debug-polygons.png";
+            String sectionJsonRelativePath = folderRelativePath + "/seatmap-sections.json";
+            String bookingButtonsJsonRelativePath = folderRelativePath + "/booking-buttons.json";
+            String decorationsJsonRelativePath = folderRelativePath + "/seatmap-decorations.json";
             String metaJsonRelativePath = folderRelativePath + "/seatmap-meta.json";
 
-            writeTextToStaticAll(seatJsonRelativePath, DEFAULT_SEATS_JSON);
+            writeTextToStaticAll(seatsJsonRelativePath, DEFAULT_SEATS_JSON);
             writeTextToStaticAll(sectionJsonRelativePath, DEFAULT_SECTIONS_JSON);
+            writeTextToStaticAll(bookingButtonsJsonRelativePath, DEFAULT_BOOKING_BUTTONS_JSON);
+            writeTextToStaticAll(decorationsJsonRelativePath, DEFAULT_DECORATIONS_JSON);
 
             if (req.getImageDataUrl() != null && req.getImageDataUrl().startsWith("data:image")) {
                 byte[] imageBytes = decodeBase64Image(req.getImageDataUrl());
-                writeBytesToStaticAll(originalImageRelativePath, imageBytes);
-                writeBytesToStaticAll(croppedImageRelativePath, imageBytes);
-                writeBytesToStaticAll(imageRelativePath, imageBytes);
+
+                // 새 도면 생성 시 각 단계가 바로 진입할 수 있도록 기본 PNG 세트를 전부 만든다.
+                writeBytesToStaticAll(originalImageRelativePath, imageBytes);   // 01 입력 원본
+                writeBytesToStaticAll(croppedImageRelativePath, imageBytes);    // 01 출력 / 02 입력
+                writeBytesToStaticAll(seatmapImageRelativePath, imageBytes);    // 05~06 / booking 기준 이미지
+                writeBytesToStaticAll(buttonImageRelativePath, imageBytes);     // 02 출력 / 03~04 입력, 최초는 원본 복사
+                writeBytesToStaticAll(thumbnailImageRelativePath, imageBytes);  // 메인 목록 썸네일
+                writeBytesToStaticAll(debugImageRelativePath, imageBytes);      // polygon 검수용, 최초는 원본 복사
             }
 
             String metaJson = buildMetaJson(
@@ -84,9 +113,14 @@ public class SeatMapService {
                     "/" + folderRelativePath,
                     "/" + originalImageRelativePath,
                     "/" + croppedImageRelativePath,
-                    "/" + imageRelativePath,
-                    "/" + seatJsonRelativePath,
+                    "/" + seatmapImageRelativePath,
+                    "/" + buttonImageRelativePath,
+                    "/" + thumbnailImageRelativePath,
+                    "/" + debugImageRelativePath,
+                    "/" + seatsJsonRelativePath,
                     "/" + sectionJsonRelativePath,
+                    "/" + bookingButtonsJsonRelativePath,
+                    "/" + decorationsJsonRelativePath,
                     "/" + metaJsonRelativePath
             );
         } catch (Exception e) {
@@ -123,11 +157,8 @@ public class SeatMapService {
     public ProjectDeleteResult deleteProject(SeatMapRequest.ProjectDeleteDTO req) {
         try {
             String folderName = sanitizeFolderName(req.getFolderName());
-            String relativePath = "temp/seatmap/" + folderName;
-
-            deleteStaticFolder(relativePath);
-            deleteStaticFolder("temp/seatmap/seats/" + folderName + "-seatmap-seats.json");
-
+            deleteStaticFolder(projectFolderRelativePath(folderName));
+            deleteStaticFile(seatsJsonRelativePath(folderName));
             return new ProjectDeleteResult(true, folderName);
         } catch (Exception e) {
             throw new RuntimeException("도면 프로젝트 삭제 실패", e);
@@ -184,35 +215,76 @@ public class SeatMapService {
     public TempSaveResult tempSave(SeatMapRequest.TempSaveDTO req) {
         try {
             String folderName = sanitizeFolderName(req.getFolderName());
-            String folderRelativePath = "temp/seatmap/" + folderName;
+            String folderRelativePath = projectFolderRelativePath(folderName);
+            String seatsJsonPath = seatsJsonRelativePath(folderName);
 
-            String seatJsonRelativePath = "temp/seatmap/seats/" + folderName + "-seatmap-seats.json";
-            String oldSeatJsonRelativePath = folderRelativePath + "/seatmap-seats.json";
-            String sectionJsonRelativePath = folderRelativePath + "/seatmap-sections.json";
-            String imageRelativePath = folderRelativePath + "/seatmap-image.png";
-            String croppedImageRelativePath = folderRelativePath + "/cropped-image.png";
+            String sectionJsonPath = folderRelativePath + "/seatmap-sections.json";
+            String bookingButtonsJsonPath = folderRelativePath + "/booking-buttons.json";
+            String decorationsJsonPath = folderRelativePath + "/seatmap-decorations.json";
+            String croppedImagePath = folderRelativePath + "/cropped-image.png";
+            String seatmapImagePath = folderRelativePath + "/seatmap-image.png";
+            String buttonImagePath = folderRelativePath + "/button-image.png";
+            String thumbnailPath = folderRelativePath + "/thumbnail.png";
+            String debugImagePath = folderRelativePath + "/debug-polygons.png";
+            String imageUrl = "/" + seatmapImagePath;
 
-            writeTextToStaticAll(seatJsonRelativePath, defaultText(req.getSeatJsonText(), DEFAULT_SEATS_JSON));
-            deleteStaticFolder(oldSeatJsonRelativePath);
-            writeTextToStaticAll(sectionJsonRelativePath, defaultText(req.getSectionJsonText(), DEFAULT_SECTIONS_JSON));
+            if (req.getSeatJsonText() != null && !req.getSeatJsonText().isBlank()) {
+                writeTextToStaticAll(seatsJsonPath, req.getSeatJsonText());
+            }
+
+            if (req.getSectionJsonText() != null && !req.getSectionJsonText().isBlank()) {
+                writeTextToStaticAll(sectionJsonPath, req.getSectionJsonText());
+            }
+
+            if (req.getBookingButtonJsonText() != null && !req.getBookingButtonJsonText().isBlank()) {
+                writeTextToStaticAll(bookingButtonsJsonPath, req.getBookingButtonJsonText());
+            }
+
+            if (req.getDecorationJsonText() != null && !req.getDecorationJsonText().isBlank()) {
+                writeTextToStaticAll(decorationsJsonPath, req.getDecorationJsonText());
+            }
 
             if (req.getImageDataUrl() != null && req.getImageDataUrl().startsWith("data:image")) {
                 byte[] imageBytes = decodeBase64Image(req.getImageDataUrl());
-                writeBytesToStaticAll(imageRelativePath, imageBytes);
+                String page = defaultText(req.getPage(), "");
 
-                if ("seatmap-crop-rotate".equals(req.getPage())) {
-                    writeBytesToStaticAll(croppedImageRelativePath, imageBytes);
+                if ("seatmap-crop-rotate".equals(page) || "crop-rotate".equals(page)) {
+                    writeBytesToStaticAll(croppedImagePath, imageBytes);
+                    writeBytesToStaticAll(seatmapImagePath, imageBytes);
+                    writeBytesToStaticAll(thumbnailPath, imageBytes);
+                    imageUrl = "/" + croppedImagePath;
+                } else if ("seatmap-button-image".equals(page) || "button-image".equals(page)) {
+                    writeBytesToStaticAll(buttonImagePath, imageBytes);
+                    imageUrl = "/" + buttonImagePath;
+                } else if ("seatmap-final-decorate".equals(page) || "final-decorate".equals(page) || "stage4".equals(page)) {
+                    writeBytesToStaticAll(seatmapImagePath, imageBytes);
+                    writeBytesToStaticAll(thumbnailPath, imageBytes);
+                    imageUrl = "/" + seatmapImagePath;
+                } else if ("booking-buttons".equals(page) || "stage3".equals(page)) {
+                    writeBytesToStaticAll(debugImagePath, imageBytes);
+                    imageUrl = "/" + debugImagePath;
+                } else {
+                    writeBytesToStaticAll(seatmapImagePath, imageBytes);
+                    imageUrl = "/" + seatmapImagePath;
                 }
             }
+
+            // 과거 잘못 생성된 프로젝트 내부 seatmap-seats.json은 저장 시 제거한다.
+            deleteStaticFile(folderRelativePath + "/seatmap-seats.json");
 
             return new TempSaveResult(
                     true,
                     folderName,
                     "/" + folderRelativePath,
-                    "/" + seatJsonRelativePath,
-                    "/" + sectionJsonRelativePath,
-                    "/" + imageRelativePath,
-                    "/" + croppedImageRelativePath
+                    "/" + seatsJsonPath,
+                    "/" + sectionJsonPath,
+                    imageUrl,
+                    "/" + croppedImagePath,
+                    "/" + buttonImagePath,
+                    "/" + thumbnailPath,
+                    "/" + debugImagePath,
+                    "/" + bookingButtonsJsonPath,
+                    "/" + decorationsJsonPath
             );
         } catch (Exception e) {
             throw new RuntimeException("좌석도 임시 저장 실패", e);
@@ -229,6 +301,11 @@ public class SeatMapService {
         private String sectionJsonUrl;
         private String imageUrl;
         private String croppedImageUrl;
+        private String buttonImageUrl;
+        private String thumbnailImageUrl;
+        private String debugImageUrl;
+        private String bookingButtonsJsonUrl;
+        private String decorationsJsonUrl;
     }
 
     @Getter
@@ -243,8 +320,13 @@ public class SeatMapService {
         private String originalImageUrl;
         private String croppedImageUrl;
         private String imageUrl;
+        private String buttonImageUrl;
+        private String thumbnailImageUrl;
+        private String debugImageUrl;
         private String seatJsonUrl;
         private String sectionJsonUrl;
+        private String bookingButtonsJsonUrl;
+        private String decorationsJsonUrl;
         private String metaJsonUrl;
     }
 
@@ -272,8 +354,13 @@ public class SeatMapService {
         private String originalImageUrl;
         private String croppedImageUrl;
         private String imageUrl;
+        private String buttonImageUrl;
+        private String thumbnailImageUrl;
+        private String debugImageUrl;
         private String seatJsonUrl;
         private String sectionJsonUrl;
+        private String bookingButtonsJsonUrl;
+        private String decorationsJsonUrl;
         private String metaJsonUrl;
     }
 
@@ -284,7 +371,7 @@ public class SeatMapService {
         String projectName = extractJsonString(metaText, "name", folderName);
         String createdAt = extractJsonString(metaText, "createdAt", "");
         String updatedAt = extractJsonString(metaText, "updatedAt", getLastModifiedTimeSafe(folder));
-        String folderUrl = "/temp/seatmap/" + folderName;
+        String folderUrl = "/" + projectFolderRelativePath(folderName);
 
         return new ProjectSummary(
                 projectName,
@@ -295,8 +382,13 @@ public class SeatMapService {
                 folderUrl + "/original-image.png",
                 folderUrl + "/cropped-image.png",
                 folderUrl + "/seatmap-image.png",
-                "/temp/seatmap/seats/" + folderName + "-seatmap-seats.json",
+                folderUrl + "/button-image.png",
+                folderUrl + "/thumbnail.png",
+                folderUrl + "/debug-polygons.png",
+                "/" + seatsJsonRelativePath(folderName),
                 folderUrl + "/seatmap-sections.json",
+                folderUrl + "/booking-buttons.json",
+                folderUrl + "/seatmap-decorations.json",
                 folderUrl + "/seatmap-meta.json"
         );
     }
@@ -320,15 +412,31 @@ public class SeatMapService {
                 + "\"files\":{"
                 + "\"originalImage\":\"original-image.png\","
                 + "\"croppedImage\":\"cropped-image.png\","
-                + "\"image\":\"seatmap-image.png\","
-                + "\"seats\":\"../seats/" + jsonEscape(folderName) + "-seatmap-seats.json\","
-                + "\"sections\":\"seatmap-sections.json\""
+                + "\"seatmapImage\":\"seatmap-image.png\","
+                + "\"buttonImage\":\"button-image.png\","
+                + "\"thumbnail\":\"thumbnail.png\","
+                + "\"debugPolygons\":\"debug-polygons.png\","
+                + "\"sections\":\"seatmap-sections.json\","
+                + "\"bookingButtons\":\"booking-buttons.json\","
+                + "\"decorations\":\"seatmap-decorations.json\","
+                + "\"seats\":\"/temp/seatmap/seats/" + jsonEscape(folderName) + "-seatmap-seats.json\""
                 + "}"
                 + "}";
     }
 
+    private String projectFolderRelativePath(String folderName) {
+        return "temp/seatmap/" + sanitizeFolderName(folderName);
+    }
+
+    private String seatsJsonRelativePath(String folderName) {
+        return "temp/seatmap/seats/" + sanitizeFolderName(folderName) + "-seatmap-seats.json";
+    }
+
     private String resolveUniqueFolderName(String folderName) {
         String baseName = sanitizeFolderName(folderName);
+        if ("seats".equalsIgnoreCase(baseName)) {
+            baseName = "seatmap-seats-project";
+        }
         Path baseDir = SOURCE_STATIC_DIR.resolve("temp/seatmap");
         Path targetPath = baseDir.resolve(baseName);
 
@@ -412,12 +520,18 @@ public class SeatMapService {
         return cleaned;
     }
 
-
     private void deleteStaticFolder(String relativePath) throws IOException {
         deleteFolder(SOURCE_STATIC_DIR.resolve(relativePath));
         deleteFolder(MAVEN_RUNTIME_STATIC_DIR.resolve(relativePath));
         deleteFolder(GRADLE_RUNTIME_STATIC_DIR.resolve(relativePath));
         deleteFolder(INTELLIJ_RUNTIME_STATIC_DIR.resolve(relativePath));
+    }
+
+    private void deleteStaticFile(String relativePath) throws IOException {
+        Files.deleteIfExists(SOURCE_STATIC_DIR.resolve(relativePath));
+        Files.deleteIfExists(MAVEN_RUNTIME_STATIC_DIR.resolve(relativePath));
+        Files.deleteIfExists(GRADLE_RUNTIME_STATIC_DIR.resolve(relativePath));
+        Files.deleteIfExists(INTELLIJ_RUNTIME_STATIC_DIR.resolve(relativePath));
     }
 
     private void deleteFolder(Path folderPath) throws IOException {

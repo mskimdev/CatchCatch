@@ -33,35 +33,8 @@
             return;
         }
 
-        button.addEventListener("click", () => {
-            const delegated = getDelegatedSaveButton();
-            if (delegated) {
-                delegated.click();
-                return;
-            }
-            saveSeatmapTemp(button);
-        });
+        button.addEventListener("click", () => saveSeatmapTemp(button));
     });
-
-    function getDelegatedSaveButton() {
-        const ids = [
-            "cropSave",
-            "saveCleanTop",
-            "saveStage2Top",
-            "saveStage3Top",
-            "saveAllJsonTop",
-            "saveAllJsonMain"
-        ];
-
-        for (const id of ids) {
-            const button = document.getElementById(id);
-            if (button && button.offsetParent !== null && !button.disabled) {
-                return button;
-            }
-        }
-
-        return null;
-    }
 
     function initSaveInfo() {
         updateSaveInfoIdle();
@@ -123,9 +96,11 @@
 
         return {
             page: getPageName(),
-            folderName: getCurrentFolderName(),
-            seatJsonText: JSON.stringify(seatJson, null, 2),
-            sectionJsonText: JSON.stringify(sectionJson, null, 2),
+            folderName: getCurrentProjectId(),
+            seatJsonText: seatJson.length ? JSON.stringify(seatJson, null, 2) : "",
+            sectionJsonText: sectionJson.length ? JSON.stringify(sectionJson, null, 2) : "",
+            bookingButtonJsonText: readStoredText("concert_booking_buttons"),
+            decorationJsonText: readStoredText("seatmap_decorations"),
             imageDataUrl
         };
     }
@@ -188,13 +163,9 @@
         const status = cleanIdPart(seat.status || "AVAILABLE");
         const id = seat.id || [floor, sectionName, row, col, grade, status].join("-");
 
-        return { id };
-    }
-
-    function getCurrentFolderName() {
-        const fromUrl = new URLSearchParams(location.search).get("projectId");
-        const fromStorage = localStorage.getItem("seatmap_current_folder_name") || localStorage.getItem("seatmap_current_project_id");
-        return cleanIdPart(fromUrl || fromStorage || "seat") || "seat";
+        return {
+            id
+        };
     }
 
     function buildSectionJson(source) {
@@ -265,6 +236,13 @@
     }
 
     async function getCurrentImageDataUrl() {
+        if (window.SeatMapCrop && typeof window.SeatMapCrop.exportSelectedImage === "function") {
+            const cropped = window.SeatMapCrop.exportSelectedImage();
+            if (cropped && cropped.startsWith("data:image")) {
+                return cropped;
+            }
+        }
+
         const storedImage =
             localStorage.getItem(STORAGE_KEYS.stage1GeneratedImage) ||
             localStorage.getItem(STORAGE_KEYS.cleanImage);
@@ -397,6 +375,11 @@
         return value;
     }
 
+    function readStoredText(key) {
+        const value = localStorage.getItem(key);
+        return value && value.trim() ? value : "";
+    }
+
     function readJson(key, fallback) {
         try {
             const value = localStorage.getItem(key);
@@ -504,13 +487,21 @@
     function getPageName() {
         const path = location.pathname;
 
-        if (path.includes("button-image")) return "button-image";
+        if (path.includes("crop-rotate")) return "seatmap-crop-rotate";
+        if (path.includes("button-image")) return "seatmap-button-image";
         if (path.includes("concert/stage1")) return "concert-stage1";
         if (path.includes("concert/stage2")) return "concert-stage2";
         if (path.includes("concert/stage3")) return "concert-stage3";
         if (path.includes("concert/stage4")) return "concert-stage4";
 
         return "seatmap";
+    }
+
+    function getCurrentProjectId() {
+        const fromQuery = new URLSearchParams(location.search).get("projectId");
+        const fromDataset = document.querySelector("[data-project-id]")?.dataset?.projectId;
+        const fromStorage = localStorage.getItem("seatmap_current_folder_name") || localStorage.getItem("seatmap_current_project_id");
+        return fromQuery || fromDataset || fromStorage || "seat";
     }
 
     function cleanIdPart(value) {

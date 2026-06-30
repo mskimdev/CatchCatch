@@ -1,17 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SeatTrace - 예매 버튼 생성</title>
+
+    <link rel="stylesheet" href="/css/admin/seatmap-header.css">
+    <link rel="stylesheet" href="/css/admin/seatmap-workspace.css">
+    <link rel="stylesheet" href="/css/admin/seatmap-concert-stage3.css">
+</head>
+
+<body class="seatmap-page seatmap-page--stage3">
 {{> admin/seatmap/common/header}}
+{{> admin/seatmap/common/work-toolbar}}
 
-<link href="/css/admin/seatmap-workspace.css" rel="stylesheet">
-<link href="/css/admin/seatmap-concert-stage3.css" rel="stylesheet">
-
-<body>
-<div class="app" id="stage3App" data-stage4-url="{{stage4Url}}">
+<div class="app" id="stage3App" data-stage4-url="/admin/seatmap/concert/stage4">
     <div class="seatmap-workspace seatmap-workspace--stage3">
 
         {{> admin/seatmap/workspace/workspace-concert-stage3}}
 
         <main class="seatmap-main stage3-main">
-            {{> admin/seatmap/canvas-control/workspace-control}}
-
             <div class="stage3-board">
                 <section class="stage3-map-card" id="mapCard">
                     <div class="stage3-card-head">
@@ -122,7 +130,8 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="/js/admin/seatmap-workspace.js" defer></script>
-<script src="/js/admin/seatmap-concert-stage3.js" defer></script>
+<script defer src="/js/admin/seatmap-header.js"></script>
+<script defer src="/js/admin/seatmap-workspace.js"></script>
+<script defer src="/js/admin/seatmap-concert-stage3.js"></script>
 </body>
 </html>

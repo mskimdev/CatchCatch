@@ -13,8 +13,8 @@
     const PROJECTS_KEY = "seatmap_projects";
     const CURRENT_PROJECT_KEY = "seatmap_current_project_id";
 
-    const DUMMY_SEATS = [{ id: "1-A-A-1-VIP-AVAILABLE" }];
-    const DUMMY_SECTIONS = [{ id: "1-A", name: "A구역", grade: "VIP", seatCount: 0 }];
+    const DUMMY_SEATS = [{ id: "1-VIP-A-1-VIP-AVAILABLE" }];
+    const DUMMY_SECTIONS = [{ id: "1-VIP", name: "VIP", floor: "1", grade: "VIP", seatCount: 0 }];
 
     const STORAGE_KEYS = {
         seatButtonImage: [
@@ -206,8 +206,13 @@
                     originalImage: result.originalImageUrl,
                     croppedImage: result.croppedImageUrl,
                     image: result.imageUrl,
+                    buttonImage: result.buttonImageUrl,
+                    thumbnail: result.thumbnailImageUrl,
+                    debugImage: result.debugImageUrl,
                     seatJson: result.seatJsonUrl,
                     sectionJson: result.sectionJsonUrl,
+                    bookingButtons: result.bookingButtonsJsonUrl,
+                    decorations: result.decorationsJsonUrl,
                     metaJson: result.metaJsonUrl
                 }
             });
@@ -269,8 +274,13 @@
                     folder: result.folderUrl || project.files?.folder,
                     image: result.imageUrl || project.files?.image,
                     croppedImage: result.croppedImageUrl || project.files?.croppedImage,
+                    buttonImage: result.buttonImageUrl || project.files?.buttonImage,
+                    thumbnail: result.thumbnailImageUrl || project.files?.thumbnail,
+                    debugImage: result.debugImageUrl || project.files?.debugImage,
                     seatJson: result.seatJsonUrl || project.files?.seatJson,
-                    sectionJson: result.sectionJsonUrl || project.files?.sectionJson
+                    sectionJson: result.sectionJsonUrl || project.files?.sectionJson,
+                    bookingButtons: result.bookingButtonsJsonUrl || project.files?.bookingButtons,
+                    decorations: result.decorationsJsonUrl || project.files?.decorations
                 };
             }
         } catch (error) {
@@ -350,9 +360,7 @@
         const seatText = project.seatJsonText || JSON.stringify(DUMMY_SEATS);
         const sectionText = project.sectionJsonText || JSON.stringify(DUMMY_SECTIONS);
         const imageUrl = project.imageDataUrl
-            || project.files?.croppedImage
-            || project.files?.image
-            || project.files?.originalImage
+            || withCacheBust(project.files?.croppedImage || project.files?.image || project.files?.originalImage)
             || null;
 
         localStorage.setItem("concert_seats", seatText);
@@ -360,6 +368,11 @@
         localStorage.setItem("concert_sections", sectionText);
         localStorage.setItem("concert_stage4_sections", sectionText);
         localStorage.setItem("seatmap_current_folder_name", project.folderName);
+        localStorage.setItem("seatmap_project_path", `/temp/seatmap/${project.folderName}`);
+        if (project.files?.originalImage) localStorage.setItem("seatmap_original_image_url", project.files.originalImage);
+        if (project.files?.croppedImage) localStorage.setItem("seatmap_cropped_image_url", project.files.croppedImage);
+        if (project.files?.buttonImage) localStorage.setItem("seatmap_button_image_url", project.files.buttonImage);
+        if (project.files?.image) localStorage.setItem("seatmap_final_image_url", project.files.image);
 
         if (imageUrl) {
             localStorage.setItem("seat_button_originalImage", imageUrl);
@@ -411,6 +424,16 @@
             || null;
     }
 
+    function withCacheBust(url) {
+        if (!url) {
+            return null;
+        }
+        if (String(url).startsWith("data:image")) {
+            return url;
+        }
+        return `${url}${String(url).includes("?") ? "&" : "?"}t=${Date.now()}`;
+    }
+
     function saveProject(project) {
         const projects = getProjects().filter((item) => item.id !== project.id && item.folderName !== project.folderName);
         projects.unshift(project);
@@ -459,7 +482,7 @@
 
             serverProjects.forEach((item) => {
                 const folderName = item.folderName || item.id;
-                if (!folderName || folderName === "seats") {
+                if (!folderName) {
                     return;
                 }
 
@@ -477,8 +500,13 @@
                             originalImage: item.originalImageUrl,
                             croppedImage: item.croppedImageUrl,
                             image: item.imageUrl,
+                            buttonImage: item.buttonImageUrl,
+                            thumbnail: item.thumbnailImageUrl,
+                            debugImage: item.debugImageUrl,
                             seatJson: item.seatJsonUrl,
                             sectionJson: item.sectionJsonUrl,
+                            bookingButtons: item.bookingButtonsJsonUrl,
+                            decorations: item.decorationsJsonUrl,
                             metaJson: item.metaJsonUrl
                         }
                     }));
@@ -548,7 +576,6 @@
         }
 
         setCurrentProjectId(project.id);
-        clearProjectImageCache();
         applyProjectToLocalStorage(project);
         renderCurrentProject();
         renderProjectList();
@@ -595,19 +622,6 @@
         renderCurrentProject();
         renderProjectList();
         toast("도면을 삭제했습니다.");
-    }
-
-    function clearProjectImageCache() {
-        [
-            "seatmap_crop_originalImage",
-            "seatmap_cropped_image",
-            "seat_button_originalImage",
-            "seat_button_resultImage",
-            "concert_originalImage",
-            "concert_cleanImage",
-            "concert_buttonImage",
-            "concert_stage4_finalImage"
-        ].forEach((key) => localStorage.removeItem(key));
     }
 
     function createProjectDetailText(project) {
@@ -676,8 +690,13 @@
             originalImage: `${base}/original-image.png`,
             croppedImage: `${base}/cropped-image.png`,
             image: `${base}/seatmap-image.png`,
+            buttonImage: `${base}/button-image.png`,
+            thumbnail: `${base}/thumbnail.png`,
+            debugImage: `${base}/debug-polygons.png`,
             seatJson: `/temp/seatmap/seats/${folderName}-seatmap-seats.json`,
             sectionJson: `${base}/seatmap-sections.json`,
+            bookingButtons: `${base}/booking-buttons.json`,
+            decorations: `${base}/seatmap-decorations.json`,
             metaJson: `${base}/seatmap-meta.json`
         };
     }
