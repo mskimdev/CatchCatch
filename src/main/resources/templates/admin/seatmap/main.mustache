@@ -45,7 +45,7 @@
         </section>
     </aside>
 
-    <section class="work-grid" aria-label="SeatTrace 작업 카드">
+    <section class="work-grid" aria-label="SeatTrace 작업 흐름">
         <article class="work-card" data-card-url="/admin/seatmap/crop-rotate">
             <span class="work-card__num">01</span>
             <h2>도면 정리</h2>
@@ -56,36 +56,36 @@
         <article class="work-card" data-card-action="button-image">
             <span class="work-card__num">02</span>
             <h2>버튼 이미지화</h2>
-            <p>정리된 도면에서 색을 뽑고, 구역 버튼으로 쓸 단색 도형 이미지를 만듭니다.</p>
+            <p>정리된 도면에서 도형 색상을 뽑고, 구역 버튼으로 쓸 단색 이미지를 만듭니다.</p>
             <button type="button" class="card-button card-button--teal" data-action="button-image">열기</button>
         </article>
 
-        <article class="work-card" data-card-url="/admin/seatmap/concert/stage2">
+        <article class="work-card" data-card-url="/admin/seatmap/concert/stage1">
             <span class="work-card__num">03</span>
             <h2>구역 나누기</h2>
-            <p>도형을 구역 단위로 분리하고 이름, 층, 등급 같은 구역 정보를 정합니다.</p>
+            <p>도형을 구역 단위로 분리하고 이름, 층, 등급 같은 구역 정보를 정리합니다.</p>
+            <button type="button" class="card-button card-button--blue" data-open-url="/admin/seatmap/concert/stage1">열기</button>
+        </article>
+
+        <article class="work-card" data-card-url="/admin/seatmap/concert/stage2">
+            <span class="work-card__num">04</span>
+            <h2>좌석 배치</h2>
+            <p>구역별 행과 렬을 입력하고 좌석 ID를 생성합니다. 좌석 JSON은 등록용 폴더에 저장됩니다.</p>
             <button type="button" class="card-button card-button--blue" data-open-url="/admin/seatmap/concert/stage2">열기</button>
         </article>
 
         <article class="work-card" data-card-url="/admin/seatmap/concert/stage3">
-            <span class="work-card__num">04</span>
-            <h2>좌석 배치</h2>
-            <p>구역별 행과 렬을 입력해 좌석 ID를 생성합니다. 좌석 JSON은 등록용 폴더에 따로 저장합니다.</p>
+            <span class="work-card__num">05</span>
+            <h2>예매 버튼 생성</h2>
+            <p>CatchCatch 예매 화면에서 클릭할 구역 polygon과 버튼 위치 JSON을 검수합니다.</p>
             <button type="button" class="card-button card-button--blue" data-open-url="/admin/seatmap/concert/stage3">열기</button>
         </article>
 
         <article class="work-card" data-card-url="/admin/seatmap/concert/stage4">
-            <span class="work-card__num">05</span>
-            <h2>예매 버튼 생성</h2>
-            <p>CatchCatch 예매 화면에서 클릭할 구역 polygon과 버튼 위치 JSON을 검수합니다.</p>
-            <button type="button" class="card-button card-button--blue" data-open-url="/admin/seatmap/concert/stage4">열기</button>
-        </article>
-
-        <article class="work-card" data-card-url="/admin/seatmap/final-decorate">
             <span class="work-card__num">06</span>
             <h2>최종 꾸미기</h2>
-            <p>텍스트, 구역, 좌석을 직접 보정하고 예제 수준의 최종 도면 품질로 마무리합니다.</p>
-            <button type="button" class="card-button card-button--green" data-open-url="/admin/seatmap/final-decorate">열기</button>
+            <p>텍스트, 도형, 구역, 좌석을 직접 보정해서 예제 수준의 최종 도면 품질로 마무리합니다.</p>
+            <button type="button" class="card-button card-button--green" data-open-url="/admin/seatmap/concert/stage4">열기</button>
         </article>
     </section>
 </main>
