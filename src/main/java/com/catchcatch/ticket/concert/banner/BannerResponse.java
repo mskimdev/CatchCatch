@@ -13,7 +13,8 @@ public class BannerResponse {
             String highlight,
             String description,
             String linkUrl,
-            String buttonText
+            String buttonText,
+            Boolean showText
     ) {
 
         public static HomeBannerDTO from(Banner banner) {
@@ -26,6 +27,7 @@ public class BannerResponse {
                     .description(banner.getDescription())
                     .linkUrl(banner.getLinkUrl())
                     .buttonText(banner.getButtonText())
+                    .showText(Boolean.TRUE.equals(banner.getShowText()))
                     .build();
         }
     }

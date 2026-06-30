@@ -1,5 +1,6 @@
 package com.catchcatch.ticket.concert.banner;
 
+import com.catchcatch.ticket.core.exception.BadRequestException;
 import com.catchcatch.ticket.core.exception.NotFoundException;
 import com.catchcatch.ticket.core.util.ProfileImageUtil;
 import lombok.RequiredArgsConstructor;
@@ -29,18 +30,24 @@ public class BannerService {
 
     @Transactional
     public void createBanner(BannerRequest.SaveDTO dto) {
+        boolean showText = Boolean.TRUE.equals(dto.showText());
+        if (showText && (dto.title() == null || dto.title().isBlank())) {
+            throw new BadRequestException("노출 문구를 사용하려면 메인 타이틀은 필수입니다.");
+        }
+
         String savedImageUrl = ProfileImageUtil.save(dto.imageFile());
 
         Banner banner = Banner.builder()
                 .imageUrl(savedImageUrl) // 텍스트가 아닌 실제 저장 경로 주입
-                .eyebrow(dto.eyebrow())
-                .title(dto.title())
-                .highlight(dto.highlight())
-                .description(dto.description())
-                .buttonText(dto.buttonText())
+                .eyebrow(showText ? dto.eyebrow() : null)
+                .title(showText ? dto.title() : null)
+                .highlight(showText ? dto.highlight() : null)
+                .description(showText ? dto.description() : null)
+                .buttonText(showText ? dto.buttonText() : null)
                 .linkUrl(dto.linkUrl())
                 .displayOrder(dto.displayOrder())
                 .isActive(dto.isActive())
+                .showText(showText)
                 .build();
 
         bannerRepository.save(banner);
@@ -49,6 +56,10 @@ public class BannerService {
     // 기존 배너 수정 (Dirty Checking 영속성 제어)
     @Transactional
     public void updateBanner(Integer id, BannerRequest.UpdateDTO dto) {
+        if (Boolean.TRUE.equals(dto.showText()) && (dto.title() == null || dto.title().isBlank())) {
+            throw new BadRequestException("노출 문구를 사용하려면 메인 타이틀은 필수입니다.");
+        }
+
         Banner banner = bannerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("수정할 배너를 찾을 수 없습니다."));
 
