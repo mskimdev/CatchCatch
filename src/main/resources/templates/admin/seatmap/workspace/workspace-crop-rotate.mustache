@@ -1,40 +1,157 @@
-{{> admin/seatmap/canvas-control/workspace-control}}
-
-<main class="crop-page">
-    <aside class="crop-side">
-        <section class="crop-panel">
-<span class="crop-panel__eyebrow">STEP 01</span>
+<main class="crop-workspace crop-workspace--step1" id="cropStepApp">
+    <aside class="crop-side-panel crop-side-panel--left">
+        <section class="crop-tool-intro">
             <h1>도면 정리</h1>
-            <p>마우스로 저장할 영역을 드래그하고, 필요하면 좌우 회전 후 저장합니다.</p>
-
-            <div class="crop-info">
-                <label>현재 도면</label>
-                <strong id="cropProjectName">도면 없음</strong>
-                <small id="cropProjectPath">새 도면을 먼저 생성하세요.</small>
-            </div>
-
-            <div class="crop-actions">
-                <button type="button" class="crop-action crop-action--primary" id="applyFullCrop">전체 영역 선택</button>
-                <button type="button" class="crop-action" id="rotateLeft">왼쪽 회전</button>
-                <button type="button" class="crop-action" id="rotateRight">오른쪽 회전</button>
-                <button type="button" class="crop-action crop-action--danger" id="clearCropArea">영역 다시 선택</button>
-                <button type="button" class="crop-action" id="openMainPage">메인으로</button>
-            </div>
+            <p>원본 PNG를 그대로 두고, 실제 제작에 사용할 영역만 자릅니다.</p>
         </section>
 
-        <section class="crop-panel crop-panel--compact">
-            <h2>저장 대상</h2>
-            <code id="cropSavePath">/temp/seatmap/도면명/seatmap-image.png</code>
-        </section>
+        <div class="crop-step-list crop-step-list--unified">
+            <section class="crop-step is-active">
+                <button type="button" class="crop-step__header" aria-expanded="true">
+                    <span class="crop-step__number">1</span>
+                    <span class="crop-step__title">
+                        <strong>자를 영역 선택</strong>
+                        <em>원본 유지 · 선택 영역만 저장</em>
+                    </span>
+                    <span class="crop-step__status">진행중</span>
+                    <span class="crop-step__arrow">⌃</span>
+                </button>
+
+                <div class="crop-step__body">
+                    <div class="crop-info-box crop-info-box--blue">
+                        <strong>작업 방식</strong>
+                        <p>
+                            도면은 흐리게 처리하지 않습니다. 이미지 위에서 드래그하면 빨간 점선으로 자를 영역만 표시됩니다.
+                        </p>
+                    </div>
+
+                    <div class="crop-current-card">
+                        <label>현재 도면</label>
+                        <strong id="cropProjectName">도면 없음</strong>
+                        <small id="cropProjectPath">새 도면을 먼저 생성하세요.</small>
+                    </div>
+
+                    <div class="crop-button-grid">
+                        <button type="button" class="crop-secondary-btn" id="applyFullCrop">전체 영역 선택</button>
+                        <button type="button" class="crop-secondary-btn" id="clearCropArea">영역 다시 선택</button>
+                    </div>
+
+                    <div class="crop-control-note">
+                        <b>선택 조작</b>
+                        <span>영역 내부 드래그 = 이동</span>
+                        <span>우측 하단 핸들 드래그 = 크기 조절</span>
+                    </div>
+
+                    <button type="button" class="crop-primary-btn crop-primary-btn--next" id="cropSave">
+                        자르기 적용
+                    </button>
+                </div>
+            </section>
+
+            <section class="crop-step is-disabled">
+                <button type="button" class="crop-step__header" disabled>
+                    <span class="crop-step__number">2</span>
+                    <span class="crop-step__title">
+                        <strong>버튼 이미지화</strong>
+                        <em>색상 추출 · 버튼 도형 생성</em>
+                    </span>
+                    <span class="crop-step__status">대기</span>
+                    <span class="crop-step__arrow">⌄</span>
+                </button>
+            </section>
+
+            <section class="crop-step is-disabled">
+                <button type="button" class="crop-step__header" disabled>
+                    <span class="crop-step__number">3</span>
+                    <span class="crop-step__title">
+                        <strong>구역 추출</strong>
+                        <em>구역명 · 등급 지정</em>
+                    </span>
+                    <span class="crop-step__status">대기</span>
+                    <span class="crop-step__arrow">⌄</span>
+                </button>
+            </section>
+
+            <section class="crop-step is-disabled">
+                <button type="button" class="crop-step__header" disabled>
+                    <span class="crop-step__number">4</span>
+                    <span class="crop-step__title">
+                        <strong>구역 보정</strong>
+                        <em>polygon 정리</em>
+                    </span>
+                    <span class="crop-step__status">대기</span>
+                    <span class="crop-step__arrow">⌄</span>
+                </button>
+            </section>
+
+            <section class="crop-step is-disabled">
+                <button type="button" class="crop-step__header" disabled>
+                    <span class="crop-step__number">5</span>
+                    <span class="crop-step__title">
+                        <strong>좌석 배치</strong>
+                        <em>행 · 열 좌석 생성</em>
+                    </span>
+                    <span class="crop-step__status">대기</span>
+                    <span class="crop-step__arrow">⌄</span>
+                </button>
+            </section>
+
+            <section class="crop-step is-disabled">
+                <button type="button" class="crop-step__header" disabled>
+                    <span class="crop-step__number">6</span>
+                    <span class="crop-step__title">
+                        <strong>최종 꾸미기</strong>
+                        <em>예매 화면 최종 확인</em>
+                    </span>
+                    <span class="crop-step__status">대기</span>
+                    <span class="crop-step__arrow">⌄</span>
+                </button>
+            </section>
+        </div>
     </aside>
 
-    <section class="crop-stage">
-        <div class="crop-stage__top">
-            <strong>미리보기</strong>
-            <span>빈 공간 드래그 = 새 영역 선택 / 영역 내부 드래그 = 이동 / 모서리 드래그 = 크기 조절</span>
-        </div>
-        <div class="crop-canvas-wrap" id="cropCanvasWrap">
-            <canvas id="cropCanvas"></canvas>
+    <section class="crop-canvas-area">
+        {{> admin/seatmap/canvas-control/workspace-control}}
+
+        <div class="crop-canvas-scroll" id="cropCanvasWrap">
+            <div class="crop-canvas-frame">
+                <canvas id="cropCanvas"></canvas>
+            </div>
         </div>
     </section>
+
+    <aside class="crop-side-panel crop-side-panel--right">
+        <section class="crop-right-card">
+            <div class="crop-right-card__head">
+                <strong>원본 미니맵</strong>
+                <span>현재 도면 기준</span>
+            </div>
+
+            <div class="crop-mini-map" id="cropMiniMapWrap">
+                <img id="cropMiniMapImage" alt="원본 미니맵">
+                <div class="crop-mini-viewport" id="cropMiniViewport" hidden></div>
+            </div>
+
+            <div class="crop-mini-help">
+                미니맵은 원본 확인용입니다. 실제 자르기는 중앙 도면에서 진행합니다.
+            </div>
+        </section>
+
+        <section class="crop-right-card">
+            <div class="crop-right-card__head">
+                <strong>선택 영역</strong>
+                <span id="cropProjectStage">도면 정리</span>
+            </div>
+
+            <div class="crop-result-row">
+                <span>저장 크기</span>
+                <b id="cropSelectionSummary">선택 영역 없음</b>
+            </div>
+
+            <div class="crop-result-path">
+                <label>저장 위치</label>
+                <code id="cropSavePath">/temp/seatmap/도면명/seatmap-image.png</code>
+            </div>
+        </section>
+    </aside>
 </main>
