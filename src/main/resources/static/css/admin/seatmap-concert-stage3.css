@@ -561,3 +561,40 @@
 .stage3-seat-editor.is-rotating #seatOverlay {
     cursor: grabbing;
 }
+/* =========================================================
+   Stage 기준 좌석 그리기 전환
+========================================================= */
+.stage3-stage-box h3 {
+    margin: 0 0 8px;
+    color: #0f172a;
+    font-size: 14px;
+    font-weight: 950;
+}
+
+.stage3-check-row {
+    height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0 2px;
+    padding: 0 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.stage3-check-row input {
+    width: 15px;
+    height: 15px;
+    min-width: 15px;
+    padding: 0;
+    margin: 0;
+}
+
+.stage3-stage-hint {
+    color: #7c3aed;
+    font-weight: 950;
+}

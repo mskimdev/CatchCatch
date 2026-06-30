@@ -10,7 +10,9 @@
         stage3Data: "concert_stage3Data",
         layoutJson: "concert_layout_json",
         bookingJson: "concert_booking_seats",
-        finalJson: "concert_final_seats"
+        finalJson: "concert_final_seats",
+        stage: "concert_stage",
+        generatedOverviewImage: "concert_generated_overviewImage"
     };
 
     const PART = {
@@ -36,7 +38,10 @@
         obstructed: "#f59e0b",
         removed: "rgba(148,163,184,.22)",
         guide: "rgba(100,116,139,.45)",
-        rotate: "#ef4444"
+        rotate: "#ef4444",
+        stageFill: "#111827",
+        stageText: "#ffffff",
+        stageGuide: "#7c3aed"
     };
 
     const dom = {};
@@ -44,12 +49,17 @@
     const state = {
         part: PART.BASE,
         sections: readJson(STORAGE_KEYS.sections, []),
-        overviewImageUrl: localStorage.getItem(STORAGE_KEYS.overviewImage),
+        overviewImageUrl: findInitialOverviewImageUrl(),
         overviewImage: null,
         seatsBySection: readJson(STORAGE_KEYS.stage3Seats, {}),
         layoutsBySection: readJson(STORAGE_KEYS.stage3Layouts, {}),
         selectedId: null,
         completedParts: new Set(),
+        stage: readJson(STORAGE_KEYS.stage, null),
+        stageEditMode: false,
+        stageDragging: false,
+        stageDragOffsetX: 0,
+        stageDragOffsetY: 0,
 
         mapZoom: 1,
         mapPanX: 0,
@@ -88,6 +98,7 @@
     function init() {
         cacheDom();
         normalizeSections();
+        normalizeStageState();
         setInitialSelection();
         setupCanvasSizes();
         bindEvents();
@@ -120,6 +131,14 @@
         dom.zoomOut = $("zoomOut");
         dom.zoomReset = $("zoomReset");
         dom.zoomValue = $("zoomValue");
+
+        dom.stageEditMode = $("stageEditMode");
+        dom.stageX = $("stageX");
+        dom.stageY = $("stageY");
+        dom.stageW = $("stageW");
+        dom.stageH = $("stageH");
+        dom.resetStagePosition = $("resetStagePosition");
+        dom.autoStageAngles = $("autoStageAngles");
 
         dom.partBtn1 = $("partBtn1");
         dom.partBtn2 = $("partBtn2");
@@ -183,6 +202,15 @@
         } catch (error) {
             return fallback;
         }
+    }
+
+    function findInitialOverviewImageUrl() {
+        return localStorage.getItem(STORAGE_KEYS.overviewImage)
+            || localStorage.getItem(STORAGE_KEYS.generatedOverviewImage)
+            || localStorage.getItem("concert_buttonImage")
+            || localStorage.getItem("concert_cleanImage")
+            || localStorage.getItem("concert_originalImage")
+            || "";
     }
 
     function writeJson(key, value) {
@@ -319,6 +347,18 @@
         on(dom.baseSectionSelect, "change", event => selectSection(event.target.value));
         on(dom.editSectionSelect, "change", event => selectSection(event.target.value));
 
+        on(dom.stageEditMode, "change", () => {
+            state.stageEditMode = Boolean(dom.stageEditMode.checked);
+            renderAll();
+            toast(state.stageEditMode ? "미니맵에서 스테이지를 클릭/드래그해서 위치를 조절하세요." : "스테이지 위치 조절 모드를 껐습니다.");
+        });
+        [dom.stageX, dom.stageY, dom.stageW, dom.stageH].forEach(input => {
+            on(input, "input", updateStageFromControls);
+            on(input, "change", updateStageFromControls);
+        });
+        on(dom.resetStagePosition, "click", resetStagePosition);
+        on(dom.autoStageAngles, "click", applyStageAnglesToAll);
+
         on(dom.zoomIn, "click", () => setMapZoom(state.mapZoom * 1.15));
         on(dom.zoomOut, "click", () => setMapZoom(state.mapZoom / 1.15));
         on(dom.zoomReset, "click", resetMapView);
@@ -400,8 +440,8 @@
         if (!dom.stage3Guide) return;
 
         dom.stage3Guide.textContent = state.part === PART.BASE
-            ? "미니맵에서 기준 구역을 클릭하고 기준 가로 좌석 수만 입력하세요. 전체 구역 자동 추정은 같은 정사각형 좌석 크기로 전부 다시 생성합니다."
-            : "Part2에서는 선택 구역 좌석을 클릭/드래그로 수정할 수 있고, 빨간 회전 핸들을 드래그하면 구역 각도를 임시 지정할 수 있습니다.";
+            ? "먼저 스테이지 위치를 맞춘 뒤 기준 구역과 기준 가로 좌석 수를 입력하세요. 좌석 각도는 스테이지 방향으로 자동 적용됩니다."
+            : "Part2에서는 좌석을 클릭/드래그로 수정할 수 있고, 빨간 회전 핸들로 선택 구역 각도를 최종 보정할 수 있습니다.";
     }
 
     function syncSelects() {
@@ -458,6 +498,7 @@
     }
 
     function renderAll() {
+        syncStageControls();
         syncSelects();
         renderSectionList();
         renderMiniMap();
@@ -522,10 +563,10 @@
         if (state.overviewImage) {
             ctx.drawImage(state.overviewImage, 0, 0, state.width, state.height);
         } else {
-            drawStageOnMap(ctx);
             state.sections.forEach(section => drawMapSectionFill(ctx, section, scale));
         }
 
+        drawStageOnMap(ctx, scale);
         state.sections.forEach(section => drawMapSectionOutline(ctx, section, scale));
 
         const selected = getSelectedSection();
@@ -537,20 +578,32 @@
         updateZoomText();
     }
 
-    function drawStageOnMap(ctx) {
-        const stageW = Math.min(state.width * 0.34, 330);
-        const stageH = Math.max(28, state.height * 0.065);
-        const stageX = (state.width - stageW) / 2;
-        const stageY = state.height * 0.07;
+    function drawStageOnMap(ctx, scale = 1) {
+        const stage = getStage();
+        const selected = state.stageEditMode;
 
         ctx.save();
-        ctx.fillStyle = COLORS.stage;
-        ctx.fillRect(stageX, stageY, stageW, stageH);
-        ctx.fillStyle = "#ffffff";
-        ctx.font = `bold ${Math.max(14, state.width * 0.016)}px Arial`;
+        ctx.fillStyle = COLORS.stageFill;
+        ctx.strokeStyle = selected ? COLORS.stageGuide : "rgba(255,255,255,.9)";
+        ctx.lineWidth = selected ? 5 / scale : 2 / scale;
+        ctx.lineJoin = "round";
+
+        roundRect(ctx, stage.x, stage.y, stage.w, stage.h, Math.max(4, Math.min(stage.w, stage.h) * 0.08));
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = COLORS.stageText;
+        ctx.font = `bold ${Math.max(13, stage.h * 0.34)}px Arial`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("STAGE", state.width / 2, stageY + stageH / 2);
+        ctx.fillText("STAGE", stage.x + stage.w / 2, stage.y + stage.h / 2);
+
+        if (selected) {
+            ctx.fillStyle = COLORS.stageGuide;
+            ctx.font = `bold ${Math.max(10, 12 / scale)}px Arial`;
+            ctx.fillText("드래그 이동", stage.x + stage.w / 2, stage.y + stage.h + 18 / scale);
+        }
+
         ctx.restore();
     }
 
@@ -675,18 +728,22 @@
 
     function drawSeatEditorStage(ctx, width) {
         ctx.save();
+        ctx.fillStyle = COLORS.stageFill;
+        ctx.strokeStyle = "rgba(255,255,255,.9)";
+        ctx.lineWidth = 2;
 
         const stageW = Math.min(width - 180, 660);
         const x = (width - stageW) / 2;
 
-        ctx.fillStyle = COLORS.stage;
-        ctx.fillRect(x, 34, stageW, 54);
-        ctx.fillStyle = "#ffffff";
+        roundRect(ctx, x, 34, stageW, 54, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = COLORS.stageText;
         ctx.font = "bold 18px Arial";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("무대방향 (STAGE)", width / 2, 61);
-
+        ctx.fillText("메인 스테이지 기준", width / 2, 61);
         ctx.restore();
     }
 
@@ -1093,7 +1150,7 @@
             paddingY: 0,
             offsetX: 0,
             offsetY: 0,
-            angle: 0
+            angle: getAutoAngleForSection(section)
         };
     }
 
@@ -1228,6 +1285,159 @@
         toast("선택 구역 배치값을 초기화했습니다.");
     }
 
+    function normalizeStageState() {
+        state.stage = normalizeStage(state.stage);
+        saveStage(false);
+    }
+
+    function normalizeStage(stage) {
+        const fallback = createDefaultStage();
+        const next = stage && typeof stage === "object" ? { ...fallback, ...stage } : fallback;
+
+        next.x = Number(next.x);
+        next.y = Number(next.y);
+        next.w = Number(next.w);
+        next.h = Number(next.h);
+
+        if (!Number.isFinite(next.x)) next.x = fallback.x;
+        if (!Number.isFinite(next.y)) next.y = fallback.y;
+        if (!Number.isFinite(next.w) || next.w < 20) next.w = fallback.w;
+        if (!Number.isFinite(next.h) || next.h < 10) next.h = fallback.h;
+
+        next.angle = Number.isFinite(Number(next.angle)) ? Number(next.angle) : 0;
+        clampStage(next);
+
+        return next;
+    }
+
+    function createDefaultStage() {
+        const w = Math.max(160, Math.min(420, state.width * 0.36));
+        const h = Math.max(34, Math.min(70, state.height * 0.07));
+
+        return {
+            x: Math.round((state.width - w) / 2),
+            y: Math.round(Math.max(18, state.height * 0.06)),
+            w: Math.round(w),
+            h: Math.round(h),
+            angle: 0,
+            label: "STAGE"
+        };
+    }
+
+    function getStage() {
+        if (!state.stage) {
+            state.stage = createDefaultStage();
+        }
+
+        return state.stage;
+    }
+
+    function getStageCenter() {
+        const stage = getStage();
+
+        return {
+            x: stage.x + stage.w / 2,
+            y: stage.y + stage.h / 2
+        };
+    }
+
+    function clampStage(stage) {
+        stage.w = Math.max(20, Math.min(Math.round(stage.w), Math.max(20, state.width)));
+        stage.h = Math.max(10, Math.min(Math.round(stage.h), Math.max(10, state.height)));
+        stage.x = Math.round(Math.max(0, Math.min(stage.x, state.width - stage.w)));
+        stage.y = Math.round(Math.max(0, Math.min(stage.y, state.height - stage.h)));
+    }
+
+    function saveStage(shouldSync = true) {
+        writeJson(STORAGE_KEYS.stage, getStage());
+
+        if (shouldSync) {
+            syncStageControls();
+        }
+    }
+
+    function syncStageControls() {
+        const stage = getStage();
+
+        if (dom.stageEditMode) {
+            dom.stageEditMode.checked = state.stageEditMode;
+        }
+
+        setNumberInput(dom.stageX, stage.x);
+        setNumberInput(dom.stageY, stage.y);
+        setNumberInput(dom.stageW, stage.w);
+        setNumberInput(dom.stageH, stage.h);
+    }
+
+    function setNumberInput(input, value) {
+        if (!input || document.activeElement === input) return;
+        input.value = String(Math.round(Number(value) || 0));
+    }
+
+    function updateStageFromControls() {
+        const stage = getStage();
+
+        stage.x = Number(dom.stageX?.value) || 0;
+        stage.y = Number(dom.stageY?.value) || 0;
+        stage.w = Math.max(20, Number(dom.stageW?.value) || stage.w);
+        stage.h = Math.max(10, Number(dom.stageH?.value) || stage.h);
+
+        clampStage(stage);
+        saveStage(false);
+        renderAll();
+    }
+
+    function resetStagePosition() {
+        state.stage = createDefaultStage();
+        saveStage();
+        renderAll();
+        toast("스테이지를 상단 중앙에 다시 배치했습니다.");
+    }
+
+    function pointInStage(point, stage) {
+        return point.x >= stage.x &&
+            point.x <= stage.x + stage.w &&
+            point.y >= stage.y &&
+            point.y <= stage.y + stage.h;
+    }
+
+    function getAutoAngleForSection(section) {
+        const center = getSectionPivot(section);
+        const stage = getStageCenter();
+        const angle = Math.atan2(stage.y - center.y, stage.x - center.x) * 180 / Math.PI + 90;
+
+        return normalizeAngle(angle);
+    }
+
+    function applyStageAnglesToAll() {
+        if (!state.sections.length) {
+            toast("먼저 구역을 생성하세요.");
+            return;
+        }
+
+        state.sections.forEach(section => {
+            const layout = getLayout(section);
+            layout.angle = getAutoAngleForSection(section);
+            state.layoutsBySection[section.id] = layout;
+
+            if (getSeats(section).length) {
+                state.seatsBySection[section.id] = buildSeats(section, layout).map(seat => ({
+                    ...seat,
+                    status: getSeatStatusById(section, seat.id) || seat.status
+                }));
+            }
+        });
+
+        saveWorkData();
+        renderAll();
+        toast("모든 구역 좌석 각도를 스테이지 방향으로 적용했습니다.");
+    }
+
+    function getSeatStatusById(section, id) {
+        const previous = getSeats(section).find(seat => seat.id === id);
+        return previous?.status || null;
+    }
+
     function handleMiniWheel(event) {
         event.preventDefault();
 
@@ -1249,6 +1459,26 @@
     function handleMiniPointerDown(event) {
         if (!dom.miniCanvas) return;
 
+        if (state.stageEditMode) {
+            const point = screenToWorld(event, dom.miniCanvas, state.mapTransform);
+            const stage = getStage();
+
+            if (pointInStage(point, stage)) {
+                state.stageDragging = true;
+                state.stageDragOffsetX = point.x - stage.x;
+                state.stageDragOffsetY = point.y - stage.y;
+            } else {
+                stage.x = Math.round(point.x - stage.w / 2);
+                stage.y = Math.round(point.y - stage.h / 2);
+                clampStage(stage);
+                saveStage();
+            }
+
+            dom.miniCanvas.setPointerCapture?.(event.pointerId);
+            renderAll();
+            return;
+        }
+
         state.mapDragging = true;
         state.mapMoved = false;
         state.mapStartX = event.clientX;
@@ -1260,6 +1490,16 @@
     }
 
     function handleWindowPointerMove(event) {
+        if (state.stageDragging) {
+            const point = screenToWorld(event, dom.miniCanvas, state.mapTransform);
+            const stage = getStage();
+            stage.x = Math.round(point.x - state.stageDragOffsetX);
+            stage.y = Math.round(point.y - state.stageDragOffsetY);
+            clampStage(stage);
+            renderAll();
+            return;
+        }
+
         if (state.mapDragging) {
             const dx = event.clientX - state.mapStartX;
             const dy = event.clientY - state.mapStartY;
@@ -1286,6 +1526,13 @@
     }
 
     function handleWindowPointerUp(event) {
+        if (state.stageDragging) {
+            state.stageDragging = false;
+            saveStage();
+            renderAll();
+            return;
+        }
+
         if (state.mapDragging) {
             if (!state.mapMoved) {
                 const point = screenToWorld(event, dom.miniCanvas, state.mapTransform);
@@ -1662,7 +1909,8 @@
         const results = [
             writeJson(STORAGE_KEYS.sections, state.sections),
             writeJson(STORAGE_KEYS.stage3Seats, state.seatsBySection),
-            writeJson(STORAGE_KEYS.stage3Layouts, state.layoutsBySection)
+            writeJson(STORAGE_KEYS.stage3Layouts, state.layoutsBySection),
+            writeJson(STORAGE_KEYS.stage, getStage())
         ];
 
         return results.every(Boolean);
@@ -1670,11 +1918,24 @@
 
     function saveFinalSeatJson() {
         const finalSeats = createFinalSeatJson();
+        const generatedOverviewImage = createGeneratedOverviewImage();
 
         clearHeavyStorageBeforeStage4();
 
         let saved = writeJson(STORAGE_KEYS.finalJson, finalSeats);
         saved = writeJson(STORAGE_KEYS.bookingJson, finalSeats) && saved;
+        saved = writeJson(STORAGE_KEYS.sections, state.sections) && saved;
+        saved = writeJson(STORAGE_KEYS.stage3Seats, state.seatsBySection) && saved;
+        saved = writeJson(STORAGE_KEYS.stage3Layouts, state.layoutsBySection) && saved;
+        saved = writeJson(STORAGE_KEYS.stage, getStage()) && saved;
+
+        if (generatedOverviewImage) {
+            try {
+                localStorage.setItem(STORAGE_KEYS.generatedOverviewImage, generatedOverviewImage);
+            } catch (error) {
+                console.warn("[Stage3] generated overview image save skipped", error);
+            }
+        }
 
         if (saved) {
             return true;
@@ -1694,7 +1955,8 @@
             STORAGE_KEYS.overviewImage,
             STORAGE_KEYS.layoutJson,
             STORAGE_KEYS.bookingJson,
-            STORAGE_KEYS.finalJson
+            STORAGE_KEYS.finalJson,
+            STORAGE_KEYS.generatedOverviewImage
         ];
 
         removeKeys.forEach(key => {
@@ -1720,6 +1982,61 @@
                 console.warn(`[Stage3 긴급 정리 실패] ${key}`, error);
             }
         });
+    }
+
+    function createGeneratedOverviewImage() {
+        try {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            canvas.width = Math.max(1, Math.round(state.width));
+            canvas.height = Math.max(1, Math.round(state.height));
+
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            state.sections.forEach(section => {
+                const paths = getMapPaths(section);
+                if (!paths.length) return;
+
+                ctx.save();
+                ctx.beginPath();
+                paths.forEach(path => {
+                    if (!path || path.length < 3) return;
+                    drawPoly(ctx, path);
+                    ctx.closePath();
+                });
+                ctx.fillStyle = hexToRgba(section.renderColor || COLORS.sectionFallback, 0.16);
+                ctx.strokeStyle = "rgba(15,23,42,.18)";
+                ctx.lineWidth = 1.5;
+                ctx.fill("evenodd");
+                ctx.stroke();
+                ctx.restore();
+            });
+
+            drawStageOnMap(ctx, 1);
+
+            state.sections.forEach(section => {
+                getSeats(section).forEach(seat => {
+                    if (seat.status === STATUS.REMOVED) return;
+
+                    ctx.save();
+                    ctx.translate(seat.x, seat.y);
+                    ctx.rotate(toRad(seat.angle || 0));
+                    roundRect(ctx, -seat.w / 2, -seat.h / 2, seat.w, seat.h, Math.max(1, Math.min(seat.w, seat.h) * 0.12));
+                    ctx.fillStyle = seat.status === STATUS.OBSTRUCTED ? COLORS.obstructed : (section.renderColor || seat.color || COLORS.seat);
+                    ctx.strokeStyle = "#ffffff";
+                    ctx.lineWidth = 1;
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+                });
+            });
+
+            return canvas.toDataURL("image/png");
+        } catch (error) {
+            console.warn("[Stage3] generated overview image failed", error);
+            return "";
+        }
     }
 
     function createFinalSeatJson() {

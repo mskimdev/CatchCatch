@@ -105,7 +105,7 @@ public class Booking {
      */
     public void addBookingSeat(BookingSeat bookingSeat) {
         this.bookingSeats.add(bookingSeat);
-        bookingSeat.setBooking(this);
+        bookingSeat.assignBooking(this);
     }
 
     /**

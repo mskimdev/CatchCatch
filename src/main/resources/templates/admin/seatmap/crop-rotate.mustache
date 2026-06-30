@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SeatTrace - 도면 자르기 & 회전</title>
+
+    <link rel="stylesheet" href="/css/admin/seatmap-header.css">
+    <link rel="stylesheet" href="/css/admin/seatmap-workspace.css">
+    <link rel="stylesheet" href="/css/admin/seatmap-crop-rotate.css">
+</head>
+
+<body class="seatmap-crop-body">
+{{> admin/seatmap/common/header}}
+{{> admin/seatmap/workspace/workspace-crop-rotate}}
+
+<div class="toast" id="toast"></div>
+
+<script defer src="/js/admin/seatmap-header.js"></script>
+<script defer src="/js/admin/seatmap-crop-rotate.js"></script>
+</body>
+</html>

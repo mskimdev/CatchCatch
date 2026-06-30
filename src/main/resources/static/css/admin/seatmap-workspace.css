@@ -566,3 +566,60 @@ input[type="range"] {
         display: none;
     }
 }
+/* =========================================================
+   SeatTrace canvas/workspace common control
+========================================================= */
+.seatmap-canvas-control,
+.seatmap-command-bar.seatmap-canvas-control {
+    position: sticky;
+    top: 10px;
+    left: 14px;
+    z-index: 80;
+    width: max-content;
+    max-width: calc(100% - 28px);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 10px 0 -2px 14px;
+    padding: 6px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+    backdrop-filter: blur(8px);
+}
+
+.seatmap-canvas-control .seatmap-command-btn {
+    min-width: 42px;
+    height: 31px;
+    padding: 0 11px;
+    border: 1px solid #dbe2ea;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.seatmap-canvas-control .seatmap-command-btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.seatmap-canvas-control .seatmap-command-btn--link {
+    color: #475569;
+}
+
+.seatmap-canvas-control .seatmap-zoom-value {
+    min-width: 48px;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 950;
+    text-align: center;
+}

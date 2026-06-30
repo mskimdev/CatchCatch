@@ -1,0 +1,239 @@
+<link href="/css/admin/seatmap-workspace.css" rel="stylesheet">
+<link href="/css/admin/seatmap-concert-stage1.css" rel="stylesheet">
+
+<div class="seatmap-workspace seatmap-workspace--concert-stage1"
+     id="concertStage1App"
+     data-next-url="{{stage2Url}}">
+
+    <aside class="seatmap-side seatmap-side--left">
+        <div class="seatmap-step-list">
+
+            <section class="seatmap-step is-active" id="part1" data-part="1">
+                <button type="button" class="seatmap-step__header" id="tab1">
+                    <span class="seatmap-step__check">1</span>
+                    <strong>파트 1</strong>
+                    <em>색상 추출</em>
+                    <span class="seatmap-step__status">진행중</span>
+                </button>
+
+                <div class="seatmap-step__body">
+                    <div class="stage1-card">
+                        <strong>구역 색상 추출</strong>
+                        <p>
+                            원본 도면에서 좌석 색상을 자동으로 추출하고, 연결된 좌석 색상 덩어리를 구역 후보로 만듭니다.
+                            이 단계는 최종 이미지를 만드는 단계가 아니라 좌석 구역 후보를 찾는 단계입니다.
+                        </p>
+                    </div>
+
+                    <div class="stage1-info-grid">
+                        <div>
+                            <label for="colorMinArea">최소 구역 면적</label>
+                            <input type="number" id="colorMinArea" value="120" min="1">
+                        </div>
+                        <div>
+                            <label for="colorTolerance">색상 허용 범위</label>
+                            <input type="number" id="colorTolerance" value="45" min="1">
+                        </div>
+                    </div>
+
+                    <button type="button" class="stage1-primary" id="extractColorRegions">
+                        색상 추출 / 구역 후보 생성
+                    </button>
+
+                    <button type="button" class="stage1-button" id="clearColorRegions">
+                        구역 후보 초기화
+                    </button>
+
+                    <div class="stage1-list" id="colorRegionList">
+                        <div class="stage1-empty">아직 추출된 구역 후보가 없습니다.</div>
+                    </div>
+
+                    <button type="button" class="stage1-primary" id="goPart2">
+                        다음: 각도 계산
+                    </button>
+                </div>
+            </section>
+
+            <section class="seatmap-step" id="part2" data-part="2">
+                <button type="button" class="seatmap-step__header" id="tab2">
+                    <span class="seatmap-step__check">2</span>
+                    <strong>파트 2</strong>
+                    <em>각도 계산</em>
+                    <span class="seatmap-step__status">대기</span>
+                </button>
+
+                <div class="seatmap-step__body">
+                    <div class="stage1-card">
+                        <strong>구역별 좌석 각도 계산</strong>
+                        <p>
+                            파란 박스로 여러 구역을 한 번에 드래그한 뒤, 메인 스테이지나 중앙 방향을 클릭하세요.
+                            각 구역은 클릭점을 바라보는 방향을 기본값으로 잡고, 구역 양쪽 경계선 방향으로 각도를 보정합니다.
+                        </p>
+                    </div>
+
+                    <button type="button" class="stage1-primary" id="angleDragStart">
+                        각도 범위 드래그
+                    </button>
+
+                    <button type="button" class="stage1-button" id="angleClearSelected">
+                        선택 구역 각도 삭제
+                    </button>
+
+                    <div class="stage1-info-grid">
+                        <div>
+                            <label for="angleRegionName">선택 구역</label>
+                            <input type="text" id="angleRegionName" value="-" readonly>
+                        </div>
+                        <div>
+                            <label for="angleValue">계산 각도</label>
+                            <input type="text" id="angleValue" value="0°" readonly>
+                        </div>
+                    </div>
+
+                    <div class="stage1-list" id="angleRegionList">
+                        <div class="stage1-empty">각도가 계산된 구역이 없습니다.</div>
+                    </div>
+
+                    <button type="button" class="stage1-primary" id="goPart3">
+                        다음: 좌석 자동 추정
+                    </button>
+                </div>
+            </section>
+
+            <section class="seatmap-step" id="part3" data-part="3">
+                <button type="button" class="seatmap-step__header" id="tab3">
+                    <span class="seatmap-step__check">3</span>
+                    <strong>파트 3</strong>
+                    <em>전체 좌석 추정</em>
+                    <span class="seatmap-step__status">대기</span>
+                </button>
+
+                <div class="seatmap-step__body">
+                    <div class="stage1-card">
+                        <strong>기준 좌석으로 전체 자동 추정</strong>
+                        <p>
+                            기준 구역 하나를 선택하고 세로 N / 가로 M을 입력하세요.
+                            기준 구역의 좌석 간격을 계산한 뒤, 모든 구역에 좌석을 생성합니다.
+                            좌석은 해당 구역 색상 범위에 반 이상 포함될 때만 생성됩니다.
+                        </p>
+                    </div>
+
+                    <div class="stage1-info-grid">
+                        <div>
+                            <label for="baseFloor">층</label>
+                            <input type="text" id="baseFloor" value="1">
+                        </div>
+                        <div>
+                            <label for="baseSectionName">기준 구역명</label>
+                            <input type="text" id="baseSectionName" value="A1">
+                        </div>
+                        <div>
+                            <label for="baseGrade">등급</label>
+                            <input type="text" id="baseGrade" value="일반석">
+                        </div>
+                        <div>
+                            <label for="baseColor">색상</label>
+                            <input type="color" id="baseColor" value="#f77bab">
+                        </div>
+                        <div>
+                            <label for="baseRows">세로 N</label>
+                            <input type="number" id="baseRows" value="5" min="1">
+                        </div>
+                        <div>
+                            <label for="baseCols">가로 M</label>
+                            <input type="number" id="baseCols" value="10" min="1">
+                        </div>
+                    </div>
+
+                    <button type="button" class="stage1-primary" id="applyBaseRegion">
+                        선택 구역 기준 설정
+                    </button>
+
+                    <button type="button" class="stage1-primary" id="estimateAllSeats">
+                        전체 좌석 자동 추정
+                    </button>
+
+                    <button type="button" class="stage1-button" id="clearEstimatedSeats">
+                        좌석 추정 초기화
+                    </button>
+
+                    <div class="stage1-list" id="seatEstimateList">
+                        <div class="stage1-empty">아직 추정된 좌석이 없습니다.</div>
+                    </div>
+
+                    <button type="button" class="stage1-primary" id="goPart4">
+                        다음: 깔끔화
+                    </button>
+                </div>
+            </section>
+
+            <section class="seatmap-step" id="part4" data-part="4">
+                <button type="button" class="seatmap-step__header" id="tab4">
+                    <span class="seatmap-step__check">4</span>
+                    <strong>파트 4</strong>
+                    <em>깔끔화 / 저장</em>
+                    <span class="seatmap-step__status">대기</span>
+                </button>
+
+                <div class="seatmap-step__body">
+                    <div class="stage1-card">
+                        <strong>좌석 기반 단색 도형 생성</strong>
+                        <p>
+                            좌석 추정 결과를 기준으로 구역 외곽을 다시 계산하고,
+                            원본을 지우는 방식이 아니라 새 캔버스에 깔끔한 단색 구역 이미지를 생성합니다.
+                        </p>
+                    </div>
+
+                    <div class="stage1-info-grid">
+                        <div>
+                            <label for="solidGap">구역 간격</label>
+                            <input type="number" id="solidGap" value="5" min="0">
+                        </div>
+                        <div>
+                            <label for="solidBackground">배경색</label>
+                            <input type="color" id="solidBackground" value="#f7f7f7">
+                        </div>
+                    </div>
+
+                    <button type="button" class="stage1-primary" id="renderSolidSections">
+                        깔끔한 단색 도형 생성
+                    </button>
+
+                    <button type="button" class="stage1-button" id="showOriginalImage">
+                        원본 보기
+                    </button>
+
+                    <button type="button" class="stage1-primary" id="saveStage1Result">
+                        Stage1 저장
+                    </button>
+
+                    <button type="button" class="stage1-primary" id="toStage2">
+                        Stage2로 이동
+                    </button>
+                </div>
+            </section>
+
+        </div>
+    </aside>
+
+    <main class="seatmap-canvas-area">
+        {{> admin/seatmap/canvas-control/workspace-control}}
+
+        <div class="stage1-toolbar">
+            <strong id="stage1Title">색상 추출</strong>
+            <span id="stage1Size">-</span>
+            <span id="stage1Guide">좌석 색상을 추출해서 구역 후보를 생성하세요.</span>
+        </div>
+
+        <div class="seatmap-canvas-scroll">
+            <div class="stage1-canvas-box" id="box">
+                <canvas id="canvas"></canvas>
+                <canvas id="overlay"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <div class="seatmap-toast" id="toast"></div>
+</div>
+
+<script src="/js/admin/seatmap-concert-stage1.js"></script>

@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,23 +35,24 @@ public class VenueService {
     }
 
     public List<String> getSeatMapFiles() {
-        List<String> filePaths = new ArrayList<>();
+        Path seatsDir = Paths.get("src/main/resources/static/temp/seatmap/seats");
 
-        try {
-            ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-            Resource[] resources = resolver.getResources("classpath:static/json/seatmap/*.json");
-
-            for (Resource resource : resources) {
-                String filename = resource.getFilename();
-                if (filename != null) {
-                    filePaths.add("/json/seatmap/" + filename);
-                }
-            }
-        } catch (IOException e) {
-            log.error("좌석배치도 파일 목록 조회 실패", e);
+        if (!Files.exists(seatsDir)) {
+            return List.of();
         }
 
-        return filePaths;
+        try (var stream = Files.list(seatsDir)) {
+            return stream
+                    .filter(Files::isRegularFile)
+                    .map(Path::getFileName)
+                    .map(Path::toString)
+                    .filter(fileName -> fileName.endsWith(".json"))
+                    .map(fileName -> "/temp/seatmap/seats/" + fileName)
+                    .sorted()
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException("좌석 배치도 파일 목록 조회 실패", e);
+        }
     }
 
     public List<Venue> findAll() {

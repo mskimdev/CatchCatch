@@ -3829,6 +3829,14 @@
     };
   }
 
+  if ($("zoomOut")) {
+    $("zoomOut").onclick = zoomOut;
+  }
+
+  if ($("zoomIn")) {
+    $("zoomIn").onclick = zoomIn;
+  }
+
   if ($("zoomReset")) {
     $("zoomReset").onclick = resetZoom;
   }

@@ -1,6 +1,5 @@
 package com.catchcatch.ticket.admin;
 
-import com.catchcatch.ticket.booking.Booking;
 import com.catchcatch.ticket.booking.BookingRepository;
 import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.concert.core.ConcertStatus;

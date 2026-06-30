@@ -1,11 +1,7 @@
 package com.catchcatch.ticket.booking.dto;
 
-import com.catchcatch.ticket.booking.Status;
 import com.catchcatch.ticket.core.exception.BadRequestException;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Arrays;
 import java.util.List;
@@ -14,88 +10,61 @@ public class BookingRequest {
 
     private static final int MAX_SEAT_COUNT = 4;
 
-    /**
-     * 예매 시작 DTO
-     * 공연 상세에서 예매하기 눌렀을 때 사용
-     */
-    @Getter
-    @Setter
-    public static class StartDTO {
-        private Integer concertId;
-        private Integer sessionId;
+    private BookingRequest() {
+    }
 
+    public record StartDTO(
+            @NotNull(message = "공연 정보가 없습니다.")
+            Integer concertId,
+
+            @NotNull(message = "공연 회차 정보가 없습니다.")
+            Integer sessionId
+    ) {
         public void validate() {
             validateRequired(concertId, "공연 정보가 없습니다.");
             validateRequired(sessionId, "공연 회차 정보가 없습니다.");
         }
     }
 
-    /**
-     * 실제 예매 생성 DTO
-     *
-     * 좌석 선택 후 다음 단계 클릭 시
-     * Booking + BookingSeat 생성에 사용
-     */
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class SaveDTO {
-        private Integer userId;
-        private Integer sessionId;
-        private List<Integer> seatIds;
+    public record SaveDTO(
+            @NotNull(message = "공연 회차 정보가 없습니다.")
+            Integer sessionId,
 
+            List<Integer> seatIds
+    ) {
         public void validate() {
-            validateRequired(userId, "사용자 정보가 없습니다.");
             validateRequired(sessionId, "공연 회차 정보가 없습니다.");
             validateSeatIds(seatIds);
         }
     }
 
-    /**
-     * 좌석 선택 후 결제 화면으로 넘기기 위한 DTO
-     *
-     * seatIds는 hidden input에서 "1,2,3" 형태로 넘어온다.
-     */
-    @Getter
-    @Setter
-    public static class SeatSelectDTO {
-        private Integer sessionId;
-        private String seatIds;
+    public record SeatSelectDTO(
+            @NotNull(message = "공연 회차 정보가 없습니다.")
+            Integer sessionId,
 
+            String seatIds
+    ) {
         public void validate() {
             validateRequired(sessionId, "공연 회차 정보가 없습니다.");
-
-            List<Integer> parsedSeatIds = getSeatIdList();
-            validateSeatIds(parsedSeatIds);
+            getSeatIdList();
         }
 
         public List<Integer> getSeatIdList() {
             validateRequiredText(seatIds, "선택된 좌석이 없습니다.");
 
             try {
-                return Arrays.stream(seatIds.split(","))
+                List<Integer> parsedSeatIds = Arrays.stream(seatIds.split(","))
                         .map(String::trim)
                         .filter(value -> !value.isBlank())
                         .map(Integer::valueOf)
                         .distinct()
                         .toList();
+
+                validateSeatIds(parsedSeatIds);
+                return parsedSeatIds;
             } catch (NumberFormatException e) {
                 throw new BadRequestException("좌석 정보가 올바르지 않습니다.");
             }
-        }
-    }
-
-    /**
-     * 예매 상태 변경 DTO
-     */
-    @Getter
-    @Setter
-    public static class UpdateStatusDTO {
-        private Status status;
-
-        public void validate() {
-            validateRequired(status, "변경할 예매 상태가 없습니다.");
         }
     }
 
@@ -125,6 +94,14 @@ public class BookingRequest {
 
         if (hasInvalidSeatId) {
             throw new BadRequestException("좌석 정보가 올바르지 않습니다.");
+        }
+
+        long distinctCount = seatIds.stream()
+                .distinct()
+                .count();
+
+        if (distinctCount != seatIds.size()) {
+            throw new BadRequestException("중복된 좌석 정보가 포함되어 있습니다.");
         }
     }
 }
