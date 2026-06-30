@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SeatTrace - 최종 검수</title>
+    <title>SeatTrace - 최종 꾸미기</title>
 
     <link rel="stylesheet" href="/css/admin/seatmap-header.css">
     <link rel="stylesheet" href="/css/admin/seatmap-workspace.css">
@@ -14,15 +14,13 @@
 {{> admin/seatmap/common/header}}
 {{> admin/seatmap/common/work-toolbar}}
 
-<div class="app" id="stage4App">
-    <div class="seatmap-workspace seatmap-workspace--stage4">
-        {{> admin/seatmap/workspace/workspace-concert-stage4}}
-    </div>
+<div class="seatmap-workspace seatmap-workspace--stage4" id="stage4App">
+    {{> admin/seatmap/workspace/workspace-concert-stage4}}
 </div>
 
 <div class="toast" id="toast"></div>
 
-<script defer src="/js/admin/seatmap-header.js"></script>
-<script defer src="/js/admin/seatmap-concert-stage4.js"></script>
+<script src="/js/admin/seatmap-workspace.js" defer></script>
+<script src="/js/admin/seatmap-concert-stage4.js" defer></script>
 </body>
 </html>

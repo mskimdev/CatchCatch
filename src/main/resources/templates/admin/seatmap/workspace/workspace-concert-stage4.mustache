@@ -1,82 +1,122 @@
-<main class="seatmap-main stage4-main">
-    <section class="stage4-result-page">
+<aside class="seatmap-side seatmap-side--left stage4-tool-side">
+    <div class="stage4-side-title">
+        <span class="stage4-step-badge">STEP 06</span>
+        <strong>최종 꾸미기</strong>
+        <small>포토샵처럼 도면 위에 요소를 올려 최종 이미지를 보정합니다.</small>
+    </div>
 
-        <div class="stage4-complete-card">
-            <strong>예매 버튼 생성 / polygon 검수</strong>
-            <p id="summaryText">
-                03 구역 나누기와 04 좌석 배치 결과를 기준으로 CatchCatch 예매 화면에서 클릭할 구역 버튼 JSON을 검수합니다.
-                이 단계는 좌석 행·렬을 새로 만드는 단계가 아니라, booking-buttons.json의 클릭 영역을 확인하는 단계입니다.
-            </p>
-
-            <div class="stats stage4-stats">
-                <div class="stat"><b id="sumFloors">0</b><span>층</span></div>
-                <div class="stat"><b id="sumSections">0</b><span>구역</span></div>
-                <div class="stat"><b id="sumSeats">0</b><span>좌석</span></div>
-                <div class="stat"><b id="sumObstructed">0</b><span>장애석</span></div>
-            </div>
-
-            <div class="stage4-main-actions">
-                <button type="button" class="btn btn--green" id="saveAllJsonMain">
-                    예매 버튼 JSON 저장
-                </button>
-                <button type="button" class="btn" id="copyLayoutJsonMain">
-                    구역 JSON 복사
-                </button>
-                <button type="button" class="btn" id="copyBookingJsonMain">
-                    좌석 JSON 복사
-                </button>
-            </div>
-
-            <p class="help-text" id="saveResultText">booking-buttons.json 저장 전입니다.</p>
+    <section class="stage4-panel stage4-panel--tools">
+        <h3>도구</h3>
+        <div class="stage4-tool-grid" id="stage4ToolGrid">
+            <button type="button" class="stage4-tool is-active" data-tool="move" title="이동 / 선택">
+                <span>↕</span><b>이동</b>
+            </button>
+            <button type="button" class="stage4-tool" data-tool="text" title="텍스트">
+                <span>T</span><b>텍스트</b>
+            </button>
+            <button type="button" class="stage4-tool" data-tool="rect" title="사각형">
+                <span>▭</span><b>박스</b>
+            </button>
+            <button type="button" class="stage4-tool" data-tool="ellipse" title="원형">
+                <span>◯</span><b>원형</b>
+            </button>
+            <button type="button" class="stage4-tool" data-tool="line" title="선">
+                <span>╱</span><b>선</b>
+            </button>
+            <button type="button" class="stage4-tool" data-tool="seat" title="좌석 표시">
+                <span>▦</span><b>좌석</b>
+            </button>
+            <button type="button" class="stage4-tool" data-tool="stage" title="무대 박스">
+                <span>ST</span><b>무대</b>
+            </button>
+            <button type="button" class="stage4-tool" data-tool="erase" title="지우개">
+                <span>⌫</span><b>지우개</b>
+            </button>
         </div>
-
-        <div class="stage4-file-grid">
-            <article class="stage4-file-card">
-                <h3>예매 화면용 도면</h3>
-                <p>CatchCatch 예매 화면에 표시될 seatmap-image.png입니다. 구역 hover/click polygon이 이 이미지 위에 올라갑니다.</p>
-                <div class="stage4-preview-box">
-                    <img id="generatedOverviewPreview" alt="예매 화면용 도면 미리보기">
-                </div>
-            </article>
-
-            <article class="stage4-file-card">
-                <h3>등급 / 구역 요약</h3>
-                <p>좌석 수는 04 좌석 배치 결과를 기준으로 집계합니다.</p>
-                <div id="gradeSummaryList"></div>
-            </article>
-        </div>
-
-        <details class="stage4-json-debug" id="rawJsonDetails" open>
-            <summary>JSON 원문 확인하기</summary>
-
-            <div class="stage4-debug-grid">
-                <div class="stage4-card">
-                    <div class="stage4-card__header">
-                        <strong>구역 / 버튼 JSON</strong>
-                        <span>polygon, sectionId, name, grade</span>
-                    </div>
-                    <textarea id="layoutJsonPreview" readonly></textarea>
-                </div>
-
-                <div class="stage4-card">
-                    <div class="stage4-card__header">
-                        <strong>좌석 JSON</strong>
-                        <span>층-구역-행-렬-좌석등급-상태</span>
-                    </div>
-                    <textarea id="bookingJsonPreview" readonly></textarea>
-                </div>
-            </div>
-        </details>
-
-        <div class="stage4-complete-card">
-            <strong>다음 단계</strong>
-            <p class="help-text">
-                polygon 클릭 영역이 맞으면 06 최종 꾸미기에서 텍스트, 구역, 좌석을 직접 보정해 최종 도면 품질을 올립니다.
-            </p>
-            <div class="stage4-main-actions">
-                <a class="btn btn--green" href="/admin/seatmap/final-decorate">06 최종 꾸미기로 이동</a>
-            </div>
-        </div>
-
     </section>
+
+    <section class="stage4-panel">
+        <h3>빠른 추가</h3>
+        <div class="stage4-quick-list">
+            <button type="button" class="stage4-quick" id="addStageLabel">STAGE 라벨</button>
+            <button type="button" class="stage4-quick" id="addEntranceLabel">입구 표시</button>
+            <button type="button" class="stage4-quick" id="addGuideBox">안내 박스</button>
+        </div>
+    </section>
+
+    <section class="stage4-panel">
+        <h3>브러쉬 / 도형 설정</h3>
+        <div class="stage4-field-grid">
+            <label>
+                <span>채우기</span>
+                <input type="color" id="fillColor" value="#8b5cf6">
+            </label>
+            <label>
+                <span>선 색상</span>
+                <input type="color" id="strokeColor" value="#111827">
+            </label>
+            <label>
+                <span>글자색</span>
+                <input type="color" id="textColor" value="#ffffff">
+            </label>
+            <label>
+                <span>글자 크기</span>
+                <input type="number" id="fontSize" value="22" min="8" max="96">
+            </label>
+        </div>
+    </section>
+
+    <section class="stage4-panel">
+        <h3>작업</h3>
+        <div class="stage4-action-list">
+            <button type="button" class="stage4-action stage4-action--dark" id="undoDecorate">되돌리기</button>
+            <button type="button" class="stage4-action" id="clearDecorations">꾸미기 초기화</button>
+            <button type="button" class="stage4-action stage4-action--green" id="saveDecoratedImage">도면 임시 저장</button>
+        </div>
+        <p class="stage4-help">상단 저장하기를 누르면 현재 캔버스 이미지가 함께 저장됩니다. 이 화면은 JSON 검수가 아니라 최종 이미지 보정용입니다.</p>
+    </section>
+</aside>
+
+<main class="seatmap-main stage4-canvas-main">
+    <div class="stage4-canvas-head">
+        <div>
+            <strong>최종 도면 캔버스</strong>
+            <span id="stage4CanvasInfo">도면을 불러오는 중...</span>
+        </div>
+        <div class="stage4-canvas-head__tools">
+            <button type="button" id="fitCanvasView">화면 맞춤</button>
+            <button type="button" id="resetCanvasView">100%</button>
+        </div>
+    </div>
+
+    <div class="stage4-canvas-viewport" id="stage4CanvasViewport">
+        <div class="stage4-canvas-board" id="stage4CanvasBoard">
+            <canvas id="canvas"></canvas>
+            <canvas id="decorateOverlay"></canvas>
+        </div>
+    </div>
 </main>
+
+<aside class="seatmap-side seatmap-side--right stage4-right-side">
+    <section class="stage4-panel">
+        <h3>선택 요소</h3>
+        <div class="stage4-selected-box" id="selectedObjectInfo">
+            아직 선택된 요소가 없습니다.
+        </div>
+    </section>
+
+    <section class="stage4-panel">
+        <h3>레이어</h3>
+        <div class="stage4-layer-list" id="layerList">
+            <div class="stage4-empty-layer">추가된 꾸미기 요소가 없습니다.</div>
+        </div>
+    </section>
+
+    <section class="stage4-panel">
+        <h3>미니맵</h3>
+        <div class="stage4-minimap-wrap">
+            <canvas id="stage4MiniMap" width="260" height="170"></canvas>
+        </div>
+        <p class="stage4-help">좌측 도구를 고른 뒤 도면을 클릭하면 임시 요소가 추가됩니다.</p>
+    </section>
+</aside>

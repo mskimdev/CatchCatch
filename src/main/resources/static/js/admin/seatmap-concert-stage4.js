@@ -2,585 +2,278 @@
     "use strict";
 
     const STORAGE_KEYS = {
-        sections: "concert_sections",
-        stage3Seats: "concert_stage3_seats",
-        stage3Layouts: "concert_stage3_layouts",
-        stage: "concert_stage",
-        imageMeta: "concert_imageMeta",
+        decoratedImage: "seatmap_stage4_decorated_image",
         generatedOverviewImage: "concert_generated_overviewImage",
-        layoutJson: "concert_layout_json",
-        bookingJson: "concert_booking_seats",
-        layoutJsonUrl: "concert_layout_json_url",
-        bookingJsonUrl: "concert_booking_json_url"
-    };
-
-    const SEAT_STATUS = {
-        AVAILABLE: "AVAILABLE",
-        REMOVED: "REMOVED",
-        OBSTRUCTED: "OBSTRUCTED"
-    };
-
-    const COLORS = {
-        bg: "#ffffff",
-        stage: "#111827",
-        stageText: "#ffffff",
-        sectionFallback: "#8b5cf6",
-        seat: "#d9d9d9",
-        obstructed: "#f59e0b",
-        line: "#ffffff"
+        stage1GeneratedImage: "concert_stage1_generatedImage",
+        buttonImage: "concert_buttonImage",
+        seatButtonResult: "seat_button_resultImage",
+        cleanImage: "concert_cleanImage",
+        originalImage: "concert_originalImage",
+        croppedImage: "seatmap_cropped_image"
     };
 
     const dom = {};
-
     const state = {
-        sections: readStorageJson(STORAGE_KEYS.sections, []),
-        seatsBySection: readStorageJson(STORAGE_KEYS.stage3Seats, {}),
-        layoutsBySection: readStorageJson(STORAGE_KEYS.stage3Layouts, {}),
-        stage: readStorageJson(STORAGE_KEYS.stage, null),
-        imageMeta: readStorageJson(STORAGE_KEYS.imageMeta, {}),
-        overviewImage: localStorage.getItem(STORAGE_KEYS.generatedOverviewImage) || "",
-        layoutJson: null,
-        bookingJson: null
+        activeTool: "move",
+        objects: [],
+        history: [],
+        scale: 1,
+        baseImage: null,
+        sourceImageUrl: ""
     };
 
     document.addEventListener("DOMContentLoaded", init);
 
     function init() {
         cacheDom();
-        normalizeData();
-        refreshGeneratedData();
         bindEvents();
+        loadInitialImage();
     }
 
     function cacheDom() {
         [
+            "stage4App",
+            "canvas",
+            "decorateOverlay",
+            "stage4CanvasBoard",
+            "stage4CanvasViewport",
+            "stage4CanvasInfo",
+            "stage4ToolGrid",
+            "fillColor",
+            "strokeColor",
+            "textColor",
+            "fontSize",
+            "layerList",
+            "selectedObjectInfo",
+            "stage4MiniMap",
             "toast",
-            "sumFloors",
-            "sumSections",
-            "sumSeats",
-            "sumObstructed",
-            "summaryText",
-            "gradeSummaryList",
-            "layoutJsonPreview",
-            "bookingJsonPreview",
-            "rawJsonDetails",
-            "saveAllJson",
-            "saveAllJsonTop",
-            "saveAllJsonMain",
-            "copyLayoutJson",
-            "copyLayoutJsonMain",
-            "copyBookingJson",
-            "copyBookingJsonMain",
-            "saveResultText",
-            "generatedOverviewPreview"
+            "saveDecoratedImage",
+            "clearDecorations",
+            "undoDecorate",
+            "addStageLabel",
+            "addEntranceLabel",
+            "addGuideBox",
+            "fitCanvasView",
+            "resetCanvasView"
         ].forEach((id) => {
             dom[id] = document.getElementById(id);
         });
-    }
 
-    function readStorageJson(key, fallback) {
-        try {
-            return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
-        } catch (error) {
-            console.warn(`[Seatmap Stage4] localStorage parse failed: ${key}`, error);
-            return fallback;
-        }
-    }
-
-    function writeStorageJson(key, value) {
-        try {
-            localStorage.setItem(key, JSON.stringify(value));
-            return true;
-        } catch (error) {
-            console.warn(`[Seatmap Stage4] localStorage write failed: ${key}`, error);
-            return false;
-        }
-    }
-
-    function showToast(message) {
-        if (!dom.toast) return;
-
-        dom.toast.textContent = message;
-        dom.toast.classList.add("show");
-
-        clearTimeout(showToast._timer);
-        showToast._timer = setTimeout(() => {
-            dom.toast.classList.remove("show");
-        }, 1900);
-    }
-
-    function normalizeData() {
-        if (!Array.isArray(state.sections)) {
-            state.sections = [];
-        }
-
-        state.sections.forEach((section, index) => {
-            section.id = section.id || `sec${index + 1}`;
-            section.name = section.name || `구역 ${index + 1}`;
-            section.label = section.label || String(index + 1);
-            section.floor = section.floor || "1층";
-            section.grade = section.grade || "일반석";
-            section.price = Number(section.price || 0);
-            section.renderColor = safeColor(section.renderColor || section.color || COLORS.sectionFallback);
-        });
-
-        const points = state.sections.flatMap(section => getSectionShape(section));
-        const maxX = Math.max(980, ...points.map(point => point.x + 80), Number(state.imageMeta.width || 0));
-        const maxY = Math.max(660, ...points.map(point => point.y + 80), Number(state.imageMeta.height || 0));
-
-        state.width = Math.ceil(maxX);
-        state.height = Math.ceil(maxY);
-
-        state.stage = normalizeStage(state.stage);
-    }
-
-    function normalizeStage(stage) {
-        const fallback = {
-            x: Math.round(state.width * 0.32),
-            y: Math.round(Math.max(18, state.height * 0.06)),
-            w: Math.round(Math.min(420, state.width * 0.36)),
-            h: Math.round(Math.max(34, state.height * 0.07)),
-            angle: 0,
-            label: "STAGE"
-        };
-
-        const next = stage && typeof stage === "object" ? { ...fallback, ...stage } : fallback;
-
-        next.x = Math.max(0, Math.round(Number(next.x) || fallback.x));
-        next.y = Math.max(0, Math.round(Number(next.y) || fallback.y));
-        next.w = Math.max(20, Math.round(Number(next.w) || fallback.w));
-        next.h = Math.max(10, Math.round(Number(next.h) || fallback.h));
-        next.angle = Number(next.angle) || 0;
-
-        return next;
-    }
-
-    function cleanCode(value, fallback) {
-        const raw = String(value || fallback || "").trim();
-        const cleaned = raw
-            .replace(/^구역\s*/, "")
-            .replace(/층/g, "")
-            .replace(/\s+/g, "")
-            .replace(/[^\w가-힣-]/g, "");
-
-        return cleaned || String(fallback || "A");
-    }
-
-    function floorCode(section) {
-        const matched = String(section.floor || "1층").match(/\d+/);
-        return matched ? matched[0] : cleanCode(section.floor, "1");
-    }
-
-    function sectionCode(section) {
-        return cleanCode(section.label || section.name || section.id, section.id);
-    }
-
-    function roundNumber(value) {
-        return Math.round(Number(value || 0) * 100) / 100;
-    }
-
-    function cleanIdPart(value) {
-        return String(value ?? "")
-            .trim()
-            .replace(/\s+/g, "")
-            .replace(/-/g, "");
-    }
-
-    function makeSeatId(section, seat) {
-        return [
-            floorCode(section),
-            sectionCode(section),
-            cleanIdPart(seat.row),
-            cleanIdPart(seat.col),
-            cleanIdPart(section.grade || "일반석"),
-            cleanIdPart(seat.status || SEAT_STATUS.AVAILABLE),
-            cleanIdPart(roundNumber(seat.x)),
-            cleanIdPart(roundNumber(seat.y)),
-            cleanIdPart(roundNumber(Math.max(Number(seat.w || 0), Number(seat.h || 0)))),
-            cleanIdPart(roundNumber(seat.angle || 0))
-        ].join("-");
-    }
-
-    function collectUsableSeats() {
-        const seats = [];
-
-        state.sections.forEach((section) => {
-            const sectionSeats = Array.isArray(state.seatsBySection[section.id]) ? state.seatsBySection[section.id] : [];
-
-            sectionSeats
-                .filter((seat) => seat.status !== SEAT_STATUS.REMOVED)
-                .forEach((seat) => {
-                    seats.push({ section, seat });
-                });
-        });
-
-        return seats;
-    }
-
-    function buildJsons() {
-        state.overviewImage = drawGeneratedOverviewImage();
-
-        const usableSeats = collectUsableSeats();
-
-        state.layoutJson = {
-            service: "SeatTrace",
-            type: "concert-layout",
-            generatedAt: new Date().toISOString(),
-            image: {
-                width: state.width,
-                height: state.height,
-                overviewImage: state.overviewImage
-            },
-            stage: state.stage,
-            sections: state.sections.map((section) => ({
-                id: section.id,
-                name: section.name,
-                label: section.label,
-                floor: section.floor,
-                grade: section.grade,
-                price: Number(section.price || 0),
-                color: section.renderColor,
-                polygon: getSectionShape(section).map(point => ({ x: roundNumber(point.x), y: roundNumber(point.y) })),
-                layout: state.layoutsBySection[section.id] || null,
-                seats: (state.seatsBySection[section.id] || [])
-                    .filter(seat => seat.status !== SEAT_STATUS.REMOVED)
-                    .map(seat => ({
-                        id: makeSeatId(section, seat),
-                        row: seat.row,
-                        col: seat.col,
-                        x: roundNumber(seat.x),
-                        y: roundNumber(seat.y),
-                        w: roundNumber(seat.w),
-                        h: roundNumber(seat.h),
-                        angle: roundNumber(seat.angle || 0),
-                        status: seat.status || SEAT_STATUS.AVAILABLE,
-                        color: section.renderColor
-                    }))
-            }))
-        };
-
-        state.bookingJson = usableSeats.map(({ section, seat }) => ({
-            id: makeSeatId(section, seat),
-            floor: floorCode(section),
-            sectionId: section.id,
-            sectionName: section.name,
-            sectionLabel: section.label,
-            row: seat.row,
-            col: seat.col,
-            grade: section.grade || "일반석",
-            price: Number(section.price || 0),
-            status: seat.status || SEAT_STATUS.AVAILABLE
-        }));
-
-        writeStorageJson(STORAGE_KEYS.layoutJson, state.layoutJson);
-        writeStorageJson(STORAGE_KEYS.bookingJson, state.bookingJson);
-    }
-
-    function renderSummary() {
-        const usableSeats = collectUsableSeats();
-        const floors = new Set();
-        const sections = new Set();
-        const gradeMap = new Map();
-        let obstructed = 0;
-
-        usableSeats.forEach(({ section, seat }) => {
-            floors.add(floorCode(section));
-            sections.add(section.id);
-
-            if (seat.status === SEAT_STATUS.OBSTRUCTED) {
-                obstructed += 1;
-            }
-
-            const grade = section.grade || "일반석";
-            const price = Number(section.price || 0);
-            const key = `${grade}_${price}`;
-            const before = gradeMap.get(key) || {
-                grade,
-                price,
-                count: 0,
-                color: section.renderColor || COLORS.sectionFallback
-            };
-
-            before.count += 1;
-            gradeMap.set(key, before);
-        });
-
-        if (dom.sumFloors) dom.sumFloors.textContent = floors.size;
-        if (dom.sumSections) dom.sumSections.textContent = sections.size;
-        if (dom.sumSeats) dom.sumSeats.textContent = usableSeats.length;
-        if (dom.sumObstructed) dom.sumObstructed.textContent = obstructed;
-
-        if (dom.summaryText) {
-            dom.summaryText.textContent = `최종 ${floors.size}개 층, ${sections.size}개 구역, ${usableSeats.length}석입니다. 장애석은 ${obstructed}석입니다.`;
-        }
-
-        if (dom.gradeSummaryList) {
-            dom.gradeSummaryList.innerHTML = Array.from(gradeMap.values())
-                .map((item) => `
-                    <div class="grade-summary-row">
-                        <span><i style="background:${safeColor(item.color)}"></i>${escapeHtml(item.grade)}</span>
-                        <b>${item.count}석</b>
-                    </div>
-                `)
-                .join("") || '<div class="help-text">좌석 없음</div>';
-        }
-    }
-
-    function renderJsonPreviews() {
-        const layoutPreview = cloneWithoutHeavyImage(state.layoutJson);
-
-        if (dom.layoutJsonPreview) {
-            dom.layoutJsonPreview.value = JSON.stringify(layoutPreview || {}, null, 2);
-        }
-
-        if (dom.bookingJsonPreview) {
-            dom.bookingJsonPreview.value = JSON.stringify(state.bookingJson || [], null, 2);
-        }
-
-        if (dom.generatedOverviewPreview && state.overviewImage) {
-            dom.generatedOverviewPreview.src = state.overviewImage;
-        }
-    }
-
-    function cloneWithoutHeavyImage(value) {
-        if (!value) return value;
-        const cloned = JSON.parse(JSON.stringify(value));
-
-        if (cloned.image?.overviewImage) {
-            cloned.image.overviewImage = `[base64 image omitted: ${String(value.image.overviewImage).length} chars]`;
-        }
-
-        return cloned;
-    }
-
-    function refreshGeneratedData() {
-        buildJsons();
-        renderSummary();
-        renderJsonPreviews();
-    }
-
-    async function saveAllJson() {
-        refreshGeneratedData();
-
-        const baseFileName = makeBaseFileName();
-        const layoutResult = await saveJson(`${baseFileName}-layout.json`, state.layoutJson);
-        const bookingResult = await saveJson(`${baseFileName}-booking.json`, state.bookingJson);
-
-        if (layoutResult?.jsonUrl) {
-            localStorage.setItem(STORAGE_KEYS.layoutJsonUrl, layoutResult.jsonUrl);
-        }
-
-        if (bookingResult?.jsonUrl) {
-            localStorage.setItem(STORAGE_KEYS.bookingJsonUrl, bookingResult.jsonUrl);
-        }
-
-        if (dom.saveResultText) {
-            dom.saveResultText.textContent = `저장 완료 · 배치용: ${layoutResult?.jsonUrl || "실패"} / 예매용: ${bookingResult?.jsonUrl || "실패"}`;
-        }
-
-        showToast("배치용 + 예매용 JSON 저장 완료");
-    }
-
-    async function saveJson(fileName, jsonValue) {
-        const response = await fetch("/admin/seatmap/json/save", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                fileName,
-                json: JSON.stringify(jsonValue, null, 2)
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`${fileName} 저장 실패`);
-        }
-
-        return response.json();
-    }
-
-    function makeBaseFileName() {
-        const concertId = localStorage.getItem("concert_id") || "concert";
-        const sessionId = localStorage.getItem("concert_session_id") || "session";
-
-        return `seatmap-${concertId}-${sessionId}`;
-    }
-
-    async function copyString(value) {
-        try {
-            if (navigator.clipboard?.writeText) {
-                await navigator.clipboard.writeText(value);
-                showToast("JSON 복사 완료");
-                return;
-            }
-        } catch (error) {
-            console.warn("[Seatmap Stage4] clipboard write failed", error);
-        }
-
-        const textarea = document.createElement("textarea");
-
-        textarea.value = value;
-        textarea.setAttribute("readonly", "readonly");
-        textarea.style.position = "fixed";
-        textarea.style.left = "-9999px";
-        textarea.style.top = "0";
-
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textarea);
-
-        showToast("JSON 복사 완료");
+        dom.ctx = dom.canvas?.getContext("2d") || null;
+        dom.overlayCtx = dom.decorateOverlay?.getContext("2d") || null;
+        dom.miniCtx = dom.stage4MiniMap?.getContext("2d") || null;
     }
 
     function bindEvents() {
-        const saveHandler = () => {
-            saveAllJson().catch((error) => {
-                console.error(error);
-                showToast("JSON 저장 실패");
-            });
-        };
-
-        [dom.saveAllJson, dom.saveAllJsonTop, dom.saveAllJsonMain].forEach((button) => {
-            button?.addEventListener("click", saveHandler);
+        dom.stage4ToolGrid?.addEventListener("click", (event) => {
+            const button = event.target.closest("[data-tool]");
+            if (!button) return;
+            setTool(button.dataset.tool);
         });
 
-        [dom.copyLayoutJson, dom.copyLayoutJsonMain].forEach((button) => {
-            button?.addEventListener("click", () => {
-                refreshGeneratedData();
-                copyString(JSON.stringify(state.layoutJson || {}, null, 2)).catch((error) => {
-                    console.error(error);
-                    showToast("배치용 JSON 복사 실패");
-                });
-            });
+        dom.canvas?.addEventListener("click", onCanvasClick);
+        dom.saveDecoratedImage?.addEventListener("click", saveDecoratedImage);
+        dom.clearDecorations?.addEventListener("click", clearDecorations);
+        dom.undoDecorate?.addEventListener("click", undoDecorate);
+        dom.addStageLabel?.addEventListener("click", () => addPreset("stage"));
+        dom.addEntranceLabel?.addEventListener("click", () => addPreset("entrance"));
+        dom.addGuideBox?.addEventListener("click", () => addPreset("guide"));
+        dom.fitCanvasView?.addEventListener("click", fitCanvasView);
+        dom.resetCanvasView?.addEventListener("click", () => setCanvasScale(1));
+    }
+
+    function setTool(tool) {
+        state.activeTool = tool || "move";
+        document.querySelectorAll(".stage4-tool[data-tool]").forEach((button) => {
+            button.classList.toggle("is-active", button.dataset.tool === state.activeTool);
         });
-
-        [dom.copyBookingJson, dom.copyBookingJsonMain].forEach((button) => {
-            button?.addEventListener("click", () => {
-                refreshGeneratedData();
-                copyString(JSON.stringify(state.bookingJson || [], null, 2)).catch((error) => {
-                    console.error(error);
-                    showToast("예매용 JSON 복사 실패");
-                });
-            });
-        });
-
-        dom.rawJsonDetails?.addEventListener("toggle", () => {
-            if (dom.rawJsonDetails.open) {
-                renderJsonPreviews();
-            }
-        });
+        updateSelectedInfo(`${getToolName(state.activeTool)} 도구 선택됨`);
     }
 
-    function drawGeneratedOverviewImage() {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
+    function loadInitialImage() {
+        const source = findSourceImage();
+        state.sourceImageUrl = source;
 
-        canvas.width = Math.max(1, Math.round(state.width));
-        canvas.height = Math.max(1, Math.round(state.height));
-
-        ctx.fillStyle = COLORS.bg;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        state.sections.forEach(section => drawSection(ctx, section));
-        drawStage(ctx);
-
-        state.sections.forEach(section => {
-            const seats = state.seatsBySection[section.id] || [];
-            seats.forEach(seat => drawSeat(ctx, section, seat));
-        });
-
-        return canvas.toDataURL("image/png");
-    }
-
-    function drawStage(ctx) {
-        const stage = state.stage;
-
-        ctx.save();
-        ctx.fillStyle = COLORS.stage;
-        ctx.strokeStyle = "rgba(255,255,255,.92)";
-        ctx.lineWidth = 2;
-        roundRect(ctx, stage.x, stage.y, stage.w, stage.h, Math.max(4, Math.min(stage.w, stage.h) * 0.08));
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = COLORS.stageText;
-        ctx.font = `bold ${Math.max(13, stage.h * 0.34)}px Arial`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(stage.label || "STAGE", stage.x + stage.w / 2, stage.y + stage.h / 2);
-        ctx.restore();
-    }
-
-    function drawSection(ctx, section) {
-        const shape = getSectionShape(section);
-        if (!shape.length) return;
-
-        ctx.save();
-        ctx.beginPath();
-        drawPoly(ctx, shape);
-        ctx.closePath();
-        ctx.fillStyle = hexToRgba(section.renderColor || COLORS.sectionFallback, 0.14);
-        ctx.strokeStyle = "rgba(15,23,42,.16)";
-        ctx.lineWidth = 1.5;
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
-    }
-
-    function drawSeat(ctx, section, seat) {
-        if (seat.status === SEAT_STATUS.REMOVED) return;
-
-        ctx.save();
-        ctx.translate(Number(seat.x) || 0, Number(seat.y) || 0);
-        ctx.rotate(toRad(Number(seat.angle) || 0));
-        roundRect(
-            ctx,
-            -Number(seat.w || 0) / 2,
-            -Number(seat.h || 0) / 2,
-            Number(seat.w || 0),
-            Number(seat.h || 0),
-            Math.max(1, Math.min(Number(seat.w || 0), Number(seat.h || 0)) * 0.12)
-        );
-        ctx.fillStyle = seat.status === SEAT_STATUS.OBSTRUCTED
-            ? COLORS.obstructed
-            : safeColor(section.renderColor || seat.color || COLORS.seat);
-        ctx.strokeStyle = COLORS.line;
-        ctx.lineWidth = 1;
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
-    }
-
-    function getSectionShape(section) {
-        const candidates = [
-            section.seatShape,
-            section.buttonPolygon,
-            section.polygon,
-            section.points
-        ];
-
-        for (const candidate of candidates) {
-            if (Array.isArray(candidate) && candidate.length >= 3) {
-                return candidate.map(point => ({ x: Number(point.x) || 0, y: Number(point.y) || 0 }));
-            }
+        if (!source) {
+            setupEmptyCanvas(1200, 760);
+            drawEmptyGuide();
+            updateInfo("불러올 도면이 없어 빈 캔버스를 생성했습니다.");
+            return;
         }
 
-        return [];
+        const image = new Image();
+        image.onload = () => {
+            state.baseImage = image;
+            setupEmptyCanvas(image.naturalWidth || image.width, image.naturalHeight || image.height);
+            redrawAll();
+            updateInfo(`${dom.canvas.width} × ${dom.canvas.height} / 최종 꾸미기`);
+        };
+        image.onerror = () => {
+            setupEmptyCanvas(1200, 760);
+            drawEmptyGuide();
+            updateInfo("도면 이미지를 불러오지 못해 빈 캔버스를 생성했습니다.");
+        };
+        image.src = source;
     }
 
-    function drawPoly(ctx, points) {
-        points.forEach((point, index) => {
-            if (index === 0) {
-                ctx.moveTo(point.x, point.y);
-            } else {
-                ctx.lineTo(point.x, point.y);
-            }
+    function findSourceImage() {
+        return Object.values(STORAGE_KEYS)
+            .map((key) => localStorage.getItem(key))
+            .find((value) => value && (value.startsWith("data:image") || value.startsWith("/") || value.startsWith("http"))) || "";
+    }
+
+    function setupEmptyCanvas(width, height) {
+        const safeWidth = Math.max(900, Math.round(Number(width) || 1200));
+        const safeHeight = Math.max(560, Math.round(Number(height) || 760));
+
+        [dom.canvas, dom.decorateOverlay].forEach((canvas) => {
+            if (!canvas) return;
+            canvas.width = safeWidth;
+            canvas.height = safeHeight;
+            canvas.style.width = `${safeWidth}px`;
+            canvas.style.height = `${safeHeight}px`;
         });
+
+        if (dom.stage4CanvasBoard) {
+            dom.stage4CanvasBoard.style.width = `${safeWidth}px`;
+            dom.stage4CanvasBoard.style.height = `${safeHeight}px`;
+        }
+    }
+
+    function redrawAll() {
+        if (!dom.ctx || !dom.canvas) return;
+
+        dom.ctx.clearRect(0, 0, dom.canvas.width, dom.canvas.height);
+        dom.ctx.fillStyle = "#ffffff";
+        dom.ctx.fillRect(0, 0, dom.canvas.width, dom.canvas.height);
+
+        if (state.baseImage) {
+            dom.ctx.drawImage(state.baseImage, 0, 0, dom.canvas.width, dom.canvas.height);
+        }
+
+        state.objects.forEach(drawObject);
+        drawMiniMap();
+    }
+
+    function drawEmptyGuide() {
+        if (!dom.ctx || !dom.canvas) return;
+        dom.ctx.fillStyle = "#ffffff";
+        dom.ctx.fillRect(0, 0, dom.canvas.width, dom.canvas.height);
+        dom.ctx.strokeStyle = "#cbd5e1";
+        dom.ctx.lineWidth = 2;
+        dom.ctx.setLineDash([10, 8]);
+        dom.ctx.strokeRect(80, 80, dom.canvas.width - 160, dom.canvas.height - 160);
+        dom.ctx.setLineDash([]);
+        dom.ctx.fillStyle = "#64748b";
+        dom.ctx.font = "700 28px sans-serif";
+        dom.ctx.textAlign = "center";
+        dom.ctx.fillText("최종 도면 이미지를 불러오면 이곳에 표시됩니다.", dom.canvas.width / 2, dom.canvas.height / 2);
+        drawMiniMap();
+    }
+
+    function onCanvasClick(event) {
+        if (!dom.canvas) return;
+        const point = getCanvasPoint(event);
+
+        if (state.activeTool === "move") {
+            updateSelectedInfo(`이동 도구: X ${Math.round(point.x)}, Y ${Math.round(point.y)}`);
+            return;
+        }
+
+        pushHistory();
+
+        if (state.activeTool === "erase") {
+            eraseAt(point.x, point.y);
+            addLayerLog("지우개", point);
+            return;
+        }
+
+        const object = createObject(state.activeTool, point.x, point.y);
+        state.objects.push(object);
+        drawObject(object);
+        drawMiniMap();
+        renderLayers();
+        updateSelectedInfo(`${getToolName(state.activeTool)} 추가됨 / X ${Math.round(point.x)}, Y ${Math.round(point.y)}`);
+    }
+
+    function getCanvasPoint(event) {
+        const rect = dom.canvas.getBoundingClientRect();
+        return {
+            x: (event.clientX - rect.left) * (dom.canvas.width / rect.width),
+            y: (event.clientY - rect.top) * (dom.canvas.height / rect.height)
+        };
+    }
+
+    function createObject(tool, x, y) {
+        const fill = dom.fillColor?.value || "#8b5cf6";
+        const stroke = dom.strokeColor?.value || "#111827";
+        const textColor = dom.textColor?.value || "#ffffff";
+        const fontSize = Number(dom.fontSize?.value || 22);
+
+        return {
+            id: `decor-${Date.now()}-${state.objects.length + 1}`,
+            type: tool,
+            x,
+            y,
+            w: tool === "line" ? 120 : tool === "seat" ? 28 : 130,
+            h: tool === "line" ? 0 : tool === "seat" ? 28 : 56,
+            fill,
+            stroke,
+            textColor,
+            fontSize,
+            text: tool === "text" ? "텍스트" : tool === "stage" ? "STAGE" : tool === "seat" ? "A1" : ""
+        };
+    }
+
+    function drawObject(object) {
+        if (!dom.ctx) return;
+
+        dom.ctx.save();
+        dom.ctx.lineWidth = 3;
+        dom.ctx.strokeStyle = object.stroke;
+        dom.ctx.fillStyle = object.fill;
+        dom.ctx.font = `900 ${object.fontSize || 22}px sans-serif`;
+        dom.ctx.textAlign = "center";
+        dom.ctx.textBaseline = "middle";
+
+        if (object.type === "rect" || object.type === "stage") {
+            roundRect(dom.ctx, object.x - object.w / 2, object.y - object.h / 2, object.w, object.h, 12);
+            dom.ctx.fill();
+            dom.ctx.stroke();
+            if (object.text) {
+                dom.ctx.fillStyle = object.textColor;
+                dom.ctx.fillText(object.text, object.x, object.y);
+            }
+        } else if (object.type === "ellipse") {
+            dom.ctx.beginPath();
+            dom.ctx.ellipse(object.x, object.y, object.w / 2, object.h / 2, 0, 0, Math.PI * 2);
+            dom.ctx.fill();
+            dom.ctx.stroke();
+        } else if (object.type === "line") {
+            dom.ctx.beginPath();
+            dom.ctx.moveTo(object.x - object.w / 2, object.y);
+            dom.ctx.lineTo(object.x + object.w / 2, object.y);
+            dom.ctx.stroke();
+        } else if (object.type === "seat") {
+            roundRect(dom.ctx, object.x - object.w / 2, object.y - object.h / 2, object.w, object.h, 6);
+            dom.ctx.fill();
+            dom.ctx.stroke();
+            dom.ctx.fillStyle = object.textColor;
+            dom.ctx.font = "900 11px sans-serif";
+            dom.ctx.fillText(object.text, object.x, object.y);
+        } else if (object.type === "text") {
+            dom.ctx.fillStyle = object.textColor;
+            dom.ctx.strokeStyle = object.stroke;
+            dom.ctx.lineWidth = 5;
+            dom.ctx.strokeText(object.text, object.x, object.y);
+            dom.ctx.fillText(object.text, object.x, object.y);
+        }
+
+        dom.ctx.restore();
     }
 
     function roundRect(ctx, x, y, w, h, r) {
-        const radius = Math.max(0, Math.min(r || 0, Math.abs(w) / 2, Math.abs(h) / 2));
-
+        const radius = Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2);
         ctx.beginPath();
         ctx.moveTo(x + radius, y);
         ctx.lineTo(x + w - radius, y);
@@ -591,27 +284,193 @@
         ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
         ctx.lineTo(x, y + radius);
         ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
     }
 
-    function safeColor(value) {
-        const raw = String(value || "").trim();
-
-        if (/^#[0-9a-fA-F]{3}$/.test(raw)) return raw;
-        if (/^#[0-9a-fA-F]{6}$/.test(raw)) return raw;
-
-        return COLORS.seat;
+    function eraseAt(x, y) {
+        if (!dom.ctx) return;
+        dom.ctx.save();
+        dom.ctx.fillStyle = "#ffffff";
+        dom.ctx.fillRect(x - 28, y - 28, 56, 56);
+        dom.ctx.restore();
+        drawMiniMap();
+        updateSelectedInfo(`지우개 적용 / X ${Math.round(x)}, Y ${Math.round(y)}`);
     }
 
-    function hexToRgba(hex, alpha) {
-        const cleaned = String(safeColor(hex)).replace("#", "");
-        const full = cleaned.length === 3
-            ? cleaned.split("").map(char => char + char).join("")
-            : cleaned;
-        const r = parseInt(full.slice(0, 2), 16);
-        const g = parseInt(full.slice(2, 4), 16);
-        const b = parseInt(full.slice(4, 6), 16);
+    function addPreset(type) {
+        if (!dom.canvas) return;
+        pushHistory();
 
-        return `rgba(${r},${g},${b},${alpha})`;
+        const center = {
+            x: dom.canvas.width / 2,
+            y: type === "stage" ? 80 : type === "entrance" ? dom.canvas.height - 80 : 140
+        };
+
+        const object = type === "stage"
+            ? { ...createObject("stage", center.x, center.y), w: 360, h: 62, text: "STAGE", fill: "#111827", textColor: "#ffffff" }
+            : type === "entrance"
+                ? { ...createObject("text", center.x, center.y), text: "입구", textColor: "#111827", stroke: "#ffffff", fontSize: 28 }
+                : { ...createObject("rect", center.x, center.y), w: 280, h: 74, text: "안내", fill: "#f8fafc", stroke: "#8b5cf6", textColor: "#111827" };
+
+        state.objects.push(object);
+        redrawAll();
+        renderLayers();
+        updateSelectedInfo(`${type === "stage" ? "STAGE" : type === "entrance" ? "입구" : "안내 박스"} 추가됨`);
+    }
+
+    function pushHistory() {
+        try {
+            state.history.push(dom.canvas.toDataURL("image/png"));
+            if (state.history.length > 20) {
+                state.history.shift();
+            }
+        } catch (error) {
+            console.warn("history save failed", error);
+        }
+    }
+
+    function undoDecorate() {
+        const prev = state.history.pop();
+        if (!prev) {
+            showToast("되돌릴 작업이 없습니다.");
+            return;
+        }
+
+        const image = new Image();
+        image.onload = () => {
+            dom.ctx.clearRect(0, 0, dom.canvas.width, dom.canvas.height);
+            dom.ctx.drawImage(image, 0, 0, dom.canvas.width, dom.canvas.height);
+            state.objects.pop();
+            renderLayers();
+            drawMiniMap();
+        };
+        image.src = prev;
+    }
+
+    function clearDecorations() {
+        if (!confirm("현재 꾸미기 요소를 초기화할까요?")) return;
+        pushHistory();
+        state.objects = [];
+        redrawAll();
+        renderLayers();
+        updateSelectedInfo("꾸미기 요소 초기화됨");
+    }
+
+    function saveDecoratedImage() {
+        const dataUrl = exportImage();
+        if (!dataUrl) {
+            showToast("저장할 도면이 없습니다.");
+            return;
+        }
+
+        localStorage.setItem(STORAGE_KEYS.decoratedImage, dataUrl);
+        localStorage.setItem(STORAGE_KEYS.generatedOverviewImage, dataUrl);
+        showToast("최종 꾸미기 도면을 임시 저장했습니다.");
+        updateInfo(`${dom.canvas.width} × ${dom.canvas.height} / 임시 저장 완료`);
+    }
+
+    function exportImage() {
+        try {
+            return dom.canvas?.toDataURL("image/png") || "";
+        } catch (error) {
+            console.warn("canvas export failed", error);
+            return "";
+        }
+    }
+
+    function renderLayers() {
+        if (!dom.layerList) return;
+
+        if (!state.objects.length) {
+            dom.layerList.innerHTML = `<div class="stage4-empty-layer">추가된 꾸미기 요소가 없습니다.</div>`;
+            return;
+        }
+
+        dom.layerList.innerHTML = state.objects
+            .slice()
+            .reverse()
+            .map((object, index) => `
+                <div class="stage4-layer-item">
+                    <div>
+                        <b>${escapeHtml(getToolName(object.type))}</b>
+                        <span>${Math.round(object.x)}, ${Math.round(object.y)}</span>
+                    </div>
+                    <span>#${state.objects.length - index}</span>
+                </div>
+            `)
+            .join("");
+    }
+
+    function addLayerLog(name, point) {
+        renderLayers();
+        updateSelectedInfo(`${name} / X ${Math.round(point.x)}, Y ${Math.round(point.y)}`);
+    }
+
+    function updateSelectedInfo(text) {
+        if (dom.selectedObjectInfo) {
+            dom.selectedObjectInfo.textContent = text;
+        }
+    }
+
+    function updateInfo(text) {
+        if (dom.stage4CanvasInfo) {
+            dom.stage4CanvasInfo.textContent = text;
+        }
+    }
+
+    function drawMiniMap() {
+        if (!dom.miniCtx || !dom.stage4MiniMap || !dom.canvas) return;
+
+        const mini = dom.stage4MiniMap;
+        const ratio = Math.min(mini.width / dom.canvas.width, mini.height / dom.canvas.height);
+        const w = dom.canvas.width * ratio;
+        const h = dom.canvas.height * ratio;
+        const x = (mini.width - w) / 2;
+        const y = (mini.height - h) / 2;
+
+        dom.miniCtx.clearRect(0, 0, mini.width, mini.height);
+        dom.miniCtx.fillStyle = "#f8fafc";
+        dom.miniCtx.fillRect(0, 0, mini.width, mini.height);
+        dom.miniCtx.drawImage(dom.canvas, x, y, w, h);
+        dom.miniCtx.strokeStyle = "#ef4444";
+        dom.miniCtx.lineWidth = 2;
+        dom.miniCtx.strokeRect(x, y, w, h);
+    }
+
+    function fitCanvasView() {
+        if (!dom.stage4CanvasViewport || !dom.canvas) return;
+        const available = dom.stage4CanvasViewport.clientWidth - 70;
+        const scale = Math.min(1, Math.max(0.25, available / dom.canvas.width));
+        setCanvasScale(scale);
+    }
+
+    function setCanvasScale(scale) {
+        state.scale = scale;
+        if (dom.stage4CanvasBoard) {
+            dom.stage4CanvasBoard.style.transform = `scale(${scale})`;
+            dom.stage4CanvasBoard.style.marginBottom = `${80 + dom.canvas.height * (scale - 1)}px`;
+        }
+    }
+
+    function getToolName(tool) {
+        return {
+            move: "이동",
+            text: "텍스트",
+            rect: "박스",
+            ellipse: "원형",
+            line: "선",
+            seat: "좌석",
+            stage: "무대",
+            erase: "지우개"
+        }[tool] || tool;
+    }
+
+    function showToast(message) {
+        if (!dom.toast) return;
+        dom.toast.textContent = message;
+        dom.toast.classList.add("show");
+        clearTimeout(showToast._timer);
+        showToast._timer = setTimeout(() => dom.toast.classList.remove("show"), 1700);
     }
 
     function escapeHtml(value) {
@@ -623,7 +482,8 @@
             .replace(/'/g, "&#039;");
     }
 
-    function toRad(deg) {
-        return deg * Math.PI / 180;
-    }
+    window.SeatmapStage4Decorate = {
+        exportImage,
+        saveDecoratedImage
+    };
 })();
