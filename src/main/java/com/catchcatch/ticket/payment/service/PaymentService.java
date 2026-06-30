@@ -56,9 +56,6 @@ public class PaymentService {
     @Value("${portone.channel.tosspay}")
     private String tossPayChannelKey;
 
-    @Value("${portone.channel.vbank}")
-    private String vbankChannelKey;
-
     @Value("${portone.api-secret}")
     private String apiSecret;
 

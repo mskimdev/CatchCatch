@@ -202,25 +202,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             };
 
-            if (selectedMethod === "vbank") {
-                paymentRequest.virtualAccount = {
-                    accountExpiry: {
-                        validHours: 24
-                    },
-                    cashReceiptType: "ANONYMOUS"
-                };
-            }
-
             const portOneResult = await PortOne.requestPayment(paymentRequest);
 
             if (portOneResult.code !== undefined && portOneResult.code !== null) {
                 CcUI.toast(portOneResult.message || "결제가 취소되었거나 실패했습니다.", "error");
-                return;
-            }
-
-            if (selectedMethod === "vbank") {
-                CcUI.toast("가상계좌가 발급되었습니다. 입금 확인 후 예매가 확정됩니다.", "info");
-                location.href = "/users/bookings";
                 return;
             }
 
@@ -309,10 +294,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (method === "kakaopay" || method === "tosspay") {
             return "EASY_PAY";
-        }
-
-        if (method === "vbank") {
-            return "VIRTUAL_ACCOUNT";
         }
 
         return "CARD";

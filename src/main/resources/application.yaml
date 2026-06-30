@@ -21,7 +21,6 @@ portone:
     card: ${PORTONE_CARD_CHANNEL_KEY:}
     kakaopay: ${PORTONE_KAKAOPAY_CHANNEL_KEY:}
     tosspay: ${PORTONE_TOSSPAY_CHANNEL_KEY:}
-    vbank: ${PORTONE_VBANK_CHANNEL_KEY:}
 
 oauth:
   kakao:
