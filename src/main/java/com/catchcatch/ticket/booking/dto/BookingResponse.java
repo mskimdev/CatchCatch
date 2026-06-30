@@ -261,6 +261,25 @@ public class BookingResponse {
     }
 
     /**
+     * 결제 재개 안내용 DTO
+     *
+     * 로그인 직후 등 전역 체크 시, 만료되지 않은 PENDING 예매가 있으면
+     * 결제 화면으로 바로 이동할 수 있도록 최소 정보만 내려준다.
+     */
+    @Getter
+    public static class PendingPaymentDTO {
+        private Integer bookingId;
+        private String concertTitle;
+        private Timestamp expiresAt;
+
+        public PendingPaymentDTO(Booking booking) {
+            this.bookingId = booking.getId();
+            this.concertTitle = booking.getConcertSession().getConcert().getTitle();
+            this.expiresAt = booking.getExpiresAt();
+        }
+    }
+
+    /**
      * 관리자 - 예매 관리 목록 화면 DTO
      *
      * admin/booking/list.mustache에서

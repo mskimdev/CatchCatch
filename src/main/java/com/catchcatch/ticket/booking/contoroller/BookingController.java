@@ -184,6 +184,19 @@ public class BookingController {
         return Resp.ok(null);
     }
 
+    // 결제 재개 안내 - 로그인 직후 등 전역 체크용 (만료 안 된 PENDING 예매 여부)
+    @GetMapping("/pending-payment")
+    @ResponseBody
+    public ResponseEntity<?> findPendingPayment(HttpSession session) {
+        SessionUser sessionUser = getSessionUser(session);
+
+        if (sessionUser == null) {
+            return Resp.ok(null);
+        }
+
+        return Resp.ok(bookingService.findPendingPayment(sessionUser.getId()));
+    }
+
     private SessionUser getSessionUser(HttpSession session) {
         return (SessionUser) session.getAttribute(Define.SESSION_USER);
     }

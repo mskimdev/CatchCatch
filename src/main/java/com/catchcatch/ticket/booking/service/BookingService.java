@@ -361,4 +361,25 @@ public class BookingService {
         // 3. 기존에 사용하시던 DTO 생성 로직에 booking과 payment 데이터를 넣어서 리턴
         return new BookingResponse.CompleteDTO(booking, payment);
     }
+
+    /**
+     * 결제 재개 안내용 - 사용자의 아직 만료되지 않은 PENDING 예매 조회
+     *
+     * 결제 중 탭을 닫거나 컴퓨터가 꺼지는 등으로 이탈했다가 돌아왔을 때
+     * 이어서 결제할 수 있도록 안내하기 위해 사용.
+     */
+    @Transactional(readOnly = true)
+    public BookingResponse.PendingPaymentDTO findPendingPayment(Integer userId) {
+        if (userId == null) {
+            return null;
+        }
+
+        return bookingRepository.findFirstByUser_IdAndStatusAndExpiresAtAfter(
+                        userId,
+                        Status.PENDING,
+                        new Timestamp(System.currentTimeMillis())
+                )
+                .map(BookingResponse.PendingPaymentDTO::new)
+                .orElse(null);
+    }
 }
