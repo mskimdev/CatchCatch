@@ -58,6 +58,20 @@
                         </div>
                         <div class="card-body">
                             <div class="row">
+                                <div class="col-md-12 form-group mb-4">
+                                    <label class="font-weight-bold text-info">상세 이미지</label>
+                                    {{#concert.detailBannerUrl}}
+                                        <div class="p-3 border rounded bg-light">
+                                            <img src="{{concert.detailBannerUrl}}"
+                                                 class="img-fluid rounded border bg-white"
+                                                 alt="{{concert.title}} 상세 이미지">
+                                            <div class="small text-muted mt-2 text-break">{{concert.detailBannerUrl}}</div>
+                                        </div>
+                                    {{/concert.detailBannerUrl}}
+                                    {{^concert.detailBannerUrl}}
+                                        <div class="p-3 border rounded bg-light text-muted" style="min-height: 80px;">등록된 상세 이미지가 없습니다.</div>
+                                    {{/concert.detailBannerUrl}}
+                                </div>
 
                                 <div class="col-md-12 form-group mb-4">
                                     <label class="font-weight-bold text-info">추가 공연정보 / 유의사항 및 안내</label>
