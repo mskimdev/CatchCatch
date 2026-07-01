@@ -7,7 +7,7 @@
                 <span class="seatmap-step__check" data-step="1"></span>
                 <span class="seatmap-step__text">
                     <b>파트 1</b>
-                    <small>Stage 3 구역 선택</small>
+                    <small>구역 펼쳐보기 · 회전</small>
                 </span>
                 <span class="seatmap-step__status" id="part1Status">진행중</span>
                 <span class="seatmap-step__arrow">⌄</span>
@@ -18,7 +18,7 @@
                     <div class="box active">
                         <h3>seatmap-sections.json 기준</h3>
                         <div class="help-text">
-                            Stage 3에서 확정한 구역명과 polygon을 그대로 읽습니다. 여기서는 구역을 새로 만들지 않고 선택한 구역 안에 좌석만 배치합니다.
+                            Stage 3에서 확정한 구역 polygon을 원본 도면 위에 억지로 찍지 않고, 작업판에 구역 카드처럼 펼쳐서 배치합니다. 여기서 좌석을 넣으면 실제 예매 구역 크기가 확정됩니다.
                         </div>
 
                         <div class="row">
@@ -35,7 +35,17 @@
                         <input id="sectionSearch" class="stage4-search" placeholder="구역명 검색: A1, D2, VIP" />
                         <div class="section-list stage4-section-list" id="sectionList"></div>
 
-                        <button type="button" class="btn primary" id="goPart2Btn">다음: 좌석 자동 배치</button>
+                        <div class="stage4-rotate-box">
+                            <label for="angleInput">선택 구역 회전</label>
+                            <div class="stage4-rotate-controls">
+                                <button type="button" class="btn" id="rotateLeftBtn">↺ -15°</button>
+                                <input id="angleInput" type="number" min="-180" max="180" step="1" value="0" />
+                                <button type="button" class="btn" id="rotateRightBtn">↻ +15°</button>
+                            </div>
+                            <div class="help-text">각 구역 도형 위쪽 회전점을 드래그해도 됩니다. 좌석 방향이 애매한 정사각형 구역은 여기서 먼저 반듯하게 맞춥니다.</div>
+                        </div>
+
+                        <button type="button" class="btn primary" id="goPart2Btn">다음: 구역별 좌석 추정</button>
                     </div>
                 </div>
             </div>
@@ -46,7 +56,7 @@
                 <span class="seatmap-step__check" data-step="2"></span>
                 <span class="seatmap-step__text">
                     <b>파트 2</b>
-                    <small>행 · 열 · 크기 설정</small>
+                    <small>구역별 좌석 추정</small>
                 </span>
                 <span class="seatmap-step__status" id="part2Status">대기</span>
                 <span class="seatmap-step__arrow">⌄</span>
@@ -55,7 +65,7 @@
             <div class="seatmap-step__body">
                 <div class="seatmap-step__system">
                     <div class="box active">
-                        <h3>선택 구역 좌석 생성</h3>
+                        <h3>선택 구역 좌석 추정 / 실제 크기 다듬기</h3>
                         <div class="stage4-selected-name" id="selectedSectionName">구역을 선택하세요.</div>
 
                         <div class="row three">
@@ -66,10 +76,6 @@
                             <div>
                                 <label for="colsInput">열 수</label>
                                 <input id="colsInput" type="number" min="1" max="120" value="12" />
-                            </div>
-                            <div>
-                                <label for="angleInput">각도</label>
-                                <input id="angleInput" type="number" min="-180" max="180" step="1" value="0" />
                             </div>
                         </div>
 
@@ -99,9 +105,11 @@
                             </div>
                         </div>
 
-                        <button type="button" class="btn dark" id="generateSectionBtn">선택 구역 좌석 생성</button>
+                        <button type="button" class="btn dark" id="generateSectionBtn">선택 구역 좌석 추정</button>
                         <button type="button" class="btn amber" id="inferAllBtn">전체 구역 자동 추정</button>
+                        <button type="button" class="btn" id="tightenBoundsBtn">실제 구역 크기 재정리</button>
                         <button type="button" class="btn red" id="clearSectionBtn">선택 구역 좌석 비우기</button>
+                        <div class="help-text">좌석 묶음 우하단 핸들을 드래그하면 좌석 크기와 실제 버튼 범위가 같이 커지거나 줄어듭니다.</div>
                     </div>
                 </div>
             </div>
@@ -112,7 +120,7 @@
                 <span class="seatmap-step__check" data-step="3"></span>
                 <span class="seatmap-step__text">
                     <b>파트 3</b>
-                    <small>수동 보정 · 저장</small>
+                    <small>최종 형태 검수 · 저장</small>
                 </span>
                 <span class="seatmap-step__status" id="part3Status">대기</span>
                 <span class="seatmap-step__arrow">⌄</span>
@@ -121,9 +129,9 @@
             <div class="seatmap-step__body">
                 <div class="seatmap-step__system">
                     <div class="box active">
-                        <h3>좌석 지우기 / 수동 추가</h3>
+                        <h3>최종 형태 검수 · 좌석 추가/삭제</h3>
                         <div class="help-text">
-                            좌석 클릭 = 선택, Shift + 클릭 = 다중 선택입니다. 수동 추가 모드에서는 선택 구역 polygon 내부를 클릭하면 좌석을 1개 추가합니다.
+                            좌석 클릭 = 선택, Shift + 클릭 = 다중 선택입니다. 여기서 구역별 좌석을 추가/삭제하고 최종 형태를 확정합니다.
                         </div>
 
                         <div class="row">
@@ -145,7 +153,7 @@
                     <div class="box">
                         <h3>검증 / 저장</h3>
                         <div class="stage4-save-summary" id="saveSummary">저장할 좌석 0개</div>
-                        <button type="button" class="btn green" id="saveSeatsBtn">좌석 JSON 저장</button>
+                        <button type="button" class="btn green" id="saveSeatsBtn">좌석 ID / 실제 구역 저장</button>
                         <button type="button" class="btn primary" id="toStage5Btn">Stage 5 예매 버튼 생성으로 이동</button>
                     </div>
                 </div>
@@ -156,7 +164,7 @@
 
 <main class="seatmap-main stage4-main" id="canvasScroll">
     <div class="canvas-wrap stage4-canvas-wrap">
-        <span id="canvasTitle" class="sr-only">좌석 배치 도면</span>
+        <span id="canvasTitle" class="sr-only">구역 펼쳐보기 좌석 배치 작업판</span>
         <span id="canvasSize" class="sr-only">-</span>
         <div class="canvas-box stage4-canvas-box" id="canvasBox">
             <canvas class="base" id="canvas"></canvas>
@@ -169,7 +177,7 @@
     <div class="minimap">
         <h3>기준 도면</h3>
         <img id="miniImg" alt="기준 도면 미니맵" />
-        <div class="help">배경은 seatmap-image.png 또는 cropped-image.png를 사용하고, 위에는 Stage 3 polygon과 좌석만 표시합니다.</div>
+        <div class="help">미니맵은 button-image.png 확인용입니다. 중앙 작업판은 seatmap-sections.json의 polygon을 펼쳐서 표시합니다.</div>
     </div>
 
     <div class="preview-card stage4-info-card">

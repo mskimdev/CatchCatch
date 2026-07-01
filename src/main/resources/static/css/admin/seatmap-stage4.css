@@ -306,3 +306,55 @@
     background: #ede9fe;
     color: #6d28d9;
 }
+
+/* Stage 4 rework: 펼쳐보기 작업판 */
+.seatmap-workspace--stage4 .stage4-main {
+    background-color: #ffffff;
+    background-image: radial-gradient(circle, #dbeafe 1px, transparent 1.1px);
+    background-size: 20px 20px;
+}
+
+.seatmap-workspace--stage4 .stage4-canvas-box {
+    border-color: #cbd5e1;
+    box-shadow: 0 16px 42px rgba(15, 23, 42, 0.12);
+}
+
+.seatmap-workspace--stage4 .stage4-selected-name {
+    background: #fff7ed;
+    color: #9a3412;
+}
+
+.seatmap-workspace--stage4 .stage4-save-summary {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #166534;
+}
+
+.seatmap-workspace--stage4 .stage4-rotate-box {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.seatmap-workspace--stage4 .stage4-rotate-controls {
+    display: grid;
+    grid-template-columns: 1fr 86px 1fr;
+    gap: 6px;
+    align-items: center;
+    margin-top: 6px;
+}
+
+.seatmap-workspace--stage4 .stage4-rotate-controls input {
+    text-align: center;
+    font-weight: 900;
+}
+
+.seatmap-workspace--stage4 .stage4-canvas-box canvas#overlay {
+    cursor: crosshair;
+}
+
+.seatmap-workspace--stage4 .stage4-canvas-box.is-add-mode canvas#overlay {
+    cursor: copy;
+}

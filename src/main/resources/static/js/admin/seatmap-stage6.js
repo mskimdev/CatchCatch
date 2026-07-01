@@ -282,6 +282,7 @@
             || resolveProjectAssetUrl("seatmap-image.png")
             || localStorage.getItem("concert_buttonImage")
             || resolveProjectAssetUrl("button-image.png")
+            || resolveProjectAssetUrl("debug-polygons.png")
             || localStorage.getItem("concert_cleanImage")
             || localStorage.getItem(STORAGE_KEYS.originalImage)
             || resolveProjectAssetUrl("cropped-image.png")

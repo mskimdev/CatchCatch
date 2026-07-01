@@ -51,7 +51,7 @@
                     <div class="box active">
                         <h3>section polygon → booking button</h3>
                         <div class="help-text">
-                            Stage 3 polygon을 그대로 버튼 polygon으로 사용하고, Stage 4 좌석 JSON에서 seatCount와 availableSeatCount를 집계합니다.
+                            Stage 3 polygon을 그대로 버튼 polygon으로 사용하고, Stage 4 좌석 JSON에서 seatCount와 availableSeatCount를 집계합니다. 버튼 색상은 자동으로 연한색 계열로 보정됩니다.
                         </div>
                         <button type="button" class="btn green" id="generateButtonsBtn">booking button 자동 생성</button>
                         <button type="button" class="btn" id="loadSavedButtonsBtn">저장된 booking-buttons.json 불러오기</button>
@@ -95,8 +95,22 @@
 
                     <div class="box">
                         <h3>선택 구역 수정</h3>
-                        <div class="help-text">도면에서 label을 드래그하면 labelPoint가 수정됩니다. polygon은 Stage 3 값을 기준으로 보존합니다.</div>
-                        <div class="row">
+                        <div class="help-text">도면에서 label을 드래그하면 labelPoint가 수정됩니다. 구역명(STANDING, VIP, D2 등)과 글자 크기는 여기서 확정합니다.</div>
+                        <label class="stage5-field stage5-field--full" for="labelInput">
+                            <span>버튼 명칭</span>
+                            <input id="labelInput" type="text" placeholder="예: STANDING / VIP / D2">
+                        </label>
+                        <div class="row stage5-control-row">
+                            <div>
+                                <label for="fontSizeInput">글자 크기</label>
+                                <input id="fontSizeInput" type="number" min="9" max="42" step="1">
+                            </div>
+                            <div>
+                                <label for="textColorInput">글자색</label>
+                                <input id="textColorInput" type="color" value="#1f2937">
+                            </div>
+                        </div>
+                        <div class="row stage5-control-row">
                             <div>
                                 <label for="labelXInput">label X</label>
                                 <input id="labelXInput" type="number" step="1">
@@ -106,14 +120,14 @@
                                 <input id="labelYInput" type="number" step="1">
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row stage5-control-row">
                             <div>
-                                <label for="colorInput">색상</label>
-                                <input id="colorInput" type="color" value="#8b5cf6">
+                                <label for="colorInput">버튼 색상</label>
+                                <input id="colorInput" type="color" value="#dbeafe">
                             </div>
                             <div>
                                 <label for="strokeInput">선 색상</label>
-                                <input id="strokeInput" type="color" value="#8b5cf6">
+                                <input id="strokeInput" type="color" value="#93c5fd">
                             </div>
                         </div>
                         <label class="stage5-check-row">
@@ -124,7 +138,10 @@
                             <input type="checkbox" id="clickableInput" checked>
                             <span>clickable</span>
                         </label>
-                        <button type="button" class="btn" id="applySelectedBtn">선택 구역 값 반영</button>
+                        <div class="stage5-inline-actions">
+                            <button type="button" class="btn" id="autoFontBtn">글자 크기 자동</button>
+                            <button type="button" class="btn" id="applySelectedBtn">선택 구역 값 반영</button>
+                        </div>
                     </div>
 
                     <div class="box stage5-section-list-box">
@@ -149,9 +166,10 @@
             <div class="seatmap-step__body">
                 <div class="seatmap-step__system">
                     <div class="box active">
-                        <h3>booking-buttons.json 저장</h3>
+                        <h3>최종 저장</h3>
+                        <div class="help-text">저장 시 booking-buttons.json, 빨간 테두리 검수용 debug-polygons.png, Stage 6 꾸미기 전 최종 seatmap-image.png를 함께 생성합니다.</div>
                         <div class="stage5-save-summary" id="saveSummary">저장할 버튼 0개</div>
-                        <button type="button" class="btn green" id="saveBookingButtonsBtn">booking-buttons.json 저장</button>
+                        <button type="button" class="btn green" id="saveBookingButtonsBtn">Stage 5 최종 저장</button>
                         <button type="button" class="btn primary" id="toStage6Btn">Stage 6 최종 꾸미기로 이동</button>
                     </div>
                 </div>
@@ -178,11 +196,11 @@
     <div class="minimap">
         <h3>원본 미니맵</h3>
         <img id="miniImg" alt="seatmap-image 미니맵" />
-        <div class="help">seatmap-image.png를 우선 사용하고, 없으면 cropped-image.png를 기준 도면으로 표시합니다.</div>
+        <div class="help">button-image.png를 우선 사용하고, 없으면 cropped-image.png / seatmap-image.png 순서로 표시합니다.</div>
     </div>
 
     <div class="preview-card stage5-preview-card">
-        <h3>최종 예매 미리보기</h3>
+        <h3>찐 저장 미리보기</h3>
         <canvas id="previewCanvas"></canvas>
     </div>
 

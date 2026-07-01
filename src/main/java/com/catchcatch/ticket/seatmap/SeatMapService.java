@@ -37,7 +37,7 @@ public class SeatMapService {
     private static final String DEFAULT_SEATS_JSON = """
             [
               {
-                "id": "1-VIP-A-1-VIP-AVAILABLE"
+                "id": "1-VIP_A-A-1-VIP-AVAILABLE"
               }
             ]
             """;
@@ -266,13 +266,20 @@ public class SeatMapService {
                     writeBytesToStaticAll(thumbnailPath, imageBytes);
                     imageUrl = "/" + seatmapImagePath;
                 } else if ("stage3".equals(page) || "stage4".equals(page) || "stage5".equals(page) || "booking-buttons".equals(page)) {
-                    // Stage 3~5의 이미지 저장은 최종 도면을 덮지 않고 검수용 debug 이미지로만 저장한다.
+                    // Stage 3~5의 imageDataUrl은 검수용 debug 이미지로 저장한다.
+                    // Stage 5의 실제 Stage 6 입력 이미지는 finalImageDataUrl로 별도 저장한다.
                     writeBytesToStaticAll(debugImagePath, imageBytes);
                     imageUrl = "/" + debugImagePath;
                 } else {
                     writeBytesToStaticAll(seatmapImagePath, imageBytes);
                     imageUrl = "/" + seatmapImagePath;
                 }
+            }
+
+            if (req.getFinalImageDataUrl() != null && req.getFinalImageDataUrl().startsWith("data:image")) {
+                byte[] finalImageBytes = decodeBase64Image(req.getFinalImageDataUrl());
+                writeBytesToStaticAll(seatmapImagePath, finalImageBytes);
+                writeBytesToStaticAll(thumbnailPath, finalImageBytes);
             }
 
             // 과거 잘못 생성된 프로젝트 내부 seatmap-seats.json은 저장 시 제거한다.

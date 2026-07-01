@@ -106,7 +106,11 @@ public class SeatMapController {
         model.addAttribute("stage5Url", stageUrl(5, projectId));
         model.addAttribute("sectionJsonUrl", projectPath(projectId, "seatmap-sections.json"));
         model.addAttribute("seatJsonUrl", seatsPath(projectId));
-        model.addAttribute("seatmapImageUrl", projectPath(projectId, "seatmap-image.png"));
+        model.addAttribute("decorationJsonUrl", projectPath(projectId, "seatmap-decorations.json"));
+        model.addAttribute("seatmapImageUrl", projectPath(projectId, "button-image.png"));
+        model.addAttribute("buttonImageUrl", projectPath(projectId, "button-image.png"));
+        model.addAttribute("finalImageUrl", projectPath(projectId, "seatmap-image.png"));
+        model.addAttribute("croppedImageUrl", projectPath(projectId, "cropped-image.png"));
         return "admin/seatmap/stage4";
     }
 
@@ -120,8 +124,8 @@ public class SeatMapController {
                 projectId,
                 "예매 버튼 생성",
                 "CatchCatch 예매 화면에서 클릭할 구역 polygon과 버튼 위치 JSON을 검수합니다.",
-                "저장 위치: 예매 버튼 JSON · 검수 이미지",
-                projectPath(projectId, "booking-buttons.json") + " · " + projectPath(projectId, "debug-polygons.png"),
+                "저장 위치: 예매 버튼 JSON · 검수 이미지 · Stage 6 입력 이미지",
+                projectPath(projectId, "booking-buttons.json") + " · " + projectPath(projectId, "debug-polygons.png") + " · " + projectPath(projectId, "seatmap-image.png"),
                 stageUrl(4, projectId)
         );
         model.addAttribute("seatmapStep", "5");
@@ -129,9 +133,13 @@ public class SeatMapController {
         model.addAttribute("tempSaveButtonId", "saveBookingButtonsBtn");
         model.addAttribute("stage6Url", stageUrl(6, projectId));
         model.addAttribute("stage4Url", stageUrl(4, projectId));
-        model.addAttribute("seatmapImageUrl", projectPath(projectId, "seatmap-image.png"));
+        model.addAttribute("seatmapImageUrl", projectPath(projectId, "button-image.png"));
+        model.addAttribute("buttonImageUrl", projectPath(projectId, "button-image.png"));
+        model.addAttribute("finalImageUrl", projectPath(projectId, "seatmap-image.png"));
+        model.addAttribute("croppedImageUrl", projectPath(projectId, "cropped-image.png"));
         model.addAttribute("sectionJsonUrl", projectPath(projectId, "seatmap-sections.json"));
         model.addAttribute("seatJsonUrl", seatsPath(projectId));
+        model.addAttribute("decorationJsonUrl", projectPath(projectId, "seatmap-decorations.json"));
         model.addAttribute("bookingButtonsJsonUrl", projectPath(projectId, "booking-buttons.json"));
         model.addAttribute("debugImageUrl", projectPath(projectId, "debug-polygons.png"));
         return "admin/seatmap/stage5";
@@ -155,6 +163,14 @@ public class SeatMapController {
         model.addAttribute("showTempSave", true);
         model.addAttribute("tempSaveButtonId", "saveAllJsonTop");
         model.addAttribute("seatmapImageUrl", projectPath(projectId, "seatmap-image.png"));
+        model.addAttribute("finalImageUrl", projectPath(projectId, "seatmap-image.png"));
+        model.addAttribute("thumbnailImageUrl", projectPath(projectId, "thumbnail.png"));
+        model.addAttribute("decorationJsonUrl", projectPath(projectId, "seatmap-decorations.json"));
+        model.addAttribute("buttonImageUrl", projectPath(projectId, "button-image.png"));
+        model.addAttribute("sectionJsonUrl", projectPath(projectId, "seatmap-sections.json"));
+        model.addAttribute("seatJsonUrl", seatsPath(projectId));
+        model.addAttribute("bookingButtonsJsonUrl", projectPath(projectId, "booking-buttons.json"));
+        model.addAttribute("debugImageUrl", projectPath(projectId, "debug-polygons.png"));
         return "admin/seatmap/stage6";
     }
 

@@ -17,13 +17,20 @@
 <div class="seatmap-workspace seatmap-workspace--stage4"
      id="stage4App"
      data-project-id="{{projectId}}"
+     data-project-path="{{projectPath}}"
      data-stage3-url="{{stage3Url}}"
      data-stage5-url="{{stage5Url}}"
      data-prev-stage-url="{{stage3Url}}"
      data-next-stage-url="{{stage5Url}}"
      data-seatmap-image-url="{{seatmapImageUrl}}"
-     data-sections-url="{{projectPath}}/seatmap-sections.json"
-     data-seats-url="/temp/seatmap/seats/{{projectId}}-seatmap-seats.json">
+     data-button-image-url="{{buttonImageUrl}}"
+     data-section-json-url="{{sectionJsonUrl}}"
+     data-sections-url="{{sectionJsonUrl}}"
+     data-seats-url="{{seatJsonUrl}}"
+     data-decorations-url="{{decorationJsonUrl}}"
+     data-final-image-url="{{finalImageUrl}}"
+     data-cropped-image-url="{{croppedImageUrl}}"
+     data-save-url="/admin/seatmap/temp-save">
 
     {{> admin/seatmap/workspace/workspace-stage4}}
 

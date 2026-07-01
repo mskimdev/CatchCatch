@@ -12,12 +12,25 @@
         bookingButtons: "seatmap_stage5_booking_buttons",
         bookingButtonsCompat: "concert_booking_buttons",
         bookingButtonsCompat2: "concert_stage5_booking_buttons",
-        bookingButtonsUrl: "seatmap_booking_buttons_url"
+        bookingButtonsUrl: "seatmap_booking_buttons_url",
+        bookingButtonsJsonUrl: "seatmap_booking_buttons_json_url",
+        finalImageUrl: "seatmap_final_image_url",
+        generatedOverviewImage: "concert_generated_overviewImage",
+        decorations: "seatmap_stage4_decorations"
     };
 
     const SAVE_URL = "/admin/seatmap/temp-save";
-    const DEFAULT_COLOR = "#8b5cf6";
+    const DEFAULT_COLOR = "#dbeafe";
+    const DEFAULT_TEXT_COLOR = "#1f2937";
+    const DEBUG_STROKE_COLOR = "#ef4444";
+    const FINAL_FILL_ALPHA = 0.76;
+    const EDIT_FILL_ALPHA = 0.32;
     const AVAILABLE = "AVAILABLE";
+    const PASTEL_PALETTE = [
+        "#dbeafe", "#dcfce7", "#fef3c7", "#fee2e2",
+        "#ede9fe", "#cffafe", "#fce7f3", "#e0f2fe",
+        "#f3e8ff", "#ecfccb", "#ffedd5", "#e2e8f0"
+    ];
 
     const dom = {};
     const state = {
@@ -25,14 +38,19 @@
         stage4Url: "",
         stage6Url: "",
         seatmapImageUrl: "",
+        buttonImageUrl: "",
         croppedImageUrl: "",
+        finalImageUrl: "",
+        debugImageUrl: "",
         sectionsUrl: "",
         seatsUrl: "",
         bookingButtonsUrl: "",
+        decorationsUrl: "",
         saveUrl: SAVE_URL,
 
         sections: [],
         seats: [],
+        seatLayouts: [],
         buttons: [],
         warnings: [],
         selectedId: "",
@@ -73,7 +91,8 @@
         window.SeatMapStage5 = {
             save: saveBookingButtonsToServer,
             getButtons: () => createBookingButtonsJson(),
-            exportDebugImage: exportDebugImageDataUrl
+            exportDebugImage: exportDebugImageDataUrl,
+            exportFinalImage: exportFinalImageDataUrl
         };
     }
 
@@ -83,8 +102,8 @@
             "partBtn1", "partBtn2", "partBtn3", "partBtn4", "part1Status", "part2Status", "part3Status", "part4Status",
             "sectionCountText", "seatCountText", "matchFailCountText", "missingNameCountText", "warningList",
             "reloadDataBtn", "generateButtonsBtn", "loadSavedButtonsBtn", "showSectionPolygon", "showButtonPolygon",
-            "showSeats", "showLabels", "labelXInput", "labelYInput", "colorInput", "strokeInput", "visibleInput",
-            "clickableInput", "applySelectedBtn", "buttonList", "saveSummary", "saveBookingButtonsBtn", "toStage6Btn",
+            "showSeats", "showLabels", "labelInput", "fontSizeInput", "textColorInput", "labelXInput", "labelYInput", "colorInput", "strokeInput", "visibleInput",
+            "clickableInput", "autoFontBtn", "applySelectedBtn", "buttonList", "saveSummary", "saveBookingButtonsBtn", "toStage6Btn",
             "canvasScroll", "canvasBox", "stage5BaseCanvas", "stage5OverlayCanvas", "canvasSize", "canvasTitle", "stage5Tooltip",
             "miniImg", "previewCanvas", "infoSectionId", "infoSectionName", "infoFloorGrade", "infoPrice", "infoSeatCount",
             "infoAvailableCount", "infoLabelPoint", "infoFlags", "jsonPreview", "zoomIn", "zoomOut", "zoomReset", "zoomFit",
@@ -110,11 +129,15 @@
         );
         state.stage4Url = root?.dataset.stage4Url || `/admin/seatmap/stage/4?projectId=${encodeURIComponent(state.projectId)}`;
         state.stage6Url = root?.dataset.stage6Url || `/admin/seatmap/stage/6?projectId=${encodeURIComponent(state.projectId)}`;
-        state.seatmapImageUrl = root?.dataset.seatmapImageUrl || projectFileUrl("seatmap-image.png");
+        state.seatmapImageUrl = root?.dataset.seatmapImageUrl || projectFileUrl("button-image.png");
+        state.buttonImageUrl = root?.dataset.buttonImageUrl || projectFileUrl("button-image.png");
         state.croppedImageUrl = root?.dataset.croppedImageUrl || projectFileUrl("cropped-image.png");
+        state.finalImageUrl = root?.dataset.finalImageUrl || projectFileUrl("seatmap-image.png");
+        state.debugImageUrl = root?.dataset.debugImageUrl || projectFileUrl("debug-polygons.png");
         state.sectionsUrl = root?.dataset.sectionsUrl || projectFileUrl("seatmap-sections.json");
         state.seatsUrl = root?.dataset.seatsUrl || `/temp/seatmap/seats/${encodeURIComponent(state.projectId)}-seatmap-seats.json`;
         state.bookingButtonsUrl = root?.dataset.bookingButtonsUrl || projectFileUrl("booking-buttons.json");
+        state.decorationsUrl = root?.dataset.decorationsUrl || projectFileUrl("seatmap-decorations.json");
         state.saveUrl = root?.dataset.saveUrl || SAVE_URL;
 
         localStorage.setItem(STORAGE.projectId, state.projectId);
@@ -149,9 +172,18 @@
             });
         });
 
-        [dom.labelXInput, dom.labelYInput, dom.colorInput, dom.strokeInput, dom.visibleInput, dom.clickableInput].forEach((input) => {
+        [dom.labelInput, dom.fontSizeInput, dom.textColorInput, dom.labelXInput, dom.labelYInput, dom.colorInput, dom.strokeInput, dom.visibleInput, dom.clickableInput].forEach((input) => {
             bind(input, "change", applySelectedControls);
             bind(input, "input", applySelectedControls);
+        });
+
+        bind(dom.autoFontBtn, "click", () => {
+            const button = getSelectedButton();
+            if (!button) return;
+            button.fontSize = estimateFitFontSize(button.label || button.sectionName, button.polygon);
+            persistButtonsLocal();
+            syncAll();
+            toast("선택 구역 글자 크기 자동 보정 완료");
         });
 
         bind(dom.stage5OverlayCanvas, "pointerdown", handlePointerDown);
@@ -185,10 +217,9 @@
 
     async function loadAllData(options = {}) {
         state.warnings = [];
-        await Promise.all([
-            loadSections(options),
-            loadSeats(options)
-        ]);
+        await loadSections(options);
+        await loadDecorations(options);
+        await loadSeats(options);
         validateMatches();
         setPartDone(1, state.sections.length > 0 && state.seats.length > 0);
     }
@@ -213,6 +244,26 @@
         } else {
             state.sections = [];
             state.warnings.push("seatmap-sections.json을 찾지 못했습니다. Stage 3 저장을 먼저 확인하세요.");
+        }
+    }
+
+    async function loadDecorations(options = {}) {
+        state.seatLayouts = [];
+        try {
+            const json = await fetchJson(state.decorationsUrl);
+            const source = normalizeArray(json.seatLayouts || json.stage4SeatLayouts || []);
+            state.seatLayouts = source.map(normalizeSeatLayout).filter((layout) => layout.sectionId || layout.sectionName);
+            persistJson(STORAGE.decorations, json);
+            return;
+        } catch (error) {
+            console.warn("[SeatTrace Stage5] seatmap-decorations.json 로드 실패", error);
+        }
+
+        const local = readJson(STORAGE.decorations, null);
+        const source = normalizeArray(local?.seatLayouts || local?.stage4SeatLayouts || []);
+        if (source.length) {
+            state.seatLayouts = source.map(normalizeSeatLayout).filter((layout) => layout.sectionId || layout.sectionName);
+            state.warnings.push("seatmap-decorations.json 서버 파일을 읽지 못해 localStorage Stage 4 layout을 사용했습니다.");
         }
     }
 
@@ -243,10 +294,13 @@
 
     async function loadBaseImage() {
         const candidates = unique([
+            state.buttonImageUrl,
             state.seatmapImageUrl,
-            projectFileUrl("seatmap-image.png"),
+            projectFileUrl("button-image.png"),
             state.croppedImageUrl,
-            projectFileUrl("cropped-image.png")
+            projectFileUrl("cropped-image.png"),
+            state.finalImageUrl,
+            projectFileUrl("seatmap-image.png")
         ]).filter(Boolean);
 
         for (const url of candidates) {
@@ -268,7 +322,7 @@
         state.baseImageLoaded = false;
         setupCanvases(1000, 700);
         drawBase();
-        state.warnings.push("seatmap-image.png와 cropped-image.png를 읽지 못했습니다. 배경 없이 polygon만 표시합니다.");
+        state.warnings.push("button-image.png와 cropped-image.png를 읽지 못했습니다. 배경 없이 polygon만 표시합니다.");
     }
 
     async function tryLoadSavedButtons(showMessage) {
@@ -313,7 +367,7 @@
             sectionName,
             name: sectionName,
             section: sectionName,
-            label: firstText(raw.label, sectionName),
+            label,
             groupKey: raw.groupKey ?? raw.group ?? raw.groupName ?? "",
             groupIndex: raw.groupIndex ?? raw.index ?? index + 1,
             floor: raw.floor ?? "",
@@ -329,22 +383,29 @@
     }
 
     function normalizeSeat(raw) {
-        const sectionId = firstText(raw.sectionId, raw.section_id, raw.sectionKey);
-        const sectionName = firstText(raw.sectionName, raw.section, raw.name, raw.label);
+        const parsed = parseSeatId(raw.id || raw.seatId || raw.seatNumber || raw.name || "");
+        const sectionName = firstText(raw.sectionName, raw.section, raw.name, raw.label, parsed.section);
+        const matchedSection = findSectionByAny(raw.sectionId || raw.section_id || raw.sectionKey, sectionName);
+        const sectionId = firstText(raw.sectionId, raw.section_id, raw.sectionKey, matchedSection?.sectionId);
+        const finalSectionName = firstText(sectionName, matchedSection?.sectionName);
+        const floor = firstText(raw.floor, parsed.floor, matchedSection?.floor);
+        const grade = firstText(raw.grade, raw.gradeName, parsed.grade, matchedSection?.grade);
+        const status = String(firstText(raw.status, parsed.status, AVAILABLE)).toUpperCase();
+
         return {
             ...raw,
-            id: raw.id || raw.seatId || "",
+            id: buildSeatId(floor || "1", finalSectionName, firstText(raw.row, raw.rowName, raw.seatRow, parsed.row, "A"), firstText(raw.col, raw.no, raw.seatNo, raw.seatCol, parsed.col, "1"), grade || "일반석", status),
             sectionId,
-            sectionName,
-            section: firstText(raw.section, sectionName),
-            groupKey: raw.groupKey ?? "",
-            groupIndex: raw.groupIndex ?? "",
-            floor: raw.floor ?? "",
-            grade: raw.grade ?? raw.gradeName ?? "",
-            price: numberOrBlank(raw.price ?? raw.seatPrice),
-            row: raw.row ?? raw.rowName ?? raw.seatRow ?? "",
-            col: raw.col ?? raw.no ?? raw.seatNo ?? raw.seatCol ?? "",
-            status: String(raw.status || AVAILABLE).toUpperCase(),
+            sectionName: finalSectionName,
+            section: firstText(raw.section, finalSectionName),
+            groupKey: raw.groupKey ?? matchedSection?.groupKey ?? "",
+            groupIndex: raw.groupIndex ?? matchedSection?.groupIndex ?? "",
+            floor,
+            grade,
+            price: numberOrBlank(raw.price ?? raw.seatPrice ?? matchedSection?.price),
+            row: firstText(raw.row, raw.rowName, raw.seatRow, parsed.row),
+            col: numberOrText(raw.col ?? raw.no ?? raw.seatNo ?? raw.seatCol ?? parsed.col),
+            status,
             x: Number(raw.x || 0),
             y: Number(raw.y || 0),
             size: Number(raw.size || raw.w || raw.width || 6),
@@ -352,14 +413,38 @@
         };
     }
 
+    function normalizeSeatLayout(raw) {
+        const sectionName = firstText(raw.sectionName, raw.section, raw.name, raw.label);
+        const matchedSection = findSectionByAny(raw.sectionId, sectionName);
+        const buttonPolygon = normalizePoints(raw.buttonPolygon || raw.bookingPolygon || []);
+        const polygon = normalizePoints(raw.polygon || []);
+        const actualBounds = normalizeBbox(raw.actualBounds || raw.seatBounds || raw.bounds);
+        return {
+            ...raw,
+            sectionId: firstText(raw.sectionId, matchedSection?.sectionId),
+            sectionName: firstText(sectionName, matchedSection?.sectionName),
+            floor: firstText(raw.floor, matchedSection?.floor),
+            grade: firstText(raw.grade, matchedSection?.grade),
+            price: numberOrBlank(raw.price !== undefined ? raw.price : matchedSection?.price),
+            seatCount: Number(raw.seatCount || 0),
+            polygon,
+            buttonPolygon: buttonPolygon.length ? buttonPolygon : (actualBounds ? rectToPolygon(actualBounds) : polygon),
+            labelPoint: normalizePoint(raw.labelPoint)
+        };
+    }
+
     function normalizeBookingButton(raw, section, index = 0) {
-        const polygon = normalizePoints(raw.polygon || raw.points || section?.polygon || []);
         const sectionId = firstText(raw.sectionId, section?.sectionId);
         const sectionName = firstText(raw.sectionName, raw.name, raw.section, raw.label, section?.sectionName);
-        const sectionSeats = state.seats.filter((seat) => seat.sectionId === sectionId);
-        const labelPoint = normalizePoint(raw.labelPoint) || normalizePoint({ x: raw.x, y: raw.y }) || getSafeLabelPoint(polygon);
-        const color = normalizeColor(raw.color || section?.color || section?.renderColor || colorByIndex(index));
-        const strokeColor = normalizeColor(raw.strokeColor || color);
+        const layout = findLayoutBySection(sectionId, sectionName);
+        const polygon = normalizePoints(raw.polygon || raw.points || layout?.buttonPolygon || layout?.polygon || section?.polygon || []);
+        const sectionSeats = state.seats.filter((seat) => sameSeatSection(seat, sectionId, sectionName));
+        const labelPoint = normalizePoint(raw.labelPoint) || normalizePoint({ x: raw.x, y: raw.y }) || layout?.labelPoint || getSafeLabelPoint(polygon);
+        const color = toPastelColor(raw.color || section?.color || section?.renderColor || colorByIndex(index));
+        const strokeColor = normalizeColor(raw.strokeColor || makeReadableStroke(color));
+        const label = firstText(raw.label, raw.buttonName, raw.sectionLabel, sectionName);
+        const fontSize = clamp(Number(raw.fontSize || 0) || estimateFitFontSize(label, polygon), 9, 34);
+        const textColor = normalizeColor(raw.textColor || autoTextColor(color));
 
         return {
             id: firstText(raw.id, raw.buttonId, `button-${sectionId || index + 1}`),
@@ -367,12 +452,12 @@
             sectionName,
             section: firstText(raw.section, sectionName),
             name: firstText(raw.name, sectionName),
-            label: firstText(raw.label, sectionName),
+            label,
             groupKey: raw.groupKey ?? section?.groupKey ?? "",
             groupIndex: raw.groupIndex ?? section?.groupIndex ?? index + 1,
-            floor: raw.floor ?? section?.floor ?? "",
-            grade: raw.grade ?? section?.grade ?? "",
-            price: numberOrBlank(raw.price ?? section?.price),
+            floor: raw.floor ?? layout?.floor ?? section?.floor ?? "",
+            grade: raw.grade ?? layout?.grade ?? section?.grade ?? "",
+            price: numberOrBlank(raw.price ?? layout?.price ?? section?.price),
             polygon,
             labelPoint,
             x: round(labelPoint.x),
@@ -382,9 +467,74 @@
             color,
             hoverColor: raw.hoverColor || toHoverColor(color),
             strokeColor,
+            textColor,
+            fontSize,
+            fillAlpha: Number(raw.fillAlpha || FINAL_FILL_ALPHA),
             visible: raw.visible !== false,
             clickable: raw.clickable !== false
         };
+    }
+
+    function findSectionByAny(sectionId, sectionName) {
+        const id = String(sectionId || "");
+        const name = String(sectionName || "");
+        return state.sections.find((section) => section.sectionId === id)
+            || state.sections.find((section) => section.sectionName === name || section.section === name || section.name === name)
+            || null;
+    }
+
+    function findLayoutBySection(sectionId, sectionName) {
+        const id = String(sectionId || "");
+        const name = String(sectionName || "");
+        return state.seatLayouts.find((layout) => layout.sectionId === id)
+            || state.seatLayouts.find((layout) => layout.sectionName === name || layout.section === name)
+            || null;
+    }
+
+    function sameSeatSection(seat, sectionId, sectionName) {
+        return (seat.sectionId && sectionId && String(seat.sectionId) === String(sectionId))
+            || normalizeSectionName(seat.sectionName || seat.section) === normalizeSectionName(sectionName);
+    }
+
+    function parseSeatId(id) {
+        const parts = String(id || "").split("-");
+        if (parts.length < 6) return {};
+        return {
+            floor: parts[0],
+            section: parts[1],
+            row: parts[2],
+            col: parts[3],
+            grade: parts.slice(4, -1).join("-") || parts[4],
+            status: parts[parts.length - 1]
+        };
+    }
+
+    function buildSeatId(floor, section, row, col, grade, status) {
+        return [floor, section, row, col, grade, status].map(cleanSeatPart).join("-");
+    }
+
+    function cleanSeatPart(value) {
+        return String(value ?? "").trim().replace(/\s+/g, "_").replace(/-+/g, "_") || "EMPTY";
+    }
+
+    function numberOrText(value) {
+        const number = Number(value);
+        return Number.isFinite(number) && String(value).trim() !== "" ? number : firstText(value);
+    }
+
+    function normalizeSectionName(value) {
+        return String(value || "").trim().replace(/\s+/g, "_");
+    }
+
+    function rectToPolygon(rect) {
+        const box = normalizeBbox(rect);
+        if (!box) return [];
+        return [
+            { x: box.x, y: box.y },
+            { x: box.x + box.w, y: box.y },
+            { x: box.x + box.w, y: box.y + box.h },
+            { x: box.x, y: box.y + box.h }
+        ];
     }
 
     function validateMatches() {
@@ -413,25 +563,29 @@
 
     function generateButtons(options = {}) {
         const previousBySection = new Map(state.buttons.map((button) => [button.sectionId, button]));
-        const seatsBySection = groupBy(state.seats, (seat) => seat.sectionId || "");
         const generated = [];
         const blocked = [];
 
         state.sections.forEach((section, index) => {
-            if (!section.sectionId || !section.sectionName || section.polygon.length < 3) {
+            const layout = findLayoutBySection(section.sectionId, section.sectionName);
+            const sourcePolygon = normalizePoints(layout?.buttonPolygon || layout?.polygon || section.polygon || []);
+            if (!section.sectionId || !section.sectionName || sourcePolygon.length < 3) {
                 blocked.push(section.sectionId || section.sectionName || `index-${index + 1}`);
                 return;
             }
 
-            const sectionSeats = seatsBySection[section.sectionId] || [];
+            const sectionSeats = state.seats.filter((seat) => sameSeatSection(seat, section.sectionId, section.sectionName));
             const firstSeat = sectionSeats[0] || {};
             const previous = previousBySection.get(section.sectionId);
-            const color = normalizeColor(previous?.color || section.color || section.renderColor || colorByIndex(index));
-            const strokeColor = normalizeColor(previous?.strokeColor || color);
-            const labelPoint = previous?.labelPoint ? copyPoint(previous.labelPoint) : getSafeLabelPoint(section.polygon);
-            const floor = firstText(section.floor, firstSeat.floor);
-            const grade = firstText(section.grade, firstSeat.grade);
-            const price = numberOrBlank(section.price !== "" ? section.price : firstSeat.price);
+            const color = toPastelColor(previous?.color || section.color || section.renderColor || colorByIndex(index));
+            const strokeColor = normalizeColor(previous?.strokeColor || makeReadableStroke(color));
+            const labelPoint = previous?.labelPoint ? copyPoint(previous.labelPoint) : (layout?.labelPoint || getSafeLabelPoint(sourcePolygon));
+            const floor = firstText(section.floor, layout?.floor, firstSeat.floor);
+            const grade = firstText(section.grade, layout?.grade, firstSeat.grade);
+            const price = numberOrBlank(section.price !== "" ? section.price : (layout?.price !== "" ? layout?.price : firstSeat.price));
+            const label = firstText(previous?.label, section.label, section.sectionName);
+            const fontSize = clamp(Number(previous?.fontSize || 0) || estimateFitFontSize(label, sourcePolygon), 9, 34);
+            const textColor = normalizeColor(previous?.textColor || autoTextColor(color));
 
             generated.push({
                 id: previous?.id || `button-${section.sectionId}`,
@@ -439,13 +593,13 @@
                 sectionName: section.sectionName,
                 section: section.sectionName,
                 name: section.sectionName,
-                label: section.sectionName,
+                label,
                 groupKey: section.groupKey,
                 groupIndex: section.groupIndex,
                 floor,
                 grade,
                 price,
-                polygon: section.polygon.map(copyPoint),
+                polygon: sourcePolygon.map(copyPoint),
                 labelPoint,
                 x: round(labelPoint.x),
                 y: round(labelPoint.y),
@@ -454,6 +608,9 @@
                 color,
                 hoverColor: toHoverColor(color),
                 strokeColor,
+                textColor,
+                fontSize,
+                fillAlpha: Number(previous?.fillAlpha || FINAL_FILL_ALPHA),
                 visible: previous?.visible !== false,
                 clickable: previous?.clickable !== false
             });
@@ -539,6 +696,9 @@
             setText(dom.infoAvailableCount, "-");
             setText(dom.infoLabelPoint, "-");
             setText(dom.infoFlags, "-");
+            setInputValue(dom.labelInput, "");
+            setInputValue(dom.fontSizeInput, "");
+            setInputValue(dom.textColorInput, DEFAULT_TEXT_COLOR);
             setInputValue(dom.labelXInput, "");
             setInputValue(dom.labelYInput, "");
             return;
@@ -553,10 +713,13 @@
         setText(dom.infoLabelPoint, `${round(button.labelPoint.x)}, ${round(button.labelPoint.y)}`);
         setText(dom.infoFlags, `${button.visible ? "visible" : "hidden"} / ${button.clickable ? "clickable" : "disabled"}`);
 
+        setInputValue(dom.labelInput, button.label || button.sectionName);
+        setInputValue(dom.fontSizeInput, Math.round(button.fontSize || estimateFitFontSize(button.label || button.sectionName, button.polygon)));
+        setInputValue(dom.textColorInput, colorToHex(button.textColor || autoTextColor(button.color)));
         setInputValue(dom.labelXInput, round(button.labelPoint.x));
         setInputValue(dom.labelYInput, round(button.labelPoint.y));
         setInputValue(dom.colorInput, colorToHex(button.color));
-        setInputValue(dom.strokeInput, colorToHex(button.strokeColor || button.color));
+        setInputValue(dom.strokeInput, colorToHex(button.strokeColor || makeReadableStroke(button.color)));
         if (dom.visibleInput) dom.visibleInput.checked = button.visible !== false;
         if (dom.clickableInput) dom.clickableInput.checked = button.clickable !== false;
     }
@@ -607,6 +770,20 @@
         const button = getSelectedButton();
         if (!button) return;
 
+        const labelText = String(dom.labelInput?.value || "").trim();
+        if (labelText) {
+            button.label = labelText;
+            button.name = labelText;
+        }
+
+        const fontSize = Number(dom.fontSizeInput?.value);
+        if (Number.isFinite(fontSize) && fontSize > 0) {
+            button.fontSize = clamp(fontSize, 9, 42);
+        }
+        if (dom.textColorInput?.value) {
+            button.textColor = normalizeColor(dom.textColorInput.value);
+        }
+
         const x = Number(dom.labelXInput?.value);
         const y = Number(dom.labelYInput?.value);
         if (Number.isFinite(x)) button.labelPoint.x = x;
@@ -615,10 +792,11 @@
         button.y = round(button.labelPoint.y);
 
         if (dom.colorInput?.value) {
-            button.color = dom.colorInput.value;
+            button.color = toPastelColor(dom.colorInput.value);
             button.hoverColor = toHoverColor(button.color);
+            if (!dom.strokeInput?.value) button.strokeColor = makeReadableStroke(button.color);
         }
-        if (dom.strokeInput?.value) button.strokeColor = dom.strokeInput.value;
+        if (dom.strokeInput?.value) button.strokeColor = normalizeColor(dom.strokeInput.value);
         if (dom.visibleInput) button.visible = dom.visibleInput.checked;
         if (dom.clickableInput) button.clickable = dom.clickableInput.checked;
         persistButtonsLocal();
@@ -749,9 +927,12 @@
             const hovered = button.id === state.hoverId;
             ctx.beginPath();
             pathPolygon(ctx, button.polygon);
-            ctx.fillStyle = selected || hovered ? (button.hoverColor || toHoverColor(button.color)) : hexToRgba(button.color, 0.12);
-            ctx.strokeStyle = selected ? "#ef4444" : (button.strokeColor || button.color || DEFAULT_COLOR);
-            ctx.lineWidth = selected ? 4 : 2;
+            const finalMode = options.renderMode === "final";
+            const debugMode = options.renderMode === "debug";
+            const fillAlpha = finalMode ? Number(button.fillAlpha || FINAL_FILL_ALPHA) : EDIT_FILL_ALPHA;
+            ctx.fillStyle = debugMode ? "rgba(239, 68, 68, 0.08)" : (selected || hovered ? (button.hoverColor || toHoverColor(button.color)) : hexToRgba(button.color, fillAlpha));
+            ctx.strokeStyle = debugMode ? DEBUG_STROKE_COLOR : (selected ? DEBUG_STROKE_COLOR : (button.strokeColor || makeReadableStroke(button.color) || DEFAULT_COLOR));
+            ctx.lineWidth = debugMode ? 4 : (selected ? 4 : 2);
             ctx.setLineDash(button.clickable === false ? [5, 4] : []);
             ctx.fill();
             ctx.stroke();
@@ -766,29 +947,35 @@
         ctx.restore();
     }
 
-    function drawLabels(ctx) {
+    function drawLabels(ctx, options = {}) {
         ctx.save();
         state.buttons.forEach((button) => {
             if (button.visible === false || !button.labelPoint) return;
             const selected = button.id === state.selectedId;
             const x = Number(button.labelPoint.x || 0);
             const y = Number(button.labelPoint.y || 0);
-            ctx.beginPath();
-            ctx.arc(x, y, selected ? 8 : 6, 0, Math.PI * 2);
-            ctx.fillStyle = selected ? "#ef4444" : "#111827";
-            ctx.fill();
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = "#ffffff";
-            ctx.stroke();
+            const marker = options.marker !== false;
+            const text = button.label || button.sectionName;
+            const fontSize = clamp(Number(button.fontSize || estimateFitFontSize(text, button.polygon)), 9, 42);
 
-            ctx.font = `900 ${selected ? 18 : 16}px Arial, sans-serif`;
+            if (marker) {
+                ctx.beginPath();
+                ctx.arc(x, y, selected ? 8 : 6, 0, Math.PI * 2);
+                ctx.fillStyle = selected ? DEBUG_STROKE_COLOR : "#111827";
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#ffffff";
+                ctx.stroke();
+            }
+
+            ctx.font = `900 ${fontSize}px Pretendard, Arial, sans-serif`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.lineWidth = 5;
-            ctx.strokeStyle = "rgba(255,255,255,0.9)";
-            ctx.strokeText(button.label || button.sectionName, x, y - 18);
-            ctx.fillStyle = selected ? "#ef4444" : "#0f172a";
-            ctx.fillText(button.label || button.sectionName, x, y - 18);
+            ctx.lineWidth = Math.max(3, Math.round(fontSize * 0.22));
+            ctx.strokeStyle = "rgba(255,255,255,0.88)";
+            ctx.strokeText(text, x, marker ? y - Math.max(16, fontSize * 1.1) : y);
+            ctx.fillStyle = selected && marker ? DEBUG_STROKE_COLOR : (button.textColor || autoTextColor(button.color));
+            ctx.fillText(text, x, marker ? y - Math.max(16, fontSize * 1.1) : y);
         });
         ctx.restore();
     }
@@ -807,8 +994,8 @@
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, state.width, state.height);
         if (state.image) ctx.drawImage(state.image, 0, 0, state.width, state.height);
-        drawButtons(ctx, { forceButtons: true });
-        drawLabels(ctx);
+        drawButtons(ctx, { forceButtons: true, renderMode: "final" });
+        drawLabels(ctx, { marker: false });
         ctx.restore();
     }
 
@@ -936,6 +1123,7 @@
                 folderName: state.projectId,
                 bookingButtonJsonText: JSON.stringify(finalButtons, null, 2),
                 imageDataUrl: exportDebugImageDataUrl(),
+                finalImageDataUrl: exportFinalImageDataUrl(),
                 sectionCount: state.sections.length,
                 seatCount: state.seats.length,
                 bookingButtonCount: finalButtons.length,
@@ -955,7 +1143,12 @@
             }
 
             const result = await response.json();
-            localStorage.setItem(STORAGE.bookingButtonsUrl, result.bookingButtonsJsonUrl || state.bookingButtonsUrl);
+            const bookingUrl = result.bookingButtonsJsonUrl || state.bookingButtonsUrl;
+            const finalUrl = result.folderUrl ? `${result.folderUrl}/seatmap-image.png` : state.finalImageUrl;
+            localStorage.setItem(STORAGE.bookingButtonsUrl, bookingUrl);
+            localStorage.setItem(STORAGE.bookingButtonsJsonUrl, bookingUrl);
+            localStorage.setItem(STORAGE.finalImageUrl, finalUrl);
+            localStorage.setItem(STORAGE.generatedOverviewImage, finalUrl);
             persistButtonsLocal();
             setPartDone(4, true);
             setPart(4, false);
@@ -990,7 +1183,7 @@
             sectionId: button.sectionId,
             sectionName: button.sectionName,
             section: button.sectionName,
-            name: button.sectionName,
+            name: button.label || button.sectionName,
             label: button.label || button.sectionName,
             groupKey: button.groupKey,
             groupIndex: button.groupIndex,
@@ -1005,7 +1198,10 @@
             availableSeatCount: Number(button.availableSeatCount || 0),
             color: button.color,
             hoverColor: button.hoverColor || toHoverColor(button.color),
-            strokeColor: button.strokeColor || button.color,
+            strokeColor: button.strokeColor || makeReadableStroke(button.color),
+            textColor: button.textColor || autoTextColor(button.color),
+            fontSize: Math.round(Number(button.fontSize || estimateFitFontSize(button.label || button.sectionName, button.polygon))),
+            fillAlpha: Number(button.fillAlpha || FINAL_FILL_ALPHA),
             visible: button.visible !== false,
             clickable: button.clickable !== false
         }));
@@ -1020,13 +1216,29 @@
             outCtx.fillStyle = "#ffffff";
             outCtx.fillRect(0, 0, state.width, state.height);
             if (state.image) outCtx.drawImage(state.image, 0, 0, state.width, state.height);
-            drawSections(outCtx);
-            drawSeats(outCtx);
-            drawButtons(outCtx, { forceButtons: true });
-            drawLabels(outCtx);
+            drawButtons(outCtx, { forceButtons: true, renderMode: "debug" });
+            drawLabels(outCtx, { marker: true });
             return out.toDataURL("image/png");
         } catch (error) {
             console.warn("[SeatTrace Stage5] debug image export failed", error);
+            return "";
+        }
+    }
+
+    function exportFinalImageDataUrl() {
+        try {
+            const out = document.createElement("canvas");
+            const outCtx = out.getContext("2d");
+            out.width = state.width;
+            out.height = state.height;
+            outCtx.fillStyle = "#ffffff";
+            outCtx.fillRect(0, 0, state.width, state.height);
+            if (state.image) outCtx.drawImage(state.image, 0, 0, state.width, state.height);
+            drawButtons(outCtx, { forceButtons: true, renderMode: "final" });
+            drawLabels(outCtx, { marker: false });
+            return out.toDataURL("image/png");
+        } catch (error) {
+            console.warn("[SeatTrace Stage5] final image export failed", error);
             return "";
         }
     }
@@ -1217,6 +1429,11 @@
         if (value && typeof value === "object") {
             if (Array.isArray(value.data)) return value.data;
             if (Array.isArray(value.items)) return value.items;
+            if (Array.isArray(value.areas)) return value.areas;
+            if (Array.isArray(value.buttons)) return value.buttons;
+            if (Array.isArray(value.seats)) return value.seats;
+            if (Array.isArray(value.seatLayouts)) return value.seatLayouts;
+            if (Array.isArray(value.stage4SeatLayouts)) return value.stage4SeatLayouts;
         }
         return [];
     }
@@ -1264,6 +1481,46 @@
         return normalizeColor(value);
     }
 
+    function toPastelColor(value) {
+        const hex = normalizeColor(value);
+        const rgb = hexToRgb(hex);
+        const luminance = (rgb.r * 0.299) + (rgb.g * 0.587) + (rgb.b * 0.114);
+        if (luminance >= 218) return hex;
+        const target = 238;
+        const r = Math.round(rgb.r * 0.34 + target * 0.66);
+        const g = Math.round(rgb.g * 0.34 + target * 0.66);
+        const b = Math.round(rgb.b * 0.34 + target * 0.66);
+        return rgbToHex(r, g, b);
+    }
+
+    function makeReadableStroke(value) {
+        const rgb = hexToRgb(normalizeColor(value));
+        return rgbToHex(
+            Math.max(0, Math.round(rgb.r * 0.78)),
+            Math.max(0, Math.round(rgb.g * 0.78)),
+            Math.max(0, Math.round(rgb.b * 0.78))
+        );
+    }
+
+    function autoTextColor(value) {
+        const rgb = hexToRgb(normalizeColor(value));
+        const luminance = (rgb.r * 0.299) + (rgb.g * 0.587) + (rgb.b * 0.114);
+        return luminance > 156 ? DEFAULT_TEXT_COLOR : "#ffffff";
+    }
+
+    function hexToRgb(hex) {
+        const safe = normalizeColor(hex).replace("#", "");
+        return {
+            r: parseInt(safe.slice(0, 2), 16),
+            g: parseInt(safe.slice(2, 4), 16),
+            b: parseInt(safe.slice(4, 6), 16)
+        };
+    }
+
+    function rgbToHex(r, g, b) {
+        return `#${[r, g, b].map((value) => clamp(Math.round(value), 0, 255).toString(16).padStart(2, "0")).join("")}`;
+    }
+
     function hexToRgba(hex, alpha) {
         const normalized = normalizeColor(hex).replace("#", "");
         const r = parseInt(normalized.slice(0, 2), 16);
@@ -1277,8 +1534,17 @@
     }
 
     function colorByIndex(index) {
-        const palette = ["#ff78aa", "#63c7d9", "#b7e645", "#8b72f6", "#bbaa8b", "#ffc45c", "#4ade80", "#38bdf8"];
-        return palette[Math.abs(index) % palette.length];
+        return PASTEL_PALETTE[Math.abs(index) % PASTEL_PALETTE.length];
+    }
+
+    function estimateFitFontSize(text, polygon) {
+        const label = String(text || "").trim() || "구역";
+        const bbox = getBbox(normalizePoints(polygon || []));
+        const maxWidth = Math.max(34, bbox.w * 0.72);
+        const maxHeight = Math.max(16, bbox.h * 0.34);
+        const byWidth = maxWidth / Math.max(1, label.length * 0.62);
+        const byHeight = maxHeight;
+        return Math.round(clamp(Math.min(byWidth, byHeight, 26), 10, 30));
     }
 
     function unique(values) {
