@@ -8,7 +8,7 @@
     <aside class="seatmap-side seatmap-side--left stage3-left">
         <div class="stage3-title">
             <strong>Stage 03 · 구역 나누기</strong>
-            <span>Stage 2에서 넘어온 button-image.png를 구역 단위로 나눈 뒤, 비슷한 색상끼리 A~Z 그룹으로 묶고 A1~An 번호를 확정합니다.</span>
+            <span>자동 추출한 구역을 A~Z 그룹으로 묶고, A1~An 번호만 확정합니다.</span>
         </div>
 
         <div class="stage3-step-list">
@@ -87,104 +87,117 @@
                 <button type="button" class="stage3-step__header" id="partBtn3">
                     <span class="stage3-step__num">3</span>
                     <span class="stage3-step__text">
-                        <b>구역 그룹화 / 번호 지정</b>
-                        <small>A~Z 그룹 + 그룹별 1~n 번호 확정</small>
+                        <b>그룹 확정</b>
+                        <small>A~Z 그룹 + 그룹별 번호</small>
                     </span>
                     <span class="stage3-step__status">대기</span>
                 </button>
 
                 <div class="stage3-step__body">
-                    <div class="stage3-card">
-                        <p class="stage3-help">
-                            Stage 3은 좌석/예매 버튼 범위가 아니라 구역 자체를 정리하는 단계입니다.
-                            비슷한 색상끼리 A, B, C 그룹으로 묶고 각 그룹 안에서 A1, A2처럼 번호를 붙입니다.
+                    <div class="stage3-card stage3-card--compact">
+                        <p class="stage3-help stage3-help--compact">
+                            색상별로 자동 묶고, 틀린 구역만 선택해서 그룹을 바꾸면 됩니다. 저장은 상단 헤더의 <b>저장하기</b> 버튼을 사용합니다.
                         </p>
 
-                        <div class="stage3-group-tools">
-                            <div>
-                                <label for="groupTolerance">색상 그룹 허용범위</label>
-                                <input type="number" id="groupTolerance" value="42" min="1" max="180">
-                            </div>
-                            <button type="button" class="stage3-btn stage3-btn--green" id="autoGroupBtn">색상별 자동 그룹화</button>
-                            <button type="button" class="stage3-btn stage3-btn--dark" id="renumberGroupsBtn">그룹 번호 재정렬</button>
-                        </div>
-
-                        <div class="stage3-form-grid stage3-form-grid--two">
-                            <div>
-                                <label for="groupKeyInput">선택 구역 그룹</label>
-                                <input type="text" id="groupKeyInput" value="A" maxlength="2" placeholder="A~Z">
-                            </div>
-                            <div>
-                                <label for="groupIndexInput">그룹 번호</label>
-                                <input type="number" id="groupIndexInput" value="1" min="1">
-                            </div>
-                            <div>
-                                <label for="sectionNameInput">최종 구역명</label>
-                                <input type="text" id="sectionNameInput" placeholder="예: A1, B12" readonly>
-                            </div>
-                            <div>
-                                <label for="labelInput">표시 라벨</label>
-                                <input type="text" id="labelInput" placeholder="비우면 구역명 표시">
-                            </div>
-                            <div>
-                                <label for="floorInput">층</label>
-                                <input type="text" id="floorInput" value="1">
-                            </div>
-                            <div>
-                                <label for="gradeInput">등급</label>
-                                <input type="text" id="gradeInput" value="일반석">
-                            </div>
-                            <div>
-                                <label for="priceInput">가격</label>
-                                <input type="number" id="priceInput" value="132000" min="0">
-                            </div>
-                            <div>
-                                <label for="sectionColorInput">그룹 표시 색상</label>
-                                <input type="color" id="sectionColorInput" value="#d9d9d9">
+                        <div class="stage3-quick-panel">
+                            <div class="stage3-quick-panel__title">자동 그룹화</div>
+                            <div class="stage3-compact-actions stage3-compact-actions--three">
+                                <label class="stage3-mini-field" for="groupTolerance">
+                                    <span>색상 허용</span>
+                                    <input type="number" id="groupTolerance" value="42" min="1" max="180">
+                                </label>
+                                <button type="button" class="stage3-btn stage3-btn--green" id="autoGroupBtn">색상별 자동 그룹화</button>
+                                <button type="button" class="stage3-btn stage3-btn--dark" id="renumberGroupsBtn">번호 재정렬</button>
                             </div>
                         </div>
 
-                        <button type="button" class="stage3-btn stage3-btn--dark" id="applyInfoBtn">선택 구역을 이 그룹으로 묶기</button>
-
-                        <div class="stage3-bulk-name-box stage3-bulk-name-box--group">
-                            <label for="groupBatchSelect">그룹 단체 수정</label>
-                            <div class="stage3-form-grid stage3-form-grid--two">
-                                <div>
-                                    <select id="groupBatchSelect"></select>
-                                </div>
-                                <div>
-                                    <input type="text" id="groupRenameInput" maxlength="2" placeholder="변경 그룹명 A~Z">
-                                </div>
-                                <div>
-                                    <input type="color" id="groupColorInput" value="#d9d9d9" title="그룹 색상">
-                                </div>
-                                <div>
-                                    <input type="text" id="groupFloorInput" value="1" placeholder="층">
-                                </div>
-                                <div>
-                                    <input type="text" id="groupGradeInput" value="일반석" placeholder="등급">
-                                </div>
-                                <div>
-                                    <input type="number" id="groupPriceInput" value="132000" min="0" placeholder="가격">
-                                </div>
+                        <div class="stage3-quick-panel">
+                            <div class="stage3-quick-panel__title">선택 구역 수정</div>
+                            <div class="stage3-compact-actions stage3-compact-actions--three">
+                                <label class="stage3-mini-field" for="groupKeyInput">
+                                    <span>그룹</span>
+                                    <input type="text" id="groupKeyInput" value="A" maxlength="2" placeholder="A">
+                                </label>
+                                <label class="stage3-mini-field" for="groupIndexInput">
+                                    <span>번호</span>
+                                    <input type="number" id="groupIndexInput" value="1" min="1">
+                                </label>
+                                <label class="stage3-mini-field" for="sectionColorInput">
+                                    <span>색상</span>
+                                    <input type="color" id="sectionColorInput" value="#d9d9d9">
+                                </label>
                             </div>
-                            <div class="stage3-inline-actions">
-                                <button type="button" class="stage3-btn stage3-btn--green" id="applyGroupBatchBtn">선택 그룹 전체 적용</button>
+                            <div class="stage3-compact-actions stage3-compact-actions--two">
+                                <label class="stage3-mini-field" for="sectionNameInput">
+                                    <span>최종명</span>
+                                    <input type="text" id="sectionNameInput" placeholder="A1" readonly>
+                                </label>
+                                <button type="button" class="stage3-btn stage3-btn--dark" id="applyInfoBtn">선택 구역 적용</button>
+                            </div>
+                        </div>
+
+                        <div class="stage3-quick-panel">
+                            <div class="stage3-quick-panel__title">그룹 단체 수정</div>
+                            <div class="stage3-compact-actions stage3-compact-actions--three">
+                                <select id="groupBatchSelect" title="수정할 그룹"></select>
+                                <input type="text" id="groupRenameInput" maxlength="2" placeholder="그룹명 변경">
+                                <button type="button" class="stage3-btn stage3-btn--green" id="applyGroupBatchBtn">그룹 전체 적용</button>
+                            </div>
+                            <div class="stage3-compact-actions stage3-compact-actions--two">
                                 <button type="button" class="stage3-btn" id="selectGroupBtn">이 그룹 전체 선택</button>
+                                <button type="button" class="stage3-btn stage3-btn--green" id="autoNameBtn">그룹별 번호 정리</button>
                             </div>
                         </div>
 
-                        <div class="stage3-bulk-name-box">
-                            <label for="nameBatchInput">구역 그룹 수동 입력</label>
-                            <textarea id="nameBatchInput" rows="5" placeholder="A\nA\nA\nB\nB 처럼 정렬 순서대로 그룹명만 입력하거나 A1, A2처럼 직접 입력"></textarea>
-                            <div class="stage3-inline-actions">
-                                <button type="button" class="stage3-btn stage3-btn--dark" id="sampleNameTemplateBtn">A/B/C 예시</button>
-                                <button type="button" class="stage3-btn stage3-btn--green" id="applyNameBatchBtn">정렬 순서대로 그룹 적용</button>
-                            </div>
-                        </div>
+                        <details class="stage3-advanced-box">
+                            <summary>고급 설정 / 수동 일괄 입력</summary>
+                            <div class="stage3-advanced-box__body">
+                                <div class="stage3-form-grid stage3-form-grid--two stage3-form-grid--compact">
+                                    <div>
+                                        <label for="labelInput">표시 라벨</label>
+                                        <input type="text" id="labelInput" placeholder="비우면 구역명 표시">
+                                    </div>
+                                    <div>
+                                        <label for="floorInput">선택 구역 층</label>
+                                        <input type="text" id="floorInput" value="1">
+                                    </div>
+                                    <div>
+                                        <label for="gradeInput">선택 구역 등급</label>
+                                        <input type="text" id="gradeInput" value="일반석">
+                                    </div>
+                                    <div>
+                                        <label for="priceInput">선택 구역 가격</label>
+                                        <input type="number" id="priceInput" value="132000" min="0">
+                                    </div>
+                                    <div>
+                                        <label for="groupColorInput">그룹 색상</label>
+                                        <input type="color" id="groupColorInput" value="#d9d9d9" title="그룹 색상">
+                                    </div>
+                                    <div>
+                                        <label for="groupFloorInput">그룹 층</label>
+                                        <input type="text" id="groupFloorInput" value="1" placeholder="층">
+                                    </div>
+                                    <div>
+                                        <label for="groupGradeInput">그룹 등급</label>
+                                        <input type="text" id="groupGradeInput" value="일반석" placeholder="등급">
+                                    </div>
+                                    <div>
+                                        <label for="groupPriceInput">그룹 가격</label>
+                                        <input type="number" id="groupPriceInput" value="132000" min="0" placeholder="가격">
+                                    </div>
+                                </div>
 
-                        <button type="button" class="stage3-btn stage3-btn--green" id="autoNameBtn">그룹별 1~n 번호 재정렬</button>
-                        <button type="button" class="stage3-btn stage3-btn--primary" id="saveSectionsBtn">seatmap-sections.json 저장</button>
+                                <div class="stage3-bulk-name-box stage3-bulk-name-box--compact">
+                                    <label for="nameBatchInput">구역 그룹 수동 입력</label>
+                                    <textarea id="nameBatchInput" rows="4" placeholder="A\nA\nA\nB\nB 또는 A1, A2처럼 직접 입력"></textarea>
+                                    <div class="stage3-inline-actions">
+                                        <button type="button" class="stage3-btn stage3-btn--dark" id="sampleNameTemplateBtn">A/B/C 예시</button>
+                                        <button type="button" class="stage3-btn stage3-btn--green" id="applyNameBatchBtn">정렬 순서대로 적용</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </details>
+
                         <button type="button" class="stage3-btn stage3-btn--primary" id="toStage4Btn">Stage 4 좌석 배치로 이동</button>
                     </div>
                 </div>
@@ -197,7 +210,7 @@
         <div class="stage3-canvas-toolbar">
             <strong id="canvasTitle">구역 그룹화 도면</strong>
             <span id="canvasSize">-</span>
-            <span id="canvasGuide">자동 구역화 후 색상 그룹을 확인하고, 잘못 묶인 구역은 선택해서 A~Z 그룹을 수정하세요.</span>
+            <span id="canvasGuide">색상 자동 그룹화 후 틀린 구역만 선택해서 수정하세요.</span>
         </div>
 
         <div class="stage3-canvas-scroll" id="canvasScroll">

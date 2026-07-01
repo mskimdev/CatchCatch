@@ -41,10 +41,41 @@
             button.textContent = "저장 중...";
             updateSaveInfoSaving();
 
-            const customSave = getCustomStageSave();
-            const result = customSave
-                ? await customSave({ source: "header" })
-                : await postDefaultTempSave(await buildTempSavePayload());
+            const stageSpecificSave = getStageSpecificSave();
+            if (stageSpecificSave) {
+                const stageSpecificResult = await stageSpecificSave();
+                if (!stageSpecificResult) {
+                    throw new Error("저장할 데이터가 없거나 Stage 저장에 실패했습니다.");
+                }
+
+                console.log("[SeatTrace] stage specific save result", stageSpecificResult);
+                button.textContent = "저장 완료";
+                updateSaveInfoSuccess(stageSpecificResult);
+
+                window.setTimeout(() => {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }, 900);
+                return;
+            }
+
+            const payload = await buildTempSavePayload();
+
+            const response = await fetch(SAVE_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(text || "저장 실패");
+            }
+
+            const result = await response.json();
 
             console.log("[SeatTrace] temp save result", result);
 
@@ -68,36 +99,23 @@
         }
     }
 
-    function getCustomStageSave() {
-        const page = getPageName();
+    function getStageSpecificSave() {
+        const adapters = [
+            window.SeatMapStage1,
+            window.SeatMapStage2,
+            window.SeatMapStage3,
+            window.SeatMapStage4,
+            window.SeatMapStage5,
+            window.SeatmapStage6Decorate
+        ];
 
-        if (page === "stage4" && window.SeatMapStage4 && typeof window.SeatMapStage4.save === "function") {
-            return window.SeatMapStage4.save;
-        }
-
-        if (page === "stage5" && window.SeatMapStage5 && typeof window.SeatMapStage5.save === "function") {
-            return window.SeatMapStage5.save;
+        for (const adapter of adapters) {
+            if (adapter && typeof adapter.save === "function") {
+                return adapter.save;
+            }
         }
 
         return null;
-    }
-
-    async function postDefaultTempSave(payload) {
-        const response = await fetch(SAVE_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            credentials: "same-origin",
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            const text = await response.text();
-            throw new Error(text || "저장 실패");
-        }
-
-        return await response.json();
     }
 
     async function buildTempSavePayload() {
@@ -484,14 +502,6 @@
         const tempPaths = getTempPaths();
         const defaultTitle = box.dataset.saveTitle || "저장 위치: 좌석 JSON · 구역 JSON · 도형 이미지";
         title.textContent = `최근 저장 완료: ${time} / ${defaultTitle.replace(/^저장 위치:\s*/, "")}`;
-        if (getPageName() === "stage5") {
-            pathText.textContent = [
-                result.bookingButtonsJsonUrl || `${tempPaths.base}booking-buttons.json`,
-                result.debugImageUrl || result.imageUrl || tempPaths.image
-            ].join(" · ");
-            return;
-        }
-
         pathText.textContent = [
             result.seatJsonUrl || tempPaths.seats,
             result.sectionJsonUrl || tempPaths.sections,
