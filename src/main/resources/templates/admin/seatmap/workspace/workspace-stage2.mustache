@@ -73,7 +73,7 @@
                 <div class="button-image-step__body">
                     <div class="button-image-box">
                         <div class="button-image-guide">
-                            원본 색상을 bucket 기준으로 추출합니다. 글자/숫자 픽셀도 별도 가이드가 아니라 같은 bucket으로 포함됩니다. 허용범위 0에서 모든 색을 선택하면 글자까지 빠짐없이 표시되어야 합니다. 검은색 계열은 보이도록 흰색으로 임시 표시하고, 클릭 선택 시 최종 출력도 흰색으로 지정합니다.
+                            색상 그룹을 선택하면 해당 색상 범위 안의 구역을 표시합니다. 구역 내부의 글자/숫자/작은 빈칸은 별도 가이드가 아니라 선택 구역 내부 픽셀로 같이 포함됩니다. 검은색 계열은 보이도록 흰색으로 임시 표시하고, 클릭 선택 시 최종 출력도 흰색으로 지정합니다.
                         </div>
 
                         <div class="button-image-row">
@@ -124,8 +124,8 @@
                 <button type="button" class="button-image-step__header" id="tab2">
                     <span class="button-image-step__check" data-step="2"></span>
                     <span class="button-image-step__text">
-                        <b>선 없는 단색화 / 저장</b>
-                        <small>선택 색상 구역을 바로 button-image로 저장</small>
+                        <b>단색화 / 저장</b>
+                        <small>도형 크기는 그대로 두고 대표색으로 일치화해 button-image로 저장</small>
                     </span>
                     <span class="button-image-step__status">대기</span>
                     <span class="button-image-step__arrow">⌄</span>
@@ -134,11 +134,11 @@
                 <div class="button-image-step__body">
                     <div class="button-image-box">
                         <div class="button-image-guide">
-                            파트 1에서 선택한 색상 그룹을 기준으로 구역을 추출합니다. 숫자/문자처럼 구역 내부에 갇힌 픽셀은 같은 구역으로 포함하고, 최종 저장본에는 검은 테두리 없이 색상 도형만 남깁니다.
+                            파트 1에서 선택한 색상 그룹을 기준으로 구역을 추출합니다. 단색화는 도형을 새로 다듬는 작업이 아니라, 배경을 제외한 연결 도형을 찾아 그 안에서 비중이 가장 높은 색으로 전체 픽셀을 일치화하는 작업입니다. 도형 크기와 외곽은 그대로 유지됩니다.
                         </div>
 
                         <button type="button" class="btn btn--green" id="part2AutoSolidify">
-                            선 없는 단색화 생성
+                            단색화 생성
                         </button>
 
                         <div class="button-image-guide button-image-guide--compact" id="part2SolidifyStatus">
@@ -297,7 +297,7 @@
                 </div>
             </section>
             <div class="button-image-side-guide" id="buttonImageGuide">
-                도형 색상 추출 → 색상 그룹 선택 → 선 없는 단색화 → 저장 순서로 진행합니다. 병합/메우기/작은조각흡수는 기본 흐름에서 제외합니다.
+                도형 색상 추출 → 색상 그룹 선택 → 단색화 → 저장 순서로 진행합니다. 단색화는 도형 크기 변경 없이 연결 도형을 대표색으로 일치화합니다.
             </div>
 
             <div class="button-image-hidden-compat" style="display:none">
