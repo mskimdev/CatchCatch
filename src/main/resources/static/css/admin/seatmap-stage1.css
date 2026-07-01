@@ -1,0 +1,656 @@
+:root {
+    --crop-nav: #0f172a;
+    --crop-panel: #ffffff;
+    --crop-line: #e5e7eb;
+    --crop-muted: #64748b;
+    --crop-ink: #111827;
+    --crop-bg: #f4f6fa;
+    --crop-soft: #f8fafc;
+    --crop-violet: #7c3aed;
+    --crop-blue: #2563eb;
+    --crop-green: #10b981;
+    --crop-shadow: 0 16px 42px rgba(15, 23, 42, 0.10);
+    --seatmap-header-height: 64px;
+}
+
+.seatmap-crop-body {
+    overflow: hidden;
+    background: var(--crop-bg);
+}
+
+.crop-workspace {
+    height: calc(100vh - var(--seatmap-header-height));
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 380px minmax(0, 1fr) 320px;
+    background: var(--crop-bg);
+}
+
+.crop-side-panel {
+    min-width: 0;
+    overflow: auto;
+    padding: 16px 14px;
+    background: #ffffff;
+}
+
+.crop-side-panel--left {
+    border-right: 1px solid var(--crop-line);
+}
+
+.crop-side-panel--right {
+    border-left: 1px solid var(--crop-line);
+}
+
+.crop-tool-intro {
+    margin-bottom: 12px;
+    padding: 16px 14px;
+    border: 1px solid var(--crop-line);
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.crop-tool-intro h1 {
+    margin: 0;
+    color: #111827;
+    font-size: 18px;
+    font-weight: 950;
+    letter-spacing: -0.04em;
+}
+
+.crop-tool-intro p {
+    margin: 8px 0 0;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 850;
+    line-height: 1.55;
+}
+
+.crop-step-list {
+    display: grid;
+    gap: 10px;
+}
+
+.crop-step {
+    border: 1px solid var(--crop-line);
+    border-radius: 12px;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.crop-step.is-active {
+    border-color: #c4b5fd;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08);
+}
+
+.crop-step__header {
+    width: 100%;
+    min-height: 56px;
+    border: 0;
+    background: #ffffff;
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    color: var(--crop-ink);
+    text-align: left;
+}
+
+.crop-step__header:disabled {
+    cursor: default;
+    opacity: 1;
+}
+
+.crop-step__number {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    background: #8b5cf6;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 950;
+}
+
+.crop-step.is-disabled .crop-step__number {
+    background: #f8fafc;
+    color: #64748b;
+    border: 1px solid #dbe3ef;
+}
+
+.crop-step__title strong,
+.crop-step__title em {
+    display: block;
+    font-style: normal;
+}
+
+.crop-step__title strong {
+    font-size: 14px;
+    font-weight: 950;
+    letter-spacing: -0.035em;
+}
+
+.crop-step__title em {
+    margin-top: 2px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 850;
+}
+
+.crop-step__status {
+    min-width: 44px;
+    height: 24px;
+    padding: 0 8px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f3ff;
+    color: #6d28d9;
+    font-size: 11px;
+    font-weight: 950;
+}
+
+.crop-step.is-disabled .crop-step__status {
+    background: #f1f5f9;
+    color: #94a3b8;
+}
+
+.crop-step__arrow {
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 950;
+}
+
+.crop-step__body {
+    padding: 0 12px 14px;
+}
+
+.crop-info-box,
+.crop-current-card,
+.crop-control-note,
+.crop-right-card {
+    border: 1px solid var(--crop-line);
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.crop-info-box {
+    margin-bottom: 10px;
+    padding: 13px 14px;
+}
+
+.crop-info-box--blue {
+    background: #f1f7ff;
+    border-color: #dbeafe;
+    color: #334155;
+}
+
+.crop-info-box--warning {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #9a3412;
+}
+
+.crop-info-box--warning strong,
+.crop-info-box--warning p {
+    color: #9a3412;
+}
+
+.crop-info-box strong {
+    display: block;
+    margin: 0 0 6px;
+    color: #1e293b;
+    font-size: 13px;
+    font-weight: 950;
+}
+
+.crop-info-box p {
+    margin: 0;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 850;
+    line-height: 1.55;
+}
+
+.crop-current-card {
+    padding: 13px;
+    background: #f8fafc;
+}
+
+.crop-current-card label,
+.crop-result-path label {
+    display: block;
+    margin-bottom: 8px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 950;
+}
+
+.crop-current-card strong {
+    display: block;
+    color: #111827;
+    font-size: 16px;
+    font-weight: 950;
+    letter-spacing: -0.04em;
+}
+
+.crop-current-card small {
+    display: block;
+    margin-top: 8px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 850;
+    word-break: break-all;
+}
+
+.crop-button-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.crop-primary-btn,
+.crop-secondary-btn {
+    width: 100%;
+    min-height: 43px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 950;
+}
+
+.crop-primary-btn {
+    margin-top: 12px;
+    border: 0;
+    background: linear-gradient(135deg, var(--crop-violet), var(--crop-blue));
+    color: #ffffff;
+}
+
+.crop-primary-btn--next {
+    min-height: 44px;
+}
+
+.crop-secondary-btn {
+    border: 1px solid #dbe3ef;
+    background: #ffffff;
+    color: #334155;
+}
+
+.crop-primary-btn:hover,
+.crop-secondary-btn:hover {
+    filter: brightness(0.98);
+}
+
+.crop-control-note {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: #faf5ff;
+    border-color: #eadcff;
+    color: #6d28d9;
+}
+
+.crop-control-note b {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 950;
+}
+
+.crop-control-note span {
+    display: block;
+    color: #6d28d9;
+    font-size: 11px;
+    font-weight: 850;
+    line-height: 1.55;
+}
+
+.crop-canvas-area {
+    min-width: 0;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+    background-color: #ffffff;
+    background-image: radial-gradient(circle, #dbeafe 1px, transparent 1.1px);
+    background-size: 20px 20px;
+}
+
+.crop-canvas-scroll {
+    height: calc(100% - 62px);
+    min-height: 0;
+    overflow: auto;
+    padding: 24px 36px 80px;
+}
+
+.crop-canvas-frame {
+    width: max-content;
+    min-width: 540px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+#cropCanvas {
+    display: block;
+    margin: 0 auto;
+    background: #ffffff;
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.14);
+    cursor: crosshair;
+}
+
+.crop-right-card {
+    margin-bottom: 14px;
+    padding: 13px;
+}
+
+.crop-right-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.crop-right-card__head strong {
+    color: #111827;
+    font-size: 14px;
+    font-weight: 950;
+}
+
+.crop-right-card__head span {
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 950;
+}
+
+.crop-mini-map {
+    position: relative;
+    min-height: 178px;
+    display: grid;
+    place-items: center;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #edf2f7;
+    background: #f8fafc;
+    overflow: hidden;
+}
+
+.crop-mini-map img {
+    display: block;
+    width: 100%;
+    max-height: 190px;
+    object-fit: contain;
+    border-radius: 7px;
+    opacity: 1;
+    filter: none;
+}
+
+.crop-mini-viewport {
+    position: absolute;
+    border: 1.5px solid #ef4444;
+    background: transparent;
+    pointer-events: none;
+}
+
+.crop-mini-help {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 850;
+    line-height: 1.55;
+}
+
+.crop-result-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 0;
+    border-top: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.crop-result-row span {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.crop-result-row b {
+    color: #111827;
+    font-size: 13px;
+    font-weight: 950;
+}
+
+.crop-result-path {
+    margin-top: 12px;
+}
+
+.crop-result-path code {
+    display: block;
+    padding: 10px;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 11px;
+    font-weight: 850;
+    line-height: 1.45;
+    white-space: normal;
+    word-break: break-all;
+}
+
+/* 이미지와 선택 영역을 흐리게 만들던 구버전 마스크 방지 */
+.crop-canvas-area img,
+#cropCanvas {
+    opacity: 1 !important;
+    filter: none !important;
+    mix-blend-mode: normal !important;
+}
+
+.crop-side-panel,
+.crop-canvas-scroll,
+.crop-step__body,
+.crop-mini-map {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 116, 139, 0.22) transparent;
+}
+
+.crop-side-panel::-webkit-scrollbar,
+.crop-canvas-scroll::-webkit-scrollbar,
+.crop-step__body::-webkit-scrollbar,
+.crop-mini-map::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+.crop-side-panel::-webkit-scrollbar-track,
+.crop-canvas-scroll::-webkit-scrollbar-track,
+.crop-step__body::-webkit-scrollbar-track,
+.crop-mini-map::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.crop-side-panel::-webkit-scrollbar-thumb,
+.crop-canvas-scroll::-webkit-scrollbar-thumb,
+.crop-step__body::-webkit-scrollbar-thumb,
+.crop-mini-map::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(100, 116, 139, 0.20);
+}
+
+.crop-side-panel::-webkit-scrollbar-thumb:hover,
+.crop-canvas-scroll::-webkit-scrollbar-thumb:hover,
+.crop-step__body::-webkit-scrollbar-thumb:hover,
+.crop-mini-map::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.34);
+}
+
+.toast {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 200;
+    padding: 12px 15px;
+    border-radius: 10px;
+    background: #111827;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 900;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: 0.16s;
+}
+
+.toast.show,
+.toast.toast--show {
+    opacity: 1;
+    transform: none;
+}
+
+@media (max-width: 1280px) {
+    .crop-workspace {
+        grid-template-columns: 350px minmax(0, 1fr);
+    }
+
+    .crop-side-panel--right {
+        display: none;
+    }
+}
+
+/* Stage 1 전용 방향 보정 도구 */
+.crop-step--transform {
+    border-color: #ddd6fe;
+}
+
+.crop-transform-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.crop-transform-btn {
+    min-height: 42px;
+    border: 1px solid #dbe3ef;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 950;
+    cursor: pointer;
+}
+
+.crop-transform-btn:hover {
+    border-color: #c4b5fd;
+    background: #f8f7ff;
+    color: #5b21b6;
+}
+
+.crop-transform-btn.is-active {
+    border-color: #7c3aed;
+    background: #f5f3ff;
+    color: #6d28d9;
+    box-shadow: inset 0 0 0 1px rgba(124, 58, 237, 0.15);
+}
+
+.crop-transform-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 10px 12px;
+    border: 1px solid #e9d5ff;
+    border-radius: 8px;
+    background: #faf5ff;
+}
+
+.crop-transform-status span {
+    color: #7e22ce;
+    font-size: 11px;
+    font-weight: 950;
+}
+
+.crop-transform-status b {
+    color: #4c1d95;
+    font-size: 12px;
+    font-weight: 950;
+    text-align: right;
+}
+
+/* Stage 1 파트 진행 상태 보정 */
+.crop-step.is-disabled .crop-step__body,
+.crop-step.is-locked .crop-step__body {
+    display: none;
+}
+
+.crop-step.is-complete {
+    border-color: #bbf7d0;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
+}
+
+.crop-step.is-complete .crop-step__number {
+    background: #10b981;
+    color: #ffffff;
+}
+
+.crop-step.is-complete .crop-step__status {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.crop-step.is-disabled .crop-transform-btn,
+.crop-step.is-locked .crop-transform-btn,
+.crop-transform-btn:disabled,
+.crop-primary-btn:disabled,
+.crop-secondary-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.48;
+    filter: grayscale(0.15);
+}
+
+.crop-secondary-btn--full {
+    margin-top: 8px;
+}
+
+/* Stage 1 완료 파트는 다른 Stage처럼 요약 버튼 형태로 접는다. */
+.crop-step.is-complete.is-collapsed {
+    border-color: #bbf7d0;
+    background: #ffffff;
+}
+
+.crop-step.is-complete.is-collapsed .crop-step__body {
+    display: none;
+}
+
+.crop-step.is-complete.is-collapsed .crop-step__header {
+    min-height: 58px;
+}
+
+.crop-step.is-complete.is-collapsed .crop-step__title em::after {
+    content: " · 클릭하면 다시 열 수 있습니다";
+    color: #10b981;
+}
+
+.crop-step.is-complete.is-summary + .crop-step {
+    margin-top: 10px;
+}
+
+/* Stage 1 역할 분리: Part 1 재편집 중에는 Part 2를 닫고, Part 2에서는 빨간 자르기 박스를 제거한다. */
+.crop-step.is-editing {
+    border-color: #c4b5fd;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08);
+}
+
+.crop-step.is-editing .crop-step__status {
+    background: #f5f3ff;
+    color: #6d28d9;
+}
+
+.crop-step.is-editing .crop-step__number {
+    background: #8b5cf6;
+    color: #ffffff;
+}

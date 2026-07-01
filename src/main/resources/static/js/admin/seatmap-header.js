@@ -3,13 +3,6 @@
 
     const SAVE_URL = "/admin/seatmap/temp-save";
 
-    const TEMP_PATHS = {
-        base: "/temp/seatmap/concert-session/",
-        seats: "/temp/seatmap/concert-session/seatmap-seats.json",
-        sections: "/temp/seatmap/concert-session/seatmap-sections.json",
-        image: "/temp/seatmap/concert-session/seatmap-image.png"
-    };
-
     const STORAGE_KEYS = {
         stage1Seats: "concert_stage1_seats",
         stage1Sections: "concert_stage1_sections",
@@ -47,6 +40,24 @@
             button.disabled = true;
             button.textContent = "저장 중...";
             updateSaveInfoSaving();
+
+            const stageSpecificSave = getStageSpecificSave();
+            if (stageSpecificSave) {
+                const stageSpecificResult = await stageSpecificSave();
+                if (!stageSpecificResult) {
+                    throw new Error("저장할 데이터가 없거나 Stage 저장에 실패했습니다.");
+                }
+
+                console.log("[SeatTrace] stage specific save result", stageSpecificResult);
+                button.textContent = "저장 완료";
+                updateSaveInfoSuccess(stageSpecificResult);
+
+                window.setTimeout(() => {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }, 900);
+                return;
+            }
 
             const payload = await buildTempSavePayload();
 
@@ -86,6 +97,25 @@
                 button.disabled = false;
             }, 1200);
         }
+    }
+
+    function getStageSpecificSave() {
+        const adapters = [
+            window.SeatMapStage1,
+            window.SeatMapStage2,
+            window.SeatMapStage3,
+            window.SeatMapStage4,
+            window.SeatMapStage5,
+            window.SeatmapStage6Decorate
+        ];
+
+        for (const adapter of adapters) {
+            if (adapter && typeof adapter.save === "function") {
+                return adapter.save;
+            }
+        }
+
+        return null;
     }
 
     async function buildTempSavePayload() {
@@ -236,6 +266,13 @@
     }
 
     async function getCurrentImageDataUrl() {
+        if (window.SeatmapStage6Decorate && typeof window.SeatmapStage6Decorate.exportImage === "function") {
+            const finalImage = window.SeatmapStage6Decorate.exportImage();
+            if (finalImage && finalImage.startsWith("data:image")) {
+                return finalImage;
+            }
+        }
+
         if (window.SeatMapCrop && typeof window.SeatMapCrop.exportSelectedImage === "function") {
             const cropped = window.SeatMapCrop.exportSelectedImage();
             if (cropped && cropped.startsWith("data:image")) {
@@ -418,8 +455,9 @@
         }
 
         box.classList.remove("is-saving", "is-saved", "is-error");
+        const tempPaths = getTempPaths();
         const defaultTitle = box.dataset.saveTitle || "저장 위치: 좌석 JSON · 구역 JSON · 도형 이미지";
-        const defaultPath = box.dataset.savePath || `${TEMP_PATHS.seats} · seatmap-sections.json · seatmap-image.png`;
+        const defaultPath = box.dataset.savePath || `${tempPaths.seats} · ${tempPaths.sections} · ${tempPaths.image}`;
 
         title.textContent = defaultTitle;
         pathText.textContent = defaultPath;
@@ -436,8 +474,9 @@
 
         box.classList.remove("is-saved", "is-error");
         box.classList.add("is-saving");
+        const tempPaths = getTempPaths();
         const defaultTitle = box.dataset.saveTitle || "저장 위치: 좌석 JSON · 구역 JSON · 도형 이미지";
-        const defaultPath = box.dataset.savePath || TEMP_PATHS.base;
+        const defaultPath = box.dataset.savePath || tempPaths.base;
 
         title.textContent = "저장 중: " + defaultTitle.replace(/^저장 위치:\s*/, "");
         pathText.textContent = defaultPath;
@@ -460,12 +499,13 @@
 
         box.classList.remove("is-saving", "is-error");
         box.classList.add("is-saved");
+        const tempPaths = getTempPaths();
         const defaultTitle = box.dataset.saveTitle || "저장 위치: 좌석 JSON · 구역 JSON · 도형 이미지";
         title.textContent = `최근 저장 완료: ${time} / ${defaultTitle.replace(/^저장 위치:\s*/, "")}`;
         pathText.textContent = [
-            result.seatJsonUrl || TEMP_PATHS.seats,
-            result.sectionJsonUrl || TEMP_PATHS.sections,
-            result.imageUrl || TEMP_PATHS.image
+            result.seatJsonUrl || tempPaths.seats,
+            result.sectionJsonUrl || tempPaths.sections,
+            result.buttonImageUrl || result.imageUrl || tempPaths.image
         ].join(" · ");
     }
 
@@ -484,15 +524,49 @@
         pathText.textContent = message || "서버 저장 요청을 확인하세요.";
     }
 
+
+    function getTempPaths() {
+        const projectId = cleanProjectPathPart(getCurrentProjectId());
+        const base = `/temp/seatmap/${projectId}`;
+        const page = getPageName();
+        let imageFileName = "seatmap-image.png";
+
+        if (page === "stage1") {
+            imageFileName = "cropped-image.png";
+        } else if (page === "stage2" || page === "stage3" || page === "stage4") {
+            imageFileName = "button-image.png";
+        } else if (page === "stage5") {
+            imageFileName = "debug-polygons.png";
+        }
+
+        return {
+            base: `${base}/`,
+            seats: `/temp/seatmap/seats/${projectId}-seatmap-seats.json`,
+            sections: `${base}/seatmap-sections.json`,
+            image: `${base}/${imageFileName}`
+        };
+    }
+
+    function cleanProjectPathPart(value) {
+        const cleaned = String(value || "seat")
+            .trim()
+            .replace(/\s+/g, "_")
+            .replace(/[^a-zA-Z0-9가-힣._-]/g, "_")
+            .replace(/_+/g, "_")
+            .replace(/^_+|_+$/g, "");
+
+        return cleaned || "seat";
+    }
+
     function getPageName() {
         const path = location.pathname;
 
-        if (path.includes("crop-rotate")) return "seatmap-crop-rotate";
-        if (path.includes("button-image")) return "seatmap-button-image";
-        if (path.includes("concert/stage1")) return "concert-stage1";
-        if (path.includes("concert/stage2")) return "concert-stage2";
-        if (path.includes("concert/stage3")) return "concert-stage3";
-        if (path.includes("concert/stage4")) return "concert-stage4";
+        if (path.includes("/stage/1") || path.includes("crop-rotate")) return "stage1";
+        if (path.includes("/stage/2") || path.includes("button-image")) return "stage2";
+        if (path.includes("/stage/3") || path.includes("concert/stage1")) return "stage3";
+        if (path.includes("/stage/4") || path.includes("concert/stage2")) return "stage4";
+        if (path.includes("/stage/5") || path.includes("concert/stage3")) return "stage5";
+        if (path.includes("/stage/6") || path.includes("concert/stage4")) return "stage6";
 
         return "seatmap";
     }
@@ -501,7 +575,7 @@
         const fromQuery = new URLSearchParams(location.search).get("projectId");
         const fromDataset = document.querySelector("[data-project-id]")?.dataset?.projectId;
         const fromStorage = localStorage.getItem("seatmap_current_folder_name") || localStorage.getItem("seatmap_current_project_id");
-        return fromQuery || fromDataset || fromStorage || "seat";
+        return cleanProjectPathPart(fromQuery || fromDataset || fromStorage || "seat");
     }
 
     function cleanIdPart(value) {

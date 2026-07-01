@@ -143,6 +143,7 @@
 
       return {
         id,
+        sectionId: String(seat.sectionId || seat.section_id || seat.areaId || ""),
         floor,
         sectionName,
         sectionKey: sectionKey(floor, sectionName),
@@ -235,9 +236,9 @@
   function normalizeArea(area, index) {
     const rawGrade = normalizeGrade(area.grade || area.gradeCode || area.type);
     const floor = Number(area.floor || parseSectionKey(area.sectionId || area.id).floor || 1);
-    const rawSection = parseSectionKey(area.sectionId || area.id).section || area.section || area.name || `구역${index + 1}`;
+    const rawSection = area.sectionName || area.section || area.name || area.label || parseSectionKey(area.sectionId || area.id).section || `구역${index + 1}`;
     const section = normalizeSectionName(rawSection);
-    const matchedSeat = firstSeatBySection(floor, section);
+    const matchedSeat = firstSeatBySectionId(area.sectionId) || firstSeatBySection(floor, section);
     const grade = matchedSeat?.grade || rawGrade;
     const points = normalizePoints(area);
 
@@ -278,6 +279,10 @@
   }
 
   function getCenter(points, area) {
+    if (area.labelPoint && area.labelPoint.x != null && area.labelPoint.y != null) {
+      return { x: Number(area.labelPoint.x), y: Number(area.labelPoint.y) };
+    }
+
     if (area.x != null && area.y != null) {
       return { x: Number(area.x), y: Number(area.y) };
     }
@@ -640,7 +645,11 @@
   }
 
   function seatsByArea(area) {
-    const exact = state.seats.filter((seat) => seat.sectionKey === area.sectionKey || normalizeSectionName(seat.sectionName) === normalizeSectionName(area.section));
+    const exact = state.seats.filter((seat) =>
+      (seat.sectionId && area.sectionId && String(seat.sectionId) === String(area.sectionId)) ||
+      seat.sectionKey === area.sectionKey ||
+      normalizeSectionName(seat.sectionName) === normalizeSectionName(area.section)
+    );
     if (exact.length > 0) return exact;
     return state.seats.filter((seat) => seat.grade === area.grade);
   }
@@ -656,6 +665,12 @@
     }
 
     return Array.from(set).sort((a, b) => gradeOrder(a) - gradeOrder(b));
+  }
+
+  function firstSeatBySectionId(sectionId) {
+    const key = String(sectionId || "");
+    if (!key) return null;
+    return state.seats.find((seat) => String(seat.sectionId || "") === key) || null;
   }
 
   function firstSeatBySection(floor, section) {

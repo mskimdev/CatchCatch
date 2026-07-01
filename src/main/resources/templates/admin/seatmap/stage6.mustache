@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SeatTrace - 06 최종 꾸미기</title>
+
+    <link rel="stylesheet" href="/css/admin/seatmap-header.css">
+    <link rel="stylesheet" href="/css/admin/seatmap-workspace.css">
+    <link rel="stylesheet" href="/css/admin/seatmap-stage6.css">
+</head>
+
+<body class="seatmap-page seatmap-page--stage6">
+{{> admin/seatmap/common/header}}
+{{> admin/seatmap/common/work-toolbar}}
+
+<div class="seatmap-workspace seatmap-workspace--stage6" id="stage6App" data-stage="6">
+    {{> admin/seatmap/workspace/workspace-stage6}}
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/js/admin/seatmap-workspace.js" defer></script>
+<script src="/js/admin/seatmap-stage6.js" defer></script>
+</body>
+</html>

@@ -248,19 +248,25 @@ public class SeatMapService {
                 byte[] imageBytes = decodeBase64Image(req.getImageDataUrl());
                 String page = defaultText(req.getPage(), "");
 
-                if ("seatmap-crop-rotate".equals(page) || "crop-rotate".equals(page)) {
+                if ("stage1".equals(page) || "seatmap-crop-rotate".equals(page) || "crop-rotate".equals(page)) {
+                    // Stage 1은 이후 단계의 기준 도면을 바꾸는 작업이다.
+                    // 자르기/방향 보정 저장 시 이후 단계가 stale 이미지를 물고 가지 않도록
+                    // original-image.png를 제외한 모든 PNG 기준 파일을 같은 이미지로 초기화한다.
                     writeBytesToStaticAll(croppedImagePath, imageBytes);
                     writeBytesToStaticAll(seatmapImagePath, imageBytes);
+                    writeBytesToStaticAll(buttonImagePath, imageBytes);
                     writeBytesToStaticAll(thumbnailPath, imageBytes);
+                    writeBytesToStaticAll(debugImagePath, imageBytes);
                     imageUrl = "/" + croppedImagePath;
-                } else if ("seatmap-button-image".equals(page) || "button-image".equals(page)) {
+                } else if ("stage2".equals(page) || "seatmap-button-image".equals(page) || "button-image".equals(page)) {
                     writeBytesToStaticAll(buttonImagePath, imageBytes);
                     imageUrl = "/" + buttonImagePath;
-                } else if ("seatmap-final-decorate".equals(page) || "final-decorate".equals(page) || "stage4".equals(page)) {
+                } else if ("stage6".equals(page) || "seatmap-final-decorate".equals(page) || "final-decorate".equals(page)) {
                     writeBytesToStaticAll(seatmapImagePath, imageBytes);
                     writeBytesToStaticAll(thumbnailPath, imageBytes);
                     imageUrl = "/" + seatmapImagePath;
-                } else if ("booking-buttons".equals(page) || "stage3".equals(page)) {
+                } else if ("stage3".equals(page) || "stage4".equals(page) || "stage5".equals(page) || "booking-buttons".equals(page)) {
+                    // Stage 3~5의 이미지 저장은 최종 도면을 덮지 않고 검수용 debug 이미지로만 저장한다.
                     writeBytesToStaticAll(debugImagePath, imageBytes);
                     imageUrl = "/" + debugImagePath;
                 } else {
@@ -271,6 +277,8 @@ public class SeatMapService {
 
             // 과거 잘못 생성된 프로젝트 내부 seatmap-seats.json은 저장 시 제거한다.
             deleteStaticFile(folderRelativePath + "/seatmap-seats.json");
+
+            writeTempSaveMeta(folderName, folderRelativePath, seatsJsonPath, defaultText(req.getPage(), ""), req);
 
             return new TempSaveResult(
                     true,
@@ -401,10 +409,42 @@ public class SeatMapService {
             String updatedAt,
             String status
     ) {
+        return buildMetaJson(
+                projectName,
+                folderName,
+                sourceFileName,
+                createdAt,
+                updatedAt,
+                status,
+                false,
+                0,
+                0,
+                0
+        );
+    }
+
+    private String buildMetaJson(
+            String projectName,
+            String folderName,
+            String sourceFileName,
+            String createdAt,
+            String updatedAt,
+            String status,
+            boolean stage5Saved,
+            int sectionCount,
+            int seatCount,
+            int bookingButtonCount
+    ) {
         return "{"
                 + "\"name\":\"" + jsonEscape(projectName) + "\","
+                + "\"projectId\":\"" + jsonEscape(folderName) + "\","
                 + "\"type\":\"CONCERT\","
                 + "\"status\":\"" + jsonEscape(status) + "\","
+                + "\"currentStage\":\"" + jsonEscape(extractCurrentStage(status)) + "\","
+                + "\"stage5Saved\":" + stage5Saved + ","
+                + "\"sectionCount\":" + Math.max(sectionCount, 0) + ","
+                + "\"seatCount\":" + Math.max(seatCount, 0) + ","
+                + "\"bookingButtonCount\":" + Math.max(bookingButtonCount, 0) + ","
                 + "\"folderName\":\"" + jsonEscape(folderName) + "\","
                 + "\"sourceFileName\":\"" + jsonEscape(sourceFileName) + "\","
                 + "\"createdAt\":\"" + jsonEscape(createdAt) + "\","
@@ -422,6 +462,169 @@ public class SeatMapService {
                 + "\"seats\":\"/temp/seatmap/seats/" + jsonEscape(folderName) + "-seatmap-seats.json\""
                 + "}"
                 + "}";
+    }
+
+
+    private void writeTempSaveMeta(
+            String folderName,
+            String folderRelativePath,
+            String seatsJsonPath,
+            String page,
+            SeatMapRequest.TempSaveDTO req
+    ) throws IOException {
+        String metaJsonPath = folderRelativePath + "/seatmap-meta.json";
+        String previousMeta = readStringIfExists(SOURCE_STATIC_DIR.resolve(metaJsonPath));
+        String now = LocalDateTime.now().toString();
+        String projectName = extractJsonString(previousMeta, "name", folderName);
+        String sourceFileName = extractJsonString(previousMeta, "sourceFileName", "");
+        String createdAt = extractJsonString(previousMeta, "createdAt", now);
+        String status = resolveTempSaveStatus(page);
+        boolean stage5Saved = isStage5Page(page) || Boolean.TRUE.equals(req.getStage5Saved());
+
+        int sectionCount = 0;
+        int seatCount = 0;
+        int bookingButtonCount = 0;
+
+        if (stage5Saved) {
+            sectionCount = firstCount(
+                    req.getSectionCount(),
+                    countJsonArrayItems(req.getSectionJsonText()),
+                    countJsonArrayItems(readStringIfExists(SOURCE_STATIC_DIR.resolve(folderRelativePath + "/seatmap-sections.json")))
+            );
+            seatCount = firstCount(
+                    req.getSeatCount(),
+                    countJsonArrayItems(req.getSeatJsonText()),
+                    countJsonArrayItems(readStringIfExists(SOURCE_STATIC_DIR.resolve(seatsJsonPath)))
+            );
+            bookingButtonCount = firstCount(
+                    req.getBookingButtonCount(),
+                    countJsonArrayItems(req.getBookingButtonJsonText()),
+                    countJsonArrayItems(readStringIfExists(SOURCE_STATIC_DIR.resolve(folderRelativePath + "/booking-buttons.json")))
+            );
+        }
+
+        writeTextToStaticAll(
+                metaJsonPath,
+                buildMetaJson(
+                        projectName,
+                        folderName,
+                        sourceFileName,
+                        createdAt,
+                        now,
+                        status,
+                        stage5Saved,
+                        sectionCount,
+                        seatCount,
+                        bookingButtonCount
+                )
+        );
+    }
+
+    private String resolveTempSaveStatus(String page) {
+        return switch (defaultText(page, "")) {
+            case "stage1", "seatmap-crop-rotate", "crop-rotate" -> "STAGE1_CROPPED_IMAGE_READY";
+            case "stage2", "seatmap-button-image", "button-image" -> "STAGE2_BUTTON_IMAGE_READY";
+            case "stage3" -> "STAGE3_SECTIONS_READY";
+            case "stage4" -> "STAGE4_SEATS_READY";
+            case "stage5", "booking-buttons" -> "STAGE5_BOOKING_BUTTONS_READY";
+            case "stage6", "seatmap-final-decorate", "final-decorate" -> "STAGE6_FINAL_IMAGE_READY";
+            default -> "UPDATED";
+        };
+    }
+
+    private boolean isStage5Page(String page) {
+        String normalizedPage = defaultText(page, "");
+        return "stage5".equals(normalizedPage) || "booking-buttons".equals(normalizedPage);
+    }
+
+    private int firstCount(Integer... values) {
+        if (values == null) {
+            return 0;
+        }
+
+        for (Integer value : values) {
+            if (value != null && value >= 0) {
+                return value;
+            }
+        }
+
+        return 0;
+    }
+
+    private Integer countJsonArrayItems(String json) {
+        if (json == null || json.isBlank()) {
+            return null;
+        }
+
+        String text = json.trim();
+        if (!text.startsWith("[") || !text.endsWith("]")) {
+            return null;
+        }
+
+        boolean inString = false;
+        boolean escaped = false;
+        int depth = 0;
+        int count = 0;
+        boolean hasValue = false;
+
+        for (int i = 1; i < text.length() - 1; i++) {
+            char ch = text.charAt(i);
+
+            if (escaped) {
+                escaped = false;
+                continue;
+            }
+
+            if (ch == '\\') {
+                escaped = inString;
+                continue;
+            }
+
+            if (ch == '"') {
+                inString = !inString;
+                hasValue = true;
+                continue;
+            }
+
+            if (inString) {
+                continue;
+            }
+
+            if (ch == '{' || ch == '[') {
+                depth++;
+                hasValue = true;
+                continue;
+            }
+
+            if (ch == '}' || ch == ']') {
+                depth--;
+                continue;
+            }
+
+            if (depth == 0 && ch == ',') {
+                count++;
+                continue;
+            }
+
+            if (!Character.isWhitespace(ch)) {
+                hasValue = true;
+            }
+        }
+
+        return hasValue ? count + 1 : 0;
+    }
+
+    private String extractCurrentStage(String status) {
+        if (status == null) {
+            return "";
+        }
+
+        Matcher matcher = Pattern.compile("STAGE(\\d+)").matcher(status);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        return "";
     }
 
     private String projectFolderRelativePath(String folderName) {
@@ -489,7 +692,7 @@ public class SeatMapService {
 
     private String sanitizeFolderName(String folderName) {
         if (folderName == null || folderName.isBlank()) {
-            return "concert-session";
+            return "seat";
         }
 
         String cleaned = folderName
@@ -500,7 +703,7 @@ public class SeatMapService {
                 .replaceAll("^_+|_+$", "");
 
         if (cleaned.isBlank()) {
-            return "concert-session";
+            return "seat";
         }
 
         return cleaned;

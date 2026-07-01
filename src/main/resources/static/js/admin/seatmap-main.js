@@ -6,8 +6,8 @@
         projectList: "/admin/seatmap/project-list",
         projectDelete: "/admin/seatmap/project-delete",
         tempSave: "/admin/seatmap/temp-save",
-        cropRotate: "/admin/seatmap/crop-rotate",
-        buttonImage: "/admin/seatmap/button-image"
+        cropRotate: "/admin/seatmap/stage/1",
+        buttonImage: "/admin/seatmap/stage/2"
     };
 
     const PROJECTS_KEY = "seatmap_projects";
