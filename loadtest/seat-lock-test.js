@@ -3,9 +3,10 @@ import { check, sleep } from 'k6';
 
 const BASE_URL = 'http://localhost:8080';
 
-// test_mskim.sql 기준 k6 부하테스트 전용 콘서트(id=11)의 회차(sessionId=10).
-const CONCERT_ID = 11;
-const SESSION_ID = 10;
+// dummy-mysql.sql 기준 k6 전용 콘서트 A: concert_id=10, session_id=16
+// H2(test_mskim.sql) 기준이면 CONCERT_ID=11, SESSION_ID=10
+const CONCERT_ID = 10;
+const SESSION_ID = 16;
 
 // 모든 VU가 정확히 같은 좌석 1개를 동시에 선택하도록 고정한다.
 // (test_mskim.sql에서 SYSTEM_RANGE(1,1000)로 생성된 좌석 중 임의의 ID. 환경마다 ID가
