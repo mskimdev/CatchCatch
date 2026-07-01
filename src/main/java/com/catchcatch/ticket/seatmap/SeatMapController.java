@@ -130,6 +130,10 @@ public class SeatMapController {
         model.addAttribute("stage6Url", stageUrl(6, projectId));
         model.addAttribute("stage4Url", stageUrl(4, projectId));
         model.addAttribute("seatmapImageUrl", projectPath(projectId, "seatmap-image.png"));
+        model.addAttribute("sectionJsonUrl", projectPath(projectId, "seatmap-sections.json"));
+        model.addAttribute("seatJsonUrl", seatsPath(projectId));
+        model.addAttribute("bookingButtonsJsonUrl", projectPath(projectId, "booking-buttons.json"));
+        model.addAttribute("debugImageUrl", projectPath(projectId, "debug-polygons.png"));
         return "admin/seatmap/stage5";
     }
 

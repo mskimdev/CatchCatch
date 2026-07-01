@@ -10352,7 +10352,7 @@ SeatTrace 버튼 이미지화 결과 파일
         const image = sourceCtx.getImageData(0, 0, width, height);
         const buckets = new Map();
         const data = image.data;
-        const step = 1;
+        const step = 16;
 
         for (let i = 0; i < data.length; i += 4) {
             const alpha = data[i + 3];
@@ -10364,11 +10364,11 @@ SeatTrace 버튼 이미지화 결과 파일
             const r = data[i];
             const g = data[i + 1];
             const b = data[i + 2];
-            const key = `${r},${g},${b}`;
+            const key = `${Math.round(r / step) * step},${Math.round(g / step) * step},${Math.round(b / step) * step}`;
             let bucket = buckets.get(key);
 
             if (!bucket) {
-                bucket = { count: 0, r: 0, g: 0, b: 0 };
+                bucket = { key, count: 0, r: 0, g: 0, b: 0 };
                 buckets.set(key, bucket);
             }
 
@@ -10394,6 +10394,7 @@ SeatTrace 버튼 이미지화 결과 파일
                 return {
                     id: `color-${index + 1}`,
                     sourceColor: hex,
+                    bucketKey: bucket.key,
                     rgb,
                     count: bucket.count,
                     ratio: bucket.count / Math.max(1, width * height),
@@ -10419,7 +10420,7 @@ SeatTrace 버튼 이미지화 결과 파일
         drawPart1SelectedColorPreviewV41();
         savePart1ColorExtractStateV41();
 
-        toast(`실제 RGB 색상 ${colors.length}개를 추출했습니다. 글자/숫자 픽셀도 실제 색상으로 포함됩니다.`);
+        toast(`색상 ${colors.length}개를 추출했습니다. 렉 방지를 위해 bucket 기준으로 묶되 글자/숫자 픽셀도 포함됩니다.`);
     }
 
     function guessPart1ColorRoleV41(rgb, hsl, count, totalPixels) {
@@ -10592,9 +10593,10 @@ SeatTrace 버튼 이미지화 결과 파일
         const dst = output.data;
                 const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
         const alpha = 0.68;
+        const selectedBucketMap = buildPart1SelectedBucketMapV69(selected);
 
         for (let i = 0; i < src.length; i += 4) {
-            const match = findMatchingPart1ColorV41(src[i], src[i + 1], src[i + 2], selected, tolerance);
+            const match = findMatchingPart1ColorV41(src[i], src[i + 1], src[i + 2], selected, tolerance, selectedBucketMap);
 
             if (!match) {
                 dst[i] = 0;
@@ -10650,6 +10652,7 @@ SeatTrace 버튼 이미지화 결과 파일
         const src = source.data;
         const dst = output.data;
                 const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
+        const selectedBucketMap = buildPart1SelectedBucketMapV69(selected);
         const masks = new Map(selected.map((item) => [item.id, {
             id: item.id,
             sourceColor: item.sourceColor,
@@ -10665,7 +10668,7 @@ SeatTrace 버튼 이미지화 결과 파일
         for (let y = 0; y < height; y += 1) {
             for (let x = 0; x < width; x += 1) {
                 const offset = (y * width + x) * 4;
-                const match = findMatchingPart1ColorV41(src[offset], src[offset + 1], src[offset + 2], selected, tolerance);
+                const match = findMatchingPart1ColorV41(src[offset], src[offset + 1], src[offset + 2], selected, tolerance, selectedBucketMap);
 
                 if (!match) {
                     dst[offset] = 255;
@@ -10733,6 +10736,7 @@ SeatTrace 버튼 이미지화 결과 파일
             selectedColors: selected.map((item) => ({
                 id: item.id,
                 sourceColor: item.sourceColor,
+                bucketKey: item.bucketKey || "",
                 previewColor: item.previewColor,
                 count: item.count,
                 role: item.role
@@ -10755,24 +10759,41 @@ SeatTrace 버튼 이미지화 결과 파일
         toast("선택 색상만 남긴 버튼 후보 이미지를 생성했습니다.");
     }
 
-    function findMatchingPart1ColorV41(r, g, b, colors, tolerance) {
+    function getPart1ColorBucketKeyV69(r, g, b) {
+        const step = 16;
+        return `${Math.round(r / step) * step},${Math.round(g / step) * step},${Math.round(b / step) * step}`;
+    }
+
+    function buildPart1SelectedBucketMapV69(colors) {
+        const map = new Map();
+
+        (colors || []).forEach((item) => {
+            if (!item) {
+                return;
+            }
+
+            const rgb = item.rgb || hexToRgbV41(item.sourceColor || "#000000");
+            const key = item.bucketKey || getPart1ColorBucketKeyV69(rgb.r, rgb.g, rgb.b);
+            if (!map.has(key)) {
+                map.set(key, item);
+            }
+        });
+
+        return map;
+    }
+
+    function findMatchingPart1ColorV41(r, g, b, colors, tolerance, bucketMap) {
         if (!colors || colors.length === 0) {
             return null;
         }
 
-        const target = { r, g, b };
+        const key = getPart1ColorBucketKeyV69(r, g, b);
+        const bucketMatch = bucketMap?.get(key);
 
-        // 허용범위 0에서는 선택한 실제 색상 픽셀이 1px도 빠지면 안 된다.
-        // 그래서 먼저 RGB 완전 일치를 검사한다.
-        for (const item of colors) {
-            const rgb = item.rgb || hexToRgbV41(item.sourceColor || "#000000");
-            if (rgb.r === r && rgb.g === g && rgb.b === b) {
-                return item;
-            }
+        if (bucketMatch) {
+            return bucketMatch;
         }
 
-        let best = null;
-        let bestDistance = Infinity;
         const limit = Number(tolerance) <= 0
             ? 0
             : Math.max(1, Number(tolerance) || 0) * 2.2;
@@ -10780,6 +10801,10 @@ SeatTrace 버튼 이미지화 결과 파일
         if (limit <= 0) {
             return null;
         }
+
+        let best = null;
+        let bestDistance = Infinity;
+        const target = { r, g, b };
 
         for (const item of colors) {
             const rgb = item.rgb || hexToRgbV41(item.sourceColor || "#000000");
@@ -10825,6 +10850,7 @@ SeatTrace 버튼 이미지화 결과 파일
             colors: part1.colors.map((item) => ({
                 id: item.id,
                 sourceColor: item.sourceColor,
+                bucketKey: item.bucketKey || "",
                 previewColor: item.previewColor,
                 count: item.count,
                 role: item.role,
@@ -10976,7 +11002,7 @@ SeatTrace 버튼 이미지화 결과 파일
         const image = sourceCtx.getImageData(0, 0, width, height);
         const buckets = new Map();
         const data = image.data;
-        const step = 1;
+        const step = 16;
 
         for (let i = 0; i < data.length; i += 4) {
             const alpha = data[i + 3];
@@ -10988,11 +11014,11 @@ SeatTrace 버튼 이미지화 결과 파일
             const r = data[i];
             const g = data[i + 1];
             const b = data[i + 2];
-            const key = `${r},${g},${b}`;
+            const key = `${Math.round(r / step) * step},${Math.round(g / step) * step},${Math.round(b / step) * step}`;
             let bucket = buckets.get(key);
 
             if (!bucket) {
-                bucket = { count: 0, r: 0, g: 0, b: 0 };
+                bucket = { key, count: 0, r: 0, g: 0, b: 0 };
                 buckets.set(key, bucket);
             }
 
@@ -11019,6 +11045,7 @@ SeatTrace 버튼 이미지화 결과 파일
                 return {
                     id: `color-${index + 1}`,
                     sourceColor: hex,
+                    bucketKey: bucket.key,
                     rgb,
                     count: bucket.count,
                     ratio: bucket.count / Math.max(1, width * height),
@@ -11048,13 +11075,13 @@ SeatTrace 버튼 이미지화 결과 파일
         savePart1ColorExtractStateV41();
         drawPart1MiniMapV42();
 
-        toast(`실제 RGB 색상 ${colors.length}개를 추출했습니다. 글자/숫자 픽셀도 별도 가이드 없이 실제 색상으로 포함됩니다.`);
+        toast(`색상 ${colors.length}개를 추출했습니다. 렉 방지를 위해 bucket 기준으로 묶되 글자/숫자 픽셀도 빠지지 않게 포함됩니다.`);
     }
 
     function buildPart1ColorGroupsV42(colors, tolerance) {
         const groups = [];
         const toleranceValue = Math.max(0, Number(tolerance) || 0);
-        const limit = toleranceValue <= 0 ? 0 : Math.max(12, 18 + toleranceValue * 0.75);
+        const limit = Math.max(30, 42 + toleranceValue * 0.55);
         const sorted = [...(colors || [])].sort((a, b) => b.count - a.count);
 
         sorted.forEach((color) => {
@@ -11064,7 +11091,7 @@ SeatTrace 버튼 이미지화 결과 파일
             groups.forEach((group) => {
                 const distance = colorDistanceV41(color.rgb, group.center);
                 const rolePenalty = color.role === group.role ? 0 : 12;
-                const finalDistance = toleranceValue <= 0 ? distance : distance + rolePenalty;
+                const finalDistance = distance + rolePenalty;
 
                 if (finalDistance <= limit && finalDistance < bestDistance) {
                     bestGroup = group;
@@ -11465,10 +11492,11 @@ SeatTrace 버튼 이미지화 결과 파일
         const dst = output.data;
                 const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
         const alpha = 0.68;
+        const selectedBucketMap = buildPart1SelectedBucketMapV69(selected);
         const maskMode = part1.previewMode !== "overlay";
 
         for (let i = 0; i < src.length; i += 4) {
-            const match = findMatchingPart1ColorV41(src[i], src[i + 1], src[i + 2], selected, tolerance);
+            const match = findMatchingPart1ColorV41(src[i], src[i + 1], src[i + 2], selected, tolerance, selectedBucketMap);
 
             if (maskMode) {
                 if (!match) {
@@ -11550,6 +11578,7 @@ SeatTrace 버튼 이미지화 결과 파일
         const src = source.data;
         const dst = output.data;
                 const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
+        const selectedBucketMap = buildPart1SelectedBucketMapV69(selected);
         const masks = new Map(selected.map((item) => [item.id, {
             id: item.id,
             groupId: item.groupId || "",
@@ -11566,7 +11595,7 @@ SeatTrace 버튼 이미지화 결과 파일
         for (let y = 0; y < height; y += 1) {
             for (let x = 0; x < width; x += 1) {
                 const offset = (y * width + x) * 4;
-                const match = findMatchingPart1ColorV41(src[offset], src[offset + 1], src[offset + 2], selected, tolerance);
+                const match = findMatchingPart1ColorV41(src[offset], src[offset + 1], src[offset + 2], selected, tolerance, selectedBucketMap);
 
                 if (!match) {
                     // 후보 이미지는 검은 배경 위에 선택 색상만 남기되,
@@ -11659,6 +11688,7 @@ SeatTrace 버튼 이미지화 결과 파일
                 id: item.id,
                 groupId: item.groupId || "",
                 sourceColor: item.sourceColor,
+                bucketKey: item.bucketKey || "",
                 previewColor: item.previewColor,
                 count: item.count,
                 role: item.role
@@ -11700,6 +11730,7 @@ SeatTrace 버튼 이미지화 결과 파일
                 id: item.id,
                 groupId: item.groupId || "",
                 sourceColor: item.sourceColor,
+                bucketKey: item.bucketKey || "",
                 previewColor: item.previewColor,
                 count: item.count,
                 role: item.role,
@@ -12156,6 +12187,7 @@ SeatTrace 버튼 이미지화 결과 파일
         const tolerance = Math.max(0, Number($("part1ColorTolerance")?.value || part1.tolerance || 18));
         const holeThreshold = Math.max(1, Number($("part2HoleThreshold")?.value || 160));
         const noiseThreshold = Math.max(1, Number($("part2NoiseThreshold")?.value || 20));
+        const selectedBucketMap = buildPart1SelectedBucketMapV69(selectedColors);
         const groupIndexById = new Map(selectedGroups.map((group, index) => [group.id, index]));
 
         for (let i = 0; i < width * height; i += 1) {
@@ -12169,7 +12201,7 @@ SeatTrace 버튼 이미지화 결과 파일
                 continue;
             }
 
-            const match = findMatchingPart1ColorV41(r, g, b, selectedColors, tolerance);
+            const match = findMatchingPart1ColorV41(r, g, b, selectedColors, tolerance, selectedBucketMap);
             if (match && groupIndexById.has(match.groupId)) {
                 groupMap[i] = groupIndexById.get(match.groupId);
                 continue;

@@ -24,6 +24,10 @@ public class SeatMapRequest {
         private String bookingButtonJsonText;
         private String decorationJsonText;
         private String imageDataUrl;
+        private Boolean stage5Saved;
+        private Integer sectionCount;
+        private Integer seatCount;
+        private Integer bookingButtonCount;
     }
 
     @Getter
