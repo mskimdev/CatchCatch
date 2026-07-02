@@ -90,7 +90,7 @@ VALUES
     ('일산 킨텍스 제1전시장', '경기도 고양시 일산서구 킨텍스로 217-60',       20000, NULL, NOW()),
     ('인천 파라다이스시티',    '인천광역시 중구 영종해안남로321번길 186',       15000, NULL, NOW()),
     ('k6 부하테스트 공연장 A','서울특별시 송파구 올림픽로 000',               1000,  NULL, NOW()),
-    ('k6 부하테스트 공연장 B','서울특별시 송파구 올림픽로 001',               1000,  NULL, NOW());
+    ('k6 부하테스트 공연장 B','서울특별시 송파구 올림픽로 001',               15000, '/temp/seatmap/seats/example-seatmap-seats.json', NOW());
 -- venue_id: 1=고척스카이돔, 2=고려대화정, 3=장충체육관, 4=세종문화회관, 5=킨텍스, 6=파라다이스시티, 7=k6A, 8=k6B
 
 
@@ -186,7 +186,7 @@ VALUES
     (8, 'k6 부하테스트 콘서트 B', 'k6',
      'k6 부하 테스트 전용 콘서트 데이터 B.',
      '/images/sample/poster-music.svg', 'OPEN', 'CONCERT',
-     '2026-12-31', '2026-12-31', '2026-01-01 00:00:00', '전체 관람가', '120분', 'k6', '000-0000-0000',
+     '2026-07-04', '2026-07-04', '2026-01-01 00:00:00', '전체 관람가', '120분', 'k6', '000-0000-0000',
      '/images/sample/detail-banner.svg', 'k6 부하테스트 B', 'k6 부하 테스트 전용',
      100000, 80000, 60000, 40000, NOW(), false),
 
@@ -229,7 +229,7 @@ VALUES
     (8,  '2026-08-30', '20:00:00', '1회차', NOW(), false),  -- session_id 14 (나상현씨밴드)
     (9,  '2026-10-04', '17:00:00', '1회차', NOW(), false),  -- session_id 15 (정명훈클래식)
     (10, '2026-12-31', '20:00:00', '1회차', NOW(), false),  -- session_id 16 (k6A)
-    (11, '2026-12-31', '21:00:00', '1회차', NOW(), false),  -- session_id 17 (k6B)
+    (11, '2026-07-04', '10:00:00', '25일 임시', NOW(), false), -- session_id 17 (k6B)
     (12, '2026-08-07', '16:00:00', '1일차', NOW(), false),  -- session_id 18 (전주얼티밋뮤직페스티벌 1일차)
     (12, '2026-08-08', '16:00:00', '2일차', NOW(), false),  -- session_id 19 (전주얼티밋뮤직페스티벌 2일차)
     (12, '2026-08-09', '16:00:00', '3일차', NOW(), false),  -- session_id 20 (전주얼티밋뮤직페스티벌 3일차)
@@ -341,16 +341,169 @@ FROM (SELECT 3 AS sid UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 U
       UNION ALL SELECT 13 UNION ALL SELECT 14 UNION ALL SELECT 15) AS s
 CROSS JOIN seq;
 
--- session 16,17 (k6): each 1000 A seats
+-- session 16 (k6A): 1000 A seats
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
 WITH RECURSIVE seq(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM seq WHERE x < 1000)
 SELECT 16, 1, 'A', 'A', x, CONCAT('A A-', x), 'A', 40000, 'AVAILABLE', NOW()
 FROM seq;
 
+-- session 17 (k6B): SeatTrace example seats, 3462 seats
+-- STANDING_C의 SR 등급은 현재 Seat.Grade enum(VIP/R/S/A)에 맞춰 S로 저장한다.
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
-WITH RECURSIVE seq(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM seq WHERE x < 1000)
-SELECT 17, 1, 'A', 'A', x, CONCAT('A A-', x), 'A', 40000, 'AVAILABLE', NOW()
-FROM seq;
+WITH RECURSIVE seq(x) AS (
+    SELECT 1
+    UNION ALL
+    SELECT x + 1 FROM seq WHERE x < 100
+),
+row_config AS (
+    SELECT 1 AS seat_floor, 'VIP_A' AS section_name, 'A' AS seat_row, 8 AS seat_count, 'VIP' AS grade, 165000 AS price
+    UNION ALL SELECT 1, 'VIP_A', 'B', 8, 'VIP', 165000
+    UNION ALL SELECT 1, 'VIP_A', 'C', 8, 'VIP', 165000
+    UNION ALL SELECT 1, 'VIP_B', 'A', 8, 'VIP', 165000
+    UNION ALL SELECT 1, 'VIP_B', 'B', 8, 'VIP', 165000
+    UNION ALL SELECT 1, 'VIP_B', 'C', 8, 'VIP', 165000
+    UNION ALL SELECT 1, 'STANDING_C', 'A', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'B', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'C', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'D', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'E', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'F', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'G', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'H', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'I', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'J', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'K', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'L', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'M', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'N', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'O', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'P', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'Q', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'R', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'S', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'T', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'U', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'V', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'W', 75, 'S', 90000
+    UNION ALL SELECT 1, 'STANDING_C', 'X', 75, 'S', 90000
+    UNION ALL SELECT 2, 'D2', 'A', 5, 'A', 90000
+    UNION ALL SELECT 2, 'D2', 'B', 15, 'A', 90000
+    UNION ALL SELECT 2, 'D2', 'C', 16, 'A', 90000
+    UNION ALL SELECT 2, 'D2', 'D', 16, 'A', 90000
+    UNION ALL SELECT 2, 'D2', 'E', 17, 'A', 90000
+    UNION ALL SELECT 2, 'D2', 'F', 18, 'A', 90000
+    UNION ALL SELECT 2, 'D2', 'G', 21, 'A', 90000
+    UNION ALL SELECT 2, 'D2', 'H', 22, 'A', 90000
+    UNION ALL SELECT 2, 'D2', 'I', 23, 'A', 90000
+    UNION ALL SELECT 2, 'D2', 'J', 23, 'A', 90000
+    UNION ALL SELECT 2, 'D2', 'K', 20, 'A', 90000
+    UNION ALL SELECT 2, 'S_C2', 'A', 8, 'S', 110000
+    UNION ALL SELECT 2, 'S_C2', 'B', 8, 'S', 110000
+    UNION ALL SELECT 2, 'S_C2', 'C', 9, 'S', 110000
+    UNION ALL SELECT 2, 'S_C2', 'D', 10, 'S', 110000
+    UNION ALL SELECT 2, 'S_C2', 'E', 11, 'S', 110000
+    UNION ALL SELECT 2, 'S_C2', 'F', 12, 'S', 110000
+    UNION ALL SELECT 2, 'S_C2', 'G', 12, 'S', 110000
+    UNION ALL SELECT 2, 'S_C2', 'H', 13, 'S', 110000
+    UNION ALL SELECT 2, 'C2', 'A', 11, 'R', 130000
+    UNION ALL SELECT 2, 'C2', 'B', 11, 'R', 130000
+    UNION ALL SELECT 2, 'C2', 'C', 12, 'R', 130000
+    UNION ALL SELECT 2, 'C2', 'D', 13, 'R', 130000
+    UNION ALL SELECT 2, 'C2', 'E', 14, 'R', 130000
+    UNION ALL SELECT 2, 'C2', 'F', 15, 'R', 130000
+    UNION ALL SELECT 2, 'C2', 'G', 16, 'R', 130000
+    UNION ALL SELECT 2, 'C2', 'H', 17, 'R', 130000
+    UNION ALL SELECT 2, 'C2', 'I', 18, 'R', 130000
+    UNION ALL SELECT 2, 'S_B2', 'A', 11, 'S', 110000
+    UNION ALL SELECT 2, 'S_B2', 'B', 12, 'S', 110000
+    UNION ALL SELECT 2, 'S_B2', 'C', 12, 'S', 110000
+    UNION ALL SELECT 2, 'S_B2', 'D', 12, 'S', 110000
+    UNION ALL SELECT 2, 'S_B2', 'E', 12, 'S', 110000
+    UNION ALL SELECT 2, 'S_B2', 'F', 12, 'S', 110000
+    UNION ALL SELECT 2, 'S_B2', 'G', 11, 'S', 110000
+    UNION ALL SELECT 2, 'B2', 'A', 11, 'R', 130000
+    UNION ALL SELECT 2, 'B2', 'B', 12, 'R', 130000
+    UNION ALL SELECT 2, 'B2', 'C', 14, 'R', 130000
+    UNION ALL SELECT 2, 'B2', 'D', 15, 'R', 130000
+    UNION ALL SELECT 2, 'B2', 'E', 16, 'R', 130000
+    UNION ALL SELECT 2, 'B2', 'F', 18, 'R', 130000
+    UNION ALL SELECT 2, 'B2', 'G', 19, 'R', 130000
+    UNION ALL SELECT 2, 'B2', 'H', 20, 'R', 130000
+    UNION ALL SELECT 2, 'S_A2', 'A', 20, 'S', 110000
+    UNION ALL SELECT 2, 'S_A2', 'B', 21, 'S', 110000
+    UNION ALL SELECT 2, 'S_A2', 'C', 21, 'S', 110000
+    UNION ALL SELECT 2, 'S_A2', 'D', 19, 'S', 110000
+    UNION ALL SELECT 2, 'A2', 'A', 23, 'R', 130000
+    UNION ALL SELECT 2, 'A2', 'B', 23, 'R', 130000
+    UNION ALL SELECT 2, 'A2', 'C', 24, 'R', 130000
+    UNION ALL SELECT 2, 'A2', 'D', 23, 'R', 130000
+    UNION ALL SELECT 2, 'A2', 'E', 22, 'R', 130000
+    UNION ALL SELECT 2, 'S_P2', 'A', 20, 'S', 110000
+    UNION ALL SELECT 2, 'S_P2', 'B', 20, 'S', 110000
+    UNION ALL SELECT 2, 'S_P2', 'C', 20, 'S', 110000
+    UNION ALL SELECT 2, 'S_P2', 'D', 19, 'S', 110000
+    UNION ALL SELECT 2, 'P2', 'A', 23, 'R', 130000
+    UNION ALL SELECT 2, 'P2', 'B', 24, 'R', 130000
+    UNION ALL SELECT 2, 'P2', 'C', 25, 'R', 130000
+    UNION ALL SELECT 2, 'P2', 'D', 24, 'R', 130000
+    UNION ALL SELECT 2, 'P2', 'E', 23, 'R', 130000
+    UNION ALL SELECT 2, 'S_O2', 'A', 11, 'S', 110000
+    UNION ALL SELECT 2, 'S_O2', 'B', 11, 'S', 110000
+    UNION ALL SELECT 2, 'S_O2', 'C', 11, 'S', 110000
+    UNION ALL SELECT 2, 'S_O2', 'D', 11, 'S', 110000
+    UNION ALL SELECT 2, 'S_O2', 'E', 11, 'S', 110000
+    UNION ALL SELECT 2, 'S_O2', 'F', 11, 'S', 110000
+    UNION ALL SELECT 2, 'S_O2', 'G', 10, 'S', 110000
+    UNION ALL SELECT 2, 'O2', 'A', 11, 'R', 130000
+    UNION ALL SELECT 2, 'O2', 'B', 13, 'R', 130000
+    UNION ALL SELECT 2, 'O2', 'C', 14, 'R', 130000
+    UNION ALL SELECT 2, 'O2', 'D', 15, 'R', 130000
+    UNION ALL SELECT 2, 'O2', 'E', 17, 'R', 130000
+    UNION ALL SELECT 2, 'O2', 'F', 18, 'R', 130000
+    UNION ALL SELECT 2, 'O2', 'G', 19, 'R', 130000
+    UNION ALL SELECT 2, 'O2', 'H', 20, 'R', 130000
+    UNION ALL SELECT 2, 'S_N2', 'A', 7, 'S', 110000
+    UNION ALL SELECT 2, 'S_N2', 'B', 8, 'S', 110000
+    UNION ALL SELECT 2, 'S_N2', 'C', 8, 'S', 110000
+    UNION ALL SELECT 2, 'S_N2', 'D', 9, 'S', 110000
+    UNION ALL SELECT 2, 'S_N2', 'E', 10, 'S', 110000
+    UNION ALL SELECT 2, 'S_N2', 'F', 11, 'S', 110000
+    UNION ALL SELECT 2, 'S_N2', 'G', 11, 'S', 110000
+    UNION ALL SELECT 2, 'S_N2', 'H', 12, 'S', 110000
+    UNION ALL SELECT 2, 'N2', 'A', 10, 'R', 130000
+    UNION ALL SELECT 2, 'N2', 'B', 11, 'R', 130000
+    UNION ALL SELECT 2, 'N2', 'C', 12, 'R', 130000
+    UNION ALL SELECT 2, 'N2', 'D', 14, 'R', 130000
+    UNION ALL SELECT 2, 'N2', 'E', 15, 'R', 130000
+    UNION ALL SELECT 2, 'N2', 'F', 16, 'R', 130000
+    UNION ALL SELECT 2, 'N2', 'G', 17, 'R', 130000
+    UNION ALL SELECT 2, 'N2', 'H', 18, 'R', 130000
+    UNION ALL SELECT 2, 'N2', 'I', 19, 'R', 130000
+    UNION ALL SELECT 2, 'M2', 'A', 5, 'A', 90000
+    UNION ALL SELECT 2, 'M2', 'B', 15, 'A', 90000
+    UNION ALL SELECT 2, 'M2', 'C', 16, 'A', 90000
+    UNION ALL SELECT 2, 'M2', 'D', 16, 'A', 90000
+    UNION ALL SELECT 2, 'M2', 'E', 17, 'A', 90000
+    UNION ALL SELECT 2, 'M2', 'F', 18, 'A', 90000
+    UNION ALL SELECT 2, 'M2', 'G', 21, 'A', 90000
+    UNION ALL SELECT 2, 'M2', 'H', 22, 'A', 90000
+    UNION ALL SELECT 2, 'M2', 'I', 23, 'A', 90000
+    UNION ALL SELECT 2, 'M2', 'J', 23, 'A', 90000
+    UNION ALL SELECT 2, 'M2', 'K', 20, 'A', 90000
+)
+SELECT
+    17,
+    rc.seat_floor,
+    rc.section_name,
+    rc.seat_row,
+    seq.x,
+    CONCAT(rc.section_name, ' ', rc.seat_row, '-', seq.x),
+    rc.grade,
+    rc.price,
+    'AVAILABLE',
+    NOW()
+FROM row_config rc
+JOIN seq ON seq.x <= rc.seat_count;
 
 -- session 18~23 (전주얼티밋뮤직페스티벌, 인천펜타포트): each R 80 / S 120 / A 50
 INSERT INTO seat_tb (session_id, floor, section_name, seat_row, seat_col, seat_number, grade, price, status, updated_at)
@@ -385,6 +538,25 @@ VALUES
     (4, 1, 3, 'WAITING', NULL,  DATE_ADD(NOW(), INTERVAL 10 MINUTE),  NOW()),
     (5, 3, 1, 'ENTERED', NOW(), NULL,                                  NOW()),
     (2, 3, 2, 'EXPIRED', NULL,  DATE_ADD(NOW(), INTERVAL -5 MINUTE),  DATE_ADD(NOW(), INTERVAL -20 MINUTE));
+
+-- k6B 좌석 선택 페이지 바로 진입 테스트용 계정
+INSERT INTO queue_tb (user_id, concert_session_id, queue_number, status, entered_at, expired_at, created_at)
+SELECT
+    u.id,
+    17,
+    9000 + ROW_NUMBER() OVER (ORDER BY u.id),
+    'ENTERED',
+    NOW(),
+    NULL,
+    NOW()
+FROM user_tb u
+WHERE u.username IN ('user1', 'ssar', 'sarr')
+  AND NOT EXISTS (
+      SELECT 1
+      FROM queue_tb q
+      WHERE q.user_id = u.id
+        AND q.concert_session_id = 17
+  );
 
 
 -- ================

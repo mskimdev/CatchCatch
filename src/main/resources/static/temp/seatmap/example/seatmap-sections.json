@@ -1,1 +1,1345 @@
-[{"id":"1-A","name":"A구역","grade":"VIP","seatCount":0}]
+[
+  {
+    "id": "sec-1",
+    "sectionId": "sec-1",
+    "groupKey": "A",
+    "groupName": "A",
+    "groupIndex": 1,
+    "name": "A1",
+    "section": "A1",
+    "sectionName": "A1",
+    "label": "A1",
+    "floor": "1",
+    "grade": "일반석",
+    "price": 132000,
+    "color": "#bea886",
+    "renderColor": "#bea886",
+    "sourceColor": "#bea886",
+    "polygon": [
+      {
+        "x": 230,
+        "y": 135
+      },
+      {
+        "x": 412,
+        "y": 134
+      },
+      {
+        "x": 412,
+        "y": 198
+      },
+      {
+        "x": 230,
+        "y": 198
+      }
+    ],
+    "polygons": [
+      [
+        {
+          "x": 230,
+          "y": 135
+        },
+        {
+          "x": 412,
+          "y": 134
+        },
+        {
+          "x": 412,
+          "y": 198
+        },
+        {
+          "x": 230,
+          "y": 198
+        }
+      ]
+    ],
+    "bbox": {
+      "x": 230,
+      "y": 134,
+      "w": 182,
+      "h": 64
+    },
+    "area": 11557,
+    "sourceRegionIds": [
+      "sec-1"
+    ],
+    "sectionIds": [
+      "sec-1"
+    ],
+    "button": {
+      "x": 321,
+      "y": 166,
+      "w": 182,
+      "h": 64,
+      "xPercent": 35.04,
+      "yPercent": 25.42,
+      "wPercent": 19.87,
+      "hPercent": 9.8,
+      "angle": 0,
+      "label": "A1",
+      "color": "#bea886"
+    },
+    "manual": false,
+    "merged": false
+  },
+  {
+    "id": "sec-2",
+    "sectionId": "sec-2",
+    "groupKey": "A",
+    "groupName": "A",
+    "groupIndex": 2,
+    "name": "A2",
+    "section": "A2",
+    "sectionName": "A2",
+    "label": "A2",
+    "floor": "1",
+    "grade": "일반석",
+    "price": 132000,
+    "color": "#bea886",
+    "renderColor": "#bea886",
+    "sourceColor": "#bea886",
+    "polygon": [
+      {
+        "x": 492,
+        "y": 135
+      },
+      {
+        "x": 675,
+        "y": 134
+      },
+      {
+        "x": 675,
+        "y": 198
+      },
+      {
+        "x": 492,
+        "y": 198
+      }
+    ],
+    "polygons": [
+      [
+        {
+          "x": 492,
+          "y": 135
+        },
+        {
+          "x": 675,
+          "y": 134
+        },
+        {
+          "x": 675,
+          "y": 198
+        },
+        {
+          "x": 492,
+          "y": 198
+        }
+      ]
+    ],
+    "bbox": {
+      "x": 492,
+      "y": 134,
+      "w": 183,
+      "h": 64
+    },
+    "area": 11620.5,
+    "sourceRegionIds": [
+      "sec-2"
+    ],
+    "sectionIds": [
+      "sec-2"
+    ],
+    "button": {
+      "x": 583.5,
+      "y": 166,
+      "w": 183,
+      "h": 64,
+      "xPercent": 63.7,
+      "yPercent": 25.42,
+      "wPercent": 19.98,
+      "hPercent": 9.8,
+      "angle": 0,
+      "label": "A2",
+      "color": "#bea886"
+    },
+    "manual": false,
+    "merged": false
+  },
+  {
+    "id": "sec-3",
+    "sectionId": "sec-3",
+    "groupKey": "B",
+    "groupName": "B",
+    "groupIndex": 1,
+    "name": "B1",
+    "section": "B1",
+    "sectionName": "B1",
+    "label": "B1",
+    "floor": "1",
+    "grade": "일반석",
+    "price": 132000,
+    "color": "#9076ff",
+    "renderColor": "#9076ff",
+    "sourceColor": "#9076ff",
+    "polygon": [
+      {
+        "x": 230,
+        "y": 212
+      },
+      {
+        "x": 673,
+        "y": 211
+      },
+      {
+        "x": 675,
+        "y": 313
+      },
+      {
+        "x": 641,
+        "y": 351
+      },
+      {
+        "x": 264,
+        "y": 350
+      },
+      {
+        "x": 230,
+        "y": 312
+      }
+    ],
+    "polygons": [
+      [
+        {
+          "x": 230,
+          "y": 212
+        },
+        {
+          "x": 673,
+          "y": 211
+        },
+        {
+          "x": 675,
+          "y": 313
+        },
+        {
+          "x": 641,
+          "y": 351
+        },
+        {
+          "x": 264,
+          "y": 350
+        },
+        {
+          "x": 230,
+          "y": 312
+        }
+      ]
+    ],
+    "bbox": {
+      "x": 230,
+      "y": 211,
+      "w": 445,
+      "h": 140
+    },
+    "area": 60462,
+    "sourceRegionIds": [
+      "sec-3"
+    ],
+    "sectionIds": [
+      "sec-3"
+    ],
+    "button": {
+      "x": 452.5,
+      "y": 281,
+      "w": 445,
+      "h": 140,
+      "xPercent": 49.4,
+      "yPercent": 43.03,
+      "wPercent": 48.58,
+      "hPercent": 21.44,
+      "angle": 0,
+      "label": "B1",
+      "color": "#9076ff"
+    },
+    "manual": false,
+    "merged": false
+  },
+  {
+    "id": "sec-4",
+    "sectionId": "sec-4",
+    "groupKey": "C",
+    "groupName": "C",
+    "groupIndex": 1,
+    "name": "C1",
+    "section": "C1",
+    "sectionName": "C1",
+    "label": "C1",
+    "floor": "1",
+    "grade": "일반석",
+    "price": 132000,
+    "color": "#aade48",
+    "renderColor": "#aade48",
+    "sourceColor": "#aade48",
+    "polygon": [
+      {
+        "x": 105,
+        "y": 228
+      },
+      {
+        "x": 114,
+        "y": 230
+      },
+      {
+        "x": 140,
+        "y": 318
+      },
+      {
+        "x": 105,
+        "y": 338
+      },
+      {
+        "x": 114,
+        "y": 363
+      },
+      {
+        "x": 60,
+        "y": 398
+      },
+      {
+        "x": 19,
+        "y": 237
+      }
+    ],
+    "polygons": [
+      [
+        {
+          "x": 105,
+          "y": 228
+        },
+        {
+          "x": 114,
+          "y": 230
+        },
+        {
+          "x": 140,
+          "y": 318
+        },
+        {
+          "x": 105,
+          "y": 338
+        },
+        {
+          "x": 114,
+          "y": 363
+        },
+        {
+          "x": 60,
+          "y": 398
+        },
+        {
+          "x": 19,
+          "y": 237
+        }
+      ]
+    ],
+    "bbox": {
+      "x": 19,
+      "y": 228,
+      "w": 121,
+      "h": 170
+    },
+    "area": 12710,
+    "sourceRegionIds": [
+      "sec-4"
+    ],
+    "sectionIds": [
+      "sec-4"
+    ],
+    "button": {
+      "x": 79.5,
+      "y": 313,
+      "w": 121,
+      "h": 170,
+      "xPercent": 8.68,
+      "yPercent": 47.93,
+      "wPercent": 13.21,
+      "hPercent": 26.03,
+      "angle": 0,
+      "label": "C1",
+      "color": "#aade48"
+    },
+    "manual": false,
+    "merged": false
+  },
+  {
+    "id": "sec-5",
+    "sectionId": "sec-5",
+    "groupKey": "C",
+    "groupName": "C",
+    "groupIndex": 2,
+    "name": "C2",
+    "section": "C2",
+    "sectionName": "C2",
+    "label": "C2",
+    "floor": "1",
+    "grade": "일반석",
+    "price": 132000,
+    "color": "#aade48",
+    "renderColor": "#aade48",
+    "sourceColor": "#aade48",
+    "polygon": [
+      {
+        "x": 785,
+        "y": 228
+      },
+      {
+        "x": 879,
+        "y": 237
+      },
+      {
+        "x": 839,
+        "y": 399
+      },
+      {
+        "x": 788,
+        "y": 365
+      },
+      {
+        "x": 794,
+        "y": 337
+      },
+      {
+        "x": 758,
+        "y": 318
+      }
+    ],
+    "polygons": [
+      [
+        {
+          "x": 785,
+          "y": 228
+        },
+        {
+          "x": 879,
+          "y": 237
+        },
+        {
+          "x": 839,
+          "y": 399
+        },
+        {
+          "x": 788,
+          "y": 365
+        },
+        {
+          "x": 794,
+          "y": 337
+        },
+        {
+          "x": 758,
+          "y": 318
+        }
+      ]
+    ],
+    "bbox": {
+      "x": 758,
+      "y": 228,
+      "w": 121,
+      "h": 171
+    },
+    "area": 12660,
+    "sourceRegionIds": [
+      "sec-5"
+    ],
+    "sectionIds": [
+      "sec-5"
+    ],
+    "button": {
+      "x": 818.5,
+      "y": 313.5,
+      "w": 121,
+      "h": 171,
+      "xPercent": 89.36,
+      "yPercent": 48.01,
+      "wPercent": 13.21,
+      "hPercent": 26.19,
+      "angle": 0,
+      "label": "C2",
+      "color": "#aade48"
+    },
+    "manual": false,
+    "merged": false
+  },
+  {
+    "id": "sec-6",
+    "sectionId": "sec-6",
+    "groupKey": "D",
+    "groupName": "D",
+    "groupIndex": 1,
+    "name": "D1",
+    "section": "D1",
+    "sectionName": "D1",
+    "label": "D1",
+    "floor": "1",
+    "grade": "일반석",
+    "price": 132000,
+    "color": "#ff8ab4",
+    "renderColor": "#ff8ab4",
+    "sourceColor": "#ff8ab4",
+    "polygon": [
+      {
+        "x": 164,
+        "y": 362
+      },
+      {
+        "x": 222,
+        "y": 441
+      },
+      {
+        "x": 157,
+        "y": 526
+      },
+      {
+        "x": 62,
+        "y": 407
+      },
+      {
+        "x": 118,
+        "y": 369
+      },
+      {
+        "x": 132,
+        "y": 385
+      }
+    ],
+    "polygons": [
+      [
+        {
+          "x": 164,
+          "y": 362
+        },
+        {
+          "x": 222,
+          "y": 441
+        },
+        {
+          "x": 157,
+          "y": 526
+        },
+        {
+          "x": 62,
+          "y": 407
+        },
+        {
+          "x": 118,
+          "y": 369
+        },
+        {
+          "x": 132,
+          "y": 385
+        }
+      ]
+    ],
+    "bbox": {
+      "x": 62,
+      "y": 362,
+      "w": 160,
+      "h": 164
+    },
+    "area": 13500,
+    "sourceRegionIds": [
+      "sec-6"
+    ],
+    "sectionIds": [
+      "sec-6"
+    ],
+    "button": {
+      "x": 142,
+      "y": 444,
+      "w": 160,
+      "h": 164,
+      "xPercent": 15.5,
+      "yPercent": 67.99,
+      "wPercent": 17.47,
+      "hPercent": 25.11,
+      "angle": 0,
+      "label": "D1",
+      "color": "#ff8ab4"
+    },
+    "manual": false,
+    "merged": false
+  },
+  {
+    "id": "sec-7",
+    "sectionId": "sec-7",
+    "groupKey": "D",
+    "groupName": "D",
+    "groupIndex": 2,
+    "name": "D2",
+    "section": "D2",
+    "sectionName": "D2",
+    "label": "D2",
+    "floor": "1",
+    "grade": "일반석",
+    "price": 132000,
+    "color": "#ff8ab4",
+    "renderColor": "#ff8ab4",
+    "sourceColor": "#ff8ab4",
+    "polygon": [
+      {
+        "x": 733,
+        "y": 361
+      },
+      {
+        "x": 767,
+        "y": 385
+      },
+      {
+        "x": 781,
+        "y": 368
+      },
+      {
+        "x": 804,
+        "y": 384
+      },
+      {
+        "x": 805,
+        "y": 392
+      },
+      {
+        "x": 810,
+        "y": 388
+      },
+      {
+        "x": 836,
+        "y": 406
+      },
+      {
+        "x": 742,
+        "y": 526
+      },
+      {
+        "x": 723,
+        "y": 502
+      },
+      {
+        "x": 728,
+        "y": 493
+      },
+      {
+        "x": 720,
+        "y": 500
+      },
+      {
+        "x": 676,
+        "y": 441
+      }
+    ],
+    "polygons": [
+      [
+        {
+          "x": 733,
+          "y": 361
+        },
+        {
+          "x": 767,
+          "y": 385
+        },
+        {
+          "x": 781,
+          "y": 368
+        },
+        {
+          "x": 804,
+          "y": 384
+        },
+        {
+          "x": 805,
+          "y": 392
+        },
+        {
+          "x": 810,
+          "y": 388
+        },
+        {
+          "x": 836,
+          "y": 406
+        },
+        {
+          "x": 742,
+          "y": 526
+        },
+        {
+          "x": 723,
+          "y": 502
+        },
+        {
+          "x": 728,
+          "y": 493
+        },
+        {
+          "x": 720,
+          "y": 500
+        },
+        {
+          "x": 676,
+          "y": 441
+        }
+      ]
+    ],
+    "bbox": {
+      "x": 676,
+      "y": 361,
+      "w": 160,
+      "h": 165
+    },
+    "area": 13638.5,
+    "sourceRegionIds": [
+      "sec-7"
+    ],
+    "sectionIds": [
+      "sec-7"
+    ],
+    "button": {
+      "x": 756,
+      "y": 443.5,
+      "w": 160,
+      "h": 165,
+      "xPercent": 82.53,
+      "yPercent": 67.92,
+      "wPercent": 17.47,
+      "hPercent": 25.27,
+      "angle": 0,
+      "label": "D2",
+      "color": "#ff8ab4"
+    },
+    "manual": false,
+    "merged": false
+  },
+  {
+    "id": "sec-8",
+    "sectionId": "sec-8",
+    "groupKey": "D",
+    "groupName": "D",
+    "groupIndex": 3,
+    "name": "D3",
+    "section": "D3",
+    "sectionName": "D3",
+    "label": "D3",
+    "floor": "1",
+    "grade": "일반석",
+    "price": 132000,
+    "color": "#ff8ab4",
+    "renderColor": "#ff8ab4",
+    "sourceColor": "#ff8ab4",
+    "polygon": [
+      {
+        "x": 227,
+        "y": 444
+      },
+      {
+        "x": 307,
+        "y": 497
+      },
+      {
+        "x": 294,
+        "y": 540
+      },
+      {
+        "x": 313,
+        "y": 551
+      },
+      {
+        "x": 284,
+        "y": 612
+      },
+      {
+        "x": 164,
+        "y": 532
+      }
+    ],
+    "polygons": [
+      [
+        {
+          "x": 227,
+          "y": 444
+        },
+        {
+          "x": 307,
+          "y": 497
+        },
+        {
+          "x": 294,
+          "y": 540
+        },
+        {
+          "x": 313,
+          "y": 551
+        },
+        {
+          "x": 284,
+          "y": 612
+        },
+        {
+          "x": 164,
+          "y": 532
+        }
+      ]
+    ],
+    "bbox": {
+      "x": 164,
+      "y": 444,
+      "w": 149,
+      "h": 168
+    },
+    "area": 13495.5,
+    "sourceRegionIds": [
+      "sec-8"
+    ],
+    "sectionIds": [
+      "sec-8"
+    ],
+    "button": {
+      "x": 238.5,
+      "y": 528,
+      "w": 149,
+      "h": 168,
+      "xPercent": 26.04,
+      "yPercent": 80.86,
+      "wPercent": 16.27,
+      "hPercent": 25.73,
+      "angle": 0,
+      "label": "D3",
+      "color": "#ff8ab4"
+    },
+    "manual": false,
+    "merged": false
+  },
+  {
+    "id": "sec-9",
+    "sectionId": "sec-9",
+    "groupKey": "D",
+    "groupName": "D",
+    "groupIndex": 6,
+    "name": "D6",
+    "section": "D6",
+    "sectionName": "D6",
+    "label": "D6",
+    "floor": "1",
+    "grade": "일반석",
+    "price": 132000,
+    "color": "#ff8ab4",
+    "renderColor": "#ff8ab4",
+    "sourceColor": "#ff8ab4",
+    "polygon": [
+      {
+        "x": 670,
+        "y": 445
+      },
+      {
+        "x": 735,
+        "y": 532
+      },
+      {
+        "x": 615,
+        "y": 611
+      },
+      {
+        "x": 601,
+        "y": 581
+      },
+      {
+        "x": 604,
+        "y": 577
+      },
+      {
+        "x": 599,
+        "y": 578
+      },
+      {
+        "x": 587,
+        "y": 550
+      },
+      {
+        "x": 605,
+        "y": 540
+      },
+      {
+        "x": 591,
+        "y": 498
+      }
+    ],
+    "polygons": [
+      [
+        {
+          "x": 670,
+          "y": 445
+        },
+        {
+          "x": 735,
+          "y": 532
+        },
+        {
+          "x": 615,
+          "y": 611
+        },
+        {
+          "x": 601,
+          "y": 581
+        },
+        {
+          "x": 604,
+          "y": 577
+        },
+        {
+          "x": 599,
+          "y": 578
+        },
+        {
+          "x": 587,
+          "y": 550
+        },
+        {
+          "x": 605,
+          "y": 540
+        },
+        {
+          "x": 591,
+          "y": 498
+        }
+      ]
+    ],
+    "bbox": {
+      "x": 587,
+      "y": 445,
+      "w": 148,
+      "h": 166
+    },
+    "area": 13297.5,
+    "sourceRegionIds": [
+      "sec-9"
+    ],
+    "sectionIds": [
+      "sec-9"
+    ],
+    "button": {
+      "x": 661,
+      "y": 528,
+      "w": 148,
+      "h": 166,
+      "xPercent": 72.16,
+      "yPercent": 80.86,
+      "wPercent": 16.16,
+      "hPercent": 25.42,
+      "angle": 0,
+      "label": "D6",
+      "color": "#ff8ab4"
+    },
+    "manual": false,
+    "merged": false
+  },
+  {
+    "id": "sec-10",
+    "sectionId": "sec-10",
+    "groupKey": "D",
+    "groupName": "D",
+    "groupIndex": 4,
+    "name": "D4",
+    "section": "D4",
+    "sectionName": "D4",
+    "label": "D4",
+    "floor": "1",
+    "grade": "일반석",
+    "price": 132000,
+    "color": "#ff8ab4",
+    "renderColor": "#ff8ab4",
+    "sourceColor": "#ff8ab4",
+    "polygon": [
+      {
+        "x": 345,
+        "y": 513
+      },
+      {
+        "x": 445,
+        "y": 512
+      },
+      {
+        "x": 445,
+        "y": 580
+      },
+      {
+        "x": 306,
+        "y": 579
+      },
+      {
+        "x": 318,
+        "y": 550
+      },
+      {
+        "x": 345,
+        "y": 550
+      }
+    ],
+    "polygons": [
+      [
+        {
+          "x": 345,
+          "y": 513
+        },
+        {
+          "x": 445,
+          "y": 512
+        },
+        {
+          "x": 445,
+          "y": 580
+        },
+        {
+          "x": 306,
+          "y": 579
+        },
+        {
+          "x": 318,
+          "y": 550
+        },
+        {
+          "x": 345,
+          "y": 550
+        }
+      ]
+    ],
+    "bbox": {
+      "x": 306,
+      "y": 512,
+      "w": 139,
+      "h": 68
+    },
+    "area": 7676.5,
+    "sourceRegionIds": [
+      "sec-10"
+    ],
+    "sectionIds": [
+      "sec-10"
+    ],
+    "button": {
+      "x": 375.5,
+      "y": 546,
+      "w": 139,
+      "h": 68,
+      "xPercent": 40.99,
+      "yPercent": 83.61,
+      "wPercent": 15.17,
+      "hPercent": 10.41,
+      "angle": 0,
+      "label": "D4",
+      "color": "#ff8ab4"
+    },
+    "manual": false,
+    "merged": false
+  },
+  {
+    "id": "sec-11",
+    "sectionId": "sec-11",
+    "groupKey": "D",
+    "groupName": "D",
+    "groupIndex": 5,
+    "name": "D5",
+    "section": "D5",
+    "sectionName": "D5",
+    "label": "D5",
+    "floor": "1",
+    "grade": "일반석",
+    "price": 132000,
+    "color": "#ff8ab4",
+    "renderColor": "#ff8ab4",
+    "sourceColor": "#ff8ab4",
+    "polygon": [
+      {
+        "x": 451,
+        "y": 513
+      },
+      {
+        "x": 551,
+        "y": 512
+      },
+      {
+        "x": 551,
+        "y": 550
+      },
+      {
+        "x": 579,
+        "y": 551
+      },
+      {
+        "x": 592,
+        "y": 580
+      },
+      {
+        "x": 451,
+        "y": 580
+      }
+    ],
+    "polygons": [
+      [
+        {
+          "x": 451,
+          "y": 513
+        },
+        {
+          "x": 551,
+          "y": 512
+        },
+        {
+          "x": 551,
+          "y": 550
+        },
+        {
+          "x": 579,
+          "y": 551
+        },
+        {
+          "x": 592,
+          "y": 580
+        },
+        {
+          "x": 451,
+          "y": 580
+        }
+      ]
+    ],
+    "bbox": {
+      "x": 451,
+      "y": 512,
+      "w": 141,
+      "h": 68
+    },
+    "area": 7764.5,
+    "sourceRegionIds": [
+      "sec-11"
+    ],
+    "sectionIds": [
+      "sec-11"
+    ],
+    "button": {
+      "x": 521.5,
+      "y": 546,
+      "w": 141,
+      "h": 68,
+      "xPercent": 56.93,
+      "yPercent": 83.61,
+      "wPercent": 15.39,
+      "hPercent": 10.41,
+      "angle": 0,
+      "label": "D5",
+      "color": "#ff8ab4"
+    },
+    "manual": false,
+    "merged": false
+  },
+  {
+    "id": "sec-12",
+    "sectionId": "sec-12",
+    "groupKey": "E",
+    "groupName": "E",
+    "groupIndex": 1,
+    "name": "E1",
+    "section": "E1",
+    "sectionName": "E1",
+    "label": "E1",
+    "floor": "1",
+    "grade": "일반석",
+    "price": 132000,
+    "color": "#70d0ea",
+    "renderColor": "#70d0ea",
+    "sourceColor": "#70d0ea",
+    "polygon": [
+      {
+        "x": 305,
+        "y": 582
+      },
+      {
+        "x": 444,
+        "y": 581
+      },
+      {
+        "x": 445,
+        "y": 591
+      },
+      {
+        "x": 421,
+        "y": 593
+      },
+      {
+        "x": 422,
+        "y": 624
+      },
+      {
+        "x": 417,
+        "y": 624
+      },
+      {
+        "x": 290,
+        "y": 614
+      }
+    ],
+    "polygons": [
+      [
+        {
+          "x": 305,
+          "y": 582
+        },
+        {
+          "x": 444,
+          "y": 581
+        },
+        {
+          "x": 445,
+          "y": 591
+        },
+        {
+          "x": 421,
+          "y": 593
+        },
+        {
+          "x": 422,
+          "y": 624
+        },
+        {
+          "x": 417,
+          "y": 624
+        },
+        {
+          "x": 290,
+          "y": 614
+        }
+      ]
+    ],
+    "bbox": {
+      "x": 290,
+      "y": 581,
+      "w": 155,
+      "h": 43
+    },
+    "area": 4948,
+    "sourceRegionIds": [
+      "sec-12"
+    ],
+    "sectionIds": [
+      "sec-12"
+    ],
+    "button": {
+      "x": 367.5,
+      "y": 602.5,
+      "w": 155,
+      "h": 43,
+      "xPercent": 40.12,
+      "yPercent": 92.27,
+      "wPercent": 16.92,
+      "hPercent": 6.58,
+      "angle": 0,
+      "label": "E1",
+      "color": "#70d0ea"
+    },
+    "manual": false,
+    "merged": false
+  },
+  {
+    "id": "sec-13",
+    "sectionId": "sec-13",
+    "groupKey": "E",
+    "groupName": "E",
+    "groupIndex": 2,
+    "name": "E2",
+    "section": "E2",
+    "sectionName": "E2",
+    "label": "E2",
+    "floor": "1",
+    "grade": "일반석",
+    "price": 132000,
+    "color": "#70d0ea",
+    "renderColor": "#70d0ea",
+    "sourceColor": "#70d0ea",
+    "polygon": [
+      {
+        "x": 451,
+        "y": 583
+      },
+      {
+        "x": 592,
+        "y": 582
+      },
+      {
+        "x": 606,
+        "y": 614
+      },
+      {
+        "x": 474,
+        "y": 624
+      },
+      {
+        "x": 474,
+        "y": 592
+      },
+      {
+        "x": 451,
+        "y": 592
+      }
+    ],
+    "polygons": [
+      [
+        {
+          "x": 451,
+          "y": 583
+        },
+        {
+          "x": 592,
+          "y": 582
+        },
+        {
+          "x": 606,
+          "y": 614
+        },
+        {
+          "x": 474,
+          "y": 624
+        },
+        {
+          "x": 474,
+          "y": 592
+        },
+        {
+          "x": 451,
+          "y": 592
+        }
+      ]
+    ],
+    "bbox": {
+      "x": 451,
+      "y": 582,
+      "w": 155,
+      "h": 42
+    },
+    "area": 4819.5,
+    "sourceRegionIds": [
+      "sec-13"
+    ],
+    "sectionIds": [
+      "sec-13"
+    ],
+    "button": {
+      "x": 528.5,
+      "y": 603,
+      "w": 155,
+      "h": 42,
+      "xPercent": 57.7,
+      "yPercent": 92.34,
+      "wPercent": 16.92,
+      "hPercent": 6.43,
+      "angle": 0,
+      "label": "E2",
+      "color": "#70d0ea"
+    },
+    "manual": false,
+    "merged": false
+  }
+]

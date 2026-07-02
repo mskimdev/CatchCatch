@@ -6,6 +6,73 @@
 
 ---
 
+## 시연 화면
+
+### 좌석 선택
+
+<img src="src/main/resources/static/gif/공연좌석선택.gif" alt="공연 좌석 선택" width="720">
+
+<details>
+<summary><strong>사용자 예매 플로우</strong></summary>
+
+| 회원가입 | 일반 로그인 |
+|---|---|
+| <img src="src/main/resources/static/gif/회원가입.gif" alt="회원가입" width="360"> | <img src="src/main/resources/static/gif/일반로그인.gif" alt="일반 로그인" width="360"> |
+
+| 공연 날짜 선택 | 공연 예매 |
+|---|---|
+| <img src="src/main/resources/static/gif/공연날짜선택.gif" alt="공연 날짜 선택" width="360"> | <img src="src/main/resources/static/gif/공연예매.gif" alt="공연 예매" width="360"> |
+
+| 예매 내역 | 예매 취소 |
+|---|---|
+| <img src="src/main/resources/static/gif/예매내역.gif" alt="예매 내역" width="360"> | <img src="src/main/resources/static/gif/유저예매취소.gif" alt="유저 예매 취소" width="360"> |
+
+</details>
+
+<details>
+<summary><strong>관리자 기능</strong></summary>
+
+| 관리자 로그인 | 관리자 대시보드 |
+|---|---|
+| <img src="src/main/resources/static/gif/관리자%20로그인.gif" alt="관리자 로그인" width="360"> | <img src="src/main/resources/static/gif/관리자%20대시보드.gif" alt="관리자 대시보드" width="360"> |
+
+| 최근 예매 | 예매 내역 조회 |
+|---|---|
+| <img src="src/main/resources/static/gif/관리자최근예매.gif" alt="관리자 최근 예매" width="360"> | <img src="src/main/resources/static/gif/관리자예매내역조회.gif" alt="관리자 예매 내역 조회" width="360"> |
+
+| 예매 취소 | 공연별 예매율 |
+|---|---|
+| <img src="src/main/resources/static/gif/관리자예매취소.gif" alt="관리자 예매 취소" width="360"> | <img src="src/main/resources/static/gif/공연별%20예매율.gif" alt="공연별 예매율" width="360"> |
+
+| 공연 목록 조회 | 공연 상세 |
+|---|---|
+| <img src="src/main/resources/static/gif/관리자공연목록조회.gif" alt="관리자 공연 목록 조회" width="360"> | <img src="src/main/resources/static/gif/관리자공연상세.gif" alt="관리자 공연 상세" width="360"> |
+
+| 공연 등록 | 공연 수정 |
+|---|---|
+| <img src="src/main/resources/static/gif/공연등록gif.gif" alt="공연 등록" width="360"> | <img src="src/main/resources/static/gif/공연%20수정.gif" alt="공연 수정" width="360"> |
+
+| 공연 삭제 | 공연 회차 관리 |
+|---|---|
+| <img src="src/main/resources/static/gif/공연삭제.gif" alt="공연 삭제" width="360"> | <img src="src/main/resources/static/gif/공연회자관리.gif" alt="공연 회차 관리" width="360"> |
+
+</details>
+
+<details>
+<summary><strong>결제 / 포인트 / AI</strong></summary>
+
+| 결제 내역 | 포인트 내역 |
+|---|---|
+| <img src="src/main/resources/static/gif/결제내역.gif" alt="결제 내역" width="360"> | <img src="src/main/resources/static/gif/포인트내역.gif" alt="포인트 내역" width="360"> |
+
+| 포인트 지급 | AI 비서 |
+|---|---|
+| <img src="src/main/resources/static/gif/포인트지급.gif" alt="포인트 지급" width="360"> | <img src="src/main/resources/static/gif/ai비서.gif" alt="AI 비서" width="360"> |
+
+</details>
+
+---
+
 ## 주요 기능
 
 ### 실시간 대기열 (Queue)
