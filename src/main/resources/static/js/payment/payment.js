@@ -1,4 +1,51 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectPaymentId = urlParams.get("paymentId");
+
+    if (redirectPaymentId) {
+        CcUI.loading.show("결제를 확인하고 있습니다...");
+
+        try {
+            const csrfHeaderName = document.querySelector("#csrfHeaderName")?.value;
+            const csrfToken = document.querySelector("#csrfToken")?.value;
+            const headers = { "Content-Type": "application/json" };
+
+            if (csrfHeaderName && csrfToken) {
+                headers[csrfHeaderName] = csrfToken;
+            }
+
+            const smsPayload = { notifySms: false, smsPhone: null, updateProfile: false };
+
+            const completeRes = await fetch("/api/payments/complete", {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify({
+                    paymentId: redirectPaymentId,
+                    ...smsPayload
+                })
+            });
+
+            if (!completeRes.ok) {
+                const errorData = await completeRes.json();
+                CcUI.alert(errorData.message || "결제 검증에 실패했습니다.", "error", () => {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                });
+                return;
+            }
+
+            CcUI.alert("결제가 완료되었습니다.", "success", () => {
+                location.href = "/payment/complete?paymentId=" + redirectPaymentId;
+            });
+            return;
+
+        } catch (error) {
+            CcUI.toast("검증 중 오류가 발생했습니다.", "error");
+        } finally {
+            CcUI.loading.hide();
+        }
+    }
+
+
     const paymentForm = document.querySelector("#paymentForm");
     const paymentBtn = document.querySelector("#payment-btn");
     const cancelBtn = document.querySelector("#booking-cancel-btn");
@@ -8,6 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     initPaymentCountdown();
     initSmsToggle();
+    initPointUse();
 
     if (cancelBtn) {
         cancelBtn.addEventListener("click", async function () {
@@ -42,14 +90,11 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    initPointUse();
-
     payMethodLabels.forEach(label => {
         label.addEventListener("click", function () {
             payMethodLabels.forEach(item => {
                 item.classList.remove("is-active");
             });
-
             label.classList.add("is-active");
         });
     });
@@ -144,16 +189,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            console.log("prepare 응답:", prepareData);
-            console.log("원래 금액:", prepareData.originalAmount);
-            console.log("사용 포인트:", prepareData.usedPoint);
-            console.log("카카오페이에 넘길 금액:", prepareData.amount);
-
-            /*
-             * 포인트 전액 결제
-             * amount가 0이면 PortOne 결제창을 띄우면 안 됨.
-             * 바로 서버에 결제 완료 검증 요청.
-             */
             const smsPayload = getSmsPayload();
 
             if (prepareData.amount === 0) {
@@ -173,9 +208,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 CcUI.alert("포인트 결제가 완료되었습니다.", "success", () => {
-                    location.href = "/booking/complete?paymentId=" + prepareData.paymentId;
+                    location.href = "/payment/complete?paymentId=" + prepareData.paymentId;
                 });
-
                 return;
             }
 
@@ -189,17 +223,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 channelKey: prepareData.channelKey,
                 paymentId: prepareData.paymentId,
                 orderName: prepareData.orderName || "CatchCatch 좌석 예매",
-
-                // 핵심: 화면 총액이 아니라 서버 prepare 응답의 amount 사용
                 totalAmount: prepareData.amount,
-
                 currency: "CURRENCY_KRW",
                 payMethod: toPortOnePayMethod(selectedMethod),
                 customer: {
                     fullName: customerName,
                     email: customerEmail,
                     phoneNumber: customerPhone
-                }
+                },
+                redirectUrl: window.location.href
             };
 
             if (selectedMethod === "vbank") {
@@ -224,6 +256,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
+            // 카카오페이 등 iframe 방식인 경우에만 이 코드가 마저 실행됩니다.
             const completeRes = await fetch("/api/payments/complete", {
                 method: "POST",
                 headers: headers,
@@ -258,6 +291,8 @@ document.addEventListener("DOMContentLoaded", function () {
             paymentBtn.disabled = false;
         }
     });
+
+
 
     function initPaymentCountdown() {
         const expiresAtInput = document.querySelector("#bookingExpiresAt");
@@ -306,15 +341,12 @@ document.addEventListener("DOMContentLoaded", function () {
         if (method === "card") {
             return "CARD";
         }
-
         if (method === "kakaopay" || method === "tosspay") {
             return "EASY_PAY";
         }
-
         if (method === "vbank") {
             return "VIRTUAL_ACCOUNT";
         }
-
         return "CARD";
     }
 
@@ -327,7 +359,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 });
+// 👆 DOMContentLoaded 종료 괄호
 
+
+// 👇 여기서부터는 전역 함수들입니다.
 function formatWon(amount) {
     return Number(amount || 0).toLocaleString() + "원";
 }
@@ -338,11 +373,9 @@ function formatPoint(point) {
 
 function toSafeNumber(value) {
     const number = Number(value);
-
     if (Number.isNaN(number) || number < 0) {
         return 0;
     }
-
     return Math.floor(number);
 }
 
@@ -377,7 +410,7 @@ function initPointUse() {
 
         usedPointInput.value = usedPoint;
 
-        const finalAmount = originalAmount +ticketFee - usedPoint;
+        const finalAmount = originalAmount + ticketFee - usedPoint;
 
         usedPointText.textContent = "-" + formatPoint(usedPoint);
         finalAmountText.textContent = formatWon(finalAmount);
