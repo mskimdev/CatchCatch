@@ -1,4 +1,3 @@
-// --- 1. 모달 열기/닫기 공통 및 개별 함수 (부트스트랩 방식으로 통일) ---
 
 // 모달 닫기 공통 함수
 function closeModal(modalId) {
@@ -36,9 +35,6 @@ function openStatusModal(empNo, name, currentStatus) {
     $('#statusModal').modal('show');
 }
 
-
-// --- 2. 폼 제출 가로채기 (페이지 이동 없이 알림창 띄우고 모달 닫기) ---
-
 document.addEventListener('DOMContentLoaded', function() {
     // 3개의 폼(등록, 수정, 상태변경)에 모두 적용
     const formIds = ['createForm', 'updateForm', 'statusForm'];
@@ -63,11 +59,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     // 서버에서 400(값 오류)이나 403(권한 없음)이 오면 에러로 던짐
                     throw new Error('권한이 없거나 잘못된 요청입니다.');
                 }
-                // 성공 시 화면 새로고침하여 리스트 갱신
-                location.reload();
+
+                let successMessage = '처리가 완료되었습니다.';
+                if (formId === 'createForm') {
+                    successMessage = '사원이 성공적으로 등록되었습니다.';
+                } else if (formId === 'updateForm') {
+                    successMessage = '사원 정보가 수정되었습니다.';
+                } else if (formId === 'statusForm') {
+                    successMessage = '재직 상태가 변경되었습니다.';
+                }
+
+                const modalId = formId.replace('Form', 'Modal');
+                closeModal(modalId);
+
+                CcUI.alert(successMessage, 'success', () => {
+                    location.reload();
+                });
             })
+
             .catch(error => {
-                // 🚨 에러 발생 시 (모달창을 가리지 않고 예쁘게 띄움)
                 Swal.fire({
                     icon: 'error',
                     title: '요청 실패',
