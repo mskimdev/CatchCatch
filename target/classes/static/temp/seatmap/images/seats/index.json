@@ -1,0 +1,158 @@
+{
+  "version" : 1,
+  "projectId" : "images",
+  "totalSeatCount" : 1527,
+  "sectionCount" : 25,
+  "generatedAt" : "2026-07-02T01:48:05.142Z",
+  "sections" : [ {
+    "sectionId" : "sec-2",
+    "sectionName" : "A1",
+    "file" : "sec-2.json",
+    "seatCount" : 62,
+    "availableSeatCount" : 62
+  }, {
+    "sectionId" : "sec-3",
+    "sectionName" : "A2",
+    "file" : "sec-3.json",
+    "seatCount" : 62,
+    "availableSeatCount" : 62
+  }, {
+    "sectionId" : "sec-10",
+    "sectionName" : "A3",
+    "file" : "sec-10.json",
+    "seatCount" : 58,
+    "availableSeatCount" : 58
+  }, {
+    "sectionId" : "sec-11",
+    "sectionName" : "A4",
+    "file" : "sec-11.json",
+    "seatCount" : 58,
+    "availableSeatCount" : 58
+  }, {
+    "sectionId" : "sec-1",
+    "sectionName" : "B1",
+    "file" : "sec-1.json",
+    "seatCount" : 68,
+    "availableSeatCount" : 68
+  }, {
+    "sectionId" : "sec-6",
+    "sectionName" : "B2",
+    "file" : "sec-6.json",
+    "seatCount" : 69,
+    "availableSeatCount" : 69
+  }, {
+    "sectionId" : "sec-7",
+    "sectionName" : "B3",
+    "file" : "sec-7.json",
+    "seatCount" : 74,
+    "availableSeatCount" : 74
+  }, {
+    "sectionId" : "sec-12",
+    "sectionName" : "B4",
+    "file" : "sec-12.json",
+    "seatCount" : 72,
+    "availableSeatCount" : 72
+  }, {
+    "sectionId" : "sec-15",
+    "sectionName" : "B5",
+    "file" : "sec-15.json",
+    "seatCount" : 73,
+    "availableSeatCount" : 73
+  }, {
+    "sectionId" : "sec-18",
+    "sectionName" : "B6",
+    "file" : "sec-18.json",
+    "seatCount" : 72,
+    "availableSeatCount" : 72
+  }, {
+    "sectionId" : "sec-23",
+    "sectionName" : "B7",
+    "file" : "sec-23.json",
+    "seatCount" : 38,
+    "availableSeatCount" : 38
+  }, {
+    "sectionId" : "sec-22",
+    "sectionName" : "B8",
+    "file" : "sec-22.json",
+    "seatCount" : 69,
+    "availableSeatCount" : 69
+  }, {
+    "sectionId" : "sec-4",
+    "sectionName" : "C1",
+    "file" : "sec-4.json",
+    "seatCount" : 73,
+    "availableSeatCount" : 73
+  }, {
+    "sectionId" : "sec-5",
+    "sectionName" : "C2",
+    "file" : "sec-5.json",
+    "seatCount" : 76,
+    "availableSeatCount" : 76
+  }, {
+    "sectionId" : "sec-8",
+    "sectionName" : "C3",
+    "file" : "sec-8.json",
+    "seatCount" : 56,
+    "availableSeatCount" : 56
+  }, {
+    "sectionId" : "sec-9",
+    "sectionName" : "C4",
+    "file" : "sec-9.json",
+    "seatCount" : 54,
+    "availableSeatCount" : 54
+  }, {
+    "sectionId" : "sec-13",
+    "sectionName" : "C5",
+    "file" : "sec-13.json",
+    "seatCount" : 47,
+    "availableSeatCount" : 47
+  }, {
+    "sectionId" : "sec-14",
+    "sectionName" : "C6",
+    "file" : "sec-14.json",
+    "seatCount" : 48,
+    "availableSeatCount" : 48
+  }, {
+    "sectionId" : "sec-16",
+    "sectionName" : "C7",
+    "file" : "sec-16.json",
+    "seatCount" : 42,
+    "availableSeatCount" : 42
+  }, {
+    "sectionId" : "sec-17",
+    "sectionName" : "C8",
+    "file" : "sec-17.json",
+    "seatCount" : 44,
+    "availableSeatCount" : 44
+  }, {
+    "sectionId" : "sec-20",
+    "sectionName" : "C9",
+    "file" : "sec-20.json",
+    "seatCount" : 51,
+    "availableSeatCount" : 51
+  }, {
+    "sectionId" : "sec-21",
+    "sectionName" : "C10",
+    "file" : "sec-21.json",
+    "seatCount" : 52,
+    "availableSeatCount" : 52
+  }, {
+    "sectionId" : "sec-19",
+    "sectionName" : "D1",
+    "file" : "sec-19.json",
+    "seatCount" : 28,
+    "availableSeatCount" : 28
+  }, {
+    "sectionId" : "sec-24",
+    "sectionName" : "D2",
+    "file" : "sec-24.json",
+    "seatCount" : 89,
+    "availableSeatCount" : 89
+  }, {
+    "sectionId" : "sec-25",
+    "sectionName" : "D3",
+    "file" : "sec-25.json",
+    "seatCount" : 92,
+    "availableSeatCount" : 92
+  } ]
+}

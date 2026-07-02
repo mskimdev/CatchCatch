@@ -1,0 +1,323 @@
+{"kind":"deck","id":"pr/x9d5io","name":"Deck"}
+{"kind":"layout","layoutId":"/ppt/slideMasters/slideMaster1.xml","name":"","type":"master","placeholders":[{"name":"title","type":"title"},{"name":"body","type":"body"},{"name":"footer","type":"footer"},{"name":"dateTime","type":"dateTime"},{"name":"slideNumber","type":"slideNumber","textPreview":"#"}]}
+{"kind":"layout","layoutId":"/ppt/slideLayouts/slideLayout1.xml","name":"Title Slide","type":"obj","placeholders":[{"name":"title","type":"title"},{"name":"subtitle","type":"subtitle"},{"name":"footer","type":"footer"},{"name":"dateTime","type":"dateTime"},{"name":"slideNumber","type":"slideNumber","textPreview":"#"}]}
+{"kind":"layout","layoutId":"/ppt/slideLayouts/slideLayout2.xml","name":"Title and Content","type":"obj","placeholders":[{"name":"title","type":"title"},{"name":"body","type":"body"},{"name":"footer","type":"footer"},{"name":"dateTime","type":"dateTime"},{"name":"slideNumber","type":"slideNumber","textPreview":"#"}]}
+{"kind":"layout","layoutId":"/ppt/slideLayouts/slideLayout3.xml","name":"Two Content","type":"obj","placeholders":[{"name":"title","type":"title"},{"name":"holder 3"},{"name":"holder 4"},{"name":"footer","type":"footer"},{"name":"dateTime","type":"dateTime"},{"name":"slideNumber","type":"slideNumber","textPreview":"#"}]}
+{"kind":"layout","layoutId":"/ppt/slideLayouts/slideLayout4.xml","name":"Title Only","type":"obj","placeholders":[{"name":"title","type":"title"},{"name":"footer","type":"footer"},{"name":"dateTime","type":"dateTime"},{"name":"slideNumber","type":"slideNumber","textPreview":"#"}]}
+{"kind":"layout","layoutId":"/ppt/slideLayouts/slideLayout5.xml","name":"Blank","type":"obj","placeholders":[{"name":"footer","type":"footer"},{"name":"dateTime","type":"dateTime"},{"name":"slideNumber","type":"slideNumber","textPreview":"#"}]}
+{"kind":"slide","id":"sl/2x4nap4r","slide":1,"title":"CatchCatch","textShapes":3}
+{"kind":"shape","id":"sh/cvixczed","slide":1,"name":"object 2","bbox":[0,0.32,1920,1079.73]}
+{"kind":"textbox","id":"sh/5gbq1ory","slide":1,"name":"object 3","placeholder":"title","text":"CatchCatch\n콘서트 티켓팅","textPreview":"CatchCatch | 콘서트 티켓팅","textChars":18,"textLines":2,"bbox":[158.69,192.9,1084.8,294.87]}
+{"kind":"textbox","id":"sh/udg7adsj","slide":1,"name":"object 4","text":"실시간 대기열 기반 예매 서비스","textPreview":"실시간 대기열 기반 예매 서비스","textChars":17,"textLines":1,"bbox":[158.69,925.03,428,89.07]}
+{"kind":"textbox","id":"sh/nyd0z610","slide":1,"name":"object 5","text":"Spring Boot 프로젝트","textPreview":"Spring Boot 프로젝트","textChars":16,"textLines":1,"bbox":[158.69,159.97,346.67,45.87]}
+{"kind":"notes","id":"nt/2x4nap4r","slide":1,"text":""}
+{"kind":"slide","id":"sl/pg3ex0nu","slide":2,"title":"1","textShapes":17}
+{"kind":"textbox","id":"sh/5o7qpg3e","slide":2,"name":"object 2","text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[905.13,240.11,19.47,47.47]}
+{"kind":"textbox","id":"sh/g3ex0nux","slide":2,"name":"object 3","text":"프로젝트 목적","textPreview":"프로젝트 목적","textChars":7,"textLines":1,"bbox":[998.64,241.23,191.47,42.67]}
+{"kind":"shape","id":"sh/r65wjudg","slide":2,"name":"object 4","bbox":[856.32,386.08,117,117.6]}
+{"kind":"textbox","id":"sh/ylc7u54z","slide":2,"name":"object 5","text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[901.77,419.76,26.2,47.47]}
+{"kind":"shape","id":"sh/9cvixcze","slide":2,"name":"object 6","bbox":[856.32,565.76,117,117.47]}
+{"kind":"textbox","id":"sh/gr2p8nqx","slide":2,"name":"object 7","text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[901.77,599.44,26.2,47.47]}
+{"kind":"shape","id":"sh/rytsvu9k","slide":2,"name":"object 8","bbox":[856.32,745.28,117,117.6]}
+{"kind":"textbox","id":"sh/yd0z6103","slide":2,"name":"object 9","text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[901.77,779.08,26.2,47.47]}
+{"kind":"textbox","id":"sh/wb2hwfyx","slide":2,"name":"object 10","text":"DB 설계","textPreview":"DB 설계","textChars":5,"textLines":1,"bbox":[998.64,600.01,131.47,42.67]}
+{"kind":"textbox","id":"sh/lwval87e","slide":2,"name":"object 11","text":"주요 기능 소개","textPreview":"주요 기능 소개","textChars":8,"textLines":1,"bbox":[1516.45,420.88,116.2,122.53]}
+{"kind":"shape","id":"sh/e9cvixcz","slide":2,"name":"object 12","bbox":[1374.08,206.4,117.13,117.6]}
+{"kind":"textbox","id":"sh/3q5o7qpg","slide":2,"name":"object 13","text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[1419.63,240.11,26.2,47.47]}
+{"kind":"textbox","id":"sh/w3m94fu1","slide":2,"name":"object 14","text":"기능 구분","textPreview":"기능 구분","textChars":5,"textLines":1,"bbox":[1516.45,241.23,131.73,82.53]}
+{"kind":"shape","id":"sh/loj2t83i","slide":2,"name":"object 15","bbox":[1374.08,386.08,117.13,117.6]}
+{"kind":"textbox","id":"sh/ex0nuxc3","slide":2,"name":"object 16","text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[1419.63,419.76,26.2,47.47]}
+{"kind":"shape","id":"sh/3itgfmlk","slide":2,"name":"object 17","bbox":[1374.08,565.76,117.13,117.47]}
+{"kind":"textbox","id":"sh/szqtcj6t","slide":2,"name":"object 18","text":"7","textPreview":"7","textChars":1,"textLines":1,"bbox":[1420.91,599.44,23.6,47.47]}
+{"kind":"shape","id":"sh/lkjm1cfa","slide":2,"name":"object 19","bbox":[1374.08,745.28,117.13,117.6]}
+{"kind":"textbox","id":"sh/lc7u54zi","slide":2,"name":"object 20","text":"8","textPreview":"8","textChars":1,"textLines":1,"bbox":[1419.63,779.08,26.2,47.47]}
+{"kind":"textbox","id":"sh/wra5gbq1","slide":2,"name":"object 21","text":"사이트 맵","textPreview":"사이트 맵","textChars":5,"textLines":1,"bbox":[998.64,780.2,191.47,42.67]}
+{"kind":"textbox","id":"sh/36hcrmhk","slide":2,"name":"object 22","text":"개발 환경","textPreview":"개발 환경","textChars":5,"textLines":1,"bbox":[1001.89,421.39,131.47,82.53]}
+{"kind":"shape","id":"sh/eloj2t83","slide":2,"name":"object 23","bbox":[0,0,658.27,1080]}
+{"kind":"textbox","id":"sh/l0rqd4vm","slide":2,"name":"object 24","text":"목차","textPreview":"목차","textChars":2,"textLines":1,"bbox":[243.76,373.96,170.67,114.67]}
+{"kind":"textbox","id":"sh/wfyxobm5","slide":2,"name":"object 25","text":"테스트 및 검증","textPreview":"테스트 및 검증","textChars":8,"textLines":1,"bbox":[1516.45,599.78,131.53,82.53]}
+{"kind":"textbox","id":"sh/7u54zido","slide":2,"name":"object 26","text":"마무리","textPreview":"마무리","textChars":3,"textLines":1,"bbox":[1516.45,779.49,131.53,42.67]}
+{"kind":"notes","id":"nt/pg3ex0nu","slide":2,"text":""}
+{"kind":"slide","id":"sl/s72x4nap","slide":3,"title":"프로젝트 목적","textShapes":2}
+{"kind":"shape","id":"sh/o7qpg3ex","slide":3,"name":"object 2","bbox":[0,0,1920,1080]}
+{"kind":"textbox","id":"sh/dsji5sne","slide":3,"name":"object 3","placeholder":"title","text":"프로젝트 목적","textPreview":"프로젝트 목적","textChars":7,"textLines":1,"bbox":[62.67,37.65,531.87,114.67]}
+{"kind":"textbox","id":"sh/vy90je9c","slide":3,"name":"object 5","text":"대규모 동시 접속이 발생하는 티켓 오픈 상황을 안정적으로 처리\n\n대기열, 좌석 선택, 결제까지 공정하고 안전한 예매 흐름 구현","textPreview":"대규모 동시 접속이 발생하는 티켓 오픈 상황을 안정적으로 처리 |  | 대기열, 좌석 선택, 결제까지 공정하고 안전한 예매 흐름 구현","textChars":70,"textLines":3,"bbox":[72.27,420.01,621,226.67]}
+{"kind":"image","id":"im/psfil0rq","slide":3,"name":"object 4","bbox":[816,28,1032,1016.8]}
+{"kind":"notes","id":"nt/s72x4nap","slide":3,"text":""}
+{"kind":"slide","id":"sl/val87ed8","slide":4,"title":"여행준비","textShapes":8}
+{"kind":"shape","id":"sh/qtcj6tov","slide":4,"name":"object 2","bbox":[0,0,1920,1080]}
+{"kind":"shape","id":"sh/je9cvixc","slide":4,"name":"object 3","bbox":[635.36,291.2,329.93,329.93]}
+{"kind":"textbox","id":"sh/87ed8bat","slide":4,"name":"object 4","text":"여행준비","textPreview":"여행준비","textChars":4,"textLines":1,"bbox":[694.21,395.63,207.47,71.47]}
+{"kind":"textbox","id":"sh/8jqh0fep","slide":4,"name":"object 8","text":"강민정\n기내 서비스 조회 특별 기내식 신청 및 위탁 수하물 신청\n자주 묻는 질문 · 공지사항\n회원 정보 수정 및 비밀번호 변경 특별 기내식 및 위탁 수하물 신청 내역\n로그인 · 회원가입 회원정보 변경 · 비밀번호 변경 · 회원 탈퇴\n카카오 로그인 API","textPreview":"강민정 | 기내 서비스 조회 특별 기내식 신청 및 위탁 수하물 신청 | 자주 묻는 질문 · 공지사항 | 회원 정보 수정 및 비밀번호 변경 특별 기내식 및 위탁 수하물 신청 내역 | 로그인 · 회원가입 회원정보 변경 · 비밀번호 변경 · 회원 탈퇴...","textChars":141,"textLines":6,"bbox":[104.62,192.56,509.13,393.73]}
+{"kind":"textbox","id":"sh/x4nap4r6","slide":4,"name":"object 9","text":"이치승\n여행 일지\n공항 위치 정보 여행일지 게시판 관리\n구글 맵 API","textPreview":"이치승 | 여행 일지 | 공항 위치 정보 여행일지 게시판 관리 | 구글 맵 API","textChars":39,"textLines":4,"bbox":[352.81,649.16,260.87,228.47]}
+{"kind":"textbox","id":"sh/1w7mp0bi","slide":4,"name":"object 10","text":"이서영\n항공권 예약\n항공권 구매 내역\n항공권 환불 안내 메인 전체 레이아웃\n관리자 전체 레이아웃\n고객의 말씀\n항공기 정보 회원 안내 항공기 정보\n카카오 결제 API · coolSMS API\n정다운\n마일리지 샵\n마일리지 이용 내역 마이페이지 레이아웃\n마일리지 조회\n마일리지 상품 목록 마일리지 상품 등록\n마일리지 상품 판매 내역\n네이버 이메일 SMTP 프로토콜","textPreview":"이서영 | 항공권 예약 | 항공권 구매 내역 | 항공권 환불 안내 메인 전체 레이아웃 | 관리자 전체 레이아웃 | 고객의 말씀 | 항공기 정보 회원 안내 항공기 정보 | 카카오 결제 API · coolSMS API | 정다운 | 마일리지 샵 | ...","textChars":200,"textLines":15,"bbox":[1317.07,172.04,418.4,870.87]}
+{"kind":"textbox","id":"sh/8bat47y1","slide":4,"name":"object 11","text":"여행","textPreview":"여행","textChars":2,"textLines":1,"bbox":[745.73,725.68,104.4,71.47]}
+{"kind":"textbox","id":"sh/8nqxs72x","slide":4,"name":"object 15","text":"예약","textPreview":"예약","textChars":2,"textLines":1,"bbox":[1075.75,395.63,104.4,71.47]}
+{"kind":"textbox","id":"sh/crmhk3q5","slide":4,"name":"object 19","text":"마일리지","textPreview":"마일리지","textChars":4,"textLines":1,"bbox":[1024.23,725.68,207.47,71.47]}
+{"kind":"textbox","id":"sh/h0fepkzu","slide":4,"name":"object 21","placeholder":"title","text":"팀원 소개","textPreview":"팀원 소개","textChars":5,"textLines":1,"bbox":[197.73,30.12,363.87,114.67]}
+{"kind":"image","id":"im/1gvy90je","slide":4,"name":"object 20","bbox":[1221.6,621.12,73.76,65.6]}
+{"kind":"notes","id":"nt/val87ed8","slide":4,"text":""}
+{"kind":"slide","id":"sl/mlkjm1cf","slide":5,"title":"개발 환경","textShapes":6}
+{"kind":"shape","id":"sh/ovahoza1","slide":5,"name":"object 2","bbox":[0,0,1920,1080]}
+{"kind":"shape","id":"sh/dg7adsji","slide":5,"name":"object 3","bbox":[686.88,253.44,527.07,648]}
+{"kind":"shape","id":"sh/6hcrmhk3","slide":5,"name":"object 4","bbox":[1256,256.32,527.07,648]}
+{"kind":"shape","id":"sh/ytsvu9kn","slide":5,"name":"object 19","bbox":[182.16,948.72,393.87,0]}
+{"kind":"textbox","id":"sh/2x4nap4r","slide":5,"name":"object 20","text":"개발 환경","textPreview":"개발 환경","textChars":5,"textLines":1,"bbox":[326.35,973.03,105.87,34.73]}
+{"kind":"shape","id":"sh/vixczed8","slide":5,"name":"object 21","bbox":[748.4,948.56,393.87,0]}
+{"kind":"textbox","id":"sh/k3q5o7qp","slide":5,"name":"object 22","text":"사용 언어","textPreview":"사용 언어","textChars":5,"textLines":1,"bbox":[900.45,972.81,105.87,34.73]}
+{"kind":"shape","id":"sh/donyd0z6","slide":5,"name":"object 23","bbox":[1322.64,948.24,393.87,0]}
+{"kind":"textbox","id":"sh/6psfil0r","slide":5,"name":"object 24","text":"형상 관리 & 협업툴","textPreview":"형상 관리 & 협업툴","textChars":11,"textLines":1,"bbox":[1413.77,972.49,211.33,34.73]}
+{"kind":"textbox","id":"sh/val87ed8","slide":5,"name":"object 25","placeholder":"title","text":"개발 환경","textPreview":"개발 환경","textChars":5,"textLines":1,"bbox":[62.67,37.65,363.87,114.67]}
+{"kind":"textbox","id":"sh/dcbulwva","slide":5,"name":"object 27","text":"MyBatis","textPreview":"MyBatis","textChars":7,"textLines":1,"bbox":[528.08,478.16,98.33,31.47]}
+{"kind":"textbox","id":"sh/adsji5sn","slide":5,"name":"object 33","text":"Lombok","textPreview":"Lombok","textChars":6,"textLines":1,"bbox":[188.29,804.46,92.67,31.53]}
+{"kind":"image","id":"im/epkzupwb","slide":5,"name":"object 8","bbox":[776.48,287.84,353.92,202.56]}
+{"kind":"image","id":"im/7adsji5s","slide":5,"name":"object 9","bbox":[1331.04,329.44,389.28,136]}
+{"kind":"image","id":"im/wval87ed","slide":5,"name":"object 10","bbox":[157.92,389.76,214.56,111.04]}
+{"kind":"image","id":"im/pg3ex0nu","slide":5,"name":"object 11","bbox":[1422.08,500.8,175.84,176]}
+{"kind":"image","id":"im/eloj2t83","slide":5,"name":"object 12","bbox":[1412.8,731.36,213.44,83.68]}
+{"kind":"image","id":"im/36hcrmhk","slide":5,"name":"object 13","bbox":[176,271.04,379.2,116.16]}
+{"kind":"image","id":"im/n29gr2p8","slide":5,"name":"object 17","bbox":[138.08,546.72,140,139.84]}
+{"kind":"image","id":"im/yhgn29gr","slide":5,"name":"object 18","bbox":[785.6,692.8,328,178.88]}
+{"kind":"image","id":"im/58z25kb6","slide":5,"name":"object 26","bbox":[510.72,368.32,108,115.36]}
+{"kind":"image","id":"im/gn29gr2p","slide":5,"name":"object 32","bbox":[132.64,735.04,191.84,72.32]}
+{"kind":"notes","id":"nt/mlkjm1cf","slide":5,"text":""}
+{"kind":"slide","id":"sl/58z25kb6","slide":6,"title":"협업 툴 Jira 활용","textShapes":2}
+{"kind":"textbox","id":"sh/ylc7u54z","slide":6,"name":"object 2","placeholder":"title","text":"협업 툴 Jira 활용","textPreview":"협업 툴 Jira 활용","textChars":12,"textLines":1,"bbox":[54.67,37.65,673.67,114.67]}
+{"kind":"textbox","id":"sh/nih4byhg","slide":6,"name":"object 7","text":"Click!","textPreview":"Click!","textChars":6,"textLines":1,"bbox":[1569.2,126.09,67.93,31.47]}
+{"kind":"image","id":"im/5wjudg7a","slide":6,"name":"object 3","bbox":[264,196,1384,850.08]}
+{"kind":"notes","id":"nt/58z25kb6","slide":6,"text":""}
+{"kind":"slide","id":"sl/0z61032l","slide":7,"title":"테이블 설계 및 구현","textShapes":10}
+{"kind":"shape","id":"sh/x4nap4r6","slide":7,"name":"object 2","bbox":[0,0,1920,1080]}
+{"kind":"shape","id":"sh/8jqh0fep","slide":7,"name":"object 3","bbox":[87.86,316.55,431.2,154.8]}
+{"kind":"shape","id":"sh/fa9w3m94","slide":7,"name":"object 4","bbox":[528.83,316.55,426.33,154.8]}
+{"kind":"shape","id":"sh/qpg3ex0n","slide":7,"name":"object 5","bbox":[964.9,316.55,426.33,154.8]}
+{"kind":"shape","id":"sh/xczed8v6","slide":7,"name":"object 6","bbox":[1400.97,316.55,426.33,154.8]}
+{"kind":"shape","id":"sh/8v6psfil","slide":7,"name":"object 7","bbox":[87.86,471.32,431.2,608.73]}
+{"kind":"shape","id":"sh/je9cvixc","slide":7,"name":"object 8","bbox":[528.83,471.32,426.33,608.73]}
+{"kind":"shape","id":"sh/qtcj6tov","slide":7,"name":"object 9","bbox":[964.9,471.32,426.33,608.73]}
+{"kind":"shape","id":"sh/svu9knih","slide":7,"name":"object 10","bbox":[1400.97,471.32,426.33,608.73]}
+{"kind":"shape","id":"sh/hgn29gr2","slide":7,"name":"object 11","bbox":[519.03,316.55,9.8,763.47]}
+{"kind":"shape","id":"sh/ap4r65wj","slide":7,"name":"object 12","bbox":[955.1,316.55,9.8,763.47]}
+{"kind":"shape","id":"sh/za1gvy90","slide":7,"name":"object 13","bbox":[1391.17,316.55,9.8,763.47]}
+{"kind":"textbox","id":"sh/psfil0rq","slide":7,"name":"object 24","text":"테이블 설계 및 구현\n깃허브 세팅\n기본 CRUD 구현","textPreview":"테이블 설계 및 구현 | 깃허브 세팅 | 기본 CRUD 구현","textChars":29,"textLines":3,"bbox":[106.12,485.41,237.93,122.8]}
+{"kind":"textbox","id":"sh/w7mp0bi9","slide":7,"name":"object 25","text":"외부 API 연동\n항공권 결제 기능 구현 고객센터 기능 구현\n기내 서비스 기능 구현 여행일지 기능 구현 마일리지숍 기능 구현","textPreview":"외부 API 연동 | 항공권 결제 기능 구현 고객센터 기능 구현 | 기내 서비스 기능 구현 여행일지 기능 구현 마일리지숍 기능 구현","textChars":69,"textLines":3,"bbox":[542.25,485.41,264.13,242.8]}
+{"kind":"textbox","id":"sh/7mp0bi9s","slide":7,"name":"object 26","text":"항공권 환불 기능 구현\n매니저 대시보드 기능 구현 회원가입, 로그인 기능 구현 마이페이지 기능 구현","textPreview":"항공권 환불 기능 구현 | 매니저 대시보드 기능 구현 회원가입, 로그인 기능 구현 마이페이지 기능 구현","textChars":55,"textLines":2,"bbox":[978.35,485.41,325.13,162.8]}
+{"kind":"textbox","id":"sh/e1w7mp0b","slide":7,"name":"object 27","text":"CSS 통일 작업\n오류수정 및 리팩토링","textPreview":"CSS 통일 작업 | 오류수정 및 리팩토링","textChars":21,"textLines":2,"bbox":[1414.44,485.41,256.2,82.8]}
+{"kind":"textbox","id":"sh/l0rqd4vm","slide":7,"name":"object 28","text":"주차","textPreview":"주차","textChars":2,"textLines":1,"bbox":[707.12,280.59,66.67,41.07]}
+{"kind":"textbox","id":"sh/sfil0rqd","slide":7,"name":"object 32","text":"1주차","textPreview":"1주차","textChars":3,"textLines":1,"bbox":[271.47,280.59,74.67,41.07]}
+{"kind":"textbox","id":"sh/orytsvu9","slide":7,"name":"object 36","text":"3주차","textPreview":"3주차","textChars":3,"textLines":1,"bbox":[1136.01,280.59,80.47,41.07]}
+{"kind":"textbox","id":"sh/hcrmhk3q","slide":7,"name":"object 37","placeholder":"title","text":"프로젝트 기간","textPreview":"프로젝트 기간","textChars":7,"textLines":1,"bbox":[113.74,30.12,531.87,114.67]}
+{"kind":"textbox","id":"sh/6xkf6dcb","slide":7,"name":"object 38","text":"2023.05.15 ~ 23.06.07 (총 24일)","textPreview":"2023.05.15 ~ 23.06.07 (총 24일)","textChars":29,"textLines":1,"bbox":[703.92,88.26,564.33,45.93]}
+{"kind":"textbox","id":"sh/1w7mp0bi","slide":7,"name":"object 42","text":"4주차","textPreview":"4주차","textChars":3,"textLines":1,"bbox":[1569.41,280.59,80.47,41.07]}
+{"kind":"notes","id":"nt/0z61032l","slide":7,"text":""}
+{"kind":"slide","id":"sl/fu18jqh0","slide":8,"title":"사이트 맵","textShapes":3}
+{"kind":"shape","id":"sh/u9knih4b","slide":8,"name":"object 2","bbox":[0,0,1920,1080]}
+{"kind":"textbox","id":"sh/judg7ads","slide":8,"name":"object 3","placeholder":"title","text":"사이트 맵","textPreview":"사이트 맵","textChars":5,"textLines":1,"bbox":[217.93,22.03,363.8,114.67]}
+{"kind":"textbox","id":"sh/c7u54zid","slide":8,"name":"object 4","text":"관리자","textPreview":"관리자","textChars":3,"textLines":1,"bbox":[1376.81,250.53,110.67,50.67]}
+{"kind":"textbox","id":"sh/1orytsvu","slide":8,"name":"object 5","text":"회원","textPreview":"회원","textChars":2,"textLines":1,"bbox":[406.25,251.82,74.67,50.73]}
+{"kind":"image","id":"im/nqxs72x4","slide":8,"name":"object 6","bbox":[11.36,348,940.64,560]}
+{"kind":"image","id":"im/u54zidon","slide":8,"name":"object 7","bbox":[968.48,348,943.52,560]}
+{"kind":"notes","id":"nt/fu18jqh0","slide":8,"text":""}
+{"kind":"slide","id":"sl/qh0fepkz","slide":9,"title":"테이블 명세서 & ERD 모델","textShapes":1}
+{"kind":"textbox","id":"sh/ovahoza1","slide":9,"name":"object 2","placeholder":"title","text":"테이블 명세서 & ERD 모델","textPreview":"테이블 명세서 & ERD 모델","textChars":16,"textLines":1,"bbox":[18.83,24.85,1026.47,114.67]}
+{"kind":"image","id":"im/w7mp0bi9","slide":9,"name":"object 3","bbox":[896,157.12,1006.08,888.8]}
+{"kind":"image","id":"im/7adsji5s","slide":9,"name":"object 4","bbox":[32,157.12,856,400]}
+{"kind":"image","id":"im/epkzupwb","slide":9,"name":"object 5","bbox":[32,564.48,856,481.44]}
+{"kind":"notes","id":"nt/qh0fepkz","slide":9,"text":""}
+{"kind":"slide","id":"sl/29gr2p8n","slide":10,"title":"기능 구분","textShapes":5}
+{"kind":"shape","id":"sh/9gr2p8nq","slide":10,"name":"object 2","bbox":[0,0,1920,1080]}
+{"kind":"textbox","id":"sh/gvy90je9","slide":10,"name":"object 3","placeholder":"title","text":"기능 구분","textPreview":"기능 구분","textChars":5,"textLines":1,"bbox":[197.73,30.12,363.87,114.67]}
+{"kind":"textbox","id":"sh/r2p8nqxs","slide":10,"name":"object 4","text":"공연 조회 및 검색\n공연 상세/회차 선택\n실시간 대기열 입장\n좌석 선택 및 임시 점유\n예매 생성 및 결제\n예매 내역/티켓 확인\n관심 공연/알림 확인\n모바일 티켓/QR 확인\n1:1 문의 및 챗봇 상담","textPreview":"공연 조회 및 검색 | 공연 상세/회차 선택 | 실시간 대기열 입장 | 좌석 선택 및 임시 점유 | 예매 생성 및 결제 | 예매 내역/티켓 확인 | 관심 공연/알림 확인 | 모바일 티켓/QR 확인 | 1:1 문의 및 챗봇 상담","textChars":110,"textLines":9,"bbox":[344.29,564.4,490.87,434.67]}
+{"kind":"textbox","id":"sh/2hwfyxob","slide":10,"name":"object 5","text":"공연/회차/좌석 관리\n좌석도 제작 및 일괄 생성\n대기열/접속 현황 모니터링\n예매/결제/환불 관리\n매출/예매 KPI 대시보드\n회원/직원/권한 관리\n공지/FAQ/문의 관리","textPreview":"공연/회차/좌석 관리 | 좌석도 제작 및 일괄 생성 | 대기열/접속 현황 모니터링 | 예매/결제/환불 관리 | 매출/예매 KPI 대시보드 | 회원/직원/권한 관리 | 공지/FAQ/문의 관리","textChars":93,"textLines":7,"bbox":[1096.36,565,401,477.87]}
+{"kind":"textbox","id":"sh/94fu18jq","slide":10,"name":"object 6","text":"User","textPreview":"User","textChars":4,"textLines":1,"bbox":[447.15,460.88,183.8,58.8]}
+{"kind":"textbox","id":"sh/rqd4vmtw","slide":10,"name":"object 8","text":"Admin","textPreview":"Admin","textChars":5,"textLines":1,"bbox":[1185.55,459.92,201.87,58.8]}
+{"kind":"shape","id":"sh/4fu18jqh","slide":10,"name":"object 10","bbox":[776.08,390.08,184,12]}
+{"kind":"shape","id":"sh/x0nuxc3y","slide":10,"name":"object 11","bbox":[776.08,430.08,184,12]}
+{"kind":"image","id":"im/hk3q5o7q","slide":10,"name":"object 7","bbox":[384,252.64,244.48,208.16]}
+{"kind":"image","id":"im/oza1gvy9","slide":10,"name":"object 9","bbox":[1112,252.64,293.28,225.6]}
+{"kind":"notes","id":"nt/29gr2p8n","slide":10,"text":""}
+{"kind":"slide","id":"sl/re1w7mp0","slide":11,"title":"회원가입 Validation 처리","textShapes":2}
+{"kind":"textbox","id":"sh/d8v6psfi","slide":11,"name":"object 5","text":"회원가입 Validation 처리\n아이디 중복 확인 (AJAX 통신)\n비밀번호 암호화 처리\n주소 찾기 DAUM 우편번호 서비스 API\n비밀번호 확인 (AJAX 통신)\n국가 코드 API 활용 국적 가져오기","textPreview":"회원가입 Validation 처리 | 아이디 중복 확인 (AJAX 통신) | 비밀번호 암호화 처리 | 주소 찾기 DAUM 우편번호 서비스 API | 비밀번호 확인 (AJAX 통신) | 국가 코드 API 활용 국적 가져오기","textChars":113,"textLines":6,"bbox":[54.41,501.71,502.47,250.53]}
+{"kind":"textbox","id":"sh/6hcrmhk3","slide":11,"name":"object 6","placeholder":"title","text":"회원가입\nMember","textPreview":"회원가입 | Member","textChars":11,"textLines":2,"bbox":[0,0,0,0]}
+{"kind":"image","id":"im/ahoza1gv","slide":11,"name":"object 2","bbox":[1305.86,440.51,507.83,330.83]}
+{"kind":"image","id":"im/lwval87e","slide":11,"name":"object 3","bbox":[780.11,99.86,402.21,837.61]}
+{"kind":"image","id":"im/wb2hwfyx","slide":11,"name":"object 4","bbox":[1300.32,251.36,509.6,145.28]}
+{"kind":"notes","id":"nt/re1w7mp0","slide":11,"text":""}
+{"kind":"slide","id":"sl/4fu18jqh","slide":12,"title":"OAuth2.0 인증을 위한 카카오톡 로그인 구현","textShapes":2}
+{"kind":"textbox","id":"sh/h4byhgn2","slide":12,"name":"object 7","text":"OAuth2.0 인증을 위한 카카오톡 로그인 구현\n동의항목 체크 후 카카오 로그인","textPreview":"OAuth2.0 인증을 위한 카카오톡 로그인 구현 | 동의항목 체크 후 카카오 로그인","textChars":45,"textLines":2,"bbox":[54.41,500.3,582.13,85.33]}
+{"kind":"textbox","id":"sh/ap4r65wj","slide":12,"name":"object 8","placeholder":"title","text":"카카오 로그인 API\nMember","textPreview":"카카오 로그인 API | Member","textChars":18,"textLines":2,"bbox":[0,0,0,0]}
+{"kind":"notes","id":"nt/4fu18jqh","slide":12,"text":""}
+{"kind":"slide","id":"sl/lwval87e","slide":13,"title":"네이버 이메일 SMTP 프로토콜 사용","textShapes":2}
+{"kind":"textbox","id":"sh/l0rqd4vm","slide":13,"name":"object 2","text":"네이버 이메일 SMTP 프로토콜 사용\n\n사용자 정보를 이용해 아이디 찾기\n이메일\t입력\t후\t발송된\t인증\t코드와\t입력한\n인증 코드가 같으면 비밀번호 변경 기능","textPreview":"네이버 이메일 SMTP 프로토콜 사용 |  | 사용자 정보를 이용해 아이디 찾기 | 이메일\t입력\t후\t발송된\t인증\t코드와\t입력한 | 인증 코드가 같으면 비밀번호 변경 기능","textChars":86,"textLines":5,"bbox":[54.41,508.43,570.93,205.87]}
+{"kind":"textbox","id":"sh/wfyxobm5","slide":13,"name":"object 3","placeholder":"title","text":"아이디/비밀번호 찾기\nMember","textPreview":"아이디/비밀번호 찾기 | Member","textChars":18,"textLines":2,"bbox":[0,0,0,0]}
+{"kind":"image","id":"im/i5sneloj","slide":13,"name":"object 4","bbox":[987.9,554.79,566.82,422.73]}
+{"kind":"image","id":"im/7qpg3ex0","slide":13,"name":"object 5","bbox":[1284.72,61.19,480.96,402.13]}
+{"kind":"image","id":"im/0bi9s36h","slide":13,"name":"object 6","bbox":[716.44,56,487.93,420]}
+{"kind":"notes","id":"nt/lwval87e","slide":13,"text":""}
+{"kind":"slide","id":"sl/25kb6xkf","slide":14,"title":"항공권 예약","textShapes":5}
+{"kind":"textbox","id":"sh/k3q5o7qp","slide":14,"name":"object 6","placeholder":"title","text":"항공권 예약","textPreview":"항공권 예약","textChars":6,"textLines":1,"bbox":[42.6,302.77,320.8,82.8]}
+{"kind":"textbox","id":"sh/donyd0z6","slide":14,"name":"object 7","text":"출발지/도착지 선택 기능 (AJAX 통신)\n나이 계산기","textPreview":"출발지/도착지 선택 기능 (AJAX 통신) | 나이 계산기","textChars":30,"textLines":2,"bbox":[54.7,586.92,498.13,85.27]}
+{"kind":"textbox","id":"sh/29gr2p8n","slide":14,"name":"object 8","text":"- 날짜 선택\nMember","textPreview":"- 날짜 선택 | Member","textChars":14,"textLines":2,"bbox":[42.6,374.31,313.47,183.8]}
+{"kind":"shape","id":"sh/vu9knih4","slide":14,"name":"object 9","bbox":[972.64,420,8,53.33]}
+{"kind":"shape","id":"sh/3ylc7u54","slide":14,"name":"object 10","bbox":[1511.52,420.19,43.2,45.8]}
+{"kind":"textbox","id":"sh/adsji5sn","slide":14,"name":"object 11","text":"편도","textPreview":"편도","textChars":2,"textLines":1,"bbox":[984.93,429.48,45.87,31.47]}
+{"kind":"textbox","id":"sh/h4byhgn2","slide":14,"name":"object 12","text":"왕복","textPreview":"왕복","textChars":2,"textLines":1,"bbox":[1555.81,425.13,45.87,31.47]}
+{"kind":"image","id":"im/zed8v6ps","slide":14,"name":"object 2","bbox":[712.5,44.6,825.42,414.69]}
+{"kind":"image","id":"im/obm58z25","slide":14,"name":"object 3","bbox":[707.57,486.38,544.96,343.28]}
+{"kind":"image","id":"im/hwfyxobm","slide":14,"name":"object 4","bbox":[1321.46,487.98,529.96,386.42]}
+{"kind":"image","id":"im/65wjudg7","slide":14,"name":"object 5","bbox":[712,863.04,507.52,152.96]}
+{"kind":"notes","id":"nt/25kb6xkf","slide":14,"text":""}
+{"kind":"slide","id":"sl/7y1kre1w","slide":15,"title":"항공권 예약","textShapes":2}
+{"kind":"textbox","id":"sh/9s36hcrm","slide":15,"name":"object 5","placeholder":"title","text":"항공권 예약","textPreview":"항공권 예약","textChars":6,"textLines":1,"bbox":[42.31,302.77,320.8,82.8]}
+{"kind":"textbox","id":"sh/y1kre1w7","slide":15,"name":"object 6","text":"좌석 선택\nMember\n\n스케줄\t운항에\t따라\t항공기\t종류와\t좌석 배치가 다르게 출력되도록 설계\n이미 예약된 좌석은 선택 불가능","textPreview":"좌석 선택 | Member |  | 스케줄\t운항에\t따라\t항공기\t종류와\t좌석 배치가 다르게 출력되도록 설계 | 이미 예약된 좌석은 선택 불가능","textChars":70,"textLines":5,"bbox":[42.31,374.31,543.13,341.13]}
+{"kind":"notes","id":"nt/7y1kre1w","slide":15,"text":""}
+{"kind":"slide","id":"sl/8z25kb6x","slide":16,"title":"항공권 예약","textShapes":2}
+{"kind":"textbox","id":"sh/e1w7mp0b","slide":16,"name":"object 5","placeholder":"title","text":"항공권 예약","textPreview":"항공권 예약","textChars":6,"textLines":1,"bbox":[42.31,301.2,320.8,82.73]}
+{"kind":"textbox","id":"sh/psfil0rq","slide":16,"name":"object 6","text":"결제\nMember\n\n선택한 티켓 옵션과 좌석 번호 조회\n탑승객 정보 입력","textPreview":"결제 | Member |  | 선택한 티켓 옵션과 좌석 번호 조회 | 탑승객 정보 입력","textChars":40,"textLines":5,"bbox":[42.31,418.51,457.33,255.67]}
+{"kind":"notes","id":"nt/8z25kb6x","slide":16,"text":""}
+{"kind":"slide","id":"sl/54zidony","slide":17,"title":"항공권 예약","textShapes":2}
+{"kind":"textbox","id":"sh/fil0rqd4","slide":17,"name":"object 4","placeholder":"title","text":"항공권 예약","textPreview":"항공권 예약","textChars":6,"textLines":1,"bbox":[41.93,302.96,320.8,82.73]}
+{"kind":"textbox","id":"sh/qxs72x4n","slide":17,"name":"object 5","text":"카카오 페이 결제\nMember\n\n결제 요청 시 예약 내역, 탑승객 정보, 예약 좌석 내역, 결제 내역 데이터 추가","textPreview":"카카오 페이 결제 | Member |  | 결제 요청 시 예약 내역, 탑승객 정보, 예약 좌석 내역, 결제 내역 데이터 추가","textChars":63,"textLines":4,"bbox":[41.93,374.75,567.53,299.4]}
+{"kind":"shape","id":"sh/xobm58z2","slide":17,"name":"object 6","bbox":[1281.51,436.6,78,63.4]}
+{"kind":"shape","id":"sh/fepkzupw","slide":17,"name":"object 8","bbox":[1301.28,589.99,60.4,74.33]}
+{"kind":"image","id":"im/bat47y1k","slide":17,"name":"object 2","bbox":[822.4,57.44,429.44,533.12]}
+{"kind":"image","id":"im/ji5snelo","slide":17,"name":"object 3","bbox":[737.86,670.6,637.06,326.72]}
+{"kind":"image","id":"im/uxc3ylc7","slide":17,"name":"object 7","bbox":[1410.08,108,464,824]}
+{"kind":"notes","id":"nt/54zidony","slide":17,"text":""}
+{"kind":"slide","id":"sl/m58z25kb","slide":18,"title":"항공권 예약","textShapes":2}
+{"kind":"textbox","id":"sh/t83itgfm","slide":18,"name":"object 2","placeholder":"title","text":"항공권 예약","textPreview":"항공권 예약","textChars":6,"textLines":1,"bbox":[42.31,302.57,320.8,82.73]}
+{"kind":"textbox","id":"sh/4nap4r65","slide":18,"name":"object 3","text":"- coolSMS API\nMember","textPreview":"- coolSMS API | Member","textChars":20,"textLines":2,"bbox":[42.31,373.57,466.13,184.53]}
+{"kind":"image","id":"im/i5sneloj","slide":18,"name":"object 4","bbox":[952,36,560,992.32]}
+{"kind":"notes","id":"nt/m58z25kb","slide":18,"text":""}
+{"kind":"slide","id":"sl/bat47y1k","slide":19,"title":"항공권 예약","textShapes":2}
+{"kind":"textbox","id":"sh/q1orytsv","slide":19,"name":"object 6","placeholder":"title","text":"항공권 예약","textPreview":"항공권 예약","textChars":6,"textLines":1,"bbox":[42.31,302.96,320.8,82.73]}
+{"kind":"textbox","id":"sh/fmlkjm1c","slide":19,"name":"object 7","text":"구매 내역\nMember\n\n항공권 구매 내역 결제완료, 환불처리\n출발일자가 현재일자 이후이면 '환불 신청' 버튼 출력","textPreview":"구매 내역 | Member |  | 항공권 구매 내역 결제완료, 환불처리 | 출발일자가 현재일자 이후이면 '환불 신청' 버튼 출력","textChars":64,"textLines":5,"bbox":[42.31,374.75,558.6,340.67]}
+{"kind":"image","id":"im/9s36hcrm","slide":19,"name":"object 2","bbox":[842.03,58.63,812.49,345.84]}
+{"kind":"notes","id":"nt/bat47y1k","slide":19,"text":""}
+{"kind":"slide","id":"sl/j2t83itg","slide":20,"title":"항공권 예약","textShapes":2}
+{"kind":"textbox","id":"sh/4byhgn29","slide":20,"name":"object 4","placeholder":"title","text":"항공권 예약","textPreview":"항공권 예약","textChars":6,"textLines":1,"bbox":[42.31,302.96,320.8,82.73]}
+{"kind":"textbox","id":"sh/twra5gbq","slide":20,"name":"object 5","text":"환불 처리\nMember\n\n출발일자 기준으로 해당 티켓의 일수와 국제 선, 국내선 여부를 확인하고 성인 1인 기준 환불 수수료가 정해짐","textPreview":"환불 처리 | Member |  | 출발일자 기준으로 해당 티켓의 일수와 국제 선, 국내선 여부를 확인하고 성인 1인 기준 환불 수수료가 정해짐","textChars":74,"textLines":4,"bbox":[42.31,374.75,567,340.67]}
+{"kind":"shape","id":"sh/m58z25kb","slide":20,"name":"object 6","bbox":[1320,480,40,8]}
+{"kind":"image","id":"im/25kb6xkf","slide":20,"name":"object 2","bbox":[1376,108.96,437.92,799.04]}
+{"kind":"image","id":"im/94fu18jq","slide":20,"name":"object 3","bbox":[709.6,203.52,595.04,559.24]}
+{"kind":"notes","id":"nt/j2t83itg","slide":20,"text":""}
+{"kind":"slide","id":"sl/mhk3q5o7","slide":21,"title":"운항 시간 및 노선에 따른 기내 서비스 조회","textShapes":2}
+{"kind":"textbox","id":"sh/vahoza1g","slide":21,"name":"object 5","text":"운항 시간 및 노선에 따른 기내 서비스 조회\n모달창으로 출발지/도착지 선택 기능(AJAX 통신)","textPreview":"운항 시간 및 노선에 따른 기내 서비스 조회 | 모달창으로 출발지/도착지 선택 기능(AJAX 통신)","textChars":53,"textLines":2,"bbox":[56.04,588.91,560,126.53]}
+{"kind":"textbox","id":"sh/ovahoza1","slide":21,"name":"object 6","placeholder":"title","text":"기내 서비스 조회\nMember","textPreview":"기내 서비스 조회 | Member","textChars":16,"textLines":2,"bbox":[0,0,0,0]}
+{"kind":"shape","id":"sh/dg7adsji","slide":21,"name":"object 7","bbox":[1211.56,363.51,53.8,48.53]}
+{"kind":"shape","id":"sh/61032lsz","slide":21,"name":"object 8","bbox":[1214.6,708,56.4,48.53]}
+{"kind":"image","id":"im/ap4r65wj","slide":21,"name":"object 2","bbox":[720,90.56,483.52,425.12]}
+{"kind":"image","id":"im/0je9cvix","slide":21,"name":"object 3","bbox":[720,578.4,483.52,425.12]}
+{"kind":"image","id":"im/t47y1kre","slide":21,"name":"object 4","bbox":[1282.58,189.77,627.18,706.89]}
+{"kind":"notes","id":"nt/mhk3q5o7","slide":21,"text":""}
+{"kind":"slide","id":"sl/5wjudg7a","slide":22,"title":"특별\t기내식","textShapes":3}
+{"kind":"textbox","id":"sh/ylc7u54z","slide":22,"name":"object 5","text":"특별\t기내식","textPreview":"특별\t기내식","textChars":6,"textLines":1,"bbox":[476.08,636.33,154.87,37.87]}
+{"kind":"textbox","id":"sh/9cvixcze","slide":22,"name":"object 6","text":"select 박스 클릭시 AJAX 통신\n신청한\t티켓의\t인원수에\t따라 선택 후 최대 수량 제한 기능","textPreview":"select 박스 클릭시 AJAX 통신 | 신청한\t티켓의\t인원수에\t따라 선택 후 최대 수량 제한 기능","textChars":54,"textLines":2,"bbox":[56.04,588.91,417.27,126.53]}
+{"kind":"textbox","id":"sh/gr2p8nqx","slide":22,"name":"object 7","placeholder":"title","text":"특별 기내식 및 신청\nMember","textPreview":"특별 기내식 및 신청 | Member","textChars":18,"textLines":2,"bbox":[0,0,0,0]}
+{"kind":"shape","id":"sh/yd0z6103","slide":22,"name":"object 9","bbox":[1312,691.63,24.6,36.27]}
+{"kind":"image","id":"im/zed8v6ps","slide":22,"name":"object 2","bbox":[1291.36,60.27,550.49,598.67]}
+{"kind":"image","id":"im/6xkf6dcb","slide":22,"name":"object 3","bbox":[703.84,70.88,561.15,585.67]}
+{"kind":"image","id":"im/hk3q5o7q","slide":22,"name":"object 4","bbox":[791.69,752.95,987.31,214.19]}
+{"kind":"image","id":"im/oza1gvy9","slide":22,"name":"object 8","bbox":[1256,368,24,8]}
+{"kind":"notes","id":"nt/5wjudg7a","slide":22,"text":""}
+{"kind":"slide","id":"sl/crmhk3q5","slide":23,"title":"구간 선택 select 박스 클릭시 AJAX 통신","textShapes":2}
+{"kind":"shape","id":"sh/mp0bi9s3","slide":23,"name":"object 5","bbox":[0,0,658.27,1080]}
+{"kind":"textbox","id":"sh/tgfmlkjm","slide":23,"name":"object 6","text":"구간 선택 select 박스 클릭시 AJAX 통신\n위탁 수하물 티켓의 인원수에 따라 최대 수량 제한 기능","textPreview":"구간 선택 select 박스 클릭시 AJAX 통신 | 위탁 수하물 티켓의 인원수에 따라 최대 수량 제한 기능","textChars":58,"textLines":2,"bbox":[56.04,588.91,574.93,126.53]}
+{"kind":"textbox","id":"sh/4vmtwra5","slide":23,"name":"object 7","placeholder":"title","text":"위탁 수하물 및 신청\nMember","textPreview":"위탁 수하물 및 신청 | Member","textChars":18,"textLines":2,"bbox":[0,0,0,0]}
+{"kind":"shape","id":"sh/mhk3q5o7","slide":23,"name":"object 9","bbox":[1312,691.63,24.6,36.27]}
+{"kind":"image","id":"im/je9cvixc","slide":23,"name":"object 2","bbox":[771.42,760.43,1055.12,220.95]}
+{"kind":"image","id":"im/qtcj6tov","slide":23,"name":"object 3","bbox":[738.3,77.93,506.12,552.02]}
+{"kind":"image","id":"im/1gvy90je","slide":23,"name":"object 4","bbox":[1288,56.32,568,595.68]}
+{"kind":"image","id":"im/8z25kb6x","slide":23,"name":"object 8","bbox":[1256,368,24,8]}
+{"kind":"notes","id":"nt/crmhk3q5","slide":23,"text":""}
+{"kind":"slide","id":"sl/bq1oryts","slide":24,"title":"인기\t게시글\t상단\t4개\t표시\t(조회수,\t좋아요","textShapes":2}
+{"kind":"textbox","id":"sh/gfmlkjm1","slide":24,"name":"object 4","text":"인기\t게시글\t상단\t4개\t표시\t(조회수,\t좋아요\n순 알고리즘)\n페이징 처리","textPreview":"인기\t게시글\t상단\t4개\t표시\t(조회수,\t좋아요 | 순 알고리즘) | 페이징 처리","textChars":40,"textLines":3,"bbox":[56.04,589.61,574.87,126.53]}
+{"kind":"textbox","id":"sh/90je9cvi","slide":24,"name":"object 5","placeholder":"title","text":"여행일지\nMember","textPreview":"여행일지 | Member","textChars":11,"textLines":2,"bbox":[0,0,0,0]}
+{"kind":"image","id":"im/7u54zido","slide":24,"name":"object 2","bbox":[813.78,44.71,885.94,273.99]}
+{"kind":"image","id":"im/ed8bat47","slide":24,"name":"object 3","bbox":[890.41,364,713.96,661.19]}
+{"kind":"notes","id":"nt/bq1oryts","slide":24,"text":""}
+{"kind":"slide","id":"sl/61032lsz","slide":25,"title":"여행일지","textShapes":2}
+{"kind":"textbox","id":"sh/il0rqd4v","slide":25,"name":"object 4","placeholder":"title","text":"여행일지","textPreview":"여행일지","textChars":4,"textLines":1,"bbox":[34.63,300.33,242.67,82.73]}
+{"kind":"textbox","id":"sh/b6xkf6dc","slide":25,"name":"object 5","text":"- 상세\nMember\n\n모달창을 이용한 게시물 상세보기\n구글 맵 API 기능\n조회수 중복 방지, 로그인 시에만 좋아요 기능\n글을 작성한 유저만 수정, 삭제 가능","textPreview":"- 상세 | Member |  | 모달창을 이용한 게시물 상세보기 | 구글 맵 API 기능 | 조회수 중복 방지, 로그인 시에만 좋아요 기능 | 글을 작성한 유저만 수정, 삭제 가능","textChars":89,"textLines":7,"bbox":[34.63,417.58,589.27,339.33]}
+{"kind":"image","id":"im/9gr2p8nq","slide":25,"name":"object 2","bbox":[683.13,148,588.71,712]}
+{"kind":"image","id":"im/gvy90je9","slide":25,"name":"object 3","bbox":[1295.87,160.78,594.21,699.22]}
+{"kind":"notes","id":"nt/61032lsz","slide":25,"text":""}
+{"kind":"slide","id":"sl/psfil0rq","slide":26,"title":"구글 맵 API 사용","textShapes":2}
+{"kind":"textbox","id":"sh/qtcj6tov","slide":26,"name":"object 2","text":"구글 맵 API 사용\n선택한 나라의 공항 조회\n조회 시 마커 생성 및 위치 정보 표시","textPreview":"구글 맵 API 사용 | 선택한 나라의 공항 조회 | 조회 시 마커 생성 및 위치 정보 표시","textChars":47,"textLines":3,"bbox":[56.04,589.61,461.8,126.53]}
+{"kind":"textbox","id":"sh/je9cvixc","slide":26,"name":"object 3","placeholder":"title","text":"공항 위치 조회\nMember","textPreview":"공항 위치 조회 | Member","textChars":15,"textLines":2,"bbox":[0,0,0,0]}
+{"kind":"image","id":"im/t83itgfm","slide":26,"name":"object 4","bbox":[784,109.44,960.96,849.12]}
+{"kind":"notes","id":"nt/psfil0rq","slide":26,"text":""}
+{"kind":"slide","id":"sl/gfmlkjm1","slide":27,"title":"마일리지 높은 순/낮은 순 정렬","textShapes":2}
+{"kind":"textbox","id":"sh/8jqh0fep","slide":27,"name":"object 2","text":"마일리지 높은 순/낮은 순 정렬\n브랜드와 이름으로 검색 기능\n페이징 처리","textPreview":"마일리지 높은 순/낮은 순 정렬 | 브랜드와 이름으로 검색 기능 | 페이징 처리","textChars":40,"textLines":3,"bbox":[56.04,589.61,398.07,126.53]}
+{"kind":"textbox","id":"sh/x4nap4r6","slide":27,"name":"object 3","placeholder":"title","text":"마일리지 샵\nMember","textPreview":"마일리지 샵 | Member","textChars":13,"textLines":2,"bbox":[0,0,0,0]}
+{"kind":"image","id":"im/n29gr2p8","slide":27,"name":"object 4","bbox":[792,192.71,965.69,693.67]}
+{"kind":"notes","id":"nt/gfmlkjm1","slide":27,"text":""}
+{"kind":"slide","id":"sl/vahoza1g","slide":28,"title":"옵션 선택 시 수량과 총 금액 출력 (AJAX 통신)","textShapes":2}
+{"kind":"textbox","id":"sh/2hwfyxob","slide":28,"name":"object 2","text":"옵션 선택 시 수량과 총 금액 출력 (AJAX 통신)\n기프티콘 유효기간은 1년으로 설정","textPreview":"옵션 선택 시 수량과 총 금액 출력 (AJAX 통신) | 기프티콘 유효기간은 1년으로 설정","textChars":48,"textLines":2,"bbox":[56.04,589.07,597.2,85.27]}
+{"kind":"textbox","id":"sh/gvy90je9","slide":28,"name":"object 4","placeholder":"title","text":"마일리지 샵\nMember","textPreview":"마일리지 샵 | Member","textChars":13,"textLines":2,"bbox":[0,0,0,0]}
+{"kind":"shape","id":"sh/2p8nqxs7","slide":28,"name":"object 6","bbox":[1225.6,516,8,40]}
+{"kind":"image","id":"im/6psfil0r","slide":28,"name":"object 3","bbox":[942.2,574.09,576.74,453.33]}
+{"kind":"image","id":"im/d8bat47y","slide":28,"name":"object 5","bbox":[942.48,73.15,584.68,437.27]}
+{"kind":"notes","id":"nt/vahoza1g","slide":28,"text":""}
+{"kind":"slide","id":"sl/a1gvy90j","slide":29,"title":"마일리지 샵","textShapes":2}
+{"kind":"textbox","id":"sh/c3ylc7u5","slide":29,"name":"object 2","placeholder":"title","text":"마일리지 샵","textPreview":"마일리지 샵","textChars":6,"textLines":1,"bbox":[46.67,305.04,320.87,82.73]}
+{"kind":"textbox","id":"sh/1kre1w7m","slide":29,"name":"object 3","text":"email SMTP\nMember\n\n구매 성공하면 email SMTP로 기프티콘 이미 지 전송","textPreview":"email SMTP | Member |  | 구매 성공하면 email SMTP로 기프티콘 이미 지 전송","textChars":51,"textLines":4,"bbox":[46.67,381.57,594.8,292.6]}
+{"kind":"image","id":"im/zed8v6ps","slide":29,"name":"object 4","bbox":[819.68,120.48,435.04,833.04]}
+{"kind":"image","id":"im/6xkf6dcb","slide":29,"name":"object 5","bbox":[1264.8,124.48,428,831.04]}
+{"kind":"notes","id":"nt/a1gvy90j","slide":29,"text":""}
+{"kind":"slide","id":"sl/kre1w7mp","slide":30,"title":"마일리지샵","textShapes":2}
+{"kind":"textbox","id":"sh/hgn29gr2","slide":30,"name":"object 2","placeholder":"title","text":"마일리지샵","textPreview":"마일리지샵","textChars":5,"textLines":1,"bbox":[44.52,298.09,302.67,82.73]}
+{"kind":"textbox","id":"sh/svu9knih","slide":30,"name":"object 3","text":"마일리지 조회 페이지\nMember\n\n기간별로\t선택하여\t적립/사용/소멸\t마일리지 조회\n구매내역/취소내역 기간별로 마일리지샵 구매 내역 조회","textPreview":"마일리지 조회 페이지 | Member |  | 기간별로\t선택하여\t적립/사용/소멸\t마일리지 조회 | 구매내역/취소내역 기간별로 마일리지샵 구매 내역 조회","textChars":76,"textLines":5,"bbox":[44.52,415.4,591.87,341.47]}
+{"kind":"image","id":"im/qh0fepkz","slide":30,"name":"object 4","bbox":[751.05,171,1048.77,681.07]}
+{"kind":"notes","id":"nt/kre1w7mp","slide":30,"text":""}
+{"kind":"slide","id":"sl/h0fepkzu","slide":31,"title":"고객센터","textShapes":2}
+{"kind":"textbox","id":"sh/y1kre1w7","slide":31,"name":"object 2","placeholder":"title","text":"고객센터","textPreview":"고객센터","textChars":4,"textLines":1,"bbox":[47.69,302.77,242.67,82.8]}
+{"kind":"textbox","id":"sh/rmhk3q5o","slide":31,"name":"object 3","text":"공지사항\nMember\n\n페이징 처리\n검색 기능\n카테고리별 출력 기능","textPreview":"공지사항 | Member |  | 페이징 처리 | 검색 기능 | 카테고리별 출력 기능","textChars":37,"textLines":6,"bbox":[47.69,374.31,294.2,341.13]}
+{"kind":"image","id":"im/58z25kb6","slide":31,"name":"object 4","bbox":[832.5,112.66,713.25,420.13]}
+{"kind":"image","id":"im/gn29gr2p","slide":31,"name":"object 5","bbox":[827.41,603.63,715.7,322.18]}
+{"kind":"notes","id":"nt/h0fepkzu","slide":31,"text":""}
+{"kind":"slide","id":"sl/yhgn29gr","slide":32,"title":"고객센터","textShapes":2}
+{"kind":"textbox","id":"sh/l0rqd4vm","slide":32,"name":"object 2","placeholder":"title","text":"고객센터","textPreview":"고객센터","textChars":4,"textLines":1,"bbox":[47.69,302.77,242.67,82.8]}
+{"kind":"textbox","id":"sh/wfyxobm5","slide":32,"name":"object 3","text":"자주 묻는 질문\nMember\n\n검색 기능\n카테고리별 출력 기능\n토글 기능","textPreview":"자주 묻는 질문 | Member |  | 검색 기능 | 카테고리별 출력 기능 | 토글 기능","textChars":40,"textLines":6,"bbox":[47.69,374.31,450.07,341.13]}
+{"kind":"image","id":"im/adsji5sn","slide":32,"name":"object 4","bbox":[841.74,123.88,807.22,771.91]}
+{"kind":"notes","id":"nt/yhgn29gr","slide":32,"text":""}
+{"kind":"slide","id":"sl/3ex0nuxc","slide":33,"title":"고객센터","textShapes":2}
+{"kind":"textbox","id":"sh/loj2t83i","slide":33,"name":"object 2","placeholder":"title","text":"고객센터","textPreview":"고객센터","textChars":4,"textLines":1,"bbox":[46.31,301.2,242.67,82.73]}
+{"kind":"textbox","id":"sh/w3m94fu1","slide":33,"name":"object 3","text":"문의 게시판\nMember\n\n입력될 때마다 현재 글자 수(byte 수) 갱신\n답변이\t완료되었다면\t'답변완료', 아니라면 '처리중' 출력\n페이징 처리","textPreview":"문의 게시판 | Member |  | 입력될 때마다 현재 글자 수(byte 수) 갱신 | 답변이\t완료되었다면\t'답변완료', 아니라면 '처리중' 출력 | 페이징 처리","textChars":81,"textLines":6,"bbox":[46.31,418.51,554.6,338.8]}
+{"kind":"image","id":"im/y90je9cv","slide":33,"name":"object 4","bbox":[842.25,38.5,804.87,375]}
+{"kind":"image","id":"im/nuxc3ylc","slide":33,"name":"object 5","bbox":[671.79,427.55,645.43,566.77]}
+{"kind":"image","id":"im/gbq1oryt","slide":33,"name":"object 6","bbox":[1364.91,572.26,492.55,286.65]}
+{"kind":"notes","id":"nt/3ex0nuxc","slide":33,"text":""}
+{"kind":"slide","id":"sl/kb6xkf6d","slide":34,"title":"현재·누적, 적립 예정, 소멸 예정 마일리지 조회","textShapes":2}
+{"kind":"textbox","id":"sh/pkzupwb2","slide":34,"name":"object 2","text":"현재·누적, 적립 예정, 소멸 예정 마일리지 조회\n누적 마일리지로 등급별 마일리지 기준치에 적합하면 등급 변동\n결제 내역 조회","textPreview":"현재·누적, 적립 예정, 소멸 예정 마일리지 조회 | 누적 마일리지로 등급별 마일리지 기준치에 적합하면 등급 변동 | 결제 내역 조회","textChars":70,"textLines":3,"bbox":[56.04,588.24,583.73,168]}
+{"kind":"textbox","id":"sh/0z61032l","slide":34,"name":"object 3","placeholder":"title","text":"마이페이지\nMember","textPreview":"마이페이지 | Member","textChars":12,"textLines":2,"bbox":[0,0,0,0]}
+{"kind":"image","id":"im/epkzupwb","slide":34,"name":"object 4","bbox":[704,102.08,1159.52,888.48]}
+{"kind":"notes","id":"nt/kb6xkf6d","slide":34,"text":""}
+{"kind":"slide","id":"sl/xs72x4na","slide":35,"title":"대시보드 chart.js 사용","textShapes":2}
+{"kind":"textbox","id":"sh/bq1oryts","slide":35,"name":"object 3","text":"대시보드 chart.js 사용","textPreview":"대시보드 chart.js 사용","textChars":16,"textLines":1,"bbox":[56.04,594.41,322.27,37.87]}
+{"kind":"textbox","id":"sh/4nap4r65","slide":35,"name":"object 4","placeholder":"title","text":"관리자 페이지\nManager","textPreview":"관리자 페이지 | Manager","textChars":15,"textLines":2,"bbox":[0,0,0,0]}
+{"kind":"image","id":"im/onyd0z61","slide":35,"name":"object 2","bbox":[724.96,207.84,1067.2,664.32]}
+{"kind":"notes","id":"nt/xs72x4na","slide":35,"text":""}
+{"kind":"slide","id":"sl/i5sneloj","slide":36,"title":"관리자 페이지","textShapes":2}
+{"kind":"textbox","id":"sh/87ed8bat","slide":36,"name":"object 2","placeholder":"title","text":"관리자 페이지","textPreview":"관리자 페이지","textChars":7,"textLines":1,"bbox":[35.91,301.07,380.8,82.73]}
+{"kind":"textbox","id":"sh/xs72x4na","slide":36,"name":"object 3","text":"- 회원 관리\nManager\n\n관리자는\t관리자가\t관리자를\t등록해주는 방식으로 설계","textPreview":"- 회원 관리 | Manager |  | 관리자는\t관리자가\t관리자를\t등록해주는 방식으로 설계","textChars":45,"textLines":4,"bbox":[35.91,418.35,564.93,255.2]}
+{"kind":"image","id":"im/nuxc3ylc","slide":36,"name":"object 4","bbox":[824,43.68,781.76,716.48]}
+{"kind":"image","id":"im/y90je9cv","slide":36,"name":"object 5","bbox":[834.85,791.65,762.78,219.82]}
+{"kind":"notes","id":"nt/i5sneloj","slide":36,"text":""}
+{"kind":"slide","id":"sl/nuxc3ylc","slide":37,"title":"관리자 페이지","textShapes":2}
+{"kind":"textbox","id":"sh/u9knih4b","slide":37,"name":"object 2","placeholder":"title","text":"관리자 페이지","textPreview":"관리자 페이지","textChars":7,"textLines":1,"bbox":[38.28,302.77,380.8,82.8]}
+{"kind":"textbox","id":"sh/judg7ads","slide":37,"name":"object 3","text":"- 항공 서비스\nManager","textPreview":"- 항공 서비스 | Manager","textChars":16,"textLines":2,"bbox":[38.28,374.31,372,183.8]}
+{"kind":"image","id":"im/hcrmhk3q","slide":37,"name":"object 4","bbox":[682.51,116.21,624.22,297.93]}
+{"kind":"notes","id":"nt/nuxc3ylc","slide":37,"text":""}
+{"kind":"slide","id":"sl/kjm1cfa9","slide":38,"title":"관리자 페이지","textShapes":2}
+{"kind":"textbox","id":"sh/donyd0z6","slide":38,"name":"object 2","placeholder":"title","text":"관리자 페이지","textPreview":"관리자 페이지","textChars":7,"textLines":1,"bbox":[35.91,301.07,380.8,82.73]}
+{"kind":"textbox","id":"sh/k3q5o7qp","slide":38,"name":"object 3","text":"- 마일리지샵\nManager","textPreview":"- 마일리지샵 | Manager","textChars":15,"textLines":2,"bbox":[35.91,418.35,354.2,139.73]}
+{"kind":"image","id":"im/a5gbq1or","slide":38,"name":"object 4","bbox":[724.97,101.65,1017.69,426.56]}
+{"kind":"image","id":"im/3m94fu18","slide":38,"name":"object 5","bbox":[801.26,561.22,892.76,458.91]}
+{"kind":"notes","id":"nt/kjm1cfa9","slide":38,"text":""}
+{"kind":"slide","id":"sl/hgn29gr2","slide":39,"title":"깃허브 주소","textShapes":2}
+{"kind":"shape","id":"sh/6hcrmhk3","slide":39,"name":"object 2","bbox":[0,0,1920,1080]}
+{"kind":"shape","id":"sh/z25kb6xk","slide":39,"name":"object 3","bbox":[1580,0,340,1080]}
+{"kind":"textbox","id":"sh/ovahoza1","slide":39,"name":"object 4","text":"깃허브 주소\nhttps://github.com/seoyounglee0105/green-airline.git","textPreview":"깃허브 주소 | https://github.com/seoyounglee0105/green-airline.git","textChars":59,"textLines":2,"bbox":[177.55,827.8,1073.73,106.67]}
+{"kind":"textbox","id":"sh/dg7adsji","slide":39,"name":"object 5","placeholder":"title","text":"감사합니다.","textPreview":"감사합니다.","textChars":6,"textLines":1,"bbox":[0,0,0,0]}
+{"kind":"notes","id":"nt/hgn29gr2","slide":39,"text":""}

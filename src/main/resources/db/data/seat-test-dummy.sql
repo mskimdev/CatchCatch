@@ -7,7 +7,7 @@
 --    RUNSCRIPT FROM 'classpath:db/data/seat-test-dummy.sql';
 --
 --  역할:
---    1) dummy.sql의 k6 부하테스트 콘서트 B를 2026-06-24 테스트 회차로 맞춘다.
+--    1) dummy.sql의 k6 부하테스트 콘서트 B를 2026-07-04 테스트 회차로 맞춘다.
 --    2) k6 부하테스트 공연장 B에 SeatTrace example 좌석 파일 경로를 연결한다.
 --    3) dummy.sql에서 넣은 k6B A석 1000개를 삭제한다.
 --    4) example-seatmap-seats.json 기준 좌석 3462개를 seat_tb에 다시 넣는다.
@@ -26,28 +26,28 @@ SET seat_map_file_path = '/temp/seatmap/seats/example-seatmap-seats.json',
 WHERE name = 'k6 부하테스트 공연장 B';
 
 -- ------------------------------------------------------------
--- 2. k6B 공연/회차를 2026-06-24 테스트용으로 고정
+-- 2. k6B 공연/회차를 2026-07-04 테스트용으로 고정
 -- ------------------------------------------------------------
 UPDATE concert_tb
-SET start_date = DATE '2026-06-24',
-    end_date = DATE '2026-06-24',
+SET start_date = DATE '2026-07-04',
+    end_date = DATE '2026-07-04',
     status = 'OPEN'
 WHERE title = 'k6 부하테스트 콘서트 B';
 
 UPDATE concert_session_tb
-SET session_date = DATE '2026-06-24',
+SET session_date = DATE '2026-07-04',
     session_time = TIME '10:00:00',
-    round = '24일 임시',
+    round = '25일 임시',
     is_deleted = false
 WHERE concert_id = (SELECT id FROM concert_tb WHERE title = 'k6 부하테스트 콘서트 B')
   AND (
-        round = '24일 임시'
+        round = '25일 임시'
         OR round = '1회차'
         OR session_date = DATE '2026-12-31'
       );
 
 -- ------------------------------------------------------------
--- 3. k6B 24일 임시 회차의 기존 좌석 제거
+-- 3. k6B 25일 임시 회차의 기존 좌석 제거
 --    dummy.sql의 A석 1000개를 example 기반 좌석으로 교체하기 위함
 -- ------------------------------------------------------------
 DELETE FROM booking_seat_tb
@@ -57,7 +57,7 @@ WHERE seat_id IN (
              JOIN concert_session_tb cs ON cs.id = s.session_id
              JOIN concert_tb c ON c.id = cs.concert_id
     WHERE c.title = 'k6 부하테스트 콘서트 B'
-      AND cs.session_date = DATE '2026-06-24'
+      AND cs.session_date = DATE '2026-07-04'
       AND cs.session_time = TIME '10:00:00'
 );
 
@@ -67,7 +67,7 @@ WHERE session_id IN (
     FROM concert_session_tb cs
              JOIN concert_tb c ON c.id = cs.concert_id
     WHERE c.title = 'k6 부하테스트 콘서트 B'
-      AND cs.session_date = DATE '2026-06-24'
+      AND cs.session_date = DATE '2026-07-04'
       AND cs.session_time = TIME '10:00:00'
 );
 
@@ -77,8 +77,8 @@ WHERE session_id IN (
 --    DB seat_number: 구역 행-렬
 --
 --  섹션별 수량
---    VIP_A: 24
---    VIP_B: 24
+--    VIP_A: 25
+--    VIP_B: 25
 --    STANDING_C: 1800
 --    D2: 196
 --    S_C2: 83
@@ -125,7 +125,7 @@ FROM (
     FROM concert_session_tb cs
              JOIN concert_tb c ON c.id = cs.concert_id
     WHERE c.title = 'k6 부하테스트 콘서트 B'
-      AND cs.session_date = DATE '2026-06-24'
+      AND cs.session_date = DATE '2026-07-04'
       AND cs.session_time = TIME '10:00:00'
     ORDER BY cs.id
     LIMIT 1
@@ -211,7 +211,7 @@ VALUES
     (2, 'S_A2', 'D', 19, 'S', 110000),
     (2, 'A2', 'A', 23, 'R', 130000),
     (2, 'A2', 'B', 23, 'R', 130000),
-    (2, 'A2', 'C', 24, 'R', 130000),
+    (2, 'A2', 'C', 25, 'R', 130000),
     (2, 'A2', 'D', 23, 'R', 130000),
     (2, 'A2', 'E', 22, 'R', 130000),
     (2, 'S_P2', 'A', 20, 'S', 110000),
@@ -219,9 +219,9 @@ VALUES
     (2, 'S_P2', 'C', 20, 'S', 110000),
     (2, 'S_P2', 'D', 19, 'S', 110000),
     (2, 'P2', 'A', 23, 'R', 130000),
-    (2, 'P2', 'B', 24, 'R', 130000),
+    (2, 'P2', 'B', 25, 'R', 130000),
     (2, 'P2', 'C', 25, 'R', 130000),
-    (2, 'P2', 'D', 24, 'R', 130000),
+    (2, 'P2', 'D', 25, 'R', 130000),
     (2, 'P2', 'E', 23, 'R', 130000),
     (2, 'S_O2', 'A', 11, 'S', 110000),
     (2, 'S_O2', 'B', 11, 'S', 110000),
@@ -289,7 +289,7 @@ CROSS JOIN (
     FROM concert_session_tb cs
              JOIN concert_tb c ON c.id = cs.concert_id
     WHERE c.title = 'k6 부하테스트 콘서트 B'
-      AND cs.session_date = DATE '2026-06-24'
+      AND cs.session_date = DATE '2026-07-04'
       AND cs.session_time = TIME '10:00:00'
     ORDER BY cs.id
     LIMIT 1
