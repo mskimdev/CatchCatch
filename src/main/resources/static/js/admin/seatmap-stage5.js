@@ -15,16 +15,22 @@
         bookingButtonsUrl: "seatmap_booking_buttons_url",
         bookingButtonsJsonUrl: "seatmap_booking_buttons_json_url",
         finalImageUrl: "seatmap_final_image_url",
+        stage5ImageUrl: "seatmap_stage5_image_url",
         generatedOverviewImage: "concert_generated_overviewImage",
-        decorations: "seatmap_stage4_decorations"
+        decorations: "seatmap_stage4_decorations",
+        concertButtonImage: "concert_buttonImage",
+        concertCleanImage: "concert_cleanImage",
+        concertOriginalImage: "concert_originalImage",
+        seatButtonResultImage: "seat_button_resultImage",
+        seatButtonOriginalImage: "seat_button_originalImage"
     };
 
     const SAVE_URL = "/admin/seatmap/temp-save";
     const DEFAULT_COLOR = "#dbeafe";
     const DEFAULT_TEXT_COLOR = "#1f2937";
     const DEBUG_STROKE_COLOR = "#ef4444";
-    const FINAL_FILL_ALPHA = 0.76;
-    const EDIT_FILL_ALPHA = 0.32;
+    const FINAL_FILL_ALPHA = 1.0;
+    const EDIT_FILL_ALPHA = 0.44;
     const AVAILABLE = "AVAILABLE";
     const PASTEL_PALETTE = [
         "#dbeafe", "#dcfce7", "#fef3c7", "#fee2e2",
@@ -41,9 +47,11 @@
         buttonImageUrl: "",
         croppedImageUrl: "",
         finalImageUrl: "",
+        stage5ImageUrl: "",
         debugImageUrl: "",
         sectionsUrl: "",
         seatsUrl: "",
+        legacySeatsUrl: "",
         bookingButtonsUrl: "",
         decorationsUrl: "",
         saveUrl: SAVE_URL,
@@ -68,7 +76,14 @@
         showSeats: true,
         showLabels: true,
         draggingLabelId: "",
+        draggingVertex: null,
         labelDragOffset: { x: 0, y: 0 },
+        globalStyle: {
+            fontSize: 14,
+            textColor: DEFAULT_TEXT_COLOR,
+            fillAlpha: FINAL_FILL_ALPHA,
+            syncStrokeWithFill: true
+        },
         completedParts: new Set()
     };
 
@@ -78,6 +93,7 @@
         cacheDom();
         readRouteState();
         bindEvents();
+        syncToggleStateFromInputs();
         setupCanvases(state.width, state.height);
         await loadAllData();
         await loadBaseImage();
@@ -85,6 +101,7 @@
         if (!state.buttons.length) {
             generateButtons({ silent: true });
         }
+        syncGlobalControls();
         setPart(1, false);
         syncAll();
 
@@ -98,12 +115,13 @@
 
     function cacheDom() {
         [
-            "stage5App", "toast", "part1Panel", "part2Panel", "part3Panel", "part4Panel",
-            "partBtn1", "partBtn2", "partBtn3", "partBtn4", "part1Status", "part2Status", "part3Status", "part4Status",
+            "stage5App", "toast", "part1Panel", "part2Panel", "part3Panel", "part4Panel", "part5Panel",
+            "partBtn1", "partBtn2", "partBtn3", "partBtn4", "partBtn5", "part1Status", "part2Status", "part3Status", "part4Status", "part5Status",
             "sectionCountText", "seatCountText", "matchFailCountText", "missingNameCountText", "warningList",
             "reloadDataBtn", "generateButtonsBtn", "loadSavedButtonsBtn", "showSectionPolygon", "showButtonPolygon",
-            "showSeats", "showLabels", "labelInput", "fontSizeInput", "textColorInput", "labelXInput", "labelYInput", "colorInput", "strokeInput", "visibleInput",
-            "clickableInput", "autoFontBtn", "applySelectedBtn", "buttonList", "saveSummary", "saveBookingButtonsBtn", "toStage6Btn",
+            "showSeats", "showLabels", "globalFontSizeInput", "globalTextColorInput", "globalOpacityInput", "globalOpacityValue", "syncStrokeFillInput",
+            "applyGlobalBtn", "autoAllFontBtn", "centerAllLabelsBtn", "resamplePngColorBtn", "labelInput", "fontSizeInput", "textColorInput", "labelXInput", "labelYInput", "colorInput", "visibleInput",
+            "clickableInput", "vertexEditInput", "resetPolygonBtn", "autoFontBtn", "applySelectedBtn", "buttonList", "saveSummary", "saveBookingButtonsBtn", "toStage6Btn",
             "canvasScroll", "canvasBox", "stage5BaseCanvas", "stage5OverlayCanvas", "canvasSize", "canvasTitle", "stage5Tooltip",
             "miniImg", "previewCanvas", "infoSectionId", "infoSectionName", "infoFloorGrade", "infoPrice", "infoSeatCount",
             "infoAvailableCount", "infoLabelPoint", "infoFlags", "jsonPreview", "zoomIn", "zoomOut", "zoomReset", "zoomFit",
@@ -129,13 +147,15 @@
         );
         state.stage4Url = root?.dataset.stage4Url || `/admin/seatmap/stage/4?projectId=${encodeURIComponent(state.projectId)}`;
         state.stage6Url = root?.dataset.stage6Url || `/admin/seatmap/stage/6?projectId=${encodeURIComponent(state.projectId)}`;
-        state.seatmapImageUrl = root?.dataset.seatmapImageUrl || projectFileUrl("button-image.png");
+        state.seatmapImageUrl = root?.dataset.seatmapImageUrl || projectFileUrl("seatmap-image.png");
         state.buttonImageUrl = root?.dataset.buttonImageUrl || projectFileUrl("button-image.png");
         state.croppedImageUrl = root?.dataset.croppedImageUrl || projectFileUrl("cropped-image.png");
         state.finalImageUrl = root?.dataset.finalImageUrl || projectFileUrl("seatmap-image.png");
+        state.stage5ImageUrl = root?.dataset.stage5ImageUrl || projectFileUrl("seatmap-stage5.png");
         state.debugImageUrl = root?.dataset.debugImageUrl || projectFileUrl("debug-polygons.png");
         state.sectionsUrl = root?.dataset.sectionsUrl || projectFileUrl("seatmap-sections.json");
-        state.seatsUrl = root?.dataset.seatsUrl || `/temp/seatmap/seats/${encodeURIComponent(state.projectId)}-seatmap-seats.json`;
+        state.seatsUrl = root?.dataset.seatsUrl || projectFileUrl("seats/index.json");
+        state.legacySeatsUrl = `/temp/seatmap/seats/${encodeURIComponent(state.projectId)}-seatmap-seats.json`;
         state.bookingButtonsUrl = root?.dataset.bookingButtonsUrl || projectFileUrl("booking-buttons.json");
         state.decorationsUrl = root?.dataset.decorationsUrl || projectFileUrl("seatmap-decorations.json");
         state.saveUrl = root?.dataset.saveUrl || SAVE_URL;
@@ -149,6 +169,7 @@
         bind(dom.partBtn2, "click", () => setPart(2));
         bind(dom.partBtn3, "click", () => setPart(3));
         bind(dom.partBtn4, "click", () => setPart(4));
+        bind(dom.partBtn5, "click", () => setPart(5));
 
         bind(dom.reloadDataBtn, "click", async () => {
             await loadAllData({ forceServer: true });
@@ -160,19 +181,26 @@
         bind(dom.loadSavedButtonsBtn, "click", () => tryLoadSavedButtons(true));
         bind(dom.saveBookingButtonsBtn, "click", () => saveBookingButtonsToServer());
         bind(dom.toStage6Btn, "click", goStage6);
+        bind(dom.applyGlobalBtn, "click", applyGlobalControls);
+        bind(dom.autoAllFontBtn, "click", autoFitAllButtons);
+        bind(dom.centerAllLabelsBtn, "click", centerAllLabels);
+        bind(dom.resamplePngColorBtn, "click", resampleAllButtonColorsFromPng);
         bind(dom.applySelectedBtn, "click", applySelectedControls);
+        bind(dom.resetPolygonBtn, "click", resetSelectedPolygonFromSource);
+        bind(dom.vertexEditInput, "change", drawOverlay);
 
         [dom.showSectionPolygon, dom.showButtonPolygon, dom.showSeats, dom.showLabels].forEach((input) => {
             bind(input, "change", () => {
-                state.showSectionPolygon = Boolean(dom.showSectionPolygon?.checked);
-                state.showButtonPolygon = Boolean(dom.showButtonPolygon?.checked);
-                state.showSeats = Boolean(dom.showSeats?.checked);
-                state.showLabels = Boolean(dom.showLabels?.checked);
+                syncToggleStateFromInputs();
                 drawAll();
             });
         });
 
-        [dom.labelInput, dom.fontSizeInput, dom.textColorInput, dom.labelXInput, dom.labelYInput, dom.colorInput, dom.strokeInput, dom.visibleInput, dom.clickableInput].forEach((input) => {
+        [dom.globalFontSizeInput, dom.globalTextColorInput, dom.globalOpacityInput, dom.syncStrokeFillInput].forEach((input) => {
+            bind(input, "change", applyGlobalControls);
+        });
+
+        [dom.labelInput, dom.fontSizeInput, dom.textColorInput, dom.labelXInput, dom.labelYInput, dom.colorInput, dom.visibleInput, dom.clickableInput].forEach((input) => {
             bind(input, "change", applySelectedControls);
             bind(input, "input", applySelectedControls);
         });
@@ -215,6 +243,13 @@
         if (element) element.addEventListener(eventName, handler);
     }
 
+    function syncToggleStateFromInputs() {
+        state.showSectionPolygon = Boolean(dom.showSectionPolygon?.checked);
+        state.showButtonPolygon = Boolean(dom.showButtonPolygon?.checked);
+        state.showSeats = Boolean(dom.showSeats?.checked);
+        state.showLabels = Boolean(dom.showLabels?.checked);
+    }
+
     async function loadAllData(options = {}) {
         state.warnings = [];
         await loadSections(options);
@@ -224,83 +259,222 @@
         setPartDone(1, state.sections.length > 0 && state.seats.length > 0);
     }
 
+    function firstNonEmptyArray(...values) {
+        for (const value of values) {
+            const array = normalizeArray(value);
+            if (array.length) return array;
+        }
+        return [];
+    }
+
+    function getLocalImageCandidates() {
+        return [
+            localStorage.getItem(STORAGE.stage5ImageUrl),
+            localStorage.getItem(STORAGE.finalImageUrl),
+            localStorage.getItem(STORAGE.generatedOverviewImage),
+            localStorage.getItem(STORAGE.concertButtonImage),
+            localStorage.getItem(STORAGE.concertCleanImage),
+            localStorage.getItem(STORAGE.seatButtonResultImage),
+            localStorage.getItem(STORAGE.concertOriginalImage),
+            localStorage.getItem(STORAGE.seatButtonOriginalImage)
+        ].filter(Boolean);
+    }
+
     async function loadSections(options = {}) {
-        const server = options.forceServer ? null : null;
+        let serverSource = [];
         try {
             const json = await fetchJson(state.sectionsUrl);
-            const source = normalizeArray(json.sections || json.items || json);
-            state.sections = source.map(normalizeSection).filter((section) => section.sectionId || section.sectionName || section.polygon.length);
-            persistJson(STORAGE.sections, state.sections);
-            persistJson(STORAGE.sectionsCompat, state.sections);
-            return;
+            serverSource = normalizeArray(json.sections || json.items || json);
         } catch (error) {
             console.warn("[SeatTrace Stage5] seatmap-sections.json 로드 실패", error);
         }
 
-        const local = readJson(STORAGE.sections, null) || readJson(STORAGE.sectionsCompat, null) || readJson(STORAGE.sectionsHeader, null) || server;
-        if (Array.isArray(local) && local.length) {
-            state.sections = local.map(normalizeSection).filter((section) => section.sectionId || section.sectionName || section.polygon.length);
-            state.warnings.push("seatmap-sections.json 서버 파일을 읽지 못해 localStorage 구역 데이터를 사용했습니다.");
+        const localSource = firstNonEmptyArray(
+            readJson(STORAGE.sections, null),
+            readJson(STORAGE.sectionsCompat, null),
+            readJson(STORAGE.sectionsHeader, null)
+        );
+
+        const source = serverSource.length ? serverSource : localSource;
+        if (source.length) {
+            state.sections = source.map(normalizeSection).filter((section) => section.sectionId || section.sectionName || section.polygon.length);
+            persistJson(STORAGE.sections, state.sections);
+            persistJson(STORAGE.sectionsCompat, state.sections);
+            if (!serverSource.length) {
+                state.warnings.push("seatmap-sections.json 서버 파일을 읽지 못해 localStorage 구역 데이터를 사용했습니다.");
+            }
         } else {
             state.sections = [];
-            state.warnings.push("seatmap-sections.json을 찾지 못했습니다. Stage 3 저장을 먼저 확인하세요.");
+            state.warnings.push(`구역 데이터가 없습니다. 확인 경로: ${state.sectionsUrl}`);
         }
     }
 
     async function loadDecorations(options = {}) {
         state.seatLayouts = [];
+        let serverJson = null;
         try {
-            const json = await fetchJson(state.decorationsUrl);
-            const source = normalizeArray(json.seatLayouts || json.stage4SeatLayouts || []);
-            state.seatLayouts = source.map(normalizeSeatLayout).filter((layout) => layout.sectionId || layout.sectionName);
-            persistJson(STORAGE.decorations, json);
-            return;
+            serverJson = await fetchJson(state.decorationsUrl);
         } catch (error) {
             console.warn("[SeatTrace Stage5] seatmap-decorations.json 로드 실패", error);
         }
 
         const local = readJson(STORAGE.decorations, null);
-        const source = normalizeArray(local?.seatLayouts || local?.stage4SeatLayouts || []);
+        const source = firstNonEmptyArray(
+            serverJson?.seatLayouts,
+            serverJson?.stage4SeatLayouts,
+            serverJson?.decorations,
+            local?.seatLayouts,
+            local?.stage4SeatLayouts,
+            local?.decorations
+        );
+
         if (source.length) {
             state.seatLayouts = source.map(normalizeSeatLayout).filter((layout) => layout.sectionId || layout.sectionName);
-            state.warnings.push("seatmap-decorations.json 서버 파일을 읽지 못해 localStorage Stage 4 layout을 사용했습니다.");
+            if (serverJson) persistJson(STORAGE.decorations, serverJson);
+            if (!serverJson) {
+                state.warnings.push("seatmap-decorations.json 서버 파일을 읽지 못해 localStorage Stage 4 layout을 사용했습니다.");
+            }
+        } else {
+            state.warnings.push(`Stage 4 decoration 데이터가 없습니다. 버튼 polygon은 seatmap-sections.json fallback을 사용합니다. 확인 경로: ${state.decorationsUrl}`);
         }
     }
 
     async function loadSeats(options = {}) {
-        try {
-            const json = await fetchJson(state.seatsUrl);
-            const source = normalizeArray(json.seats || json.items || json);
-            state.seats = source.map(normalizeSeat).filter((seat) => seat.sectionId || seat.id);
-            persistJson(STORAGE.seats, state.seats);
-            persistJson(STORAGE.seatsCompat, state.seats);
-            return;
-        } catch (error) {
-            console.warn("[SeatTrace Stage5] seatmap-seats.json 로드 실패", error);
+        let serverSource = [];
+        const candidates = unique([state.seatsUrl, projectFileUrl("seats/index.json"), state.legacySeatsUrl]).filter(Boolean);
+
+        for (const url of candidates) {
+            try {
+                const json = await fetchJson(url);
+                serverSource = await collectSeatSourceFromIndexOrLegacy(json, url);
+                if (serverSource.length) {
+                    state.seatsUrl = url.includes("/seats/index.json") ? url : state.seatsUrl;
+                    break;
+                }
+            } catch (error) {
+                console.warn("[SeatTrace Stage5] seats 로드 실패", url, error);
+            }
         }
 
         const local = readJson(STORAGE.seats, null) || readJson(STORAGE.seatsCompat, null);
-        if (Array.isArray(local) && local.length) {
-            state.seats = local.map(normalizeSeat).filter((seat) => seat.sectionId || seat.id);
-            state.warnings.push("좌석 JSON 서버 파일을 읽지 못해 localStorage 좌석 데이터를 사용했습니다.");
-        } else if (local && typeof local === "object") {
-            state.seats = Object.values(local).flat().map(normalizeSeat).filter((seat) => seat.sectionId || seat.id);
-            state.warnings.push("좌석 JSON 서버 파일을 읽지 못해 localStorage 좌석 데이터를 사용했습니다.");
-        } else {
-            state.seats = [];
-            state.warnings.push("seats/{projectId}-seatmap-seats.json을 찾지 못했습니다. Stage 4 저장을 먼저 확인하세요.");
+        const localSource = collectSeatSource(local);
+        const source = serverSource.length ? serverSource : localSource;
+
+        if (source.length) {
+            state.seats = source.map(normalizeSeat).filter((seat) => seat.sectionId || seat.sectionName || seat.id);
+            removeHeavySeatLocalStorage();
+            if (!serverSource.length) {
+                state.warnings.push("좌석 JSON 서버 파일을 읽지 못해 localStorage 좌석 데이터를 사용했습니다.");
+            }
+            return;
         }
+
+        state.seats = [];
+        state.warnings.push(`좌석 데이터가 없습니다. 확인 경로: ${state.seatsUrl}`);
+    }
+
+    async function collectSeatSourceFromIndexOrLegacy(json, indexUrl) {
+        const direct = collectSeatSource(json);
+        if (direct.length) return direct;
+
+        const result = [];
+        if (json?.files && typeof json.files === "object") {
+            Object.values(json.files).forEach((fileData) => {
+                result.push(...collectSeatSource(fileData));
+            });
+        }
+
+        const refs = normalizeArray(json?.sections)
+            .map((section) => section?.file)
+            .filter(Boolean);
+
+        for (const fileName of refs) {
+            try {
+                const fileJson = await fetchJson(resolveRelativeUrl(indexUrl, fileName));
+                result.push(...collectSeatSource(fileJson));
+            } catch (error) {
+                console.warn("[SeatTrace Stage5] section seat file 로드 실패", fileName, error);
+            }
+        }
+        return result;
+    }
+
+    function resolveRelativeUrl(baseUrl, fileName) {
+        if (/^https?:\/\//i.test(fileName) || String(fileName).startsWith("/")) return fileName;
+        const cleanBase = String(baseUrl || "").split("?")[0];
+        return cleanBase.replace(/[^/]*$/, "") + fileName;
+    }
+
+    function collectSeatSource(value) {
+        const result = [];
+        const seen = new Set();
+
+        function visit(node) {
+            if (node == null) return;
+            if (Array.isArray(node)) {
+                node.forEach(visit);
+                return;
+            }
+            if (typeof node !== "object") return;
+            if (seen.has(node)) return;
+            seen.add(node);
+
+            if (looksLikeSeat(node)) {
+                result.push(node);
+                return;
+            }
+
+            const candidateKeys = [
+                "seats",
+                "finalSeats",
+                "stage4Seats",
+                "stage4DetailedSeats",
+                "detectedSeats",
+                "manualSeats",
+                "items",
+                "data",
+                "rows",
+                "seatList"
+            ];
+
+            candidateKeys.forEach((key) => {
+                if (node[key] != null) visit(node[key]);
+            });
+
+            if (Array.isArray(node.seatLayouts) || Array.isArray(node.stage4SeatLayouts)) {
+                visit(node.seatLayouts || node.stage4SeatLayouts);
+            }
+
+            // sectionId -> [seat, seat] 형태 또는 group map 형태 지원
+            if (!candidateKeys.some((key) => node[key] != null)) {
+                Object.values(node).forEach(visit);
+            }
+        }
+
+        visit(value);
+        return result;
+    }
+
+    function looksLikeSeat(value) {
+        if (!value || typeof value !== "object") return false;
+        if (value.id || value.seatId || value.seatNumber) return true;
+        const hasPosition = Number.isFinite(Number(value.x)) && Number.isFinite(Number(value.y));
+        const hasSection = Boolean(value.sectionId || value.sectionName || value.section || value.name || value.label);
+        return hasPosition && hasSection;
     }
 
     async function loadBaseImage() {
         const candidates = unique([
-            state.buttonImageUrl,
             state.seatmapImageUrl,
+            state.finalImageUrl,
+            projectFileUrl("seatmap-image.png"),
+            state.stage5ImageUrl,
+            projectFileUrl("seatmap-stage5.png"),
+            state.buttonImageUrl,
             projectFileUrl("button-image.png"),
             state.croppedImageUrl,
             projectFileUrl("cropped-image.png"),
-            state.finalImageUrl,
-            projectFileUrl("seatmap-image.png")
+            ...getLocalImageCandidates()
         ]).filter(Boolean);
 
         for (const url of candidates) {
@@ -309,6 +483,8 @@
                 state.image = image;
                 state.baseImageLoaded = true;
                 state.baseImageUrl = url;
+                samplePolygonColor._canvas = null;
+                samplePolygonColor._ctx = null;
                 setupCanvases(image.naturalWidth || image.width, image.naturalHeight || image.height);
                 drawBase();
                 if (dom.miniImg) dom.miniImg.src = noCache(url);
@@ -322,7 +498,7 @@
         state.baseImageLoaded = false;
         setupCanvases(1000, 700);
         drawBase();
-        state.warnings.push("button-image.png와 cropped-image.png를 읽지 못했습니다. 배경 없이 polygon만 표시합니다.");
+        state.warnings.push(`기준 도면을 읽지 못했습니다. seatmap-image.png / seatmap-stage5.png / button-image.png / cropped-image.png 경로를 확인하세요. projectId=${state.projectId}`);
     }
 
     async function tryLoadSavedButtons(showMessage) {
@@ -359,6 +535,7 @@
         const bbox = normalizeBbox(raw.bbox) || getBbox(polygon);
         const sectionName = firstText(raw.sectionName, raw.name, raw.section, raw.label);
         const sectionId = firstText(raw.sectionId, raw.id);
+        const label = firstText(raw.label, raw.sectionLabel, sectionName, sectionId);
 
         return {
             raw,
@@ -386,15 +563,22 @@
         const parsed = parseSeatId(raw.id || raw.seatId || raw.seatNumber || raw.name || "");
         const sectionName = firstText(raw.sectionName, raw.section, raw.name, raw.label, parsed.section);
         const matchedSection = findSectionByAny(raw.sectionId || raw.section_id || raw.sectionKey, sectionName);
-        const sectionId = firstText(raw.sectionId, raw.section_id, raw.sectionKey, matchedSection?.sectionId);
-        const finalSectionName = firstText(sectionName, matchedSection?.sectionName);
+        const sectionId = firstText(raw.sectionId, raw.section_id, raw.sectionKey, matchedSection?.sectionId, parsed.section);
+        const finalSectionName = firstText(sectionName, matchedSection?.sectionName, parsed.section);
         const floor = firstText(raw.floor, parsed.floor, matchedSection?.floor);
         const grade = firstText(raw.grade, raw.gradeName, parsed.grade, matchedSection?.grade);
         const status = String(firstText(raw.status, parsed.status, AVAILABLE)).toUpperCase();
+        const row = firstText(raw.row, raw.rowName, raw.seatRow, parsed.row);
+        const col = numberOrText(raw.col ?? raw.no ?? raw.seatNo ?? raw.seatCol ?? parsed.col);
+        const x = Number(raw.x ?? raw.cx ?? raw.left ?? parsed.x ?? 0);
+        const y = Number(raw.y ?? raw.cy ?? raw.top ?? parsed.y ?? 0);
+        const size = Number(raw.size ?? raw.w ?? raw.width ?? parsed.size ?? 6);
+        const angle = Number(raw.angle ?? parsed.angle ?? 0);
+        const id = firstText(raw.id, raw.seatId, buildSeatId(floor || "1", finalSectionName, row || "A", col || "1", grade || "일반석", status));
 
         return {
             ...raw,
-            id: buildSeatId(floor || "1", finalSectionName, firstText(raw.row, raw.rowName, raw.seatRow, parsed.row, "A"), firstText(raw.col, raw.no, raw.seatNo, raw.seatCol, parsed.col, "1"), grade || "일반석", status),
+            id,
             sectionId,
             sectionName: finalSectionName,
             section: firstText(raw.section, finalSectionName),
@@ -403,21 +587,22 @@
             floor,
             grade,
             price: numberOrBlank(raw.price ?? raw.seatPrice ?? matchedSection?.price),
-            row: firstText(raw.row, raw.rowName, raw.seatRow, parsed.row),
-            col: numberOrText(raw.col ?? raw.no ?? raw.seatNo ?? raw.seatCol ?? parsed.col),
+            row,
+            col,
             status,
-            x: Number(raw.x || 0),
-            y: Number(raw.y || 0),
-            size: Number(raw.size || raw.w || raw.width || 6),
-            angle: Number(raw.angle || 0)
+            x,
+            y,
+            size,
+            angle
         };
     }
 
     function normalizeSeatLayout(raw) {
         const sectionName = firstText(raw.sectionName, raw.section, raw.name, raw.label);
         const matchedSection = findSectionByAny(raw.sectionId, sectionName);
+        const referenceButtonPolygon = normalizePoints(raw.referenceButtonPolygon || []);
         const buttonPolygon = normalizePoints(raw.buttonPolygon || raw.bookingPolygon || []);
-        const polygon = normalizePoints(raw.polygon || []);
+        const polygon = normalizePoints(raw.polygon || raw.sectionPolygon || []);
         const actualBounds = normalizeBbox(raw.actualBounds || raw.seatBounds || raw.bounds);
         return {
             ...raw,
@@ -428,8 +613,15 @@
             price: numberOrBlank(raw.price !== undefined ? raw.price : matchedSection?.price),
             seatCount: Number(raw.seatCount || 0),
             polygon,
-            buttonPolygon: buttonPolygon.length ? buttonPolygon : (actualBounds ? rectToPolygon(actualBounds) : polygon),
-            labelPoint: normalizePoint(raw.labelPoint)
+            referenceButtonPolygon,
+            actualBounds,
+            buttonPolygon: referenceButtonPolygon.length
+                ? referenceButtonPolygon
+                : (buttonPolygon.length
+                    ? buttonPolygon
+                    : (actualBounds ? rectToPolygon(actualBounds) : polygon)),
+            labelPoint: normalizePoint(raw.labelPoint),
+            angle: Number(raw.angle ?? matchedSection?.angle ?? 0)
         };
     }
 
@@ -437,14 +629,16 @@
         const sectionId = firstText(raw.sectionId, section?.sectionId);
         const sectionName = firstText(raw.sectionName, raw.name, raw.section, raw.label, section?.sectionName);
         const layout = findLayoutBySection(sectionId, sectionName);
-        const polygon = normalizePoints(raw.polygon || raw.points || layout?.buttonPolygon || layout?.polygon || section?.polygon || []);
+        const polygon = normalizePoints(raw.polygon || raw.points || layout?.referenceButtonPolygon || layout?.buttonPolygon || layout?.polygon || section?.polygon || []);
         const sectionSeats = state.seats.filter((seat) => sameSeatSection(seat, sectionId, sectionName));
         const labelPoint = normalizePoint(raw.labelPoint) || normalizePoint({ x: raw.x, y: raw.y }) || layout?.labelPoint || getSafeLabelPoint(polygon);
-        const color = toPastelColor(raw.color || section?.color || section?.renderColor || colorByIndex(index));
-        const strokeColor = normalizeColor(raw.strokeColor || makeReadableStroke(color));
+        const sampledColor = samplePolygonColor(polygon);
+        const color = normalizeColor(raw.fillColor || raw.color || sampledColor || section?.color || section?.renderColor || colorByIndex(index));
+        const strokeColor = color;
         const label = firstText(raw.label, raw.buttonName, raw.sectionLabel, sectionName);
         const fontSize = clamp(Number(raw.fontSize || 0) || estimateFitFontSize(label, polygon), 9, 34);
         const textColor = normalizeColor(raw.textColor || autoTextColor(color));
+        const angle = Number(raw.angle ?? layout?.angle ?? section?.angle ?? 0);
 
         return {
             id: firstText(raw.id, raw.buttonId, `button-${sectionId || index + 1}`),
@@ -471,7 +665,8 @@
             fontSize,
             fillAlpha: Number(raw.fillAlpha || FINAL_FILL_ALPHA),
             visible: raw.visible !== false,
-            clickable: raw.clickable !== false
+            clickable: raw.clickable !== false,
+            angle
         };
     }
 
@@ -499,13 +694,22 @@
     function parseSeatId(id) {
         const parts = String(id || "").split("-");
         if (parts.length < 6) return {};
+
+        // 최신 포맷:
+        // floor-section-row-col-grade-status-x-y-size-angle
+        // 예전 포맷:
+        // floor-section-row-col-grade-status
         return {
             floor: parts[0],
             section: parts[1],
             row: parts[2],
             col: parts[3],
-            grade: parts.slice(4, -1).join("-") || parts[4],
-            status: parts[parts.length - 1]
+            grade: parts[4],
+            status: parts[5],
+            x: parts[6],
+            y: parts[7],
+            size: parts[8],
+            angle: parts[9]
         };
     }
 
@@ -537,6 +741,103 @@
         ];
     }
 
+
+
+    function samplePolygonColor(polygon) {
+        const points = normalizePoints(polygon || []);
+        if (!points.length || !state.image || !state.baseImageLoaded) return "";
+
+        const scratch = samplePolygonColor._canvas || document.createElement("canvas");
+        const ctx = samplePolygonColor._ctx || scratch.getContext("2d", { willReadFrequently: true });
+        samplePolygonColor._canvas = scratch;
+        samplePolygonColor._ctx = ctx;
+
+        if (scratch.width !== state.width || scratch.height !== state.height) {
+            scratch.width = state.width;
+            scratch.height = state.height;
+            ctx.clearRect(0, 0, state.width, state.height);
+            ctx.drawImage(state.image, 0, 0, state.width, state.height);
+        }
+
+        const box = getBbox(points);
+        const minX = clamp(Math.floor(box.x), 0, state.width - 1);
+        const minY = clamp(Math.floor(box.y), 0, state.height - 1);
+        const maxX = clamp(Math.ceil(box.x + box.w), 0, state.width - 1);
+        const maxY = clamp(Math.ceil(box.y + box.h), 0, state.height - 1);
+        const step = Math.max(1, Math.floor(Math.max(box.w, box.h) / 18));
+        const buckets = new Map();
+
+        for (let y = minY; y <= maxY; y += step) {
+            for (let x = minX; x <= maxX; x += step) {
+                const point = { x, y };
+                if (!pointInPolygon(point, points)) continue;
+
+                const data = ctx.getImageData(x, y, 1, 1).data;
+                const r = data[0];
+                const g = data[1];
+                const b = data[2];
+                const a = data[3];
+
+                if (a < 180) continue;
+
+                const max = Math.max(r, g, b);
+                const min = Math.min(r, g, b);
+                const brightness = (r * 0.299) + (g * 0.587) + (b * 0.114);
+                const saturation = max - min;
+
+                // 배경 흰색/회색, 검은 글자, 흐린 안내선은 구역색이 아니므로 제외
+                if (brightness > 238 && saturation < 24) continue;
+                if (brightness < 70) continue;
+                if (saturation < 16 && brightness > 150) continue;
+
+                const qr = Math.round(r / 12) * 12;
+                const qg = Math.round(g / 12) * 12;
+                const qb = Math.round(b / 12) * 12;
+                const key = `${qr},${qg},${qb}`;
+                buckets.set(key, (buckets.get(key) || 0) + 1);
+            }
+        }
+
+        let bestKey = "";
+        let bestCount = 0;
+        buckets.forEach((count, key) => {
+            if (count > bestCount) {
+                bestCount = count;
+                bestKey = key;
+            }
+        });
+
+        if (!bestKey) return "";
+        const [r, g, b] = bestKey.split(",").map(Number);
+        return rgbToHex(r, g, b);
+    }
+
+    function resampleAllButtonColorsFromPng() {
+        if (!state.buttons.length) return;
+        state.buttons.forEach((button) => {
+            const sampled = samplePolygonColor(button.polygon);
+            if (!sampled) return;
+            button.color = sampled;
+            button.strokeColor = sampled;
+            button.hoverColor = toHoverColor(sampled);
+            syncLinkedColorTargets(button);
+        });
+        persistButtonsLocal();
+        syncAll();
+        toast("PNG 구역 색상 기준으로 polygon 색상을 다시 맞췄습니다.");
+    }
+
+    function buildGroupColorMap() {
+        const map = new Map();
+        state.sections.forEach((section, index) => {
+            const key = String(section.groupKey || section.sectionId || section.sectionName || index);
+            if (!map.has(key)) {
+                map.set(key, toPastelColor(section.color || section.renderColor || colorByIndex(map.size)));
+            }
+        });
+        return map;
+    }
+
     function validateMatches() {
         const sectionIds = new Set(state.sections.map((section) => section.sectionId).filter(Boolean));
         const seatSectionIds = new Set(state.seats.map((seat) => seat.sectionId).filter(Boolean));
@@ -552,6 +853,8 @@
         state.missingNameCount = missingName;
 
         const list = [];
+        if (!state.sections.length) list.push("구역 데이터가 0개입니다. Stage 3/4 저장 산출물 또는 projectId를 확인하세요.");
+        if (!state.seats.length) list.push("좌석 데이터가 0개입니다. Stage 4 좌석 저장 산출물을 확인하세요.");
         if (missingSectionId) list.push(`sectionId가 없는 구역 ${missingSectionId}개: 저장 대상에서 제외됩니다.`);
         if (missingName) list.push(`sectionName/name/section/label이 없는 구역 ${missingName}개: 임시명 생성 없이 저장을 막습니다.`);
         if (missingPolygon) list.push(`polygon이 없는 구역 ${missingPolygon}개: bbox만으로 버튼을 만들지 않으므로 제외됩니다.`);
@@ -565,10 +868,16 @@
         const previousBySection = new Map(state.buttons.map((button) => [button.sectionId, button]));
         const generated = [];
         const blocked = [];
+        const groupColorMap = buildGroupColorMap();
 
         state.sections.forEach((section, index) => {
             const layout = findLayoutBySection(section.sectionId, section.sectionName);
-            const sourcePolygon = normalizePoints(layout?.buttonPolygon || layout?.polygon || section.polygon || []);
+            const polygonSource = layout?.referenceButtonPolygon?.length
+                ? layout.referenceButtonPolygon
+                : (layout?.buttonPolygon?.length
+                    ? layout.buttonPolygon
+                    : (layout?.actualBounds ? rectToPolygon(layout.actualBounds) : (layout?.polygon || section.polygon || [])));
+            const sourcePolygon = normalizePoints(polygonSource || []);
             if (!section.sectionId || !section.sectionName || sourcePolygon.length < 3) {
                 blocked.push(section.sectionId || section.sectionName || `index-${index + 1}`);
                 return;
@@ -577,15 +886,18 @@
             const sectionSeats = state.seats.filter((seat) => sameSeatSection(seat, section.sectionId, section.sectionName));
             const firstSeat = sectionSeats[0] || {};
             const previous = previousBySection.get(section.sectionId);
-            const color = toPastelColor(previous?.color || section.color || section.renderColor || colorByIndex(index));
-            const strokeColor = normalizeColor(previous?.strokeColor || makeReadableStroke(color));
+            const groupKey = String(section.groupKey || section.sectionId || section.sectionName || index);
+            const sampledColor = samplePolygonColor(sourcePolygon);
+            const baseColor = sampledColor || groupColorMap.get(groupKey) || section.color || section.renderColor || colorByIndex(index);
+            const color = normalizeColor(previous?.color || baseColor);
+            const strokeColor = color;
             const labelPoint = previous?.labelPoint ? copyPoint(previous.labelPoint) : (layout?.labelPoint || getSafeLabelPoint(sourcePolygon));
             const floor = firstText(section.floor, layout?.floor, firstSeat.floor);
             const grade = firstText(section.grade, layout?.grade, firstSeat.grade);
             const price = numberOrBlank(section.price !== "" ? section.price : (layout?.price !== "" ? layout?.price : firstSeat.price));
             const label = firstText(previous?.label, section.label, section.sectionName);
-            const fontSize = clamp(Number(previous?.fontSize || 0) || estimateFitFontSize(label, sourcePolygon), 9, 34);
-            const textColor = normalizeColor(previous?.textColor || autoTextColor(color));
+            const fontSize = clamp(Number(previous?.fontSize || state.globalStyle.fontSize || 0) || estimateFitFontSize(label, sourcePolygon), 9, 34);
+            const textColor = normalizeColor(previous?.textColor || state.globalStyle.textColor || autoTextColor(color));
 
             generated.push({
                 id: previous?.id || `button-${section.sectionId}`,
@@ -610,9 +922,10 @@
                 strokeColor,
                 textColor,
                 fontSize,
-                fillAlpha: Number(previous?.fillAlpha || FINAL_FILL_ALPHA),
+                fillAlpha: Number(previous?.fillAlpha || state.globalStyle.fillAlpha || FINAL_FILL_ALPHA),
                 visible: previous?.visible !== false,
-                clickable: previous?.clickable !== false
+                clickable: previous?.clickable !== false,
+                angle: Number(previous?.angle ?? layout?.angle ?? section.angle ?? 0)
             });
         });
 
@@ -636,6 +949,7 @@
         syncStats();
         renderWarnings();
         renderButtonList();
+        syncGlobalControls();
         syncSelectedPanel();
         syncSaveSummary();
         renderJsonPreview();
@@ -685,6 +999,82 @@
         });
     }
 
+
+    function syncGlobalControls() {
+        if (!state.buttons.length) {
+            setInputValue(dom.globalFontSizeInput, state.globalStyle.fontSize);
+            setInputValue(dom.globalTextColorInput, colorToHex(state.globalStyle.textColor));
+            setInputValue(dom.globalOpacityInput, state.globalStyle.fillAlpha);
+            setText(dom.globalOpacityValue, `${Math.round(state.globalStyle.fillAlpha * 100)}%`);
+            if (dom.syncStrokeFillInput) dom.syncStrokeFillInput.checked = state.globalStyle.syncStrokeWithFill;
+            return;
+        }
+
+        const first = state.buttons[0];
+        state.globalStyle.fontSize = Math.round(Number(first.fontSize || state.globalStyle.fontSize || 14));
+        state.globalStyle.textColor = normalizeColor(first.textColor || state.globalStyle.textColor || DEFAULT_TEXT_COLOR);
+        state.globalStyle.fillAlpha = clamp(Number(first.fillAlpha || state.globalStyle.fillAlpha || FINAL_FILL_ALPHA), 0.2, 1);
+        state.globalStyle.syncStrokeWithFill = state.buttons.every((button) => normalizeColor(button.strokeColor || button.color) === normalizeColor(button.color));
+
+        setInputValue(dom.globalFontSizeInput, state.globalStyle.fontSize);
+        setInputValue(dom.globalTextColorInput, colorToHex(state.globalStyle.textColor));
+        setInputValue(dom.globalOpacityInput, state.globalStyle.fillAlpha);
+        setText(dom.globalOpacityValue, `${Math.round(state.globalStyle.fillAlpha * 100)}%`);
+        if (dom.syncStrokeFillInput) dom.syncStrokeFillInput.checked = state.globalStyle.syncStrokeWithFill;
+    }
+
+    function applyGlobalControls() {
+        if (!state.buttons.length) return;
+
+        const fontSize = Number(dom.globalFontSizeInput?.value);
+        const opacity = clamp(Number(dom.globalOpacityInput?.value || FINAL_FILL_ALPHA), 0.2, 1);
+        const textColor = normalizeColor(dom.globalTextColorInput?.value || DEFAULT_TEXT_COLOR);
+        const syncStrokeWithFill = dom.syncStrokeFillInput?.checked !== false;
+
+        state.globalStyle = {
+            fontSize: Number.isFinite(fontSize) && fontSize > 0 ? clamp(fontSize, 9, 42) : state.globalStyle.fontSize,
+            textColor,
+            fillAlpha: opacity,
+            syncStrokeWithFill
+        };
+
+        state.buttons.forEach((button) => {
+            if (Number.isFinite(fontSize) && fontSize > 0) button.fontSize = clamp(fontSize, 9, 42);
+            button.textColor = textColor;
+            button.fillAlpha = opacity;
+            button.strokeColor = button.color;
+            syncLinkedColorTargets(button);
+        });
+
+        persistButtonsLocal();
+        syncAll();
+        toast("전체 수정 값 반영 완료");
+    }
+
+    function autoFitAllButtons() {
+        if (!state.buttons.length) return;
+        state.buttons.forEach((button) => {
+            const text = button.label || button.sectionName;
+            button.fontSize = estimateFitFontSize(text, button.polygon);
+        });
+        persistButtonsLocal();
+        syncAll();
+        toast("전체 글자 크기 자동 보정 완료");
+    }
+
+    function centerAllLabels() {
+        if (!state.buttons.length) return;
+        state.buttons.forEach((button) => {
+            const point = getSafeLabelPoint(button.polygon);
+            button.labelPoint = point;
+            button.x = round(point.x);
+            button.y = round(point.y);
+        });
+        persistButtonsLocal();
+        syncAll();
+        toast("전체 label 위치를 구역 내부 중심으로 정렬했습니다.");
+    }
+
     function syncSelectedPanel() {
         const button = getSelectedButton();
         if (!button) {
@@ -701,6 +1091,7 @@
             setInputValue(dom.textColorInput, DEFAULT_TEXT_COLOR);
             setInputValue(dom.labelXInput, "");
             setInputValue(dom.labelYInput, "");
+            setInputValue(dom.colorInput, DEFAULT_COLOR);
             return;
         }
 
@@ -719,7 +1110,6 @@
         setInputValue(dom.labelXInput, round(button.labelPoint.x));
         setInputValue(dom.labelYInput, round(button.labelPoint.y));
         setInputValue(dom.colorInput, colorToHex(button.color));
-        setInputValue(dom.strokeInput, colorToHex(button.strokeColor || makeReadableStroke(button.color)));
         if (dom.visibleInput) dom.visibleInput.checked = button.visible !== false;
         if (dom.clickableInput) dom.clickableInput.checked = button.clickable !== false;
     }
@@ -738,7 +1128,7 @@
     }
 
     function setPart(part, userAction = true) {
-        [1, 2, 3, 4].forEach((no) => {
+        [1, 2, 3, 4, 5].forEach((no) => {
             const panel = dom[`part${no}Panel`];
             const button = dom[`partBtn${no}`];
             const status = dom[`part${no}Status`];
@@ -792,11 +1182,11 @@
         button.y = round(button.labelPoint.y);
 
         if (dom.colorInput?.value) {
-            button.color = toPastelColor(dom.colorInput.value);
+            button.color = normalizeColor(dom.colorInput.value);
             button.hoverColor = toHoverColor(button.color);
-            if (!dom.strokeInput?.value) button.strokeColor = makeReadableStroke(button.color);
+            button.strokeColor = button.color;
+            syncLinkedColorTargets(button);
         }
-        if (dom.strokeInput?.value) button.strokeColor = normalizeColor(dom.strokeInput.value);
         if (dom.visibleInput) button.visible = dom.visibleInput.checked;
         if (dom.clickableInput) button.clickable = dom.clickableInput.checked;
         persistButtonsLocal();
@@ -805,6 +1195,49 @@
         renderJsonPreview();
         drawAll();
         syncSelectedPanel();
+    }
+
+
+    function syncLinkedColorTargets(button) {
+        const color = normalizeColor(button.color || DEFAULT_COLOR);
+        state.sections.forEach((section) => {
+            if (sameSeatSection(section, button.sectionId, button.sectionName) || section.sectionId === button.sectionId) {
+                section.color = color;
+                section.renderColor = color;
+                section.fillColor = color;
+            }
+        });
+        state.seatLayouts.forEach((layout) => {
+            if (sameSeatSection(layout, button.sectionId, button.sectionName) || layout.sectionId === button.sectionId) {
+                layout.color = color;
+                layout.renderColor = color;
+                layout.fillColor = color;
+            }
+        });
+    }
+
+    function getSourcePolygonForButton(button) {
+        const layout = findLayoutBySection(button.sectionId, button.sectionName);
+        if (layout?.referenceButtonPolygon?.length >= 3) return layout.referenceButtonPolygon.map(copyPoint);
+        if (layout?.buttonPolygon?.length >= 3) return layout.buttonPolygon.map(copyPoint);
+        if (layout?.actualBounds) return rectToPolygon(layout.actualBounds).map(copyPoint);
+        if (layout?.polygon?.length >= 3) return layout.polygon.map(copyPoint);
+        const section = state.sections.find((item) => sameSeatSection(item, button.sectionId, button.sectionName) || item.sectionId === button.sectionId);
+        if (section?.polygon?.length >= 3) return section.polygon.map(copyPoint);
+        return button.polygon.map(copyPoint);
+    }
+
+    function resetSelectedPolygonFromSource() {
+        const button = getSelectedButton();
+        if (!button) return;
+        button.polygon = getSourcePolygonForButton(button);
+        const point = getSafeLabelPoint(button.polygon);
+        button.labelPoint = point;
+        button.x = round(point.x);
+        button.y = round(point.y);
+        persistButtonsLocal();
+        syncAll();
+        toast("선택 구역 polygon을 원본 기준으로 되돌렸습니다.");
     }
 
     function getSelectedButton() {
@@ -882,7 +1315,10 @@
             drawButtons(ctx, options);
         }
         if (state.showLabels || options.forceLabels) {
-            drawLabels(ctx);
+            drawLabels(ctx, options);
+        }
+        if (!options.renderMode && dom.vertexEditInput?.checked) {
+            drawVertexHandles(ctx);
         }
     }
 
@@ -923,22 +1359,31 @@
         ctx.save();
         state.buttons.forEach((button) => {
             if (button.polygon.length < 3 || button.visible === false) return;
-            const selected = button.id === state.selectedId;
-            const hovered = button.id === state.hoverId;
+
+            const debugMode = options.renderMode === "debug";
+            const alpha = debugMode
+                ? 0.10
+                : clamp(Number(button.fillAlpha ?? FINAL_FILL_ALPHA), 0.2, 1);
+
+            // 핵심:
+            // 편집 화면 polygon 색상과 최종 PNG 구역 색상은 완전히 동일해야 한다.
+            // 따라서 기본/선택/hover 상태 모두 stroke를 그리지 않는다.
+            // 빨간 polygon 선은 debug-polygons.png에서만 별도로 그린다.
             ctx.beginPath();
             pathPolygon(ctx, button.polygon);
-            const finalMode = options.renderMode === "final";
-            const debugMode = options.renderMode === "debug";
-            const fillAlpha = finalMode ? Number(button.fillAlpha || FINAL_FILL_ALPHA) : EDIT_FILL_ALPHA;
-            ctx.fillStyle = debugMode ? "rgba(239, 68, 68, 0.08)" : (selected || hovered ? (button.hoverColor || toHoverColor(button.color)) : hexToRgba(button.color, fillAlpha));
-            ctx.strokeStyle = debugMode ? DEBUG_STROKE_COLOR : (selected ? DEBUG_STROKE_COLOR : (button.strokeColor || makeReadableStroke(button.color) || DEFAULT_COLOR));
-            ctx.lineWidth = debugMode ? 4 : (selected ? 4 : 2);
-            ctx.setLineDash(button.clickable === false ? [5, 4] : []);
+            ctx.fillStyle = debugMode ? "rgba(239, 68, 68, 0.10)" : hexToRgba(button.color, alpha);
             ctx.fill();
-            ctx.stroke();
+
+            if (debugMode) {
+                ctx.strokeStyle = DEBUG_STROKE_COLOR;
+                ctx.lineWidth = 4;
+                ctx.setLineDash([]);
+                ctx.stroke();
+            }
+
             if (button.clickable === false) {
                 ctx.save();
-                ctx.globalAlpha = 0.28;
+                ctx.globalAlpha = 0.18;
                 ctx.fillStyle = "#64748b";
                 ctx.fill();
                 ctx.restore();
@@ -951,31 +1396,37 @@
         ctx.save();
         state.buttons.forEach((button) => {
             if (button.visible === false || !button.labelPoint) return;
-            const selected = button.id === state.selectedId;
             const x = Number(button.labelPoint.x || 0);
             const y = Number(button.labelPoint.y || 0);
-            const marker = options.marker !== false;
             const text = button.label || button.sectionName;
             const fontSize = clamp(Number(button.fontSize || estimateFitFontSize(text, button.polygon)), 9, 42);
-
-            if (marker) {
-                ctx.beginPath();
-                ctx.arc(x, y, selected ? 8 : 6, 0, Math.PI * 2);
-                ctx.fillStyle = selected ? DEBUG_STROKE_COLOR : "#111827";
-                ctx.fill();
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = "#ffffff";
-                ctx.stroke();
-            }
 
             ctx.font = `900 ${fontSize}px Pretendard, Arial, sans-serif`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.lineWidth = Math.max(3, Math.round(fontSize * 0.22));
-            ctx.strokeStyle = "rgba(255,255,255,0.88)";
-            ctx.strokeText(text, x, marker ? y - Math.max(16, fontSize * 1.1) : y);
-            ctx.fillStyle = selected && marker ? DEBUG_STROKE_COLOR : (button.textColor || autoTextColor(button.color));
-            ctx.fillText(text, x, marker ? y - Math.max(16, fontSize * 1.1) : y);
+            ctx.fillStyle = button.textColor || autoTextColor(button.color);
+            ctx.fillText(text, x, y);
+        });
+        ctx.restore();
+    }
+
+    function drawVertexHandles(ctx) {
+        const button = getSelectedButton();
+        if (!button || button.visible === false || button.polygon.length < 3) return;
+        ctx.save();
+        button.polygon.forEach((point, index) => {
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = "#ffffff";
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "#111827";
+            ctx.stroke();
+            ctx.fillStyle = "#111827";
+            ctx.font = "bold 10px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "bottom";
+            ctx.fillText(String(index + 1), point.x, point.y - 8);
         });
         ctx.restore();
     }
@@ -1001,6 +1452,17 @@
 
     function handlePointerDown(event) {
         const point = getCanvasPoint(event);
+        const vertexHit = findVertexHandleAt(point);
+        if (vertexHit) {
+            state.draggingVertex = { buttonId: vertexHit.button.id, index: vertexHit.index };
+            state.selectedId = vertexHit.button.id;
+            dom.stage5OverlayCanvas?.setPointerCapture?.(event.pointerId);
+            if (dom.stage5OverlayCanvas) dom.stage5OverlayCanvas.style.cursor = "grabbing";
+            syncSelectedPanel();
+            drawAll();
+            return;
+        }
+
         const labelHit = findLabelAt(point);
         if (labelHit) {
             state.draggingLabelId = labelHit.id;
@@ -1010,6 +1472,7 @@
                 y: point.y - labelHit.labelPoint.y
             };
             dom.stage5OverlayCanvas?.setPointerCapture?.(event.pointerId);
+            if (dom.stage5OverlayCanvas) dom.stage5OverlayCanvas.style.cursor = "grabbing";
             syncSelectedPanel();
             drawAll();
         }
@@ -1017,6 +1480,18 @@
 
     function handlePointerMove(event) {
         const point = getCanvasPoint(event);
+        if (state.draggingVertex) {
+            const button = state.buttons.find((item) => item.id === state.draggingVertex.buttonId);
+            if (button && button.polygon[state.draggingVertex.index]) {
+                button.polygon[state.draggingVertex.index] = {
+                    x: clamp(point.x, 0, state.width),
+                    y: clamp(point.y, 0, state.height)
+                };
+                persistButtonsLocal();
+                drawAll();
+            }
+            return;
+        }
         if (state.draggingLabelId) {
             const button = state.buttons.find((item) => item.id === state.draggingLabelId);
             if (button) {
@@ -1040,17 +1515,39 @@
             drawOverlay();
         }
 
+        const vertexHover = findVertexHandleAt(point);
+        const labelHover = findLabelAt(point);
+        if (dom.stage5OverlayCanvas) {
+            dom.stage5OverlayCanvas.style.cursor = state.draggingLabelId || state.draggingVertex
+                ? "grabbing"
+                : (vertexHover ? "grab" : (labelHover ? "grab" : (hover ? "pointer" : "default")));
+        }
+
         if (hover) showTooltip(event, hover);
         else hideTooltip();
     }
 
     function endPointerDrag() {
-        if (!state.draggingLabelId) return;
+        if (!state.draggingLabelId && !state.draggingVertex) return;
         state.draggingLabelId = "";
+        state.draggingVertex = null;
+        if (dom.stage5OverlayCanvas) dom.stage5OverlayCanvas.style.cursor = "default";
         persistButtonsLocal();
         renderJsonPreview();
         syncSaveSummary();
         drawAll();
+    }
+
+    function findVertexHandleAt(point) {
+        if (!dom.vertexEditInput?.checked) return null;
+        const button = getSelectedButton();
+        if (!button || button.visible === false) return null;
+        for (let i = 0; i < button.polygon.length; i += 1) {
+            if (distance(point, button.polygon[i]) <= 10) {
+                return { button, index: i };
+            }
+        }
+        return null;
     }
 
     function handleCanvasClick(event) {
@@ -1074,8 +1571,16 @@
         for (let i = state.buttons.length - 1; i >= 0; i -= 1) {
             const button = state.buttons[i];
             const label = button.labelPoint;
-            if (!label) continue;
-            if (distance(point, label) <= 14) return button;
+            if (!label || button.visible === false) continue;
+            const text = button.label || button.sectionName || "";
+            const fontSize = clamp(Number(button.fontSize || estimateFitFontSize(text, button.polygon)), 9, 42);
+            const width = Math.max(18, fontSize * Math.max(1, text.length) * 0.62);
+            const height = Math.max(16, fontSize * 1.25);
+            const left = label.x - width / 2 - 6;
+            const top = label.y - height / 2 - 4;
+            if (point.x >= left && point.x <= left + width + 12 && point.y >= top && point.y <= top + height + 8) {
+                return button;
+            }
         }
         return null;
     }
@@ -1122,8 +1627,9 @@
                 page: "stage5",
                 folderName: state.projectId,
                 bookingButtonJsonText: JSON.stringify(finalButtons, null, 2),
-                imageDataUrl: exportDebugImageDataUrl(),
+                imageDataUrl: exportFinalImageDataUrl(),
                 finalImageDataUrl: exportFinalImageDataUrl(),
+                debugImageDataUrl: exportDebugImageDataUrl(),
                 sectionCount: state.sections.length,
                 seatCount: state.seats.length,
                 bookingButtonCount: finalButtons.length,
@@ -1144,14 +1650,15 @@
 
             const result = await response.json();
             const bookingUrl = result.bookingButtonsJsonUrl || state.bookingButtonsUrl;
-            const finalUrl = result.folderUrl ? `${result.folderUrl}/seatmap-image.png` : state.finalImageUrl;
+            const stage5Url = result.stage5ImageUrl || result.imageUrl || state.stage5ImageUrl;
             localStorage.setItem(STORAGE.bookingButtonsUrl, bookingUrl);
             localStorage.setItem(STORAGE.bookingButtonsJsonUrl, bookingUrl);
-            localStorage.setItem(STORAGE.finalImageUrl, finalUrl);
-            localStorage.setItem(STORAGE.generatedOverviewImage, finalUrl);
+            localStorage.setItem(STORAGE.stage5ImageUrl, stage5Url);
+            localStorage.setItem(STORAGE.finalImageUrl, stage5Url);
+            localStorage.setItem(STORAGE.generatedOverviewImage, stage5Url);
             persistButtonsLocal();
-            setPartDone(4, true);
-            setPart(4, false);
+            setPartDone(5, true);
+            setPart(5, false);
             toast(`booking-buttons.json 저장 완료: ${finalButtons.length}개`);
             return result;
         } catch (error) {
@@ -1178,33 +1685,49 @@
     }
 
     function createBookingButtonsJson() {
-        return state.buttons.map((button) => ({
-            id: button.id,
-            sectionId: button.sectionId,
-            sectionName: button.sectionName,
-            section: button.sectionName,
-            name: button.label || button.sectionName,
-            label: button.label || button.sectionName,
-            groupKey: button.groupKey,
-            groupIndex: button.groupIndex,
-            floor: button.floor,
-            grade: button.grade,
-            price: button.price === "" ? "" : Number(button.price),
-            polygon: button.polygon.map(copyRoundedPoint),
-            labelPoint: copyRoundedPoint(button.labelPoint),
-            x: round(button.labelPoint.x),
-            y: round(button.labelPoint.y),
-            seatCount: Number(button.seatCount || 0),
-            availableSeatCount: Number(button.availableSeatCount || 0),
-            color: button.color,
-            hoverColor: button.hoverColor || toHoverColor(button.color),
-            strokeColor: button.strokeColor || makeReadableStroke(button.color),
-            textColor: button.textColor || autoTextColor(button.color),
-            fontSize: Math.round(Number(button.fontSize || estimateFitFontSize(button.label || button.sectionName, button.polygon))),
-            fillAlpha: Number(button.fillAlpha || FINAL_FILL_ALPHA),
-            visible: button.visible !== false,
-            clickable: button.clickable !== false
-        }));
+        return state.buttons.map((button) => {
+            const bounds = getBbox(button.polygon);
+            const fillColor = button.color;
+            const strokeColor = button.strokeColor || button.color;
+            return {
+                id: button.id,
+                sectionId: button.sectionId,
+                sectionName: button.sectionName,
+                section: button.sectionName,
+                name: button.label || button.sectionName,
+                label: button.label || button.sectionName,
+                groupKey: button.groupKey,
+                groupIndex: button.groupIndex,
+                floor: button.floor,
+                grade: button.grade,
+                price: button.price === "" ? "" : Number(button.price),
+                polygon: button.polygon.map(copyRoundedPoint),
+                bounds: {
+                    x: round(bounds.x),
+                    y: round(bounds.y),
+                    width: round(bounds.w),
+                    height: round(bounds.h)
+                },
+                centerX: round(bounds.x + bounds.w / 2),
+                centerY: round(bounds.y + bounds.h / 2),
+                angle: round(button.angle || 0),
+                labelPoint: copyRoundedPoint(button.labelPoint),
+                x: round(button.labelPoint.x),
+                y: round(button.labelPoint.y),
+                seatCount: Number(button.seatCount || 0),
+                availableSeatCount: Number(button.availableSeatCount || 0),
+                fillColor,
+                color: fillColor,
+                hoverColor: button.hoverColor || toHoverColor(fillColor),
+                strokeColor,
+                textColor: button.textColor || autoTextColor(fillColor),
+                fontSize: Math.round(Number(button.fontSize || estimateFitFontSize(button.label || button.sectionName, button.polygon))),
+                fillAlpha: Number(button.fillAlpha || FINAL_FILL_ALPHA),
+                visible: button.visible !== false,
+                clickable: button.clickable !== false,
+                hoverEnabled: button.clickable !== false
+            };
+        });
     }
 
     function exportDebugImageDataUrl() {
@@ -1217,7 +1740,7 @@
             outCtx.fillRect(0, 0, state.width, state.height);
             if (state.image) outCtx.drawImage(state.image, 0, 0, state.width, state.height);
             drawButtons(outCtx, { forceButtons: true, renderMode: "debug" });
-            drawLabels(outCtx, { marker: true });
+            drawLabels(outCtx, { marker: false });
             return out.toDataURL("image/png");
         } catch (error) {
             console.warn("[SeatTrace Stage5] debug image export failed", error);
@@ -1276,6 +1799,7 @@
 
     function noCache(url) {
         if (!url) return "";
+        if (String(url).startsWith("data:")) return url;
         const join = url.includes("?") ? "&" : "?";
         return `${url}${join}t=${Date.now()}`;
     }
@@ -1446,6 +1970,19 @@
         } catch (error) {
             return fallback;
         }
+    }
+
+    function removeHeavySeatLocalStorage() {
+        [
+            STORAGE.seats,
+            STORAGE.seatsCompat
+        ].forEach((key) => {
+            try {
+                localStorage.removeItem(key);
+            } catch (error) {
+                console.warn("[SeatTrace Stage5] heavy localStorage 제거 실패", key, error);
+            }
+        });
     }
 
     function persistJson(key, value) {

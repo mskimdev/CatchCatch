@@ -1,10 +1,10 @@
-/* Stage 6: final decoration editor */
+/* Stage 6: final booking seatmap design editor */
 
 .seatmap-workspace--stage6 {
     height: calc(100vh - var(--seatmap-header-height, 64px) - var(--seatmap-toolbar-height, 54px));
     min-height: 0;
     display: grid;
-    grid-template-columns: 280px minmax(0, 1fr) 320px;
+    grid-template-columns: 244px minmax(0, 1fr) 300px;
     overflow: hidden;
     background: #f8fafc;
 }
@@ -34,65 +34,68 @@
 
 .stage6-tool-side {
     border-right: 1px solid #e5e7eb;
-    padding: 14px;
+    padding: 10px;
 }
 
 .stage6-right-side {
     border-left: 1px solid #e5e7eb;
-    padding: 16px;
+    padding: 12px;
 }
 
 .stage6-side-title {
     display: grid;
-    gap: 5px;
-    margin-bottom: 10px;
+    gap: 4px;
+    margin-bottom: 8px;
 }
 
 .stage6-step-badge {
     width: fit-content;
     border-radius: 999px;
-    padding: 5px 10px;
+    padding: 4px 9px;
     background: #ede9fe;
     color: #6d28d9;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 950;
 }
 
 .stage6-side-title strong {
     color: #0f172a;
-    font-size: 22px;
+    font-size: 19px;
     font-weight: 950;
-    line-height: 1.1;
+    line-height: 1.05;
 }
 
 .stage6-side-title small {
     color: #64748b;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 750;
-    line-height: 1.35;
+    line-height: 1.3;
 }
 
 .stage6-panel {
     border: 1px solid #e5e7eb;
-    border-radius: 16px;
+    border-radius: 14px;
     background: #ffffff;
-    padding: 12px;
-    margin-bottom: 10px;
-    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
+    padding: 10px;
+    margin-bottom: 8px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.035);
 }
 
-.stage6-panel--compact {
-    padding: 10px 12px;
-}
-
-.stage6-panel h3 {
-    margin: 0 0 10px;
+.stage6-panel h3,
+.stage6-fold summary {
+    margin: 0 0 8px;
     color: #111827;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 950;
 }
 
-.stage6-panel--compact h3 {
+.stage6-fold summary {
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 0;
+}
+
+.stage6-fold[open] summary {
     margin-bottom: 8px;
 }
 
@@ -101,26 +104,26 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .stage6-panel-head h3 {
-    margin-bottom: 0;
+    margin: 0;
 }
 
 .stage6-tool-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
+    gap: 6px;
 }
 
 .stage6-tool {
-    height: 58px;
+    height: 48px;
     display: grid;
     place-items: center;
-    gap: 2px;
+    gap: 1px;
     border: 1px solid #e5e7eb;
-    border-radius: 14px;
+    border-radius: 12px;
     background: #f8fafc;
     color: #334155;
     font-weight: 900;
@@ -129,12 +132,12 @@
 }
 
 .stage6-tool span {
-    font-size: 19px;
+    font-size: 17px;
     line-height: 1;
 }
 
 .stage6-tool b {
-    font-size: 11px;
+    font-size: 10px;
 }
 
 .stage6-tool:hover,
@@ -142,78 +145,118 @@
     border-color: #8b5cf6;
     background: #f5f3ff;
     color: #6d28d9;
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.10);
+}
+
+.stage6-action-grid,
+.stage6-align-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.stage6-align-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .stage6-quick,
 .stage6-inline-btn,
+.stage6-align-grid button,
 .stage6-canvas-head__tools button {
-    height: 36px;
+    height: 32px;
     border: 1px solid #dbe3ef;
-    border-radius: 11px;
+    border-radius: 10px;
     background: #ffffff;
     color: #334155;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 900;
     cursor: pointer;
 }
 
-.stage6-quick--single {
+.stage6-quick--full {
     width: 100%;
+    margin-top: 7px;
+}
+
+.stage6-quick--danger {
+    border-color: #fecaca;
+    color: #b91c1c;
+    background: #fff7f7;
 }
 
 .stage6-quick:hover,
 .stage6-inline-btn:hover,
+.stage6-align-grid button:hover,
 .stage6-canvas-head__tools button:hover {
     border-color: #8b5cf6;
     color: #6d28d9;
 }
 
-.stage6-view-strip {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
+.stage6-field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
 }
 
-.stage6-view-chip {
-    flex: 1 1 calc(33.333% - 6px);
-    min-width: 64px;
-    height: 34px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    border: 1px solid #e5e7eb;
-    border-radius: 11px;
-    background: #f8fafc;
-    color: #334155;
-    font-size: 12px;
+.stage6-field-grid label:first-child {
+    grid-column: 1 / -1;
+}
+
+.stage6-field-grid label,
+.stage6-check-row {
+    display: grid;
+    gap: 4px;
+    color: #64748b;
+    font-size: 10px;
     font-weight: 900;
-    cursor: pointer;
 }
 
-.stage6-view-chip input {
-    width: 13px;
-    height: 13px;
+.stage6-field-grid select,
+.stage6-field-grid input[type="color"] {
+    width: 100%;
+    height: 30px;
+    border: 1px solid #dbe3ef;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #0f172a;
+    font-weight: 900;
+}
+
+.stage6-field-grid input[type="color"] {
+    padding: 2px;
+}
+
+.stage6-check-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 8px;
+    color: #334155;
+    font-size: 11px;
+}
+
+.stage6-check-row input {
+    width: 14px;
+    height: 14px;
     accent-color: #8b5cf6;
 }
 
 .stage6-help {
-    margin: 10px 0 0;
-    border-radius: 12px;
+    margin: 8px 0 0;
+    border-radius: 11px;
     background: #f1f5f9;
-    padding: 10px;
+    padding: 9px;
     color: #64748b;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 750;
-    line-height: 1.55;
+    line-height: 1.45;
 }
 
 .stage6-canvas-main {
     min-width: 0;
     min-height: 0;
     display: grid;
-    grid-template-rows: 54px minmax(0, 1fr);
+    grid-template-rows: 50px minmax(0, 1fr);
     overflow: hidden;
     background-color: #ffffff;
     background-image: radial-gradient(#d8e7fb 1px, transparent 1px);
@@ -224,41 +267,41 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 12px;
     border-bottom: 1px solid #e5e7eb;
-    background: rgba(255, 255, 255, 0.92);
-    padding: 0 18px;
+    background: rgba(255, 255, 255, 0.94);
+    padding: 0 16px;
 }
 
 .stage6-canvas-head strong {
     display: block;
     color: #0f172a;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 950;
 }
 
 .stage6-canvas-head span {
     display: block;
     color: #64748b;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 800;
     margin-top: 2px;
 }
 
 .stage6-canvas-head__tools {
     display: flex;
-    gap: 8px;
+    gap: 7px;
 }
 
 .stage6-canvas-head__tools button {
     width: auto;
-    padding: 0 12px;
+    padding: 0 11px;
 }
 
 .stage6-canvas-viewport {
     min-height: 0;
     overflow: auto;
-    padding: 26px;
+    padding: 24px;
 }
 
 .stage6-canvas-board {
@@ -270,42 +313,42 @@
 #canvas {
     display: block;
     background: #ffffff;
-    border-radius: 18px;
+    border-radius: 16px;
     box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
 }
 
 .stage6-selected-box,
 .stage6-properties {
     display: grid;
-    gap: 10px;
-    border-radius: 14px;
+    gap: 9px;
+    border-radius: 13px;
     background: #f8fafc;
-    padding: 12px;
+    padding: 10px;
     color: #334155;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 750;
 }
 
 .stage6-properties label {
     display: grid;
-    gap: 6px;
+    gap: 5px;
     color: #64748b;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 900;
 }
 
 .stage6-properties-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    gap: 8px;
 }
 
 .stage6-properties input[type="color"] {
     width: 100%;
-    height: 34px;
+    height: 30px;
     padding: 2px;
     border: 1px solid #dbe3ef;
-    border-radius: 10px;
+    border-radius: 9px;
     background: #ffffff;
 }
 
@@ -314,55 +357,55 @@
 .stage6-properties textarea {
     width: 100%;
     min-width: 0;
-    height: 34px;
+    height: 31px;
     border: 1px solid #dbe3ef;
-    border-radius: 10px;
-    padding: 0 10px;
+    border-radius: 9px;
+    padding: 0 9px;
     font-weight: 900;
     color: #0f172a;
     background: #ffffff;
 }
 
 .stage6-properties textarea {
-    min-height: 78px;
-    padding: 10px;
+    min-height: 58px;
+    padding: 9px;
     resize: vertical;
 }
 
 .stage6-properties-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
 }
 
 .stage6-properties-actions button {
-    flex: 1 1 120px;
-    height: 36px;
-    border-radius: 10px;
+    height: 32px;
+    border-radius: 9px;
     border: 1px solid #dbe3ef;
     background: #ffffff;
     color: #334155;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 900;
     cursor: pointer;
 }
 
 .stage6-layer-list {
     display: grid;
-    gap: 8px;
+    gap: 7px;
 }
 
 .stage6-layer-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 9px;
     border: 1px solid #e5e7eb;
-    border-radius: 12px;
+    border-radius: 11px;
     background: #f8fafc;
-    padding: 10px 12px;
+    padding: 9px 10px;
     color: #334155;
     cursor: pointer;
+    text-align: left;
 }
 
 .stage6-layer-item.is-active {
@@ -374,30 +417,30 @@
 .stage6-layer-item b {
     display: block;
     color: #0f172a;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 950;
 }
 
 .stage6-layer-item span {
     display: block;
     color: #64748b;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 800;
 }
 
 .stage6-empty-layer {
-    border-radius: 12px;
+    border-radius: 11px;
     background: #f8fafc;
-    padding: 12px;
+    padding: 10px;
     color: #94a3b8;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 800;
 }
 
 .stage6-minimap-wrap {
-    border-radius: 14px;
+    border-radius: 13px;
     background: #ffffff;
-    padding: 10px;
+    padding: 9px;
     border: 1px solid #e5e7eb;
 }
 
@@ -405,19 +448,19 @@
     display: block;
     width: 100%;
     height: auto;
-    border-radius: 12px;
+    border-radius: 11px;
     background: #ffffff;
 }
 
 @media (max-width: 1500px) {
     .seatmap-workspace--stage6 {
-        grid-template-columns: 260px minmax(0, 1fr) 300px;
+        grid-template-columns: 232px minmax(0, 1fr) 286px;
     }
 }
 
 @media (max-width: 1280px) {
     .seatmap-workspace--stage6 {
-        grid-template-columns: 260px minmax(0, 1fr);
+        grid-template-columns: 232px minmax(0, 1fr);
     }
 
     .stage6-right-side {

@@ -14,7 +14,19 @@
 {{> admin/seatmap/common/header}}
 {{> admin/seatmap/common/work-toolbar}}
 
-<div class="seatmap-workspace seatmap-workspace--stage6" id="stage6App" data-stage="6">
+<div class="seatmap-workspace seatmap-workspace--stage6"
+     id="stage6App"
+     data-stage="6"
+     data-project-id="{{projectId}}"
+     data-project-path="{{projectPath}}"
+     data-stage5-image-url="{{stage5ImageUrl}}"
+     data-seatmap-image-url="{{seatmapImageUrl}}"
+     data-final-image-url="{{finalImageUrl}}"
+     data-style-url="{{styleJsonUrl}}"
+     data-booking-buttons-url="{{bookingButtonsJsonUrl}}"
+     data-decorations-url="{{decorationJsonUrl}}"
+     data-debug-image-url="{{debugImageUrl}}"
+     data-save-url="/admin/seatmap/temp-save">
     {{> admin/seatmap/workspace/workspace-stage6}}
 </div>
 

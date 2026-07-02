@@ -423,3 +423,23 @@
     gap: 8px;
     margin-top: 10px;
 }
+
+.seatmap-workspace--stage5 .stage5-inline-actions--triple {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.seatmap-workspace--stage5 input[type="range"] {
+    width: 100%;
+}
+
+.seatmap-workspace--stage5 .stage5-field--full span b {
+    margin-left: 4px;
+}
+
+.seatmap-workspace--stage5 .stage5-help-mini {
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.5;
+    display: flex;
+    align-items: end;
+}

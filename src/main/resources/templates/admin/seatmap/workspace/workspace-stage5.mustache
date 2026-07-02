@@ -16,9 +16,9 @@
             <div class="seatmap-step__body">
                 <div class="seatmap-step__system">
                     <div class="box active">
-                        <h3>Stage 3 / Stage 4 결과 확인</h3>
+                        <h3>Stage 4 최종 산출물 확인</h3>
                         <div class="help-text">
-                            seatmap-sections.json과 seats/{projectId}-seatmap-seats.json을 읽어서 sectionId 매칭만 검증합니다. 이 단계에서는 구역과 좌석을 새로 만들지 않습니다.
+                            Stage 5는 Stage 4의 최종 결과만 읽습니다. 기준 도면은 <b>seatmap-image.png</b>, 버튼 polygon 기준은 <b>seatmap-decorations.json</b> 입니다.
                         </div>
 
                         <div class="stage5-stat-grid">
@@ -49,9 +49,9 @@
             <div class="seatmap-step__body">
                 <div class="seatmap-step__system">
                     <div class="box active">
-                        <h3>section polygon → booking button</h3>
+                        <h3>Stage 4 polygon → booking button</h3>
                         <div class="help-text">
-                            Stage 3 polygon을 그대로 버튼 polygon으로 사용하고, Stage 4 좌석 JSON에서 seatCount와 availableSeatCount를 집계합니다. 버튼 색상은 자동으로 연한색 계열로 보정됩니다.
+                            버튼 polygon은 <b>referenceButtonPolygon → buttonPolygon → actualBounds → section polygon</b> 순서로 자동 생성합니다. 좌석은 다시 추정하지 않고 seatCount만 집계합니다.
                         </div>
                         <button type="button" class="btn green" id="generateButtonsBtn">booking button 자동 생성</button>
                         <button type="button" class="btn" id="loadSavedButtonsBtn">저장된 booking-buttons.json 불러오기</button>
@@ -65,7 +65,7 @@
                 <span class="seatmap-step__check" data-step="3"></span>
                 <span class="seatmap-step__text">
                     <b>파트 3</b>
-                    <small>버튼 검수 / 수정</small>
+                    <small>전체 수정</small>
                 </span>
                 <span class="seatmap-step__status" id="part3Status">대기</span>
                 <span class="seatmap-step__arrow">⌄</span>
@@ -76,15 +76,15 @@
                     <div class="box active">
                         <h3>표시 옵션</h3>
                         <label class="stage5-check-row">
-                            <input type="checkbox" id="showSectionPolygon" checked>
-                            <span>Stage 3 section polygon 표시</span>
+                            <input type="checkbox" id="showSectionPolygon">
+                            <span>section polygon fallback 표시</span>
                         </label>
                         <label class="stage5-check-row">
                             <input type="checkbox" id="showButtonPolygon" checked>
                             <span>booking button polygon 표시</span>
                         </label>
                         <label class="stage5-check-row">
-                            <input type="checkbox" id="showSeats" checked>
+                            <input type="checkbox" id="showSeats">
                             <span>Stage 4 좌석 표시</span>
                         </label>
                         <label class="stage5-check-row">
@@ -94,8 +94,53 @@
                     </div>
 
                     <div class="box">
+                        <h3>전체 수정</h3>
+                        <div class="help-text">전체 글자 크기, 글자색, 버튼 투명도를 먼저 잡고 난 뒤 개별 구역을 수정합니다. 색상은 기본적으로 아래 PNG 구역색을 샘플링해서 polygon 색상과 맞춥니다.</div>
+                        <div class="row stage5-control-row">
+                            <div>
+                                <label for="globalFontSizeInput">전체 글자 크기</label>
+                                <input id="globalFontSizeInput" type="number" min="9" max="42" step="1" value="14">
+                            </div>
+                            <div>
+                                <label for="globalTextColorInput">전체 글자색</label>
+                                <input id="globalTextColorInput" type="color" value="#1f2937">
+                            </div>
+                        </div>
+                        <div class="stage5-field stage5-field--full">
+                            <span>버튼 투명도 <b id="globalOpacityValue">100%</b></span>
+                            <input id="globalOpacityInput" type="range" min="0.20" max="1" step="0.05" value="1">
+                        </div>
+                        <label class="stage5-check-row">
+                            <input type="checkbox" id="syncStrokeFillInput" checked>
+                            <span>polygon 색상과 최종 PNG 구역 색상을 동일하게 사용</span>
+                        </label>
+                        <div class="stage5-inline-actions stage5-inline-actions--triple">
+                            <button type="button" class="btn" id="autoAllFontBtn">전체 글자 자동 맞춤</button>
+                            <button type="button" class="btn" id="centerAllLabelsBtn">전체 label 중앙 정렬</button>
+                            <button type="button" class="btn" id="resamplePngColorBtn">PNG 색상 다시 맞춤</button>
+                            <button type="button" class="btn primary" id="applyGlobalBtn">전체 값 반영</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="part4Panel" class="seatmap-step" data-step="4">
+            <button type="button" class="seatmap-step__header" id="partBtn4">
+                <span class="seatmap-step__check" data-step="4"></span>
+                <span class="seatmap-step__text">
+                    <b>파트 4</b>
+                    <small>선택 구역 수정</small>
+                </span>
+                <span class="seatmap-step__status" id="part4Status">대기</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box">
                         <h3>선택 구역 수정</h3>
-                        <div class="help-text">도면에서 label을 드래그하면 labelPoint가 수정됩니다. 구역명(STANDING, VIP, D2 등)과 글자 크기는 여기서 확정합니다.</div>
+                        <div class="help-text">도면에서 구역명을 드래그하면 labelPoint가 수정됩니다. polygon 꼭지점 편집 모드를 켜면 선택 구역의 꼭지점을 직접 드래그해 emergency 수정할 수 있습니다. 텍스트는 테두리 없이 단색으로 표시됩니다.</div>
                         <label class="stage5-field stage5-field--full" for="labelInput">
                             <span>버튼 명칭</span>
                             <input id="labelInput" type="text" placeholder="예: STANDING / VIP / D2">
@@ -122,13 +167,19 @@
                         </div>
                         <div class="row stage5-control-row">
                             <div>
-                                <label for="colorInput">버튼 색상</label>
+                                <label for="colorInput">버튼 색상 / 찐 PNG 색상</label>
                                 <input id="colorInput" type="color" value="#dbeafe">
                             </div>
-                            <div>
-                                <label for="strokeInput">선 색상</label>
-                                <input id="strokeInput" type="color" value="#93c5fd">
+                            <div class="stage5-help-mini">
+                                선택한 색을 polygon fill과 최종 저장 PNG 색상에 같이 반영합니다.
                             </div>
+                        </div>
+                        <label class="stage5-check-row">
+                            <input type="checkbox" id="vertexEditInput">
+                            <span>polygon 꼭지점 편집 모드</span>
+                        </label>
+                        <div class="stage5-inline-actions">
+                            <button type="button" class="btn" id="resetPolygonBtn">polygon 원본 복원</button>
                         </div>
                         <label class="stage5-check-row">
                             <input type="checkbox" id="visibleInput" checked>
@@ -152,14 +203,14 @@
             </div>
         </section>
 
-        <section id="part4Panel" class="seatmap-step" data-step="4">
-            <button type="button" class="seatmap-step__header" id="partBtn4">
-                <span class="seatmap-step__check" data-step="4"></span>
+        <section id="part5Panel" class="seatmap-step" data-step="5">
+            <button type="button" class="seatmap-step__header" id="partBtn5">
+                <span class="seatmap-step__check" data-step="5"></span>
                 <span class="seatmap-step__text">
-                    <b>파트 4</b>
+                    <b>파트 5</b>
                     <small>최종 저장</small>
                 </span>
-                <span class="seatmap-step__status" id="part4Status">대기</span>
+                <span class="seatmap-step__status" id="part5Status">대기</span>
                 <span class="seatmap-step__arrow">⌄</span>
             </button>
 
@@ -167,7 +218,7 @@
                 <div class="seatmap-step__system">
                     <div class="box active">
                         <h3>최종 저장</h3>
-                        <div class="help-text">저장 시 booking-buttons.json, 빨간 테두리 검수용 debug-polygons.png, Stage 6 꾸미기 전 최종 seatmap-image.png를 함께 생성합니다.</div>
+                        <div class="help-text">저장 시 booking-buttons.json, 빨간 테두리 검수용 debug-polygons.png, Stage 6 꾸미기 전 최종 seatmap-stage5.png / seatmap-image.png를 함께 생성합니다.</div>
                         <div class="stage5-save-summary" id="saveSummary">저장할 버튼 0개</div>
                         <button type="button" class="btn green" id="saveBookingButtonsBtn">Stage 5 최종 저장</button>
                         <button type="button" class="btn primary" id="toStage6Btn">Stage 6 최종 꾸미기로 이동</button>
@@ -196,7 +247,7 @@
     <div class="minimap">
         <h3>원본 미니맵</h3>
         <img id="miniImg" alt="seatmap-image 미니맵" />
-        <div class="help">button-image.png를 우선 사용하고, 없으면 cropped-image.png / seatmap-image.png 순서로 표시합니다.</div>
+        <div class="help">Stage 4 최종 <b>seatmap-image.png</b>를 우선 사용하고, 없으면 seatmap-stage5.png / button-image.png / cropped-image.png 순서로 표시합니다.</div>
     </div>
 
     <div class="preview-card stage5-preview-card">

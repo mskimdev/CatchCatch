@@ -110,6 +110,7 @@ public class SeatMapController {
         model.addAttribute("seatmapImageUrl", projectPath(projectId, "button-image.png"));
         model.addAttribute("buttonImageUrl", projectPath(projectId, "button-image.png"));
         model.addAttribute("finalImageUrl", projectPath(projectId, "seatmap-image.png"));
+        model.addAttribute("stage5ImageUrl", projectPath(projectId, "seatmap-stage5.png"));
         model.addAttribute("croppedImageUrl", projectPath(projectId, "cropped-image.png"));
         return "admin/seatmap/stage4";
     }
@@ -124,8 +125,8 @@ public class SeatMapController {
                 projectId,
                 "예매 버튼 생성",
                 "CatchCatch 예매 화면에서 클릭할 구역 polygon과 버튼 위치 JSON을 검수합니다.",
-                "저장 위치: 예매 버튼 JSON · 검수 이미지 · Stage 6 입력 이미지",
-                projectPath(projectId, "booking-buttons.json") + " · " + projectPath(projectId, "debug-polygons.png") + " · " + projectPath(projectId, "seatmap-image.png"),
+                "저장 위치: 예매 버튼 JSON · 최종 버튼 이미지 · 검수 이미지",
+                projectPath(projectId, "booking-buttons.json") + " · " + projectPath(projectId, "seatmap-stage5.png") + " · " + projectPath(projectId, "debug-polygons.png"),
                 stageUrl(4, projectId)
         );
         model.addAttribute("seatmapStep", "5");
@@ -133,9 +134,10 @@ public class SeatMapController {
         model.addAttribute("tempSaveButtonId", "saveBookingButtonsBtn");
         model.addAttribute("stage6Url", stageUrl(6, projectId));
         model.addAttribute("stage4Url", stageUrl(4, projectId));
-        model.addAttribute("seatmapImageUrl", projectPath(projectId, "button-image.png"));
+        model.addAttribute("seatmapImageUrl", projectPath(projectId, "seatmap-image.png"));
         model.addAttribute("buttonImageUrl", projectPath(projectId, "button-image.png"));
         model.addAttribute("finalImageUrl", projectPath(projectId, "seatmap-image.png"));
+        model.addAttribute("stage5ImageUrl", projectPath(projectId, "seatmap-stage5.png"));
         model.addAttribute("croppedImageUrl", projectPath(projectId, "cropped-image.png"));
         model.addAttribute("sectionJsonUrl", projectPath(projectId, "seatmap-sections.json"));
         model.addAttribute("seatJsonUrl", seatsPath(projectId));
@@ -154,16 +156,18 @@ public class SeatMapController {
                 model,
                 projectId,
                 "최종 꾸미기",
-                "텍스트, 도형, 구역, 좌석을 직접 보정해서 예제 수준의 최종 도면으로 마무리합니다.",
-                "저장 위치: 최종 도면 · 썸네일 · 꾸미기 JSON",
-                projectPath(projectId, "seatmap-image.png") + " · " + projectPath(projectId, "thumbnail.png") + " · " + projectPath(projectId, "seatmap-decorations.json"),
+                "Stage 5 예매 버튼 적용 이미지를 기준으로 텍스트와 도형 레이어만 추가합니다.",
+                "저장 위치: 최종 이미지 · 꾸미기 JSON",
+                projectPath(projectId, "seatmap-final.png") + " · " + projectPath(projectId, "seatmap-style.json"),
                 "/admin/seatmap/main"
         );
         model.addAttribute("seatmapStep", "6");
         model.addAttribute("showTempSave", true);
-        model.addAttribute("tempSaveButtonId", "saveAllJsonTop");
+        model.addAttribute("tempSaveButtonId", "seatmapHeaderSave");
+        model.addAttribute("stage5ImageUrl", projectPath(projectId, "seatmap-stage5.png"));
         model.addAttribute("seatmapImageUrl", projectPath(projectId, "seatmap-image.png"));
-        model.addAttribute("finalImageUrl", projectPath(projectId, "seatmap-image.png"));
+        model.addAttribute("finalImageUrl", projectPath(projectId, "seatmap-final.png"));
+        model.addAttribute("styleJsonUrl", projectPath(projectId, "seatmap-style.json"));
         model.addAttribute("thumbnailImageUrl", projectPath(projectId, "thumbnail.png"));
         model.addAttribute("decorationJsonUrl", projectPath(projectId, "seatmap-decorations.json"));
         model.addAttribute("buttonImageUrl", projectPath(projectId, "button-image.png"));
@@ -270,7 +274,7 @@ public class SeatMapController {
     }
 
     private String seatsPath(String projectId) {
-        return "/temp/seatmap/seats/" + projectId + "-seatmap-seats.json";
+        return projectPath(projectId, "seats/index.json");
     }
 
     private String stageUrl(int stageNo, String projectId) {
