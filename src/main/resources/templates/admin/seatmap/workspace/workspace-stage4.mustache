@@ -7,7 +7,7 @@
                 <span class="seatmap-step__check" data-step="1"></span>
                 <span class="seatmap-step__text">
                     <b>파트 1</b>
-                    <small>Stage 3 구역 선택</small>
+                    <small>현재 도면 확인</small>
                 </span>
                 <span class="seatmap-step__status" id="part1Status">진행중</span>
                 <span class="seatmap-step__arrow">⌄</span>
@@ -16,9 +16,34 @@
             <div class="seatmap-step__body">
                 <div class="seatmap-step__system">
                     <div class="box active">
-                        <h3>seatmap-sections.json 기준</h3>
+                        <h3>현재 도면 보이기</h3>
                         <div class="help-text">
-                            Stage 3에서 확정한 구역명과 polygon을 그대로 읽습니다. 여기서는 구역을 새로 만들지 않고 선택한 구역 안에 좌석만 배치합니다.
+                            먼저 Stage 3에서 만든 button-image.png를 그대로 표시하고, 그 위에 seatmap-sections.json의 polygon을 겹쳐 확인합니다.
+                        </div>
+                        <div class="stage4-save-summary" id="sourceLoadSummary">기준 도면 / 구역 JSON 로드 대기</div>
+                        <button type="button" class="btn primary" id="goPart2Btn">다음: 구역 펼치기 · 회전</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="part2Panel" class="seatmap-step" data-step="2">
+            <button type="button" class="seatmap-step__header" id="partBtn2">
+                <span class="seatmap-step__check" data-step="2"></span>
+                <span class="seatmap-step__text">
+                    <b>파트 2</b>
+                    <small>구역 펼치기 · 회전</small>
+                </span>
+                <span class="seatmap-step__status" id="part2Status">대기</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active">
+                        <h3>구역 펼치기 / 회전</h3>
+                        <div class="help-text">
+                            같은 색상/그룹 구역을 실제 도면 비례 기준으로 펼칩니다. 상단 그룹 버튼을 누르면 해당 그룹만 렌더링해서 렉을 줄입니다.
                         </div>
 
                         <div class="row">
@@ -35,56 +60,56 @@
                         <input id="sectionSearch" class="stage4-search" placeholder="구역명 검색: A1, D2, VIP" />
                         <div class="section-list stage4-section-list" id="sectionList"></div>
 
-                        <button type="button" class="btn primary" id="goPart2Btn">다음: 좌석 자동 배치</button>
+                        <div class="stage4-rotate-box">
+                            <label for="angleInput">선택 구역 회전</label>
+                            <div class="stage4-rotate-controls">
+                                <button type="button" class="btn" id="rotateLeftBtn">↺ -15°</button>
+                                <input id="angleInput" type="number" min="-180" max="180" step="1" value="0" />
+                                <button type="button" class="btn" id="rotateRightBtn">↻ +15°</button>
+                            </div>
+                            <div class="help-text">각 구역 도형 위쪽 회전점을 드래그해도 됩니다. 정사각형처럼 좌석 방향이 애매한 구역은 여기서 먼저 맞춥니다.</div>
+                        </div>
+
+                        <button type="button" class="btn primary" id="goPart3Btn">다음: 기준 좌석 추정</button>
                     </div>
+
                 </div>
             </div>
         </section>
 
-        <section id="part2Panel" class="seatmap-step" data-step="2">
-            <button type="button" class="seatmap-step__header" id="partBtn2">
-                <span class="seatmap-step__check" data-step="2"></span>
+        <section id="part3Panel" class="seatmap-step" data-step="3">
+            <button type="button" class="seatmap-step__header" id="partBtn3">
+                <span class="seatmap-step__check" data-step="3"></span>
                 <span class="seatmap-step__text">
-                    <b>파트 2</b>
-                    <small>행 · 열 · 크기 설정</small>
+                    <b>파트 3</b>
+                    <small>기준 좌석 추정</small>
                 </span>
-                <span class="seatmap-step__status" id="part2Status">대기</span>
+                <span class="seatmap-step__status" id="part3Status">대기</span>
                 <span class="seatmap-step__arrow">⌄</span>
             </button>
 
             <div class="seatmap-step__body">
                 <div class="seatmap-step__system">
                     <div class="box active">
-                        <h3>선택 구역 좌석 생성</h3>
+                        <h3>기준 구역 좌석 재추정</h3>
+                        <div class="help-text">
+                            선택한 구역을 기준으로 좌석 크기와 가로/세로 간격만 입력합니다. 행/열은 각 구역 bbox 크기에 맞춰 자동 계산되고, 같은 그룹은 같은 좌석 크기/간격으로 채워집니다.
+                        </div>
                         <div class="stage4-selected-name" id="selectedSectionName">구역을 선택하세요.</div>
 
-                        <div class="row three">
-                            <div>
-                                <label for="rowsInput">행 수</label>
-                                <input id="rowsInput" type="number" min="1" max="80" value="8" />
-                            </div>
-                            <div>
-                                <label for="colsInput">열 수</label>
-                                <input id="colsInput" type="number" min="1" max="120" value="12" />
-                            </div>
-                            <div>
-                                <label for="angleInput">각도</label>
-                                <input id="angleInput" type="number" min="-180" max="180" step="1" value="0" />
-                            </div>
-                        </div>
 
                         <div class="row three">
                             <div>
                                 <label for="seatSizeInput">좌석 크기</label>
-                                <input id="seatSizeInput" type="number" min="2" max="40" step="1" value="10" />
+                                <input id="seatSizeInput" type="number" min="2" max="80" step="1" value="10" />
                             </div>
                             <div>
-                                <label for="gapXInput">가로 간격</label>
-                                <input id="gapXInput" type="number" min="0" max="40" step="1" value="4" />
+                                <label for="gapXInput">기준 가로 간격</label>
+                                <input id="gapXInput" type="number" min="0" max="80" step="1" value="4" />
                             </div>
                             <div>
-                                <label for="gapYInput">세로 간격</label>
-                                <input id="gapYInput" type="number" min="0" max="40" step="1" value="4" />
+                                <label for="gapYInput">기준 세로 간격</label>
+                                <input id="gapYInput" type="number" min="0" max="80" step="1" value="4" />
                             </div>
                         </div>
 
@@ -99,31 +124,33 @@
                             </div>
                         </div>
 
-                        <button type="button" class="btn dark" id="generateSectionBtn">선택 구역 좌석 생성</button>
-                        <button type="button" class="btn amber" id="inferAllBtn">전체 구역 자동 추정</button>
+                        <button type="button" class="btn dark" id="generateSectionBtn">선택 구역 기준 좌석 생성</button>
+                        <button type="button" class="btn amber" id="inferAllBtn">같은 그룹 전체 재추정</button>
                         <button type="button" class="btn red" id="clearSectionBtn">선택 구역 좌석 비우기</button>
+                        <div class="help-text">자동 좌석 생성은 기준 도면 구역 polygon을 참고합니다. 경계에 걸친 후보 좌석은 얕은 점선으로 표시됩니다.</div>
+                        <button type="button" class="btn primary" id="goPart4Btn">다음: 최종 형태 검수</button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="part3Panel" class="seatmap-step" data-step="3">
-            <button type="button" class="seatmap-step__header" id="partBtn3">
-                <span class="seatmap-step__check" data-step="3"></span>
+        <section id="part4Panel" class="seatmap-step" data-step="4">
+            <button type="button" class="seatmap-step__header" id="partBtn4">
+                <span class="seatmap-step__check" data-step="4"></span>
                 <span class="seatmap-step__text">
-                    <b>파트 3</b>
-                    <small>수동 보정 · 저장</small>
+                    <b>파트 4</b>
+                    <small>최종 형태 검수 · 좌석 추가/삭제</small>
                 </span>
-                <span class="seatmap-step__status" id="part3Status">대기</span>
+                <span class="seatmap-step__status" id="part4Status">대기</span>
                 <span class="seatmap-step__arrow">⌄</span>
             </button>
 
             <div class="seatmap-step__body">
                 <div class="seatmap-step__system">
                     <div class="box active">
-                        <h3>좌석 지우기 / 수동 추가</h3>
+                        <h3>최종 형태 검수 · 좌석 추가/삭제</h3>
                         <div class="help-text">
-                            좌석 클릭 = 선택, Shift + 클릭 = 다중 선택입니다. 수동 추가 모드에서는 선택 구역 polygon 내부를 클릭하면 좌석을 1개 추가합니다.
+                            좌클릭 = 좌석 추가, 우클릭 = 해당 좌석 삭제입니다. 드래그하면 여러 좌석을 선택합니다. 자동 후보는 실제 구역 polygon에 걸친 좌석만 표시됩니다.
                         </div>
 
                         <div class="row">
@@ -137,15 +164,61 @@
                             </div>
                         </div>
 
-                        <button type="button" class="btn" id="manualAddBtn">수동 좌석 추가 모드</button>
-                        <button type="button" class="btn red" id="deleteSeatBtn">선택 좌석 삭제</button>
-                        <button type="button" class="btn" id="clearSelectionBtn">좌석 선택 해제</button>
+                        <div class="stage4-action-hint">좌클릭 추가 / 우클릭 삭제 / 드래그 다중 선택</div>
+                        <button type="button" class="btn green" id="confirmCandidateBtn">선택 구역 후보 전부 확정</button>
+                        <button type="button" class="btn" id="rejectCandidateBtn">선택 구역 후보 전부 제외</button>
+                        <button type="button" class="btn green" id="confirmGroupCandidateBtn">선택 그룹 후보 전부 확정</button>
+                        <button type="button" class="btn" id="rejectGroupCandidateBtn">선택 그룹 후보 전부 제외</button>
+                        <button type="button" class="btn primary" id="goPart5Btn">다음: 최종 PNG 미리보기</button>
                     </div>
 
                     <div class="box">
-                        <h3>검증 / 저장</h3>
+                        <h3>겹침 검증</h3>
                         <div class="stage4-save-summary" id="saveSummary">저장할 좌석 0개</div>
-                        <button type="button" class="btn green" id="saveSeatsBtn">좌석 JSON 저장</button>
+                        <div class="help-text">저장 전 좌석 기준 구역선이 서로 겹치면 경고가 표시됩니다.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="part5Panel" class="seatmap-step" data-step="5">
+            <button type="button" class="seatmap-step__header" id="partBtn5">
+                <span class="seatmap-step__check" data-step="5"></span>
+                <span class="seatmap-step__text">
+                    <b>파트 5</b>
+                    <small>최종 PNG 미리보기 · 저장</small>
+                </span>
+                <span class="seatmap-step__status" id="part5Status">대기</span>
+                <span class="seatmap-step__arrow">⌄</span>
+            </button>
+
+            <div class="seatmap-step__body">
+                <div class="seatmap-step__system">
+                    <div class="box active">
+                        <h3>예매 버튼용 최종 PNG</h3>
+                        <div class="help-text">
+                            내부 텍스트 없이 단색의 깔끔한 구역 도형만 렌더링합니다. 이 이미지가 Stage 5 예매 버튼 생성의 기준 이미지가 됩니다.
+                        </div>
+                        <div class="stage4-final-tools">
+                            <button type="button" class="btn" id="alignTopBtn">상단 정렬</button>
+                            <button type="button" class="btn" id="alignBottomBtn">하단 정렬</button>
+                            <button type="button" class="btn" id="alignLeftBtn">좌측 정렬</button>
+                            <button type="button" class="btn" id="alignRightBtn">우측 정렬</button>
+                            <button type="button" class="btn" id="snapFinalBtn">스냅/오차 보정</button>
+                            <button type="button" class="btn amber" id="polishAllBoundsBtn">전체 빨간선 다듬기</button>
+                        </div>
+                        <div class="help-text">중앙 미리보기에서 구역을 드래그해 위치를 보정할 수 있습니다. 빨간 외곽선 다듬기는 Part 5에서 전체 버튼으로 한 번에 처리합니다.</div>
+                        <button type="button" class="btn" id="refreshFinalPreviewBtn">최종 PNG 미리보기 갱신</button>
+                        <div class="stage4-final-preview">
+                            <img id="finalPreviewImg" alt="최종 PNG 미리보기" />
+                        </div>
+                        <div class="stage4-save-summary" id="finalPreviewStatus">미리보기 대기</div>
+                    </div>
+
+                    <div class="box">
+                        <h3>저장 / 다음 단계</h3>
+                        <div class="help-text">저장 시 seatmap-image.png는 깔끔한 최종 PNG로, debug-polygons.png는 검수용 이미지로 저장됩니다.</div>
+                        <button type="button" class="btn green" id="saveSeatsBtn">좌석 ID / 최종 PNG 저장</button>
                         <button type="button" class="btn primary" id="toStage5Btn">Stage 5 예매 버튼 생성으로 이동</button>
                     </div>
                 </div>
@@ -155,8 +228,9 @@
 </aside>
 
 <main class="seatmap-main stage4-main" id="canvasScroll">
+    <div class="stage4-group-nav" id="groupJumpBar" hidden></div>
     <div class="canvas-wrap stage4-canvas-wrap">
-        <span id="canvasTitle" class="sr-only">좌석 배치 도면</span>
+        <span id="canvasTitle" class="sr-only">Stage 4 좌석 배치 작업판</span>
         <span id="canvasSize" class="sr-only">-</span>
         <div class="canvas-box stage4-canvas-box" id="canvasBox">
             <canvas class="base" id="canvas"></canvas>
@@ -168,8 +242,12 @@
 <aside class="seatmap-side seatmap-side--right stage4-right">
     <div class="minimap">
         <h3>기준 도면</h3>
-        <img id="miniImg" alt="기준 도면 미니맵" />
-        <div class="help">배경은 seatmap-image.png 또는 cropped-image.png를 사용하고, 위에는 Stage 3 polygon과 좌석만 표시합니다.</div>
+        <div class="stage4-mini-map" id="miniMapBox">
+            <img id="miniImg" alt="기준 도면 미니맵" />
+            <canvas id="miniOverlay" aria-hidden="true"></canvas>
+        </div>
+        <div class="stage4-mini-focus" id="miniFocusName">구역에 커서를 올리면 원본 위치를 진하게 표시합니다.</div>
+        <div class="help">미니맵은 button-image.png를 흐리게 표시하고, 작업판에서 가리킨 구역의 원본 polygon만 진하게 표시합니다.</div>
     </div>
 
     <div class="preview-card stage4-info-card">

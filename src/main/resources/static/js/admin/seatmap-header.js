@@ -502,6 +502,12 @@
         const tempPaths = getTempPaths();
         const defaultTitle = box.dataset.saveTitle || "저장 위치: 좌석 JSON · 구역 JSON · 도형 이미지";
         title.textContent = `최근 저장 완료: ${time} / ${defaultTitle.replace(/^저장 위치:\s*/, "")}`;
+
+        if (result.finalImageUrl || result.styleJsonUrl) {
+            pathText.textContent = [result.finalImageUrl, result.styleJsonUrl].filter(Boolean).join(" · ");
+            return;
+        }
+
         pathText.textContent = [
             result.seatJsonUrl || tempPaths.seats,
             result.sectionJsonUrl || tempPaths.sections,
@@ -541,7 +547,7 @@
 
         return {
             base: `${base}/`,
-            seats: `/temp/seatmap/seats/${projectId}-seatmap-seats.json`,
+            seats: `${base}/seats/index.json`,
             sections: `${base}/seatmap-sections.json`,
             image: `${base}/${imageFileName}`
         };

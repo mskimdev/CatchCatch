@@ -18,15 +18,15 @@
 }
 
 .seatmap-workspace--stage4 .seatmap-side {
-    scrollbar-width: thin;
+    scrollbar-width: auto;
     scrollbar-color: #cbd5e1 transparent;
 }
 
 .seatmap-workspace--stage4 .seatmap-side::-webkit-scrollbar,
 .seatmap-workspace--stage4 .stage4-main::-webkit-scrollbar,
 .seatmap-workspace--stage4 .stage4-section-list::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 16px;
+    height: 16px;
 }
 
 .seatmap-workspace--stage4 .seatmap-side::-webkit-scrollbar-thumb,
@@ -231,6 +231,101 @@
     background-size: 20px 20px;
 }
 
+
+.seatmap-workspace--stage4 .stage4-group-nav {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    padding: 10px 16px 8px;
+    border-bottom: 1px solid rgba(203, 213, 225, 0.78);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(12px);
+}
+
+.seatmap-workspace--stage4 .stage4-group-nav[hidden] {
+    display: none !important;
+}
+
+.seatmap-workspace--stage4 .stage4-group-nav__inner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: max-content;
+}
+
+.seatmap-workspace--stage4 .stage4-group-nav__inner > strong {
+    flex: 0 0 auto;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 950;
+    letter-spacing: -0.02em;
+}
+
+.seatmap-workspace--stage4 .stage4-group-nav__buttons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    max-width: calc(100vw - 780px);
+    padding-bottom: 2px;
+}
+
+.seatmap-workspace--stage4 .stage4-group-nav__btn {
+    flex: 0 0 auto;
+    min-width: 58px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 0 10px;
+    border: 1px solid #dbe3ef;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 950;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+}
+
+.seatmap-workspace--stage4 .stage4-group-nav__btn:hover {
+    border-color: #a78bfa;
+    color: #6d28d9;
+}
+
+.seatmap-workspace--stage4 .stage4-group-nav__btn.is-active {
+    border-color: #7c3aed;
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+    color: #ffffff;
+}
+
+.seatmap-workspace--stage4 .stage4-group-nav__btn span,
+.seatmap-workspace--stage4 .stage4-group-nav__btn em {
+    min-width: 20px;
+    height: 20px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 950;
+}
+
+.seatmap-workspace--stage4 .stage4-group-nav__btn em {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.seatmap-workspace--stage4 .stage4-group-nav__btn.is-active span,
+.seatmap-workspace--stage4 .stage4-group-nav__btn.is-active em {
+    background: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+}
+
 .seatmap-workspace--stage4 .stage4-canvas-wrap {
     width: max-content;
     margin: 30px auto 90px;
@@ -305,4 +400,153 @@
     border-color: #7c3aed;
     background: #ede9fe;
     color: #6d28d9;
+}
+
+/* Stage 4 rework: 펼쳐보기 작업판 */
+.seatmap-workspace--stage4 .stage4-main {
+    background-color: #ffffff;
+    background-image: radial-gradient(circle, #dbeafe 1px, transparent 1.1px);
+    background-size: 20px 20px;
+}
+
+.seatmap-workspace--stage4 .stage4-canvas-box {
+    border-color: #cbd5e1;
+    box-shadow: 0 16px 42px rgba(15, 23, 42, 0.12);
+}
+
+.seatmap-workspace--stage4 .stage4-selected-name {
+    background: #fff7ed;
+    color: #9a3412;
+}
+
+.seatmap-workspace--stage4 .stage4-save-summary {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #166534;
+}
+
+.seatmap-workspace--stage4 .stage4-rotate-box {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.seatmap-workspace--stage4 .stage4-rotate-controls {
+    display: grid;
+    grid-template-columns: 1fr 86px 1fr;
+    gap: 6px;
+    align-items: center;
+    margin-top: 6px;
+}
+
+.seatmap-workspace--stage4 .stage4-rotate-controls input {
+    text-align: center;
+    font-weight: 900;
+}
+
+.seatmap-workspace--stage4 .stage4-canvas-box canvas#overlay {
+    cursor: crosshair;
+}
+
+.seatmap-workspace--stage4 .stage4-canvas-box.is-add-mode canvas#overlay {
+    cursor: copy;
+}
+
+.seatmap-workspace--stage4 .stage4-mini-map {
+    position: relative;
+    width: 100%;
+    min-height: 140px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    background: #f8fafc;
+}
+
+.seatmap-workspace--stage4 .stage4-mini-map img {
+    display: block;
+    width: 100%;
+    height: auto;
+    opacity: 0.34;
+    filter: saturate(0.72) contrast(0.92);
+    transition: opacity 0.12s ease, filter 0.12s ease;
+}
+
+.seatmap-workspace--stage4 .stage4-mini-map.has-focus img {
+    opacity: 0.22;
+    filter: saturate(0.52) contrast(0.88);
+}
+
+.seatmap-workspace--stage4 .stage4-mini-map canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.seatmap-workspace--stage4 .stage4-mini-focus {
+    margin-top: 8px;
+    padding: 7px 9px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1.35;
+}
+
+.seatmap-workspace--stage4 .stage4-mini-focus.is-active {
+    background: #fff7ed;
+    color: #9a3412;
+}
+
+.stage4-final-preview {
+    margin-top: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 12px;
+    background: #ffffff;
+    min-height: 140px;
+    max-height: 260px;
+    overflow: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 10px;
+}
+
+.stage4-final-preview img {
+    display: block;
+    max-width: none;
+    width: 100%;
+    height: auto;
+    image-rendering: auto;
+}
+
+.seatmap-workspace--stage4 .stage4-action-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    border-radius: 10px;
+    border: 1px dashed #cbd5e1;
+    background: #f8fafc;
+    color: #334155;
+    font-weight: 900;
+    font-size: 13px;
+}
+
+.stage4-final-tools {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 10px;
+}
+.stage4-final-tools .btn:last-child {
+    grid-column: 1 / -1;
+}
+.canvas-box.is-final-edit {
+    cursor: move;
 }

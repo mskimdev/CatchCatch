@@ -1,5 +1,8 @@
 package com.catchcatch.ticket.seatmap;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
@@ -13,11 +16,15 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
 public class SeatMapService {
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final Path SEATMAP_JSON_DIR =
             Path.of("src/main/resources/static/json/seatmap");
@@ -34,12 +41,15 @@ public class SeatMapService {
     private static final Path INTELLIJ_RUNTIME_STATIC_DIR =
             Path.of("out/production/resources/static");
 
-    private static final String DEFAULT_SEATS_JSON = """
-            [
-              {
-                "id": "1-VIP-A-1-VIP-AVAILABLE"
-              }
-            ]
+    private static final String DEFAULT_SEATS_JSON = "[]";
+
+    private static final String DEFAULT_SEAT_INDEX_JSON = """
+            {
+              "version": 1,
+              "projectId": "",
+              "totalSeatCount": 0,
+              "sections": []
+            }
             """;
 
     private static final String DEFAULT_SECTIONS_JSON = """
@@ -56,6 +66,7 @@ public class SeatMapService {
 
     private static final String DEFAULT_BOOKING_BUTTONS_JSON = "[]";
     private static final String DEFAULT_DECORATIONS_JSON = "{\"texts\":[],\"shapes\":[],\"manualSeats\":[]}";
+    private static final String DEFAULT_STYLE_JSON = "{\"version\":1,\"stage\":6,\"background\":{},\"layers\":[]}";
 
     // 새 도면 폴더 생성
     public ProjectCreateResult createProject(SeatMapRequest.ProjectCreateDTO req) {
@@ -63,24 +74,30 @@ public class SeatMapService {
             String projectName = defaultText(req.getProjectName(), "콘서트 대형장 도면");
             String folderName = resolveUniqueFolderName(sanitizeFolderName(defaultText(req.getFolderName(), projectName)));
             String folderRelativePath = projectFolderRelativePath(folderName);
-            String seatsJsonRelativePath = seatsJsonRelativePath(folderName);
+            String seatsJsonRelativePath = seatsIndexRelativePath(folderName);
+            String legacySeatsJsonRelativePath = legacySeatsJsonRelativePath(folderName);
             String now = LocalDateTime.now().toString();
 
             String originalImageRelativePath = folderRelativePath + "/original-image.png";
             String croppedImageRelativePath = folderRelativePath + "/cropped-image.png";
             String seatmapImageRelativePath = folderRelativePath + "/seatmap-image.png";
+            String stage5ImageRelativePath = folderRelativePath + "/seatmap-stage5.png";
+            String finalImageRelativePath = folderRelativePath + "/seatmap-final.png";
             String buttonImageRelativePath = folderRelativePath + "/button-image.png";
             String thumbnailImageRelativePath = folderRelativePath + "/thumbnail.png";
             String debugImageRelativePath = folderRelativePath + "/debug-polygons.png";
             String sectionJsonRelativePath = folderRelativePath + "/seatmap-sections.json";
             String bookingButtonsJsonRelativePath = folderRelativePath + "/booking-buttons.json";
             String decorationsJsonRelativePath = folderRelativePath + "/seatmap-decorations.json";
+            String styleJsonRelativePath = folderRelativePath + "/seatmap-style.json";
             String metaJsonRelativePath = folderRelativePath + "/seatmap-meta.json";
 
-            writeTextToStaticAll(seatsJsonRelativePath, DEFAULT_SEATS_JSON);
+            writeTextToStaticAll(seatsJsonRelativePath, defaultSeatIndexJson(folderName, 0));
+            writeTextToStaticAll(legacySeatsJsonRelativePath, DEFAULT_SEATS_JSON);
             writeTextToStaticAll(sectionJsonRelativePath, DEFAULT_SECTIONS_JSON);
             writeTextToStaticAll(bookingButtonsJsonRelativePath, DEFAULT_BOOKING_BUTTONS_JSON);
             writeTextToStaticAll(decorationsJsonRelativePath, DEFAULT_DECORATIONS_JSON);
+            writeTextToStaticAll(styleJsonRelativePath, DEFAULT_STYLE_JSON);
 
             if (req.getImageDataUrl() != null && req.getImageDataUrl().startsWith("data:image")) {
                 byte[] imageBytes = decodeBase64Image(req.getImageDataUrl());
@@ -89,6 +106,8 @@ public class SeatMapService {
                 writeBytesToStaticAll(originalImageRelativePath, imageBytes);   // 01 입력 원본
                 writeBytesToStaticAll(croppedImageRelativePath, imageBytes);    // 01 출력 / 02 입력
                 writeBytesToStaticAll(seatmapImageRelativePath, imageBytes);    // 05~06 / booking 기준 이미지
+                writeBytesToStaticAll(stage5ImageRelativePath, imageBytes);     // 05 출력 / 06 입력 후보, 최초는 원본 복사
+                writeBytesToStaticAll(finalImageRelativePath, imageBytes);      // 06 출력, 최초는 원본 복사
                 writeBytesToStaticAll(buttonImageRelativePath, imageBytes);     // 02 출력 / 03~04 입력, 최초는 원본 복사
                 writeBytesToStaticAll(thumbnailImageRelativePath, imageBytes);  // 메인 목록 썸네일
                 writeBytesToStaticAll(debugImageRelativePath, imageBytes);      // polygon 검수용, 최초는 원본 복사
@@ -116,11 +135,14 @@ public class SeatMapService {
                     "/" + seatmapImageRelativePath,
                     "/" + buttonImageRelativePath,
                     "/" + thumbnailImageRelativePath,
+                    "/" + stage5ImageRelativePath,
+                    "/" + finalImageRelativePath,
                     "/" + debugImageRelativePath,
                     "/" + seatsJsonRelativePath,
                     "/" + sectionJsonRelativePath,
                     "/" + bookingButtonsJsonRelativePath,
                     "/" + decorationsJsonRelativePath,
+                    "/" + styleJsonRelativePath,
                     "/" + metaJsonRelativePath
             );
         } catch (Exception e) {
@@ -158,7 +180,7 @@ public class SeatMapService {
         try {
             String folderName = sanitizeFolderName(req.getFolderName());
             deleteStaticFolder(projectFolderRelativePath(folderName));
-            deleteStaticFile(seatsJsonRelativePath(folderName));
+            deleteStaticFile(legacySeatsJsonRelativePath(folderName));
             return new ProjectDeleteResult(true, folderName);
         } catch (Exception e) {
             throw new RuntimeException("도면 프로젝트 삭제 실패", e);
@@ -216,20 +238,27 @@ public class SeatMapService {
         try {
             String folderName = sanitizeFolderName(req.getFolderName());
             String folderRelativePath = projectFolderRelativePath(folderName);
-            String seatsJsonPath = seatsJsonRelativePath(folderName);
+            String seatsJsonPath = seatsIndexRelativePath(folderName);
+            String legacySeatsJsonPath = legacySeatsJsonRelativePath(folderName);
 
             String sectionJsonPath = folderRelativePath + "/seatmap-sections.json";
             String bookingButtonsJsonPath = folderRelativePath + "/booking-buttons.json";
             String decorationsJsonPath = folderRelativePath + "/seatmap-decorations.json";
+            String styleJsonPath = folderRelativePath + "/seatmap-style.json";
             String croppedImagePath = folderRelativePath + "/cropped-image.png";
             String seatmapImagePath = folderRelativePath + "/seatmap-image.png";
+            String stage5ImagePath = folderRelativePath + "/seatmap-stage5.png";
+            String finalImagePath = folderRelativePath + "/seatmap-final.png";
             String buttonImagePath = folderRelativePath + "/button-image.png";
             String thumbnailPath = folderRelativePath + "/thumbnail.png";
             String debugImagePath = folderRelativePath + "/debug-polygons.png";
+            String page = defaultText(req.getPage(), "");
             String imageUrl = "/" + seatmapImagePath;
 
-            if (req.getSeatJsonText() != null && !req.getSeatJsonText().isBlank()) {
-                writeTextToStaticAll(seatsJsonPath, req.getSeatJsonText());
+            if (req.getSectionSeatJsonText() != null && !req.getSectionSeatJsonText().isBlank()) {
+                writeSectionSeatFiles(folderName, req.getSectionSeatJsonText());
+            } else if (req.getSeatJsonText() != null && !req.getSeatJsonText().isBlank()) {
+                writeTextToStaticAll(legacySeatsJsonPath, req.getSeatJsonText());
             }
 
             if (req.getSectionJsonText() != null && !req.getSectionJsonText().isBlank()) {
@@ -244,9 +273,12 @@ public class SeatMapService {
                 writeTextToStaticAll(decorationsJsonPath, req.getDecorationJsonText());
             }
 
+            if (req.getStyleJsonText() != null && !req.getStyleJsonText().isBlank()) {
+                writeTextToStaticAll(styleJsonPath, req.getStyleJsonText());
+            }
+
             if (req.getImageDataUrl() != null && req.getImageDataUrl().startsWith("data:image")) {
                 byte[] imageBytes = decodeBase64Image(req.getImageDataUrl());
-                String page = defaultText(req.getPage(), "");
 
                 if ("stage1".equals(page) || "seatmap-crop-rotate".equals(page) || "crop-rotate".equals(page)) {
                     // Stage 1은 이후 단계의 기준 도면을 바꾸는 작업이다.
@@ -254,6 +286,8 @@ public class SeatMapService {
                     // original-image.png를 제외한 모든 PNG 기준 파일을 같은 이미지로 초기화한다.
                     writeBytesToStaticAll(croppedImagePath, imageBytes);
                     writeBytesToStaticAll(seatmapImagePath, imageBytes);
+                    writeBytesToStaticAll(stage5ImagePath, imageBytes);
+                    writeBytesToStaticAll(finalImagePath, imageBytes);
                     writeBytesToStaticAll(buttonImagePath, imageBytes);
                     writeBytesToStaticAll(thumbnailPath, imageBytes);
                     writeBytesToStaticAll(debugImagePath, imageBytes);
@@ -261,18 +295,54 @@ public class SeatMapService {
                 } else if ("stage2".equals(page) || "seatmap-button-image".equals(page) || "button-image".equals(page)) {
                     writeBytesToStaticAll(buttonImagePath, imageBytes);
                     imageUrl = "/" + buttonImagePath;
-                } else if ("stage6".equals(page) || "seatmap-final-decorate".equals(page) || "final-decorate".equals(page)) {
+                } else if ("stage4".equals(page)) {
+                    // Stage 4 저장 이미지는 Stage 5/6이 바로 참고할 수 있는 최종 좌석 배치 이미지다.
+                    // debug 이미지는 debugImageDataUrl이 별도로 오면 아래에서 다시 덮어쓴다.
                     writeBytesToStaticAll(seatmapImagePath, imageBytes);
+                    writeBytesToStaticAll(stage5ImagePath, imageBytes);
                     writeBytesToStaticAll(thumbnailPath, imageBytes);
+                    writeBytesToStaticAll(debugImagePath, imageBytes);
                     imageUrl = "/" + seatmapImagePath;
-                } else if ("stage3".equals(page) || "stage4".equals(page) || "stage5".equals(page) || "booking-buttons".equals(page)) {
-                    // Stage 3~5의 이미지 저장은 최종 도면을 덮지 않고 검수용 debug 이미지로만 저장한다.
+                } else if ("stage6".equals(page) || "seatmap-final-decorate".equals(page) || "final-decorate".equals(page)) {
+                    // Stage 6는 최종 꾸미기 출력만 저장한다.
+                    // Stage 4/5 기준 이미지와 booking-buttons.json 좌표는 덮어쓰지 않는다.
+                    writeBytesToStaticAll(finalImagePath, imageBytes);
+                    writeBytesToStaticAll(thumbnailPath, imageBytes);
+                    imageUrl = "/" + finalImagePath;
+                } else if ("stage5".equals(page) || "booking-buttons".equals(page)) {
+                    // Stage 5의 imageDataUrl은 실제 예매용 버튼 이미지다.
+                    // Stage 4 기준 seatmap-image.png는 유지하고 Stage 5 산출물만 별도로 저장한다.
+                    writeBytesToStaticAll(stage5ImagePath, imageBytes);
+                    imageUrl = "/" + stage5ImagePath;
+                } else if ("stage3".equals(page)) {
+                    // Stage 3의 이미지 저장은 최종 도면을 덮지 않고 검수용 debug 이미지로만 저장한다.
                     writeBytesToStaticAll(debugImagePath, imageBytes);
                     imageUrl = "/" + debugImagePath;
                 } else {
                     writeBytesToStaticAll(seatmapImagePath, imageBytes);
                     imageUrl = "/" + seatmapImagePath;
                 }
+            }
+
+            if (req.getFinalImageDataUrl() != null && req.getFinalImageDataUrl().startsWith("data:image")) {
+                byte[] finalImageBytes = decodeBase64Image(req.getFinalImageDataUrl());
+                if ("stage5".equals(page) || "booking-buttons".equals(page)) {
+                    writeBytesToStaticAll(stage5ImagePath, finalImageBytes);
+                    imageUrl = "/" + stage5ImagePath;
+                } else if ("stage6".equals(page) || "seatmap-final-decorate".equals(page) || "final-decorate".equals(page)) {
+                    writeBytesToStaticAll(finalImagePath, finalImageBytes);
+                    writeBytesToStaticAll(thumbnailPath, finalImageBytes);
+                    imageUrl = "/" + finalImagePath;
+                } else {
+                    writeBytesToStaticAll(seatmapImagePath, finalImageBytes);
+                    writeBytesToStaticAll(thumbnailPath, finalImageBytes);
+                    imageUrl = "/" + seatmapImagePath;
+                }
+            }
+
+            if (req.getDebugImageDataUrl() != null && req.getDebugImageDataUrl().startsWith("data:image")) {
+                byte[] debugImageBytes = decodeBase64Image(req.getDebugImageDataUrl());
+                writeBytesToStaticAll(debugImagePath, debugImageBytes);
             }
 
             // 과거 잘못 생성된 프로젝트 내부 seatmap-seats.json은 저장 시 제거한다.
@@ -290,9 +360,12 @@ public class SeatMapService {
                     "/" + croppedImagePath,
                     "/" + buttonImagePath,
                     "/" + thumbnailPath,
+                    "/" + stage5ImagePath,
+                    "/" + finalImagePath,
                     "/" + debugImagePath,
                     "/" + bookingButtonsJsonPath,
-                    "/" + decorationsJsonPath
+                    "/" + decorationsJsonPath,
+                    "/" + styleJsonPath
             );
         } catch (Exception e) {
             throw new RuntimeException("좌석도 임시 저장 실패", e);
@@ -311,9 +384,12 @@ public class SeatMapService {
         private String croppedImageUrl;
         private String buttonImageUrl;
         private String thumbnailImageUrl;
+        private String stage5ImageUrl;
+        private String finalImageUrl;
         private String debugImageUrl;
         private String bookingButtonsJsonUrl;
         private String decorationsJsonUrl;
+        private String styleJsonUrl;
     }
 
     @Getter
@@ -330,11 +406,14 @@ public class SeatMapService {
         private String imageUrl;
         private String buttonImageUrl;
         private String thumbnailImageUrl;
+        private String stage5ImageUrl;
+        private String finalImageUrl;
         private String debugImageUrl;
         private String seatJsonUrl;
         private String sectionJsonUrl;
         private String bookingButtonsJsonUrl;
         private String decorationsJsonUrl;
+        private String styleJsonUrl;
         private String metaJsonUrl;
     }
 
@@ -364,11 +443,14 @@ public class SeatMapService {
         private String imageUrl;
         private String buttonImageUrl;
         private String thumbnailImageUrl;
+        private String stage5ImageUrl;
+        private String finalImageUrl;
         private String debugImageUrl;
         private String seatJsonUrl;
         private String sectionJsonUrl;
         private String bookingButtonsJsonUrl;
         private String decorationsJsonUrl;
+        private String styleJsonUrl;
         private String metaJsonUrl;
     }
 
@@ -392,11 +474,14 @@ public class SeatMapService {
                 folderUrl + "/seatmap-image.png",
                 folderUrl + "/button-image.png",
                 folderUrl + "/thumbnail.png",
+                folderUrl + "/seatmap-stage5.png",
+                folderUrl + "/seatmap-final.png",
                 folderUrl + "/debug-polygons.png",
-                "/" + seatsJsonRelativePath(folderName),
+                "/" + seatsIndexRelativePath(folderName),
                 folderUrl + "/seatmap-sections.json",
                 folderUrl + "/booking-buttons.json",
                 folderUrl + "/seatmap-decorations.json",
+                folderUrl + "/seatmap-style.json",
                 folderUrl + "/seatmap-meta.json"
         );
     }
@@ -453,13 +538,17 @@ public class SeatMapService {
                 + "\"originalImage\":\"original-image.png\","
                 + "\"croppedImage\":\"cropped-image.png\","
                 + "\"seatmapImage\":\"seatmap-image.png\","
+                + "\"stage5Image\":\"seatmap-stage5.png\","
+                + "\"finalImage\":\"seatmap-final.png\","
                 + "\"buttonImage\":\"button-image.png\","
                 + "\"thumbnail\":\"thumbnail.png\","
                 + "\"debugPolygons\":\"debug-polygons.png\","
                 + "\"sections\":\"seatmap-sections.json\","
                 + "\"bookingButtons\":\"booking-buttons.json\","
                 + "\"decorations\":\"seatmap-decorations.json\","
-                + "\"seats\":\"/temp/seatmap/seats/" + jsonEscape(folderName) + "-seatmap-seats.json\""
+                + "\"style\":\"seatmap-style.json\","
+                 + "\"seats\":\"/temp/seatmap/" + jsonEscape(folderName) + "/seats/index.json\","
+                + "\"legacySeats\":\"/temp/seatmap/seats/" + jsonEscape(folderName) + "-seatmap-seats.json\""
                 + "}"
                 + "}";
     }
@@ -479,7 +568,10 @@ public class SeatMapService {
         String sourceFileName = extractJsonString(previousMeta, "sourceFileName", "");
         String createdAt = extractJsonString(previousMeta, "createdAt", now);
         String status = resolveTempSaveStatus(page);
-        boolean stage5Saved = isStage5Page(page) || Boolean.TRUE.equals(req.getStage5Saved());
+        boolean previousStage5Saved = extractJsonBoolean(previousMeta, "stage5Saved", false);
+        boolean stage5Saved = isStage5Page(page)
+                || Boolean.TRUE.equals(req.getStage5Saved())
+                || (isStage6Page(page) && previousStage5Saved);
 
         int sectionCount = 0;
         int seatCount = 0;
@@ -535,6 +627,13 @@ public class SeatMapService {
     private boolean isStage5Page(String page) {
         String normalizedPage = defaultText(page, "");
         return "stage5".equals(normalizedPage) || "booking-buttons".equals(normalizedPage);
+    }
+
+    private boolean isStage6Page(String page) {
+        String normalizedPage = defaultText(page, "");
+        return "stage6".equals(normalizedPage)
+                || "seatmap-final-decorate".equals(normalizedPage)
+                || "final-decorate".equals(normalizedPage);
     }
 
     private int firstCount(Integer... values) {
@@ -631,8 +730,21 @@ public class SeatMapService {
         return "temp/seatmap/" + sanitizeFolderName(folderName);
     }
 
-    private String seatsJsonRelativePath(String folderName) {
+    private String seatsIndexRelativePath(String folderName) {
+        return projectFolderRelativePath(folderName) + "/seats/index.json";
+    }
+
+    private String legacySeatsJsonRelativePath(String folderName) {
         return "temp/seatmap/seats/" + sanitizeFolderName(folderName) + "-seatmap-seats.json";
+    }
+
+    private String defaultSeatIndexJson(String folderName, int totalSeatCount) {
+        return "{"
+                + "\"version\":1,"
+                + "\"projectId\":\"" + jsonEscape(folderName) + "\","
+                + "\"totalSeatCount\":" + totalSeatCount + ","
+                + "\"sections\":[]"
+                + "}";
     }
 
     private String resolveUniqueFolderName(String folderName) {
@@ -765,6 +877,56 @@ public class SeatMapService {
         }
     }
 
+
+    private void writeSectionSeatFiles(String folderName, String sectionSeatJsonText) throws IOException {
+        JsonNode root = objectMapper.readTree(sectionSeatJsonText);
+        JsonNode indexNode = root.path("index");
+        JsonNode filesNode = root.path("files");
+
+        String seatsFolderPath = projectFolderRelativePath(folderName) + "/seats";
+
+        deleteStaticFolder(seatsFolderPath);
+
+        if (indexNode.isMissingNode() || indexNode.isNull()) {
+            indexNode = root;
+        }
+
+        writeTextToStaticAll(
+                seatsFolderPath + "/index.json",
+                objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(indexNode)
+        );
+
+        if (filesNode != null && filesNode.isObject()) {
+            Iterator<Map.Entry<String, JsonNode>> fields = filesNode.fields();
+            while (fields.hasNext()) {
+                Map.Entry<String, JsonNode> entry = fields.next();
+                String fileName = sanitizeSeatSectionFileName(entry.getKey());
+                writeTextToStaticAll(
+                        seatsFolderPath + "/" + fileName,
+                        objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(entry.getValue())
+                );
+            }
+        }
+    }
+
+    private String sanitizeSeatSectionFileName(String fileName) {
+        String cleaned = defaultText(fileName, "section.json")
+                .replaceAll("[\\\\/]+", "_")
+                .replaceAll("[^a-zA-Z0-9가-힣._-]", "_")
+                .replaceAll("_+", "_")
+                .replaceAll("^_+|_+$", "");
+
+        if (cleaned.isBlank()) {
+            cleaned = "section.json";
+        }
+
+        if (!cleaned.toLowerCase().endsWith(".json")) {
+            cleaned += ".json";
+        }
+
+        return cleaned;
+    }
+
     private void writeTextToStaticAll(String relativePath, String text) throws IOException {
         writeText(SOURCE_STATIC_DIR.resolve(relativePath), text);
         writeText(MAVEN_RUNTIME_STATIC_DIR.resolve(relativePath), text);
@@ -833,6 +995,21 @@ public class SeatMapService {
 
         if (matcher.find()) {
             return matcher.group(1);
+        }
+
+        return defaultValue;
+    }
+
+    private boolean extractJsonBoolean(String json, String key, boolean defaultValue) {
+        if (json == null || json.isBlank()) {
+            return defaultValue;
+        }
+
+        Pattern pattern = Pattern.compile("\\\"" + Pattern.quote(key) + "\\\"\\s*:\\s*(true|false)");
+        Matcher matcher = pattern.matcher(json);
+
+        if (matcher.find()) {
+            return Boolean.parseBoolean(matcher.group(1));
         }
 
         return defaultValue;

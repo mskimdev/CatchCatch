@@ -20,10 +20,14 @@ public class SeatMapRequest {
         private String page;
         private String folderName;
         private String seatJsonText;
+        private String sectionSeatJsonText;
         private String sectionJsonText;
         private String bookingButtonJsonText;
         private String decorationJsonText;
+        private String styleJsonText;
         private String imageDataUrl;
+        private String finalImageDataUrl;
+        private String debugImageDataUrl;
         private Boolean stage5Saved;
         private Integer sectionCount;
         private Integer seatCount;
